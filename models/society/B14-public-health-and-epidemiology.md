@@ -53,10 +53,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `surveillance` | Watching population health continuously | `indicatorSeries`: time series of health indicators by cohort and area Â· `caseReporting`: intake of de-identified notifiable case reports Â· `signalDetection`: thresholds and anomalies raised from series and reports |
-| `outbreak` | Episodes of elevated disease activity | `outbreakLifecycle`: declaration, course and closure of an outbreak Â· `transmissionCharacterization`: cohort-grain transmission patterns, severity and reproduction estimates |
-| `immunization` | Preventive campaigns and their reach | `campaign`: planned and running immunization campaigns Â· `coverage`: coverage estimates by cohort, area and antigen |
-| `measure` | Interventions and whether they work | `measureDefinition`: defined public health measures and their scope Â· `effectMonitoring`: observed indicator response after introduction and lifting |
+| `surveillance` | Watching population health continuously | `indicatorSeries`: time series of health indicators by cohort and area · `caseReporting`: intake of de-identified notifiable case reports · `signalDetection`: thresholds and anomalies raised from series and reports |
+| `outbreak` | Episodes of elevated disease activity | `outbreakLifecycle`: declaration, course and closure of an outbreak · `transmissionCharacterization`: cohort-grain transmission patterns, severity and reproduction estimates |
+| `immunization` | Preventive campaigns and their reach | `campaign`: planned and running immunization campaigns · `coverage`: coverage estimates by cohort, area and antigen |
+| `measure` | Interventions and whether they work | `measureDefinition`: defined public health measures and their scope · `effectMonitoring`: observed indicator response after introduction and lifting |
 
 ## Objects
 

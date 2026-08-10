@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `norm` | Informal rules as described statements | `normStatement`: the rule as observed and articulated Â· `applicabilityScope`: which community, setting and situation the rule binds |
-| `custom` | Practiced traditions and etiquette | `tradition`: customs, traditions and etiquette forms Â· `transmission`: how customs pass on, drift and lapse |
-| `enforcement` | How communities uphold their rules | `informalSanction`: disapproval, exclusion and reputation responses Â· `complianceObservation`: documented adherence, deviation and contestation |
+| `norm` | Informal rules as described statements | `normStatement`: the rule as observed and articulated · `applicabilityScope`: which community, setting and situation the rule binds |
+| `custom` | Practiced traditions and etiquette | `tradition`: customs, traditions and etiquette forms · `transmission`: how customs pass on, drift and lapse |
+| `enforcement` | How communities uphold their rules | `informalSanction`: disapproval, exclusion and reputation responses · `complianceObservation`: documented adherence, deviation and contestation |
 
 ## Objects
 

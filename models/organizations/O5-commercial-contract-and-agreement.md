@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `formation` | How the agreement came to exist | `partiesAndConsent`: parties, signatures, effective date Â· `termsAndClauses`: the clause structure of the agreed text |
-| `obligations` | What the agreement requires | `commitments`: obligations and deliverables owed by each party Â· `schedule`: milestones, deadlines and payment terms |
-| `performance` | What actually happened | `fulfilment`: discharge and acceptance of obligations Â· `variance`: amendments, breach, remedy and termination |
+| `formation` | How the agreement came to exist | `partiesAndConsent`: parties, signatures, effective date · `termsAndClauses`: the clause structure of the agreed text |
+| `obligations` | What the agreement requires | `commitments`: obligations and deliverables owed by each party · `schedule`: milestones, deadlines and payment terms |
+| `performance` | What actually happened | `fulfilment`: discharge and acceptance of obligations · `variance`: amendments, breach, remedy and termination |
 
 ## Objects
 

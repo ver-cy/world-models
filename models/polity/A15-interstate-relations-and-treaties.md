@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `treatyLifecycle` | A treaty from text to force | `signature`: negotiation outcomes and signature Â· `ratification`: domestic consent to be bound Â· `entryIntoForce`: force, amendment, denunciation |
-| `obligations` | What being bound means | `commitment`: obligations and reservations per party Â· `compliance`: reported performance against obligations |
-| `membership` | Standing relations between polities | `accession`: joining organizations and regimes Â· `representation`: missions and accreditation |
+| `treatyLifecycle` | A treaty from text to force | `signature`: negotiation outcomes and signature · `ratification`: domestic consent to be bound · `entryIntoForce`: force, amendment, denunciation |
+| `obligations` | What being bound means | `commitment`: obligations and reservations per party · `compliance`: reported performance against obligations |
+| `membership` | Standing relations between polities | `accession`: joining organizations and regimes · `representation`: missions and accreditation |
 
 ## Objects
 

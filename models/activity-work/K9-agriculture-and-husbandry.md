@@ -49,9 +49,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `holding` | The farm as a unit of land use | `farmProfile`: the holding, its kind and land use Â· `fieldAndParcel`: fields mapped onto cadastral parcels |
-| `cultivation` | Growing crops through seasons | `cropSeason`: what is grown where in which season Â· `fieldOperation`: sowing, treatment, irrigation and tillage acts Â· `harvest`: gathered lots and their measures |
-| `husbandry` | Keeping animals | `herdAndFlock`: animal groups and identification Â· `animalCare`: feeding, breeding and veterinary events Â· `animalProduce`: milk, eggs, wool and other recurring yields |
+| `holding` | The farm as a unit of land use | `farmProfile`: the holding, its kind and land use · `fieldAndParcel`: fields mapped onto cadastral parcels |
+| `cultivation` | Growing crops through seasons | `cropSeason`: what is grown where in which season · `fieldOperation`: sowing, treatment, irrigation and tillage acts · `harvest`: gathered lots and their measures |
+| `husbandry` | Keeping animals | `herdAndFlock`: animal groups and identification · `animalCare`: feeding, breeding and veterinary events · `animalProduce`: milk, eggs, wool and other recurring yields |
 
 ## Objects
 

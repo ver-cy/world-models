@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `tenure` | Who holds control of a meta-object right now | `title`: the binding of a holder to an object Â· `shares`: fractional and joint holdings Â· `guardianship`: substitute holders for parties lacking capacity |
-| `delegation` | Control exercised by someone other than the holder | `mandates`: scoped powers granted to a delegate Â· `stewardCharges`: steward appointments and their duties |
-| `transfer` | How control moves between holders | `conveyance`: voluntary transfers between living parties Â· `succession`: transfers on death, dissolution or lapse |
+| `tenure` | Who holds control of a meta-object right now | `title`: the binding of a holder to an object · `shares`: fractional and joint holdings · `guardianship`: substitute holders for parties lacking capacity |
+| `delegation` | Control exercised by someone other than the holder | `mandates`: scoped powers granted to a delegate · `stewardCharges`: steward appointments and their duties |
+| `transfer` | How control moves between holders | `conveyance`: voluntary transfers between living parties · `succession`: transfers on death, dissolution or lapse |
 
 ## Objects
 

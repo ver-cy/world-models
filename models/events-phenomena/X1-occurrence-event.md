@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `happening` | The occurrence itself in time and space | `occurrenceCore`: kind, summary, certainty and recording basis Â· `temporality`: instants, intervals and fuzzy periods Â· `spatiality`: where it happened, at any granularity |
-| `involvement` | Who or what took part | `participants`: parties and objects involved Â· `roles`: the capacity in which each participant acted |
-| `explanation` | How happenings connect and compose | `causality`: asserted cause and contribution links Â· `aggregation`: episodes grouping related occurrences |
+| `happening` | The occurrence itself in time and space | `occurrenceCore`: kind, summary, certainty and recording basis · `temporality`: instants, intervals and fuzzy periods · `spatiality`: where it happened, at any granularity |
+| `involvement` | Who or what took part | `participants`: parties and objects involved · `roles`: the capacity in which each participant acted |
+| `explanation` | How happenings connect and compose | `causality`: asserted cause and contribution links · `aggregation`: episodes grouping related occurrences |
 
 ## Objects
 

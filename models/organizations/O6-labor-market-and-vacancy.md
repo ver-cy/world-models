@@ -51,9 +51,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `vacancy` | The demand side | `posting`: the announcement, channels and validity Â· `requirements`: skills, qualifications and conditions offered |
-| `candidacy` | The supply side | `application`: submissions and attached dossiers Â· `screening`: assessments and shortlists |
-| `matching` | Bringing the sides together | `proposal`: mediated or computed matches Â· `offer`: offers and their responses |
+| `vacancy` | The demand side | `posting`: the announcement, channels and validity · `requirements`: skills, qualifications and conditions offered |
+| `candidacy` | The supply side | `application`: submissions and attached dossiers · `screening`: assessments and shortlists |
+| `matching` | Bringing the sides together | `proposal`: mediated or computed matches · `offer`: offers and their responses |
 | `placement` | The conclusion | `outcome`: confirmed placements, starts and early outcomes |
 
 ## Objects

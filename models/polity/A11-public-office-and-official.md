@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `officeStructure` | What an office is and may do | `definition`: establishment, title, seat count, seat of the office Â· `powers`: mandate, competences, signing authority |
-| `tenure` | Who holds an office and when | `appointment`: acts of appointing or seating a person Â· `termAndSuccession`: terms, vacancies, acting arrangements |
-| `accountability` | Duties that attach to holding office | `declaration`: asset and interest declarations of holders Â· `integrityRules`: incompatibilities, recusal duties, sanctions |
+| `officeStructure` | What an office is and may do | `definition`: establishment, title, seat count, seat of the office · `powers`: mandate, competences, signing authority |
+| `tenure` | Who holds an office and when | `appointment`: acts of appointing or seating a person · `termAndSuccession`: terms, vacancies, acting arrangements |
+| `accountability` | Duties that attach to holding office | `declaration`: asset and interest declarations of holders · `integrityRules`: incompatibilities, recusal duties, sanctions |
 
 ## Objects
 

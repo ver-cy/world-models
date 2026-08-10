@@ -52,10 +52,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `drafting` | Bill texts and their evolution as documents | `billText`: authoritative versions of a bill Â· `amendment`: proposed changes and their disposition |
-| `deliberation` | Movement of a bill through formal stages | `readingStage`: plenary readings and outcomes Â· `committeeScrutiny`: referral, hearings, committee reports |
-| `voting` | Recorded decisions of members on questions put | `rollCall`: individual member positions Â· `tally`: aggregate counts, quorum and outcome |
-| `enactment` | The passage from passed bill to law in force | `promulgation`: signature and official publication Â· `commencement`: entry-into-force rules and dates |
+| `drafting` | Bill texts and their evolution as documents | `billText`: authoritative versions of a bill · `amendment`: proposed changes and their disposition |
+| `deliberation` | Movement of a bill through formal stages | `readingStage`: plenary readings and outcomes · `committeeScrutiny`: referral, hearings, committee reports |
+| `voting` | Recorded decisions of members on questions put | `rollCall`: individual member positions · `tally`: aggregate counts, quorum and outcome |
+| `enactment` | The passage from passed bill to law in force | `promulgation`: signature and official publication · `commencement`: entry-into-force rules and dates |
 
 ## Objects
 

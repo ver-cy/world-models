@@ -49,9 +49,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `solicitation` | Announcing the competition | `notice`: tender publication, lots and criteria Â· `clarification`: questions, answers and addenda |
-| `bidding` | Competing | `submission`: sealed bids and attachments Â· `evaluation`: compliance checks and scoring |
-| `award` | Deciding | `decision`: award, standstill and notification Â· `challenge`: protests and their outcomes |
+| `solicitation` | Announcing the competition | `notice`: tender publication, lots and criteria · `clarification`: questions, answers and addenda |
+| `bidding` | Competing | `submission`: sealed bids and attachments · `evaluation`: compliance checks and scoring |
+| `award` | Deciding | `decision`: award, standstill and notification · `challenge`: protests and their outcomes |
 | `assurance` | Securing performance | `security`: bid and performance bonds and guarantees |
 
 ## Objects

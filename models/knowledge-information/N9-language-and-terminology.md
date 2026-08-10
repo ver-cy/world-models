@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `language` | The languages of the world | `languageAndScript`: languages, scripts, orthographies Â· `varietyAndUsage`: dialects, regional variants, registers |
-| `terminology` | Domain meaning fixed in words | `conceptAndTerm`: concepts, definitions, terms, usage status Â· `glossaryAndDomain`: glossaries, term collections, domains |
-| `translation` | Crossing language boundaries | `equivalenceAndTranslation`: translations and equivalence degrees Â· `localeConvention`: locale tags and formatting conventions |
+| `language` | The languages of the world | `languageAndScript`: languages, scripts, orthographies · `varietyAndUsage`: dialects, regional variants, registers |
+| `terminology` | Domain meaning fixed in words | `conceptAndTerm`: concepts, definitions, terms, usage status · `glossaryAndDomain`: glossaries, term collections, domains |
+| `translation` | Crossing language boundaries | `equivalenceAndTranslation`: translations and equivalence degrees · `localeConvention`: locale tags and formatting conventions |
 
 ## Objects
 

@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `intention` | What is intended and how firmly | `planContent`: intended actions and targets Â· `commitment`: promises that bind agents to intentions Â· `assumption`: conditions the plan relies on |
-| `timing` | Binding intentions to time | `scheduleEntry`: dated and timed entries Â· `recurrence`: repeating patterns Â· `dependencyNetwork`: ordering constraints between planned items |
-| `revision` | How the plan changed | `baseline`: frozen versions for comparison Â· `changeLog`: recorded plan changes and reasons |
+| `intention` | What is intended and how firmly | `planContent`: intended actions and targets · `commitment`: promises that bind agents to intentions · `assumption`: conditions the plan relies on |
+| `timing` | Binding intentions to time | `scheduleEntry`: dated and timed entries · `recurrence`: repeating patterns · `dependencyNetwork`: ordering constraints between planned items |
+| `revision` | How the plan changed | `baseline`: frozen versions for comparison · `changeLog`: recorded plan changes and reasons |
 
 ## Objects
 

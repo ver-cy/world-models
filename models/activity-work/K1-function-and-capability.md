@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `definition` | The shared vocabulary of what can be done | `functionCatalog`: named functions agents can fulfil Â· `capabilityTaxonomy`: hierarchy of abilities and skills Â· `proficiencyScale`: graded levels of mastery |
-| `attribution` | Attaching capabilities to concrete agents | `agentCapability`: which agent holds which capability at which level Â· `evidence`: assessments, credentials and track records supporting an attribution |
-| `capacity` | How much and when a capability can be exercised | `throughput`: quantity per period an agent can deliver Â· `availability`: time windows and conditions under which the capability is exercisable |
+| `definition` | The shared vocabulary of what can be done | `functionCatalog`: named functions agents can fulfil · `capabilityTaxonomy`: hierarchy of abilities and skills · `proficiencyScale`: graded levels of mastery |
+| `attribution` | Attaching capabilities to concrete agents | `agentCapability`: which agent holds which capability at which level · `evidence`: assessments, credentials and track records supporting an attribution |
+| `capacity` | How much and when a capability can be exercised | `throughput`: quantity per period an agent can deliver · `availability`: time windows and conditions under which the capability is exercisable |
 
 ## Objects
 

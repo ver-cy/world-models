@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `predicate` | What can be claimed | `catalogue`: registered predicate types with precise semantics Â· `grounding`: which owned data backs each predicate instance |
-| `proof` | Making a claim convincing | `generation`: schemes, parameters and issuance of proofs Â· `freshness`: validity windows, re-proof triggers and revocation state |
-| `verification` | Deciding to believe | `verifierPolicy`: which predicates, schemes and ages a verifier accepts Â· `outcomes`: verification results with replay protection |
+| `predicate` | What can be claimed | `catalogue`: registered predicate types with precise semantics · `grounding`: which owned data backs each predicate instance |
+| `proof` | Making a claim convincing | `generation`: schemes, parameters and issuance of proofs · `freshness`: validity windows, re-proof triggers and revocation state |
+| `verification` | Deciding to believe | `verifierPolicy`: which predicates, schemes and ages a verifier accepts · `outcomes`: verification results with replay protection |
 
 ## Objects
 

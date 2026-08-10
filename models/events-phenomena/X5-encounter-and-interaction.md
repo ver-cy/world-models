@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `interaction` | The encounter itself and its medium | `interactionCore`: kind, bounds and status of the encounter Â· `channel`: in person, telephone, written or online medium |
-| `parties` | Who took part and how the record is shared | `partyRoles`: each party's role and joining time Â· `mutuality`: countersigned records both sides acknowledge |
-| `outcome` | What came of it and what follows | `outcomes`: agreed or observed results Â· `followUp`: links to continuing interactions |
+| `interaction` | The encounter itself and its medium | `interactionCore`: kind, bounds and status of the encounter · `channel`: in person, telephone, written or online medium |
+| `parties` | Who took part and how the record is shared | `partyRoles`: each party's role and joining time · `mutuality`: countersigned records both sides acknowledge |
+| `outcome` | What came of it and what follows | `outcomes`: agreed or observed results · `followUp`: links to continuing interactions |
 
 ## Objects
 

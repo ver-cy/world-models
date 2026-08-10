@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `scheme` | What a naming system is and who runs it | `schemeDefinition`: schemes, syntax, checksums, scope Â· `authorityAndDelegation`: registrars, mandates, sub-delegation |
-| `assignment` | Binding names to things | `allocation`: assignment of identifiers to referents Â· `identifierLifecycle`: reservation, retirement, reassignment |
-| `resolution` | Getting from name to referent | `resolutionService`: resolvers, endpoints, coverage Â· `crosswalkAndMapping`: equivalences between schemes |
+| `scheme` | What a naming system is and who runs it | `schemeDefinition`: schemes, syntax, checksums, scope · `authorityAndDelegation`: registrars, mandates, sub-delegation |
+| `assignment` | Binding names to things | `allocation`: assignment of identifiers to referents · `identifierLifecycle`: reservation, retirement, reassignment |
+| `resolution` | Getting from name to referent | `resolutionService`: resolvers, endpoints, coverage · `crosswalkAndMapping`: equivalences between schemes |
 
 ## Objects
 

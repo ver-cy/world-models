@@ -49,9 +49,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `healthState` | What is currently and historically true of the person's health | `condition`: diagnosed and self-reported conditions with course and resolution Â· `observationAndResult`: measurements, test results and findings Â· `allergyAndRisk`: allergies, intolerances and standing risk factors |
-| `care` | What is done about the person's health | `encounter`: contacts with care providers, from visit to admission Â· `medicationAndTreatment`: prescriptions, administrations and procedures Â· `carePlan`: agreed goals and coordinated activities across providers |
-| `custody` | The person's control over the record | `recordCustody`: the record as the person's property, provider contributions as entries into it Â· `disclosureControls`: scoped grants, emergency access and donation of de-identified data |
+| `healthState` | What is currently and historically true of the person's health | `condition`: diagnosed and self-reported conditions with course and resolution · `observationAndResult`: measurements, test results and findings · `allergyAndRisk`: allergies, intolerances and standing risk factors |
+| `care` | What is done about the person's health | `encounter`: contacts with care providers, from visit to admission · `medicationAndTreatment`: prescriptions, administrations and procedures · `carePlan`: agreed goals and coordinated activities across providers |
+| `custody` | The person's control over the record | `recordCustody`: the record as the person's property, provider contributions as entries into it · `disclosureControls`: scoped grants, emergency access and donation of de-identified data |
 
 ## Objects
 

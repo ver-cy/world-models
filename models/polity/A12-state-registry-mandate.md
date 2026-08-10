@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `mandateSource` | The legal basis of each obligation to keep a register | `constitutionalBasis`: mandates rooted directly in the constitution Â· `statutoryMandate`: mandates created by enacted statute |
-| `registerCatalogue` | The registers themselves as defined obligations | `registerDefinition`: identity, subject matter, uniqueness rules Â· `dataScope`: what each register must and must not record |
-| `operation` | How a mandated register must be run | `registrarAssignment`: who operates each register Â· `publicFaith`: reliance and presumption rules for entries Â· `correction`: rectification and appeal procedure |
+| `mandateSource` | The legal basis of each obligation to keep a register | `constitutionalBasis`: mandates rooted directly in the constitution · `statutoryMandate`: mandates created by enacted statute |
+| `registerCatalogue` | The registers themselves as defined obligations | `registerDefinition`: identity, subject matter, uniqueness rules · `dataScope`: what each register must and must not record |
+| `operation` | How a mandated register must be run | `registrarAssignment`: who operates each register · `publicFaith`: reliance and presumption rules for entries · `correction`: rectification and appeal procedure |
 
 ## Objects
 

@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `entryBook` | The register as a book and the life of its entries | `registerDefinition`: what the register covers, its entry schema and numbering Â· `entryLifecycle`: draft, registered, amended, cancelled states of an entry |
-| `evidence` | Grounds on which entries stand | `sourceDocuments`: deeds, applications and instruments lodged as grounds Â· `verification`: how lodged evidence was examined and accepted |
-| `authority` | Who keeps the register and how decisions are contested | `registrarMandate`: the registrar role and the scope of its mandate Â· `decisionAndRecourse`: registration decisions, refusals, objections and appeals |
-| `effect` | What registration changes in the world | `legalEffect`: the presumption, priority or constitutive effect an entry carries Â· `publicity`: what is publicly inspectable and how third parties may rely on it |
+| `entryBook` | The register as a book and the life of its entries | `registerDefinition`: what the register covers, its entry schema and numbering · `entryLifecycle`: draft, registered, amended, cancelled states of an entry |
+| `evidence` | Grounds on which entries stand | `sourceDocuments`: deeds, applications and instruments lodged as grounds · `verification`: how lodged evidence was examined and accepted |
+| `authority` | Who keeps the register and how decisions are contested | `registrarMandate`: the registrar role and the scope of its mandate · `decisionAndRecourse`: registration decisions, refusals, objections and appeals |
+| `effect` | What registration changes in the world | `legalEffect`: the presumption, priority or constitutive effect an entry carries · `publicity`: what is publicly inspectable and how third parties may rely on it |
 
 ## Objects
 

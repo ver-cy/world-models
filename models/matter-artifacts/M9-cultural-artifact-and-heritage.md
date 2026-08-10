@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `object` | What the artifact is | `artifactIdentity`: titles, accession numbers, physical description, measurements Â· `materialsAndTechnique`: materials, techniques and marks of making Â· `significance`: assessed cultural and historical significance with basis and assessor |
-| `provenance` | How we know its history | `provenanceChain`: chronological record of making, ownership, transfer and discovery episodes Â· `attributionResearch`: maker, date and origin hypotheses with evidence and standing |
-| `care` | Keeping the artifact safe and whole | `conservationCondition`: condition surveys and treatments Â· `custodyAndLoan`: current custodian, collection membership, loans and movements |
+| `object` | What the artifact is | `artifactIdentity`: titles, accession numbers, physical description, measurements · `materialsAndTechnique`: materials, techniques and marks of making · `significance`: assessed cultural and historical significance with basis and assessor |
+| `provenance` | How we know its history | `provenanceChain`: chronological record of making, ownership, transfer and discovery episodes · `attributionResearch`: maker, date and origin hypotheses with evidence and standing |
+| `care` | Keeping the artifact safe and whole | `conservationCondition`: condition surveys and treatments · `custodyAndLoan`: current custodian, collection membership, loans and movements |
 | `protection` | Public protection standing | `heritageDesignation`: listings, protection categories, export restrictions and their basis |
 
 ## Objects

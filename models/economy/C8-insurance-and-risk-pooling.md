@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `cover` | What is promised and at what price | `policyTerms`: cover, exclusions and insured interests Â· `underwriting`: risk assessment and premium setting |
-| `pooling` | How exposure is spread | `participation`: pool membership, cessions and reinsurance Â· `reserves`: funding, reserves and solvency snapshots |
-| `claims` | How losses are made good | `assessment`: notification, documentation and loss evaluation Â· `settlement`: payout, denial and subrogation |
+| `cover` | What is promised and at what price | `policyTerms`: cover, exclusions and insured interests · `underwriting`: risk assessment and premium setting |
+| `pooling` | How exposure is spread | `participation`: pool membership, cessions and reinsurance · `reserves`: funding, reserves and solvency snapshots |
+| `claims` | How losses are made good | `assessment`: notification, documentation and loss evaluation · `settlement`: payout, denial and subrogation |
 
 ## Objects
 

@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `timeBase` | Physical and civil time | `timeScaleAndEpoch`: time scales, epochs, leap adjustments Â· `timezoneAndOffset`: zones, offsets, transition history |
-| `calendar` | Structuring days into systems | `calendarSystemAndEra`: calendar systems, eras, intercalation Â· `recurrenceAndScheduling`: recurrence rules and scheduling primitives |
-| `observance` | Days that matter to people | `publicHoliday`: jurisdictional public holidays Â· `culturalObservance`: religious and cultural observances, seasons |
+| `timeBase` | Physical and civil time | `timeScaleAndEpoch`: time scales, epochs, leap adjustments · `timezoneAndOffset`: zones, offsets, transition history |
+| `calendar` | Structuring days into systems | `calendarSystemAndEra`: calendar systems, eras, intercalation · `recurrenceAndScheduling`: recurrence rules and scheduling primitives |
+| `observance` | Days that matter to people | `publicHoliday`: jurisdictional public holidays · `culturalObservance`: religious and cultural observances, seasons |
 
 ## Objects
 

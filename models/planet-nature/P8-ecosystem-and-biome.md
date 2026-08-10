@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `typology` | What kinds of ecosystem exist and how they nest | `biome`: broad climatic and functional realms Â· `ecosystemType`: ecosystem classes with diagnostic composition, structure and setting |
-| `extent` | Which concrete units exist, where, and how they change | `ecosystemAsset`: mapped ecosystem units with area and boundary Â· `compositionAndStructure`: dominant taxa, layering, connectivity and fragmentation Â· `extentChange`: conversions between types and net area change between epochs |
-| `condition` | How the system is doing and what it can supply | `conditionIndicator`: indicator definitions with reference levels and units Â· `processAndFlux`: productivity, water and nutrient cycling, carbon exchange Â· `serviceCapacity`: physical capacity to supply outputs such as timber increment, pollination, water regulation Â· `pressureAndDisturbance`: pressures acting on the asset and recorded disturbance |
+| `typology` | What kinds of ecosystem exist and how they nest | `biome`: broad climatic and functional realms · `ecosystemType`: ecosystem classes with diagnostic composition, structure and setting |
+| `extent` | Which concrete units exist, where, and how they change | `ecosystemAsset`: mapped ecosystem units with area and boundary · `compositionAndStructure`: dominant taxa, layering, connectivity and fragmentation · `extentChange`: conversions between types and net area change between epochs |
+| `condition` | How the system is doing and what it can supply | `conditionIndicator`: indicator definitions with reference levels and units · `processAndFlux`: productivity, water and nutrient cycling, carbon exchange · `serviceCapacity`: physical capacity to supply outputs such as timber increment, pollination, water regulation · `pressureAndDisturbance`: pressures acting on the asset and recorded disturbance |
 
 ## Objects
 

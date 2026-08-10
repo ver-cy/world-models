@@ -52,10 +52,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `capture` | Getting events into the log correctly | `eventSchema`: typed event payloads and their subject references Â· `appendDiscipline`: who may append what, idempotency, no in-place change |
-| `ordering` | Making the timeline a timeline | `sequenceAssignment`: monotonic sequence numbers and checkpoints Â· `temporalSemantics`: occurrence time versus record time and their reconciliation |
-| `integrity` | Making tampering evident | `hashChaining`: each event bound to its predecessors by hash Â· `proofPublication`: signed tree heads and inclusion proofs offered to verifiers |
-| `consumption` | Reading history safely | `replayAndQuery`: cursors, subscriptions and subject timelines Â· `retention`: how long payloads persist and what compaction preserves |
+| `capture` | Getting events into the log correctly | `eventSchema`: typed event payloads and their subject references · `appendDiscipline`: who may append what, idempotency, no in-place change |
+| `ordering` | Making the timeline a timeline | `sequenceAssignment`: monotonic sequence numbers and checkpoints · `temporalSemantics`: occurrence time versus record time and their reconciliation |
+| `integrity` | Making tampering evident | `hashChaining`: each event bound to its predecessors by hash · `proofPublication`: signed tree heads and inclusion proofs offered to verifiers |
+| `consumption` | Reading history safely | `replayAndQuery`: cursors, subscriptions and subject timelines · `retention`: how long payloads persist and what compaction preserves |
 
 ## Objects
 

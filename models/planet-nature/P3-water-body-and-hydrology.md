@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `hydrography` | What water bodies exist, where they are and how they connect | `waterFeature`: rivers, lakes, seas, wetlands and springs as identified features Â· `catchment`: drainage areas and their nesting Â· `networkTopology`: upstream and downstream connectivity between features and nodes Â· `aquifer`: subsurface water bodies, their extent and confinement |
-| `regime` | How much water moves, when, and how variable it is | `flowAndLevel`: discharge, stage, tide and groundwater level observations Â· `waterBalance`: inflow, outflow, storage, recharge and abstraction returns over a period Â· `extremeStatistics`: flood and low-flow frequency, return periods and seasonality |
-| `quality` | What the water contains and what state that implies | `physicoChemical`: sampled determinands, concentrations and methods Â· `biologicalStatus`: indicator communities and classified ecological status |
+| `hydrography` | What water bodies exist, where they are and how they connect | `waterFeature`: rivers, lakes, seas, wetlands and springs as identified features · `catchment`: drainage areas and their nesting · `networkTopology`: upstream and downstream connectivity between features and nodes · `aquifer`: subsurface water bodies, their extent and confinement |
+| `regime` | How much water moves, when, and how variable it is | `flowAndLevel`: discharge, stage, tide and groundwater level observations · `waterBalance`: inflow, outflow, storage, recharge and abstraction returns over a period · `extremeStatistics`: flood and low-flow frequency, return periods and seasonality |
+| `quality` | What the water contains and what state that implies | `physicoChemical`: sampled determinands, concentrations and methods · `biologicalStatus`: indicator communities and classified ecological status |
 
 ## Objects
 

@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `identity` | Who this vehicle is to the world's registries | `vehicleIdentity`: mode-specific identifiers (VIN, hull id, tail number, rolling stock number) Â· `registration`: registry entries, plates and marks, jurisdiction, standing over time |
-| `design` | What the vehicle is built as | `modeAndClass`: mode, category and class assignments with approval references Â· `capacityAndPerformance`: seats, payload, tonnage, range and comparable rated figures |
-| `fitness` | Whether it may operate | `fitnessCertification`: roadworthiness, airworthiness, seaworthiness certificates and their validity Â· `inspectionHistory`: periodic and incident-driven inspections with outcomes and readings |
+| `identity` | Who this vehicle is to the world's registries | `vehicleIdentity`: mode-specific identifiers (VIN, hull id, tail number, rolling stock number) · `registration`: registry entries, plates and marks, jurisdiction, standing over time |
+| `design` | What the vehicle is built as | `modeAndClass`: mode, category and class assignments with approval references · `capacityAndPerformance`: seats, payload, tonnage, range and comparable rated figures |
+| `fitness` | Whether it may operate | `fitnessCertification`: roadworthiness, airworthiness, seaworthiness certificates and their validity · `inspectionHistory`: periodic and incident-driven inspections with outcomes and readings |
 
 ## Objects
 

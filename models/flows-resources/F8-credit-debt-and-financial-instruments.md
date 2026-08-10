@@ -54,10 +54,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `instrument` | What the claim is | `instrumentTypes`: loans, bonds, equity, guarantees and their defining terms Â· `identification`: external identifier schemes for instruments and parties |
-| `lifecycle` | How instruments live | `issuance`: creation of instruments and their initial allocation Â· `servicingAndActions`: interest, repayment, corporate actions and maturity |
-| `position` | Who holds and who owes | `holdings`: the asset side of positions per holder Â· `obligations`: the liability side per obligor with amounts and due dates |
-| `collateral` | What secures the claims | `pledges`: assets pledged against obligations Â· `valuation`: marks and margins applied to pledged assets |
+| `instrument` | What the claim is | `instrumentTypes`: loans, bonds, equity, guarantees and their defining terms · `identification`: external identifier schemes for instruments and parties |
+| `lifecycle` | How instruments live | `issuance`: creation of instruments and their initial allocation · `servicingAndActions`: interest, repayment, corporate actions and maturity |
+| `position` | Who holds and who owes | `holdings`: the asset side of positions per holder · `obligations`: the liability side per obligor with amounts and due dates |
+| `collateral` | What secures the claims | `pledges`: assets pledged against obligations · `valuation`: marks and margins applied to pledged assets |
 
 ## Objects
 

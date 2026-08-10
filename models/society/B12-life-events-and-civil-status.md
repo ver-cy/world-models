@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `lifeEvent` | The registrable occurrences themselves | `vitalEvent`: birth and death with place, time and attendants Â· `unionEvent`: marriage, partnership, divorce and dissolution Â· `nameAndIdentityChange`: registered changes of name and recorded sex or gender marker where the jurisdiction registers them |
-| `civilStatus` | The state a person is in as a result | `statusDerivation`: how current status follows from the event sequence Â· `statusHistory`: the full status timeline with effective dates |
-| `certification` | Proving events and status | `certificateReference`: links to issued certificates for each event Â· `crossJurisdictionRecognition`: recognition of foreign events and certificates |
+| `lifeEvent` | The registrable occurrences themselves | `vitalEvent`: birth and death with place, time and attendants · `unionEvent`: marriage, partnership, divorce and dissolution · `nameAndIdentityChange`: registered changes of name and recorded sex or gender marker where the jurisdiction registers them |
+| `civilStatus` | The state a person is in as a result | `statusDerivation`: how current status follows from the event sequence · `statusHistory`: the full status timeline with effective dates |
+| `certification` | Proving events and status | `certificateReference`: links to issued certificates for each event · `crossJurisdictionRecognition`: recognition of foreign events and certificates |
 
 ## Objects
 

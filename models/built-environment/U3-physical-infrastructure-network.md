@@ -49,9 +49,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `topology` | The physical shape and connectivity of the network | `segments`: linear stretches between nodes Â· `nodes`: junctions, switches, substations, terminals Â· `connectivity`: how segments and networks join Â· `linearReferencing`: positions along segments from a datum |
-| `capacity` | What the network can carry and how loaded it is | `ratedCapacity`: engineering statements of carrying capability Â· `utilization`: observed load against rating |
-| `assetCondition` | The physical state and upkeep of assets | `condition`: dated condition surveys and grades Â· `maintenance`: planned regimes and completed upkeep |
+| `topology` | The physical shape and connectivity of the network | `segments`: linear stretches between nodes · `nodes`: junctions, switches, substations, terminals · `connectivity`: how segments and networks join · `linearReferencing`: positions along segments from a datum |
+| `capacity` | What the network can carry and how loaded it is | `ratedCapacity`: engineering statements of carrying capability · `utilization`: observed load against rating |
+| `assetCondition` | The physical state and upkeep of assets | `condition`: dated condition surveys and grades · `maintenance`: planned regimes and completed upkeep |
 
 ## Objects
 

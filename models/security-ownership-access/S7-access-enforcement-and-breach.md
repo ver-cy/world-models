@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `violation` | Noticing and investigating | `signals`: anomalies from the audit log and reports from owners Â· `cases`: opened proceedings, gathered evidence, referral state |
-| `resolution` | Consequences and redress | `sanctions`: consequences imposed on the violator Â· `remedies`: what the harmed party receives, from notification to erasure and restitution |
-| `standing` | The violator's ongoing status | `complianceStatus`: a grantee's current standing across all cases Â· `reinstatement`: the path back to good standing after remedies are fulfilled |
+| `violation` | Noticing and investigating | `signals`: anomalies from the audit log and reports from owners · `cases`: opened proceedings, gathered evidence, referral state |
+| `resolution` | Consequences and redress | `sanctions`: consequences imposed on the violator · `remedies`: what the harmed party receives, from notification to erasure and restitution |
+| `standing` | The violator's ongoing status | `complianceStatus`: a grantee's current standing across all cases · `reinstatement`: the path back to good standing after remedies are fulfilled |
 
 ## Objects
 

@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `crossing` | Movement of persons across the border | `entryExit`: crossing records at border points Â· `travelDocument`: document presentation and verification |
-| `customs` | Movement of goods across the border | `goodsDeclaration`: declared goods and values Â· `dutyAssessment`: duties, taxes, reliefs Â· `inspection`: physical and documentary controls |
-| `migrationStatus` | Permission to enter and remain | `visa`: entry permissions and their conditions Â· `residency`: residence statuses and their lifecycle |
+| `crossing` | Movement of persons across the border | `entryExit`: crossing records at border points · `travelDocument`: document presentation and verification |
+| `customs` | Movement of goods across the border | `goodsDeclaration`: declared goods and values · `dutyAssessment`: duties, taxes, reliefs · `inspection`: physical and documentary controls |
+| `migrationStatus` | Permission to enter and remain | `visa`: entry permissions and their conditions · `residency`: residence statuses and their lifecycle |
 
 ## Objects
 

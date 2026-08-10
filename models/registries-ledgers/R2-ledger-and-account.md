@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `chart` | What accounts exist and whose they are | `accountDefinition`: account kinds, units of quantity, opening and closing rules Â· `partyLinkage`: how accounts bind to identified holders and operators |
-| `movement` | How quantity moves between accounts | `postingRules`: balance discipline, authorization, value dating Â· `postingLifecycle`: pending, appended, reversed states and contra-entries |
-| `balance` | Positions derived from movements | `balanceDerivation`: how balances are struck from the posting stream Â· `statement`: periodic account statements for holders |
-| `reconciliation` | Agreement between records | `matching`: pairing postings against external records or counter-ledgers Â· `discrepancy`: raising, investigating and closing mismatches |
+| `chart` | What accounts exist and whose they are | `accountDefinition`: account kinds, units of quantity, opening and closing rules · `partyLinkage`: how accounts bind to identified holders and operators |
+| `movement` | How quantity moves between accounts | `postingRules`: balance discipline, authorization, value dating · `postingLifecycle`: pending, appended, reversed states and contra-entries |
+| `balance` | Positions derived from movements | `balanceDerivation`: how balances are struck from the posting stream · `statement`: periodic account statements for holders |
+| `reconciliation` | Agreement between records | `matching`: pairing postings against external records or counter-ledgers · `discrepancy`: raising, investigating and closing mismatches |
 
 ## Objects
 

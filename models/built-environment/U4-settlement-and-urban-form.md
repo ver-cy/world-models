@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `anatomy` | The spatial decomposition of a settlement | `settlementExtent`: the observed built-up footprint Â· `districts`: administrative and analytic subdivisions Â· `blocks`: the smallest street-bounded urban units |
-| `morphology` | The measurable character of built form | `density`: population, coverage and floor area ratios Â· `builtFormMetrics`: grain, height mix, street pattern indicators |
-| `dynamics` | How settlements change and are classified | `growth`: successive extents and expansion records Â· `classification`: assignment to settlement classification schemes |
+| `anatomy` | The spatial decomposition of a settlement | `settlementExtent`: the observed built-up footprint · `districts`: administrative and analytic subdivisions · `blocks`: the smallest street-bounded urban units |
+| `morphology` | The measurable character of built form | `density`: population, coverage and floor area ratios · `builtFormMetrics`: grain, height mix, street pattern indicators |
+| `dynamics` | How settlements change and are classified | `growth`: successive extents and expansion records · `classification`: assignment to settlement classification schemes |
 
 ## Objects
 

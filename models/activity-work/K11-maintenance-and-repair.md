@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `assetCondition` | Knowing the state of the asset | `conditionAssessment`: inspections and measured condition Â· `failureMode`: defects, degradation patterns and their causes |
-| `program` | Deciding and ordering upkeep | `maintenancePlan`: strategies, intervals and triggers per asset class Â· `workOrder`: authorized, scheduled maintenance tasks |
-| `intervention` | Doing the work and its effect | `maintenanceAct`: performed inspection, service or repair Â· `conditionDelta`: before and after condition change Â· `sparePartUsage`: parts and materials consumed |
+| `assetCondition` | Knowing the state of the asset | `conditionAssessment`: inspections and measured condition · `failureMode`: defects, degradation patterns and their causes |
+| `program` | Deciding and ordering upkeep | `maintenancePlan`: strategies, intervals and triggers per asset class · `workOrder`: authorized, scheduled maintenance tasks |
+| `intervention` | Doing the work and its effect | `maintenanceAct`: performed inspection, service or repair · `conditionDelta`: before and after condition change · `sparePartUsage`: parts and materials consumed |
 
 ## Objects
 

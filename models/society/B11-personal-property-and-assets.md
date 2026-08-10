@@ -43,9 +43,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `holding` | What the person currently and historically holds | `holdingInventory`: the consolidated list of holdings across asset kinds and registers Â· `titleEvidence`: references to register entries and documents that evidence each holding |
-| `flow` | How holdings begin and end | `acquisition`: purchase, gift, inheritance and other modes of acquiring Â· `disposal`: sale, gift, loss and other modes of parting with a holding |
-| `burden` | What limits the person's holdings | `encumbrance`: mortgages, pledges, liens and restrictions burdening a holding Â· `obligationLinkage`: the obligations and counterparties behind each encumbrance |
+| `holding` | What the person currently and historically holds | `holdingInventory`: the consolidated list of holdings across asset kinds and registers · `titleEvidence`: references to register entries and documents that evidence each holding |
+| `flow` | How holdings begin and end | `acquisition`: purchase, gift, inheritance and other modes of acquiring · `disposal`: sale, gift, loss and other modes of parting with a holding |
+| `burden` | What limits the person's holdings | `encumbrance`: mortgages, pledges, liens and restrictions burdening a holding · `obligationLinkage`: the obligations and counterparties behind each encumbrance |
 
 ## Objects
 

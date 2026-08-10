@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `hardware` | The physical unit and its build | `deviceIdentity`: make, model, serial, hardware addresses and platform identifiers Â· `platformSpec`: compute resources, interfaces, power and environmental ratings |
-| `sensing` | What the device can observe and where readings go | `sensingCapability`: hosted sensors, observed properties, ranges and accuracy Â· `telemetryBinding`: references binding sensors to the streams that carry their output |
-| `operation` | The mutable state that defines behavior | `firmwareState`: installed firmware versions and update history Â· `configuration`: applied configuration profiles and settings Â· `connectivity`: network endpoints, reachability and online standing |
+| `hardware` | The physical unit and its build | `deviceIdentity`: make, model, serial, hardware addresses and platform identifiers · `platformSpec`: compute resources, interfaces, power and environmental ratings |
+| `sensing` | What the device can observe and where readings go | `sensingCapability`: hosted sensors, observed properties, ranges and accuracy · `telemetryBinding`: references binding sensors to the streams that carry their output |
+| `operation` | The mutable state that defines behavior | `firmwareState`: installed firmware versions and update history · `configuration`: applied configuration profiles and settings · `connectivity`: network endpoints, reachability and online standing |
 
 ## Objects
 

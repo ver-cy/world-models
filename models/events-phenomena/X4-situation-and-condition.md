@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `state` | What holds and how it is valued | `situationCore`: the named state of affairs and its kind Â· `status`: terms drawn from governed status schemes |
-| `temporality` | When the state holds and how states succeed one another | `interval`: the validity span, possibly open-ended Â· `succession`: transitions from one status to the next |
-| `attachment` | What the state is about and how far it reaches | `subjectBinding`: the link to the catalogue entity the state holds for Â· `scope`: the spatial or organizational reach of the state |
+| `state` | What holds and how it is valued | `situationCore`: the named state of affairs and its kind · `status`: terms drawn from governed status schemes |
+| `temporality` | When the state holds and how states succeed one another | `interval`: the validity span, possibly open-ended · `succession`: transitions from one status to the next |
+| `attachment` | What the state is about and how far it reaches | `subjectBinding`: the link to the catalogue entity the state holds for · `scope`: the spatial or organizational reach of the state |
 
 ## Objects
 

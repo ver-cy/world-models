@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `offense` | What happened and how it is classified | `classification`: offense types mapped to the reference classification Â· `incidentRecord`: recorded offenses and involved parties |
-| `investigation` | Establishing the facts | `conduct`: investigation lifecycle and measures Â· `evidenceCustody`: items, chain of custody, admissibility state Â· `chargeAndReferral`: charges and handover to adjudication |
-| `sanction` | Consequences after decision | `penalty`: imposed penalties and their terms Â· `corrections`: execution and supervision of penalties |
+| `offense` | What happened and how it is classified | `classification`: offense types mapped to the reference classification · `incidentRecord`: recorded offenses and involved parties |
+| `investigation` | Establishing the facts | `conduct`: investigation lifecycle and measures · `evidenceCustody`: items, chain of custody, admissibility state · `chargeAndReferral`: charges and handover to adjudication |
+| `sanction` | Consequences after decision | `penalty`: imposed penalties and their terms · `corrections`: execution and supervision of penalties |
 
 ## Objects
 

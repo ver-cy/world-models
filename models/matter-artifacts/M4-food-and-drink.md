@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `product` | What the food is and what it is made of | `foodIdentity`: product name, food category, form (fresh, processed, beverage), producer reference Â· `ingredientDeclaration`: ordered ingredient list with proportions and processing roles Â· `allergenDeclaration`: declared allergens, contains and may-contain statements |
-| `nutrition` | What consuming it delivers | `nutrientProfile`: nutrient values per reference basis with tagname coding Â· `servingAndPortion`: serving sizes, portions per pack, reference intake basis |
-| `safety` | Whether and how long it is safe | `shelfLifeAndStorage`: durability dates, storage instructions, after-opening rules Â· `safetyStatus`: alerts, withdrawals and recalls with scope and resolution |
+| `product` | What the food is and what it is made of | `foodIdentity`: product name, food category, form (fresh, processed, beverage), producer reference · `ingredientDeclaration`: ordered ingredient list with proportions and processing roles · `allergenDeclaration`: declared allergens, contains and may-contain statements |
+| `nutrition` | What consuming it delivers | `nutrientProfile`: nutrient values per reference basis with tagname coding · `servingAndPortion`: serving sizes, portions per pack, reference intake basis |
+| `safety` | Whether and how long it is safe | `shelfLifeAndStorage`: durability dates, storage instructions, after-opening rules · `safetyStatus`: alerts, withdrawals and recalls with scope and resolution |
 
 ## Objects
 

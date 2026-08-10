@@ -51,9 +51,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `identity` | Who the organization is | `naming`: legal, trading and former names over time Â· `identifiers`: registry numbers, LEI and other identifier schemes Â· `classification`: legal form and activity codes |
-| `registration` | The organization's standing in registers | `incorporation`: founding act and registry entries Â· `standing`: current status such as active, suspended or struck off Â· `succession`: mergers, splits, conversions and successor links |
-| `profile` | What the organization declares about itself | `purposeAndActivity`: stated purpose and lines of activity Â· `presence`: sites, addresses and contact channels |
+| `identity` | Who the organization is | `naming`: legal, trading and former names over time · `identifiers`: registry numbers, LEI and other identifier schemes · `classification`: legal form and activity codes |
+| `registration` | The organization's standing in registers | `incorporation`: founding act and registry entries · `standing`: current status such as active, suspended or struck off · `succession`: mergers, splits, conversions and successor links |
+| `profile` | What the organization declares about itself | `purposeAndActivity`: stated purpose and lines of activity · `presence`: sites, addresses and contact channels |
 
 ## Objects
 

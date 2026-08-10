@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `franchise` | Who may vote and who may stand | `voterRoll`: registration of eligible voters per roll Â· `eligibility`: qualification and disqualification rules |
-| `campaign` | The contest before voting day | `nomination`: candidacies and their validation Â· `campaignFinance`: declared funding and spending |
-| `ballot` | The act of voting | `ballotDesign`: questions, lists, candidate ordering Â· `castingChannel`: polling place, postal, assisted and other channels |
-| `count` | From ballots to mandates | `tally`: counting, recounts, invalid ballots Â· `resultAndMandate`: declared results and mandate grants |
+| `franchise` | Who may vote and who may stand | `voterRoll`: registration of eligible voters per roll · `eligibility`: qualification and disqualification rules |
+| `campaign` | The contest before voting day | `nomination`: candidacies and their validation · `campaignFinance`: declared funding and spending |
+| `ballot` | The act of voting | `ballotDesign`: questions, lists, candidate ordering · `castingChannel`: polling place, postal, assisted and other channels |
+| `count` | From ballots to mandates | `tally`: counting, recounts, invalid ballots · `resultAndMandate`: declared results and mandate grants |
 
 ## Objects
 

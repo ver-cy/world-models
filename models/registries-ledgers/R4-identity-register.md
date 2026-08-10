@@ -52,10 +52,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `anchor` | The identity record itself | `subjectKind`: person, organization and thing subjects and what an anchor asserts for each Â· `identityLifecycle`: registered, active, suspended, retired states and same-subject continuity |
-| `binding` | What attaches to an anchor | `identifierSchemes`: bindings of scheme-governed identifiers to the anchor Â· `keyAndCredentialBinding`: cryptographic keys and authenticators bound for proof of control |
-| `assurance` | How strongly identity is established | `proofingEvidence`: the evidence trail from identity proofing Â· `assuranceLevel`: graded confidence attached to the anchor and its bindings |
-| `resolution` | Answering lookups without oversharing | `resolutionService`: identifier to status-and-keys resolution Â· `privacyControls`: minimal-disclosure rules, verification without attribute release |
+| `anchor` | The identity record itself | `subjectKind`: person, organization and thing subjects and what an anchor asserts for each · `identityLifecycle`: registered, active, suspended, retired states and same-subject continuity |
+| `binding` | What attaches to an anchor | `identifierSchemes`: bindings of scheme-governed identifiers to the anchor · `keyAndCredentialBinding`: cryptographic keys and authenticators bound for proof of control |
+| `assurance` | How strongly identity is established | `proofingEvidence`: the evidence trail from identity proofing · `assuranceLevel`: graded confidence attached to the anchor and its bindings |
+| `resolution` | Answering lookups without oversharing | `resolutionService`: identifier to status-and-keys resolution · `privacyControls`: minimal-disclosure rules, verification without attribute release |
 
 ## Objects
 

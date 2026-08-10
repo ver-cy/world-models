@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `observation` | What was measured, by what, where and how well | `stationNetwork`: observing sites, instruments, exposure class and operating history Â· `surfaceAndUpperAir`: direct measurements at the surface and through the profile Â· `remoteSensing`: radar, satellite and lidar derived fields with their retrieval method Â· `atmosphericComposition`: aerosols, ozone and greenhouse gas concentrations |
-| `forecast` | What is expected and what is communicated about it | `numericalPrediction`: model runs, ensembles, initialization and lead times Â· `productAndBulletin`: published forecast products for areas, points and routes Â· `warningAndAdvisory`: severity-graded warnings with area, onset, certainty and expiry |
-| `climatology` | What the long record says | `homogenizedSeries`: quality-controlled long series with break adjustments and lineage Â· `normalsAndExtremes`: reference-period normals, records and exceedance statistics |
+| `observation` | What was measured, by what, where and how well | `stationNetwork`: observing sites, instruments, exposure class and operating history · `surfaceAndUpperAir`: direct measurements at the surface and through the profile · `remoteSensing`: radar, satellite and lidar derived fields with their retrieval method · `atmosphericComposition`: aerosols, ozone and greenhouse gas concentrations |
+| `forecast` | What is expected and what is communicated about it | `numericalPrediction`: model runs, ensembles, initialization and lead times · `productAndBulletin`: published forecast products for areas, points and routes · `warningAndAdvisory`: severity-graded warnings with area, onset, certainty and expiry |
+| `climatology` | What the long record says | `homogenizedSeries`: quality-controlled long series with break adjustments and lineage · `normalsAndExtremes`: reference-period normals, records and exceedance statistics |
 
 ## Objects
 

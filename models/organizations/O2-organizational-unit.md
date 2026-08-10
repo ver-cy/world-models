@@ -43,9 +43,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `structure` | What units exist and how they nest | `unitDirectory`: units, their kinds and names Â· `hierarchy`: containment and reporting lines, including dotted lines |
-| `mandate` | What each unit is for and who sits in it | `remit`: delegated mandate and scope of each unit Â· `establishedPositions`: posts, grades and the headcount plan |
-| `evolution` | How the structure changes | `reorganization`: acts that create, merge, move or disband units Â· `staffingSnapshot`: recorded headcounts over time |
+| `structure` | What units exist and how they nest | `unitDirectory`: units, their kinds and names · `hierarchy`: containment and reporting lines, including dotted lines |
+| `mandate` | What each unit is for and who sits in it | `remit`: delegated mandate and scope of each unit · `establishedPositions`: posts, grades and the headcount plan |
+| `evolution` | How the structure changes | `reorganization`: acts that create, merge, move or disband units · `staffingSnapshot`: recorded headcounts over time |
 
 ## Objects
 

@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `discipline` | What sports exist and how play is codified | `sportTaxonomy`: sports, disciplines and their family tree Â· `ruleset`: codified rules of play, formats, scoring systems |
-| `competition` | Organized competitive play and its outcomes | `league`: leagues, divisions, seasons and sanctioning Â· `fixture`: scheduled competitions, matches and staging Â· `result`: results, standings, records and rankings |
-| `participation` | Who plays, competitively or for leisure | `athleteAndTeam`: teams, rosters and competitor roles Â· `recreationalActivity`: casual, amateur and club-level activity |
+| `discipline` | What sports exist and how play is codified | `sportTaxonomy`: sports, disciplines and their family tree · `ruleset`: codified rules of play, formats, scoring systems |
+| `competition` | Organized competitive play and its outcomes | `league`: leagues, divisions, seasons and sanctioning · `fixture`: scheduled competitions, matches and staging · `result`: results, standings, records and rankings |
+| `participation` | Who plays, competitively or for leisure | `athleteAndTeam`: teams, rosters and competitor roles · `recreationalActivity`: casual, amateur and club-level activity |
 
 ## Objects
 

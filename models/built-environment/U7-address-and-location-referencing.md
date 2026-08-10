@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `addressing` | Civic and postal designation of locations | `civicAddresses`: structured addresses and their assignment lifecycle Â· `thoroughfares`: named streets, roads and waterways used in addressing Â· `postalDelivery`: postal formatting and delivery ordering |
-| `geocoding` | Coordinate and code representation of locations | `geocodes`: coordinate and code values with precision Â· `referenceSystems`: the systems geocodes are expressed in |
-| `placesOfInterest` | Named places used for orientation and discovery | `poiCatalogue`: points of interest with categories and lifecycle Â· `placeNames`: toponyms with language and status |
+| `addressing` | Civic and postal designation of locations | `civicAddresses`: structured addresses and their assignment lifecycle · `thoroughfares`: named streets, roads and waterways used in addressing · `postalDelivery`: postal formatting and delivery ordering |
+| `geocoding` | Coordinate and code representation of locations | `geocodes`: coordinate and code values with precision · `referenceSystems`: the systems geocodes are expressed in |
+| `placesOfInterest` | Named places used for orientation and discovery | `poiCatalogue`: points of interest with categories and lifecycle · `placeNames`: toponyms with language and status |
 
 ## Objects
 

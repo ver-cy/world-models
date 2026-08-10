@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `registry` | Who the model is and which state it is in | `modelIdentity`: models, kinds, stewards, namespaces Â· `versionAndFingerprint`: released versions and their semantic fingerprints |
-| `semantics` | What the model says and how it relates | `structureDescription`: described bundles, classes, terms Â· `mappingAndAlignment`: declared alignments between model versions |
-| `conformance` | Whether the model meets its claims | `conformanceProfile`: profiles, levels, claims Â· `validationEvidence`: validation runs and reports |
+| `registry` | Who the model is and which state it is in | `modelIdentity`: models, kinds, stewards, namespaces · `versionAndFingerprint`: released versions and their semantic fingerprints |
+| `semantics` | What the model says and how it relates | `structureDescription`: described bundles, classes, terms · `mappingAndAlignment`: declared alignments between model versions |
+| `conformance` | Whether the model meets its claims | `conformanceProfile`: profiles, levels, claims · `validationEvidence`: validation runs and reports |
 
 ## Objects
 

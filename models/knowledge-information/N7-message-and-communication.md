@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `exchange` | What was said and in which conversation | `messageAndContent`: messages, parts, attachments Â· `threadAndConversation`: threads, topics, participation |
-| `transport` | How it travelled | `channelAndAddress`: channels, providers, address schemes Â· `deliveryAndReceipt`: delivery status and evidence |
-| `custody` | Permission and preservation | `consentAndPreference`: consent to contact, preferences, revocation Â· `archivalRetention`: retention of communication records |
+| `exchange` | What was said and in which conversation | `messageAndContent`: messages, parts, attachments · `threadAndConversation`: threads, topics, participation |
+| `transport` | How it travelled | `channelAndAddress`: channels, providers, address schemes · `deliveryAndReceipt`: delivery status and evidence |
+| `custody` | Permission and preservation | `consentAndPreference`: consent to contact, preferences, revocation · `archivalRetention`: retention of communication records |
 
 ## Objects
 

@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `occurrence` | The act as a dated, placed happening | `actRecord`: actor, verb, object, time, place of the act Â· `context`: setting, instrument, motive or trigger Â· `outcome`: result, effect and completion status |
-| `participation` | Who and what took part | `actorRole`: roles agents played in the act Â· `objectInvolvement`: things acted upon, consumed or used |
-| `accountability` | Responsibility and lineage | `attribution`: responsibility and delegation for the act Â· `derivation`: which acts caused, informed or followed which |
+| `occurrence` | The act as a dated, placed happening | `actRecord`: actor, verb, object, time, place of the act · `context`: setting, instrument, motive or trigger · `outcome`: result, effect and completion status |
+| `participation` | Who and what took part | `actorRole`: roles agents played in the act · `objectInvolvement`: things acted upon, consumed or used |
+| `accountability` | Responsibility and lineage | `attribution`: responsibility and delegation for the act · `derivation`: which acts caused, informed or followed which |
 
 ## Objects
 

@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `product` | The offered software artifact | `identity`: products, producers, categories Â· `release`: versions, channels, publication |
-| `architecture` | What the software is made of | `systemComposition`: components and their assembly Â· `dependencyAndSbom`: declared dependencies and bill of materials |
-| `operation` | Where and how it runs | `deploymentAndEnvironment`: deployed systems, environments, instances Â· `lifecycleAndSupport`: support status, advisories, end of life |
+| `product` | The offered software artifact | `identity`: products, producers, categories · `release`: versions, channels, publication |
+| `architecture` | What the software is made of | `systemComposition`: components and their assembly · `dependencyAndSbom`: declared dependencies and bill of materials |
+| `operation` | Where and how it runs | `deploymentAndEnvironment`: deployed systems, environments, instances · `lifecycleAndSupport`: support status, advisories, end of life |
 
 ## Objects
 

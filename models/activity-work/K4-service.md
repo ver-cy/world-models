@@ -44,8 +44,8 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `offering` | The standing promise | `serviceDefinition`: what the service does and for whom Â· `offerTerms`: price, eligibility, channels and conditions Â· `qualityCommitment`: promised service levels |
-| `delivery` | The performed reality | `serviceRequest`: a concrete demand for the offering Â· `deliveryEpisode`: the fulfilment of a request Â· `qualityObservation`: measured performance against commitments |
+| `offering` | The standing promise | `serviceDefinition`: what the service does and for whom · `offerTerms`: price, eligibility, channels and conditions · `qualityCommitment`: promised service levels |
+| `delivery` | The performed reality | `serviceRequest`: a concrete demand for the offering · `deliveryEpisode`: the fulfilment of a request · `qualityObservation`: measured performance against commitments |
 
 ## Objects
 

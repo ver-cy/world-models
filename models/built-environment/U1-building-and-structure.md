@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `fabric` | What the artifact physically is | `massing`: footprint, height, storeys, envelope geometry Â· `elements`: load-bearing and enclosing components Â· `materials`: what the elements are made of |
-| `performance` | How the artifact holds up in use | `condition`: dated assessments of fabric state Â· `energy`: measured or modelled energy behavior |
-| `lifecycle` | The artifact's history from birth to removal | `provenance`: construction year, builder, acceptance basis Â· `alterations`: extensions, retrofits, conversions over time |
+| `fabric` | What the artifact physically is | `massing`: footprint, height, storeys, envelope geometry · `elements`: load-bearing and enclosing components · `materials`: what the elements are made of |
+| `performance` | How the artifact holds up in use | `condition`: dated assessments of fabric state · `energy`: measured or modelled energy behavior |
+| `lifecycle` | The artifact's history from birth to removal | `provenance`: construction year, builder, acceptance basis · `alterations`: extensions, retrofits, conversions over time |
 
 ## Objects
 

@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `inventory` | What emits and by how much per unit of activity | `emissionSources`: stationary, mobile and process sources and their ownership Â· `emissionFactors`: per-activity release coefficients and their provenance |
-| `measurement` | How quantities are established | `directMeasurement`: continuous and sampled monitoring series Â· `estimationMethods`: calculation methods combining factors with activity data |
-| `flux` | Where releases go | `releasePathways`: routes to air, water and soil Â· `ambientFlux`: dispersion, deposition and uptake by sinks |
-| `abatement` | Reducing and attesting | `abatementMeasures`: interventions that reduce source output Â· `verification`: independent attestation of quantified records |
+| `inventory` | What emits and by how much per unit of activity | `emissionSources`: stationary, mobile and process sources and their ownership · `emissionFactors`: per-activity release coefficients and their provenance |
+| `measurement` | How quantities are established | `directMeasurement`: continuous and sampled monitoring series · `estimationMethods`: calculation methods combining factors with activity data |
+| `flux` | Where releases go | `releasePathways`: routes to air, water and soil · `ambientFlux`: dispersion, deposition and uptake by sinks |
+| `abatement` | Reducing and attesting | `abatementMeasures`: interventions that reduce source output · `verification`: independent attestation of quantified records |
 
 ## Objects
 

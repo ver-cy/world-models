@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `identity` | Telling this item apart from every other item | `itemIdentity`: serial numbers, engraved marks, tags and other instance identifiers Â· `kindReference`: the link from the instance to its class (good, model, design, pattern) |
-| `state` | What shape the item is in and where it stands in life | `condition`: condition grades, wear, damage and repair state as assessed over time Â· `lifecycle`: statuses from produced through in use, stored, lost, recovered, disposed |
-| `whereabouts` | Where the item is and who holds it | `location`: current and historical location fixes resolved against places Â· `custody`: holding records and transfers between holders |
+| `identity` | Telling this item apart from every other item | `itemIdentity`: serial numbers, engraved marks, tags and other instance identifiers · `kindReference`: the link from the instance to its class (good, model, design, pattern) |
+| `state` | What shape the item is in and where it stands in life | `condition`: condition grades, wear, damage and repair state as assessed over time · `lifecycle`: statuses from produced through in use, stored, lost, recovered, disposed |
+| `whereabouts` | Where the item is and who holds it | `location`: current and historical location fixes resolved against places · `custody`: holding records and transfers between holders |
 
 ## Objects
 

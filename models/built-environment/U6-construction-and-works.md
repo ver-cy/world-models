@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `undertaking` | What is to be built and under what authorization | `workDefinition`: the scope, kind and planned timeline of the work Â· `permitting`: authorizations, their conditions and validity |
-| `execution` | How the work advances on site | `stages`: defined phases from groundworks to fit out Â· `progress`: dated statements of physical completion |
-| `completion` | How the work concludes and its quality is settled | `acceptance`: the act admitting the product into service Â· `defects`: nonconformities found in execution and warranty |
+| `undertaking` | What is to be built and under what authorization | `workDefinition`: the scope, kind and planned timeline of the work · `permitting`: authorizations, their conditions and validity |
+| `execution` | How the work advances on site | `stages`: defined phases from groundworks to fit out · `progress`: dated statements of physical completion |
+| `completion` | How the work concludes and its quality is settled | `acceptance`: the act admitting the product into service · `defects`: nonconformities found in execution and warranty |
 
 ## Objects
 

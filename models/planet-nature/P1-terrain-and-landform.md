@@ -50,9 +50,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `relief` | The continuous ground surface as measured, derived and changing over time | `elevationSurface`: gridded and point elevation coverages with their vertical reference Â· `morphometry`: quantities computed from the surface such as slope, aspect, curvature and roughness Â· `surfaceChange`: differences between surfaces of two epochs, uplift, subsidence, erosion and accumulation |
-| `landformInventory` | Discrete relief features as named, classified objects | `landformTaxonomy`: the classification scheme of landform kinds and their defining criteria Â· `namedFeature`: individual delineated landforms with names, extents and prominence |
-| `spatialFraming` | The geodetic and geometric frame in which relief is expressed | `referenceSystem`: horizontal and vertical coordinate reference systems, datums and epochs Â· `regionGeometry`: the footprints, tiles and region polygons that delimit described areas |
+| `relief` | The continuous ground surface as measured, derived and changing over time | `elevationSurface`: gridded and point elevation coverages with their vertical reference · `morphometry`: quantities computed from the surface such as slope, aspect, curvature and roughness · `surfaceChange`: differences between surfaces of two epochs, uplift, subsidence, erosion and accumulation |
+| `landformInventory` | Discrete relief features as named, classified objects | `landformTaxonomy`: the classification scheme of landform kinds and their defining criteria · `namedFeature`: individual delineated landforms with names, extents and prominence |
+| `spatialFraming` | The geodetic and geometric frame in which relief is expressed | `referenceSystem`: horizontal and vertical coordinate reference systems, datums and epochs · `regionGeometry`: the footprints, tiles and region polygons that delimit described areas |
 
 ## Objects
 

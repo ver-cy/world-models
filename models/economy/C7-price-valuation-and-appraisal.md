@@ -51,9 +51,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `observation` | Single recorded prices | `pricePoint`: observed transaction prices, quotes and listings Â· `sourcing`: sources, sampling frames and collection runs |
-| `appraisal` | Judged worth of a specific subject | `engagement`: the assignment, its subject and purpose Â· `opinionOfValue`: the concluded value, its basis and date |
-| `index` | Composite price series | `seriesDefinition`: index scope, basket and weighting Â· `release`: compiled values, revisions and rebasing |
+| `observation` | Single recorded prices | `pricePoint`: observed transaction prices, quotes and listings · `sourcing`: sources, sampling frames and collection runs |
+| `appraisal` | Judged worth of a specific subject | `engagement`: the assignment, its subject and purpose · `opinionOfValue`: the concluded value, its basis and date |
+| `index` | Composite price series | `seriesDefinition`: index scope, basket and weighting · `release`: compiled values, revisions and rebasing |
 | `methodology` | How numbers are produced | `methodSpecification`: approaches, models and standards conformance |
 
 ## Objects

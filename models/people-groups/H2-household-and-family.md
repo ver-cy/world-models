@@ -44,8 +44,8 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `composition` | Who forms the unit | `householdUnit`: the dwelling-sharing unit itself Â· `membership`: member ties, roles and tenure of belonging |
-| `kinship` | How members are related | `familyRelation`: registered and lived kinship ties Â· `dependencyAndCare`: dependants, caregiving and maintenance arrangements |
+| `composition` | Who forms the unit | `householdUnit`: the dwelling-sharing unit itself · `membership`: member ties, roles and tenure of belonging |
+| `kinship` | How members are related | `familyRelation`: registered and lived kinship ties · `dependencyAndCare`: dependants, caregiving and maintenance arrangements |
 | `residence` | Where the unit lives | `domicile`: declared and registered residence linkage to dwellings |
 
 ## Objects

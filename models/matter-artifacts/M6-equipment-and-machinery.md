@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `asset` | The machine as an identified, configured asset | `machineIdentity`: type, model, serial, commissioning data, site reference Â· `configuration`: installed options, attachments and settings that change what the unit is |
-| `operation` | What the machine can do and how much it has done | `capability`: rated capacities, performance envelopes, supported operations Â· `utilization`: operating hours, cycles, load history |
-| `assurance` | Keeping the machine fit and provably safe | `maintenanceState`: plans, due work, current serviceability standing Â· `inspectionAndCertification`: inspections, conformity certificates, their validity |
+| `asset` | The machine as an identified, configured asset | `machineIdentity`: type, model, serial, commissioning data, site reference · `configuration`: installed options, attachments and settings that change what the unit is |
+| `operation` | What the machine can do and how much it has done | `capability`: rated capacities, performance envelopes, supported operations · `utilization`: operating hours, cycles, load history |
+| `assurance` | Keeping the machine fit and provably safe | `maintenanceState`: plans, due work, current serviceability standing · `inspectionAndCertification`: inspections, conformity certificates, their validity |
 
 ## Objects
 

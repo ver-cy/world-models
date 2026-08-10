@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `codification` | The documented way itself | `methodDefinition`: approach, principles and rationale Â· `procedureText`: ordered step instructions Â· `standardReference`: external norms the method implements |
-| `applicability` | Where and by whom it may be used | `competenceRequirement`: capabilities a practitioner needs Â· `scopeOfUse`: domains, conditions and limits of applicability |
-| `lifecycle` | Currency and uptake | `versioning`: editions, supersession and errata Â· `adoption`: who adopted which edition and attested conformity |
+| `codification` | The documented way itself | `methodDefinition`: approach, principles and rationale · `procedureText`: ordered step instructions · `standardReference`: external norms the method implements |
+| `applicability` | Where and by whom it may be used | `competenceRequirement`: capabilities a practitioner needs · `scopeOfUse`: domains, conditions and limits of applicability |
+| `lifecycle` | Currency and uptake | `versioning`: editions, supersession and errata · `adoption`: who adopted which edition and attested conformity |
 
 ## Objects
 

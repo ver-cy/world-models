@@ -52,10 +52,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `network` | The fixed structure of transit | `stopsAndStations`: stop places, platforms and interchange facilities Â· `routesAndLines`: ordered sequences of stops served by lines |
-| `service` | What is planned and what runs | `timetables`: published scheduled services and calendars Â· `realtimeOperations`: actual vehicle journeys, positions, delays and cancellations |
-| `journey` | How people use the system | `tripsAndLegs`: passenger trips composed of legs on services Â· `ridershipAggregates`: anonymized usage volumes per route, stop and period |
-| `fare` | Pricing access | `fareProducts`: tickets, passes and their validity rules Â· `tariffZonesAndRules`: zonal structures and transfer rules |
+| `network` | The fixed structure of transit | `stopsAndStations`: stop places, platforms and interchange facilities · `routesAndLines`: ordered sequences of stops served by lines |
+| `service` | What is planned and what runs | `timetables`: published scheduled services and calendars · `realtimeOperations`: actual vehicle journeys, positions, delays and cancellations |
+| `journey` | How people use the system | `tripsAndLegs`: passenger trips composed of legs on services · `ridershipAggregates`: anonymized usage volumes per route, stop and period |
+| `fare` | Pricing access | `fareProducts`: tickets, passes and their validity rules · `tariffZonesAndRules`: zonal structures and transfer rules |
 
 ## Objects
 

@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `identity` | What a substance or material is and what it consists of | `substanceIdentity`: registry identifiers, structure references, form (pure substance, mixture, alloy, polymer) Â· `nomenclature`: systematic, trade and common names with language and context Â· `composition`: constituent entries with proportions, purity grades and impurity ranges |
-| `behavior` | Measured and declared behavior of the class | `physicalChemical`: state, density, melting and boiling points, solubility and comparable determinations Â· `stabilityReactivity`: stability conditions, incompatibilities, decomposition products |
-| `hazard` | Danger the class poses and how to handle it | `hazardClassification`: hazard classes, categories and signal words per classification scheme Â· `handlingPrecaution`: precautionary and first-aid statements, storage class requirements |
+| `identity` | What a substance or material is and what it consists of | `substanceIdentity`: registry identifiers, structure references, form (pure substance, mixture, alloy, polymer) · `nomenclature`: systematic, trade and common names with language and context · `composition`: constituent entries with proportions, purity grades and impurity ranges |
+| `behavior` | Measured and declared behavior of the class | `physicalChemical`: state, density, melting and boiling points, solubility and comparable determinations · `stabilityReactivity`: stability conditions, incompatibilities, decomposition products |
+| `hazard` | Danger the class poses and how to handle it | `hazardClassification`: hazard classes, categories and signal words per classification scheme · `handlingPrecaution`: precautionary and first-aid statements, storage class requirements |
 | `occurrence` | Where quantities of the class physically exist | `lotAndStock`: produced lots, quantities on hand, storage conditions and custody references |
 
 ## Objects

@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `stream` | What waste is and where it arises | `wasteClassification`: stream types and hazard classification by external code list Â· `arisingAndCollection`: generators, arisings and collection services |
-| `treatment` | Processing waste safely | `treatmentOperations`: sorting, shredding, composting, incineration and other operations Â· `hazardControl`: handling constraints and containment for hazardous streams |
-| `circularity` | Returning materials to use | `materialRecovery`: outputs recovered from treatment Â· `reuseAndRecycling`: loops that feed recovered materials back into production |
-| `disposal` | Ending the flow responsibly | `finalDisposal`: landfill and other terminal operations Â· `aftercareMonitoring`: long-term observation of closed disposal sites |
+| `stream` | What waste is and where it arises | `wasteClassification`: stream types and hazard classification by external code list · `arisingAndCollection`: generators, arisings and collection services |
+| `treatment` | Processing waste safely | `treatmentOperations`: sorting, shredding, composting, incineration and other operations · `hazardControl`: handling constraints and containment for hazardous streams |
+| `circularity` | Returning materials to use | `materialRecovery`: outputs recovered from treatment · `reuseAndRecycling`: loops that feed recovered materials back into production |
+| `disposal` | Ending the flow responsibly | `finalDisposal`: landfill and other terminal operations · `aftercareMonitoring`: long-term observation of closed disposal sites |
 
 ## Objects
 

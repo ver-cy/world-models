@@ -53,10 +53,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `taxonomy` | Which animal is meant, under which name | `taxonConcept`: taxon concepts, rank and circumscription Â· `nameAndSynonymy`: scientific and vernacular names with synonymy and authorship |
-| `populationAndMovement` | How many there are and where they go | `abundanceAndDemography`: population units, estimates, age and sex structure, survival and recruitment Â· `individualAndMarking`: identified individuals, rings, tags, collars and their attachment history Â· `migrationAndTracking`: telemetry fixes, routes, stopovers and seasonal movement patterns |
-| `habitatAndRange` | Where the taxon can and does live | `rangeDistribution`: distribution polygons, seasonal ranges and range change Â· `habitatRequirement`: habitat features a taxon depends on, including breeding and refuge sites |
-| `protection` | What status and controls apply | `conservationAssessment`: assessed status with criteria and scope Â· `listingAndTradeControl`: protective listings and trade control appendices attaching to a taxon |
+| `taxonomy` | Which animal is meant, under which name | `taxonConcept`: taxon concepts, rank and circumscription · `nameAndSynonymy`: scientific and vernacular names with synonymy and authorship |
+| `populationAndMovement` | How many there are and where they go | `abundanceAndDemography`: population units, estimates, age and sex structure, survival and recruitment · `individualAndMarking`: identified individuals, rings, tags, collars and their attachment history · `migrationAndTracking`: telemetry fixes, routes, stopovers and seasonal movement patterns |
+| `habitatAndRange` | Where the taxon can and does live | `rangeDistribution`: distribution polygons, seasonal ranges and range change · `habitatRequirement`: habitat features a taxon depends on, including breeding and refuge sites |
+| `protection` | What status and controls apply | `conservationAssessment`: assessed status with criteria and scope · `listingAndTradeControl`: protective listings and trade control appendices attaching to a taxon |
 
 ## Objects
 

@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `right` | What is protected and how far | `rightTypology`: patent, trademark, copyright, design, related rights Â· `scopeAndTerm`: claims, classes, territory, duration |
-| `register` | How rights come into being and are recorded | `applicationAndExamination`: filings, priority, examination Â· `registerRecord`: registrations, status, renewals |
-| `exploitation` | How rights are used and contested | `licensingAndAssignment`: licenses and transfers Â· `disputeAndOpposition`: oppositions, challenges, outcomes |
+| `right` | What is protected and how far | `rightTypology`: patent, trademark, copyright, design, related rights · `scopeAndTerm`: claims, classes, territory, duration |
+| `register` | How rights come into being and are recorded | `applicationAndExamination`: filings, priority, examination · `registerRecord`: registrations, status, renewals |
+| `exploitation` | How rights are used and contested | `licensingAndAssignment`: licenses and transfers · `disputeAndOpposition`: oppositions, challenges, outcomes |
 
 ## Objects
 

@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `definition` | The repeatable model of the work | `processModel`: steps, gateways and sequence flow Â· `roleAssignment`: which roles perform which steps Â· `stateModel`: allowed states and transitions of the governed thing |
-| `execution` | Running the model in the world | `caseInstance`: one running occurrence of a process Â· `stepPerformance`: executed steps recorded as acts Â· `exceptionHandling`: deviations, escalations and compensations |
-| `improvement` | Learning from executions | `measurement`: cycle times, throughput and conformance of instances Â· `revision`: versioning and change of definitions |
+| `definition` | The repeatable model of the work | `processModel`: steps, gateways and sequence flow · `roleAssignment`: which roles perform which steps · `stateModel`: allowed states and transitions of the governed thing |
+| `execution` | Running the model in the world | `caseInstance`: one running occurrence of a process · `stepPerformance`: executed steps recorded as acts · `exceptionHandling`: deviations, escalations and compensations |
+| `improvement` | Learning from executions | `measurement`: cycle times, throughput and conformance of instances · `revision`: versioning and change of definitions |
 
 ## Objects
 

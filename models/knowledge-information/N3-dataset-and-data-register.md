@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `catalogue` | Describing and serving the asset | `description`: titles, themes, holders, cadence Â· `distribution`: files, endpoints, formats, services |
-| `structure` | What shape the data has and where it came from | `schemaReference`: declared schemas resolved against the model registry Â· `lineage`: sources and derivation chains |
-| `quality` | How good the data is | `qualityMeasurement`: measured dimensions and scores Â· `fitnessForUse`: assessments and certifications for purposes |
+| `catalogue` | Describing and serving the asset | `description`: titles, themes, holders, cadence · `distribution`: files, endpoints, formats, services |
+| `structure` | What shape the data has and where it came from | `schemaReference`: declared schemas resolved against the model registry · `lineage`: sources and derivation chains |
+| `quality` | How good the data is | `qualityMeasurement`: measured dimensions and scores · `fitnessForUse`: assessments and certifications for purposes |
 
 ## Objects
 

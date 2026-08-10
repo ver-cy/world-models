@@ -51,9 +51,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `objectRegistry` | Which objects exist, what they are for and who answers for them | `objectIdentity`: designators, catalogue numbers, object class and physical characteristics Â· `missionAndPayload`: mission purpose, payloads, instruments and operational status Â· `registrationAndCustody`: registration entries, registering and operating party references and custody changes |
-| `orbit` | Where an object is, where it is going and what it might hit | `orbitalState`: elements, state vectors and ephemerides at epoch with covariance Â· `maneuverAndStationKeeping`: planned and executed burns, drift control and disposal manoeuvres Â· `conjunctionAndReentry`: close approach assessments, collision probability, reentry prediction and disposal outcome |
-| `environment` | What the surrounding space is doing | `spaceWeather`: solar activity, geomagnetic conditions, radiation and drag-relevant indices Â· `debrisEnvironment`: fragment populations, flux models by regime and altitude |
+| `objectRegistry` | Which objects exist, what they are for and who answers for them | `objectIdentity`: designators, catalogue numbers, object class and physical characteristics · `missionAndPayload`: mission purpose, payloads, instruments and operational status · `registrationAndCustody`: registration entries, registering and operating party references and custody changes |
+| `orbit` | Where an object is, where it is going and what it might hit | `orbitalState`: elements, state vectors and ephemerides at epoch with covariance · `maneuverAndStationKeeping`: planned and executed burns, drift control and disposal manoeuvres · `conjunctionAndReentry`: close approach assessments, collision probability, reentry prediction and disposal outcome |
+| `environment` | What the surrounding space is doing | `spaceWeather`: solar activity, geomagnetic conditions, radiation and drag-relevant indices · `debrisEnvironment`: fragment populations, flux models by regime and altitude |
 
 ## Objects
 

@@ -52,9 +52,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `product` | What the medicine is | `medicineIdentity`: product name, classification codes, holder reference Â· `activeComposition`: active substances with roles and reference strengths Â· `formAndStrength`: dose forms, strengths, routes of administration |
-| `authorization` | Under what permissions it circulates | `marketingAuthorization`: authorizations per jurisdiction with status and conditions Â· `controlledStatus`: scheduling of the product or its substances per jurisdiction |
-| `supply` | How physical product reaches use | `batchAndSerialization`: batches, expiry, pack serialization ranges Â· `supplyStatus`: availability and shortage standing per market |
+| `product` | What the medicine is | `medicineIdentity`: product name, classification codes, holder reference · `activeComposition`: active substances with roles and reference strengths · `formAndStrength`: dose forms, strengths, routes of administration |
+| `authorization` | Under what permissions it circulates | `marketingAuthorization`: authorizations per jurisdiction with status and conditions · `controlledStatus`: scheduling of the product or its substances per jurisdiction |
+| `supply` | How physical product reaches use | `batchAndSerialization`: batches, expiry, pack serialization ranges · `supplyStatus`: availability and shortage standing per market |
 | `vigilance` | What safety knowledge surrounds it | `safetySignal`: signals, their sources, assessment state and outcomes |
 
 ## Objects

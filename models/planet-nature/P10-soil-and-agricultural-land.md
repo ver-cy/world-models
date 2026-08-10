@@ -50,9 +50,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `soilResource` | What the soil is and where each kind occurs | `profileAndHorizon`: described profiles, their horizons and diagnostic features Â· `classificationUnit`: classification terms assigned to profiles and units Â· `soilMapping`: map units, polygons and digital soil property surfaces with their uncertainty |
-| `fertility` | What the soil can support | `chemistryAndNutrient`: organic carbon, nutrients, pH, salinity and cation exchange Â· `physicalProperty`: texture, bulk density, structure, depth and water holding capacity Â· `capabilityAndSuitability`: capability classes and crop-specific suitability ratings with their limiting factors |
-| `condition` | How land condition changes and why | `degradationProcess`: erosion, compaction, salinization, acidification and organic matter loss Â· `contaminationStatus`: contaminant findings, thresholds exceeded and remediation state Â· `managementPractice`: tillage, cover, amendment and irrigation practice as it bears on soil state |
+| `soilResource` | What the soil is and where each kind occurs | `profileAndHorizon`: described profiles, their horizons and diagnostic features · `classificationUnit`: classification terms assigned to profiles and units · `soilMapping`: map units, polygons and digital soil property surfaces with their uncertainty |
+| `fertility` | What the soil can support | `chemistryAndNutrient`: organic carbon, nutrients, pH, salinity and cation exchange · `physicalProperty`: texture, bulk density, structure, depth and water holding capacity · `capabilityAndSuitability`: capability classes and crop-specific suitability ratings with their limiting factors |
+| `condition` | How land condition changes and why | `degradationProcess`: erosion, compaction, salinization, acidification and organic matter loss · `contaminationStatus`: contaminant findings, thresholds exceeded and remediation state · `managementPractice`: tillage, cover, amendment and irrigation practice as it bears on soil state |
 
 ## Objects
 

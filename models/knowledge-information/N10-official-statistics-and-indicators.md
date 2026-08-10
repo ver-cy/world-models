@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `collection` | Gathering and grounding the numbers | `censusAndSurvey`: collection operations, instruments, coverage Â· `methodologyAndClassification`: methods, classifications, revision policy |
-| `series` | The measured world over time | `indicatorDefinition`: indicators, units, formulas Â· `observationAndVintage`: time series, observations, vintages |
-| `dissemination` | Publishing under discipline | `releaseCalendar`: scheduled releases and embargoes Â· `revisionAndCorrection`: revisions, corrections, discontinuations |
+| `collection` | Gathering and grounding the numbers | `censusAndSurvey`: collection operations, instruments, coverage · `methodologyAndClassification`: methods, classifications, revision policy |
+| `series` | The measured world over time | `indicatorDefinition`: indicators, units, formulas · `observationAndVintage`: time series, observations, vintages |
+| `dissemination` | Publishing under discipline | `releaseCalendar`: scheduled releases and embargoes · `revisionAndCorrection`: revisions, corrections, discontinuations |
 
 ## Objects
 

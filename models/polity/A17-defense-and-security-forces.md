@@ -43,9 +43,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `forceStructure` | Forces and units as organizations | `unit`: forces, units and their ordering Â· `command`: command and subordination lines |
-| `assetsAndReadiness` | What forces hold and how ready they are | `assetReference`: identifiers of held assets, never their operational detail Â· `readiness`: coarse readiness states per unit |
-| `mandate` | Why forces exist and may act | `legalMandate`: founding and empowering acts Â· `deploymentAuthorization`: decisions permitting deployment |
+| `forceStructure` | Forces and units as organizations | `unit`: forces, units and their ordering · `command`: command and subordination lines |
+| `assetsAndReadiness` | What forces hold and how ready they are | `assetReference`: identifiers of held assets, never their operational detail · `readiness`: coarse readiness states per unit |
+| `mandate` | Why forces exist and may act | `legalMandate`: founding and empowering acts · `deploymentAuthorization`: decisions permitting deployment |
 
 ## Objects
 

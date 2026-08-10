@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `definition` | What to make and how | `productSpecification`: the good and its required properties Â· `billOfMaterials`: components and quantities per unit Â· `routing`: ordered operations on work centres |
-| `execution` | Making it | `productionRun`: orders and runs executing a specification Â· `batchAndLot`: traceable produced units Â· `resourceUsage`: materials consumed, machine and labour time |
-| `performance` | What the making yielded | `yieldAndScrap`: good output versus loss Â· `qualityControl`: tests, results and dispositions |
+| `definition` | What to make and how | `productSpecification`: the good and its required properties · `billOfMaterials`: components and quantities per unit · `routing`: ordered operations on work centres |
+| `execution` | Making it | `productionRun`: orders and runs executing a specification · `batchAndLot`: traceable produced units · `resourceUsage`: materials consumed, machine and labour time |
+| `performance` | What the making yielded | `yieldAndScrap`: good output versus loss · `qualityControl`: tests, results and dispositions |
 
 ## Objects
 

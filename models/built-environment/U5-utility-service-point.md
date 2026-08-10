@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `connection` | Where and how a served place ties into a network | `servicePoints`: the delivery points where service is handed over Â· `physicalConnections`: the pipe or cable from network segment to service point |
-| `metering` | How delivery is measured | `meters`: measuring devices registered at service points Â· `readings`: dated values taken from meters |
-| `supply` | Whether and on what terms supply is active | `supplyStatus`: active, disconnected and suspended spells Â· `tariffReference`: pointers to externally governed tariff schemes |
+| `connection` | Where and how a served place ties into a network | `servicePoints`: the delivery points where service is handed over · `physicalConnections`: the pipe or cable from network segment to service point |
+| `metering` | How delivery is measured | `meters`: measuring devices registered at service points · `readings`: dated values taken from meters |
+| `supply` | Whether and on what terms supply is active | `supplyStatus`: active, disconnected and suspended spells · `tariffReference`: pointers to externally governed tariff schemes |
 
 ## Objects
 

@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `source` | Where supply originates | `waterSources`: aquifers, reservoirs, intakes and their yield Â· `agriculturalProduction`: farms, fisheries and harvest output entering the chain |
-| `processing` | Making supply safe | `treatmentProcesses`: water treatment and food processing stages applied to batches Â· `qualityTesting`: tests, sampling plans and results tied to batches |
-| `distribution` | Getting supply to people | `networksAndLogistics`: pipes, cold chains and delivery paths Â· `storageAndReserves`: buffers that secure continuity of supply Â· `retailEndpoints`: the points where supply reaches consumers |
+| `source` | Where supply originates | `waterSources`: aquifers, reservoirs, intakes and their yield · `agriculturalProduction`: farms, fisheries and harvest output entering the chain |
+| `processing` | Making supply safe | `treatmentProcesses`: water treatment and food processing stages applied to batches · `qualityTesting`: tests, sampling plans and results tied to batches |
+| `distribution` | Getting supply to people | `networksAndLogistics`: pipes, cold chains and delivery paths · `storageAndReserves`: buffers that secure continuity of supply · `retailEndpoints`: the points where supply reaches consumers |
 
 ## Objects
 

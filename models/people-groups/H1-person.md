@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `civilIdentity` | The registered identity and its evidence | `identityCore`: legal name, birth facts, civil status Â· `identityDocument`: documents evidencing identity Â· `identifierScheme`: identifiers assigned under named schemes |
-| `lifeCourse` | The person through time as a legal subject | `lifeEvent`: anchors to vital and registered life events Â· `capacityAndGuardianship`: legal capacity, guardianship, emancipation |
-| `personalSphere` | What the person declares and controls | `contactAndPresence`: contact points and declared residence pointer Â· `selfDeclaredAttributes`: preferences and self-declared facts under the person's sole control |
+| `civilIdentity` | The registered identity and its evidence | `identityCore`: legal name, birth facts, civil status · `identityDocument`: documents evidencing identity · `identifierScheme`: identifiers assigned under named schemes |
+| `lifeCourse` | The person through time as a legal subject | `lifeEvent`: anchors to vital and registered life events · `capacityAndGuardianship`: legal capacity, guardianship, emancipation |
+| `personalSphere` | What the person declares and controls | `contactAndPresence`: contact points and declared residence pointer · `selfDeclaredAttributes`: preferences and self-declared facts under the person's sole control |
 
 ## Objects
 

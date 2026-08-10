@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `provision` | Who provides care, where, and what | `providerRegistry`: provider organizations and practitioner roles Â· `facilityProfile`: locations, departments and equipment classes Â· `serviceOffering`: care services offered at facilities |
-| `capacity` | The system's ability to deliver | `capacityStatement`: beds, appointment slots and equipment availability Â· `staffing`: practitioner coverage and on-call arrangements |
-| `encounterFlow` | Care delivery as system events | `encounterRecord`: system-side facts of admissions, visits and discharges Â· `referralAndTransfer`: directed movement between services and facilities Â· `waitingAndQueue`: demand awaiting delivery |
+| `provision` | Who provides care, where, and what | `providerRegistry`: provider organizations and practitioner roles · `facilityProfile`: locations, departments and equipment classes · `serviceOffering`: care services offered at facilities |
+| `capacity` | The system's ability to deliver | `capacityStatement`: beds, appointment slots and equipment availability · `staffing`: practitioner coverage and on-call arrangements |
+| `encounterFlow` | Care delivery as system events | `encounterRecord`: system-side facts of admissions, visits and discharges · `referralAndTransfer`: directed movement between services and facilities · `waitingAndQueue`: demand awaiting delivery |
 
 ## Objects
 

@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `application` | What the applicant brings | `submission`: applications, applicants, requested scope Â· `evidence`: documents and facts offered against criteria |
-| `review` | How the authority decides | `assessment`: evaluation of criteria and consultations Â· `decision`: grant, refusal and stated reasons |
-| `grantLifecycle` | What happens after grant | `condition`: obligations attached to a grant Â· `monitoring`: compliance checks and renewals Â· `revocation`: suspension and withdrawal |
+| `application` | What the applicant brings | `submission`: applications, applicants, requested scope · `evidence`: documents and facts offered against criteria |
+| `review` | How the authority decides | `assessment`: evaluation of criteria and consultations · `decision`: grant, refusal and stated reasons |
+| `grantLifecycle` | What happens after grant | `condition`: obligations attached to a grant · `monitoring`: compliance checks and renewals · `revocation`: suspension and withdrawal |
 
 ## Objects
 

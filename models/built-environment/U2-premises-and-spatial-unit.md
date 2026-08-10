@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `delineation` | How units are bounded in space | `boundaries`: surveyed or declared unit boundaries in 2D or 3D Â· `commonParts`: shared spaces and facilities serving several units |
-| `use` | What units are for and who is in them | `useClass`: classification of permitted and actual use Â· `occupancy`: who occupies which unit over which period |
-| `aggregation` | How units combine into larger wholes | `grouping`: whole-floor lets, portfolio lots and other unit groups Â· `scheme`: condominium and co-ownership scheme membership |
+| `delineation` | How units are bounded in space | `boundaries`: surveyed or declared unit boundaries in 2D or 3D · `commonParts`: shared spaces and facilities serving several units |
+| `use` | What units are for and who is in them | `useClass`: classification of permitted and actual use · `occupancy`: who occupies which unit over which period |
+| `aggregation` | How units combine into larger wholes | `grouping`: whole-floor lets, portfolio lots and other unit groups · `scheme`: condominium and co-ownership scheme membership |
 
 ## Objects
 

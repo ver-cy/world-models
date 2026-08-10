@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `denomination` | Units of account and their relations | `currencyCatalogue`: currencies, minor units, issuing authorities Â· `exchangeRates`: quoted rates between currency pairs over time |
-| `instrument` | The forms money takes | `instrumentForms`: cash classes, deposit balances, electronic money and their transferability Â· `issuanceAndRedemption`: how instrument stock enters and leaves circulation |
-| `holding` | Who holds what | `accountsAndWallets`: containers in which instruments are held Â· `balances`: quantified holdings at points in time |
-| `payment` | How money moves | `initiation`: payment orders, purposes and parties' account references Â· `clearingAndSettlement`: rails, finality rules and settlement outcomes |
+| `denomination` | Units of account and their relations | `currencyCatalogue`: currencies, minor units, issuing authorities · `exchangeRates`: quoted rates between currency pairs over time |
+| `instrument` | The forms money takes | `instrumentForms`: cash classes, deposit balances, electronic money and their transferability · `issuanceAndRedemption`: how instrument stock enters and leaves circulation |
+| `holding` | Who holds what | `accountsAndWallets`: containers in which instruments are held · `balances`: quantified holdings at points in time |
+| `payment` | How money moves | `initiation`: payment orders, purposes and parties' account references · `clearingAndSettlement`: rails, finality rules and settlement outcomes |
 
 ## Objects
 

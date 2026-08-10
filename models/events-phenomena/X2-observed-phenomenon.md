@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `phenomenon` | What the recurring pattern is and where it holds | `definition`: the pattern, its kind and unit of measure Â· `extent`: the territory over which it manifests |
-| `observation` | How the pattern is measured | `series`: ordered observation sets under one method Â· `method`: protocols, instruments and uncertainty |
-| `analysis` | What the measurements say | `trend`: direction and rate estimates over periods Â· `anomaly`: departures from the established pattern |
+| `phenomenon` | What the recurring pattern is and where it holds | `definition`: the pattern, its kind and unit of measure · `extent`: the territory over which it manifests |
+| `observation` | How the pattern is measured | `series`: ordered observation sets under one method · `method`: protocols, instruments and uncertainty |
+| `analysis` | What the measurements say | `trend`: direction and rate estimates over periods · `anomaly`: departures from the established pattern |
 
 ## Objects
 

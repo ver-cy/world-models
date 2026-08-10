@@ -49,9 +49,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `geology` | What the ground is made of and what evidence says so | `stratigraphyAndLithology`: mapped units, their age, composition and contacts Â· `structuralFeature`: faults, folds, contacts and fracture systems that displace units Â· `boreholeAndSample`: drilled holes, logs, cores and their assays as the evidence base |
-| `resourceInventory` | What resources the ground holds and how confidently that is known | `occurrenceAndDeposit`: identified occurrences and delineated deposits with commodity and grade Â· `estimateAndClassification`: tonnage and grade estimates with confidence category, cut-off and method |
-| `subsurfaceUse` | How the subsurface is divided and physically used | `volumeAndTenement`: three-dimensional volumes referenced by extraction and exploration grants held elsewhere Â· `wellAndWorking`: wells, shafts, adits and their status Â· `storageAndVoid`: reservoirs, caverns and abandoned workings used for storage or left as voids |
+| `geology` | What the ground is made of and what evidence says so | `stratigraphyAndLithology`: mapped units, their age, composition and contacts · `structuralFeature`: faults, folds, contacts and fracture systems that displace units · `boreholeAndSample`: drilled holes, logs, cores and their assays as the evidence base |
+| `resourceInventory` | What resources the ground holds and how confidently that is known | `occurrenceAndDeposit`: identified occurrences and delineated deposits with commodity and grade · `estimateAndClassification`: tonnage and grade estimates with confidence category, cut-off and method |
+| `subsurfaceUse` | How the subsurface is divided and physically used | `volumeAndTenement`: three-dimensional volumes referenced by extraction and exploration grants held elsewhere · `wellAndWorking`: wells, shafts, adits and their status · `storageAndVoid`: reservoirs, caverns and abandoned workings used for storage or left as voids |
 
 ## Objects
 

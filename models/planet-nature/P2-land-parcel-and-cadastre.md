@@ -50,9 +50,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `tenure` | What interests exist over a parcel and who holds them | `rightsAndRestrictions`: recorded rights, restrictions and responsibilities with their basis and validity Â· `shareAndTenancy`: co-holding shares, undivided interests and tenancy arrangements Â· `encumbrance`: mortgages, easements, liens and caveats that burden an interest |
-| `survey` | How the parcel is described in space and how well that description holds | `boundaryGeometry`: boundary lines, corners and the resulting parcel polygons Â· `monumentAndMeasurement`: physical marks, observed bearings and distances behind the geometry Â· `accuracyAndLineage`: positional accuracy, survey plan references and the chain of amendments |
-| `planning` | How use of the parcel is classified and conditioned | `landUseClass`: the recorded present use category Â· `zoningDesignation`: designations assigned by a planning instrument Â· `developmentConstraint`: protective, hazard or servitude constraints that limit development |
+| `tenure` | What interests exist over a parcel and who holds them | `rightsAndRestrictions`: recorded rights, restrictions and responsibilities with their basis and validity · `shareAndTenancy`: co-holding shares, undivided interests and tenancy arrangements · `encumbrance`: mortgages, easements, liens and caveats that burden an interest |
+| `survey` | How the parcel is described in space and how well that description holds | `boundaryGeometry`: boundary lines, corners and the resulting parcel polygons · `monumentAndMeasurement`: physical marks, observed bearings and distances behind the geometry · `accuracyAndLineage`: positional accuracy, survey plan references and the chain of amendments |
+| `planning` | How use of the parcel is classified and conditioned | `landUseClass`: the recorded present use category · `zoningDesignation`: designations assigned by a planning instrument · `developmentConstraint`: protective, hazard or servitude constraints that limit development |
 
 ## Objects
 

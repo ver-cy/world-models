@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `identityAndContent` | What the document is and what it says | `identity`: stable document identity, class, issuer Â· `content`: body, formats, renditions Â· `versioning`: immutable version states and supersession |
-| `authenticity` | Why the record can be trusted | `signatureAndSeal`: signatures, seals, attestations on versions Â· `custodyAndProvenance`: chain of custody and origin |
-| `recordkeeping` | How long the record lives and under what marking | `retentionAndDisposition`: schedules, triggers, disposition Â· `classificationAndHolds`: confidentiality marking and legal holds |
+| `identityAndContent` | What the document is and what it says | `identity`: stable document identity, class, issuer · `content`: body, formats, renditions · `versioning`: immutable version states and supersession |
+| `authenticity` | Why the record can be trusted | `signatureAndSeal`: signatures, seals, attestations on versions · `custodyAndProvenance`: chain of custody and origin |
+| `recordkeeping` | How long the record lives and under what marking | `retentionAndDisposition`: schedules, triggers, disposition · `classificationAndHolds`: confidentiality marking and legal holds |
 
 ## Objects
 

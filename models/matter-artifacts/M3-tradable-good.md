@@ -53,9 +53,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `catalogue` | The good as a described market class | `goodDefinition`: name, description, brand reference, origin declaration, lifecycle status Â· `variantStructure`: variants (size, colour, flavour) and their relation to the base good |
-| `identification` | How the market names and codes the good | `identifierAssignment`: identifier scheme assignments at each packaging level Â· `classificationCoding`: classification codes from one or more schemes with validity periods |
-| `packaging` | How the good is quantified and packed | `packagingHierarchy`: each, inner pack, case, pallet levels and their containment Â· `unitOfMeasure`: net content, sale units and measure codes |
+| `catalogue` | The good as a described market class | `goodDefinition`: name, description, brand reference, origin declaration, lifecycle status · `variantStructure`: variants (size, colour, flavour) and their relation to the base good |
+| `identification` | How the market names and codes the good | `identifierAssignment`: identifier scheme assignments at each packaging level · `classificationCoding`: classification codes from one or more schemes with validity periods |
+| `packaging` | How the good is quantified and packed | `packagingHierarchy`: each, inner pack, case, pallet levels and their containment · `unitOfMeasure`: net content, sale units and measure codes |
 | `flow` | Bounded production populations of the good | `batchLot`: batches with production references, date ranges and recall status |
 
 ## Objects

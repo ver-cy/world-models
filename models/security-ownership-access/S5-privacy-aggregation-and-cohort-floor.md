@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `cohort` | Which population slices may be looked at | `definition`: dimensions, membership rules and validity windows of cohorts Â· `floors`: minimum cohort sizes per sensitivity of the underlying data |
-| `computation` | Turning members into numbers safely | `measures`: statistics computed over cohorts and their methods Â· `protection`: cell suppression, noise addition and privacy budget accounting |
-| `release` | What actually leaves | `review`: pre-release disclosure checks against floors and budgets Â· `publication`: released series with method and provenance attached |
+| `cohort` | Which population slices may be looked at | `definition`: dimensions, membership rules and validity windows of cohorts · `floors`: minimum cohort sizes per sensitivity of the underlying data |
+| `computation` | Turning members into numbers safely | `measures`: statistics computed over cohorts and their methods · `protection`: cell suppression, noise addition and privacy budget accounting |
+| `release` | What actually leaves | `review`: pre-release disclosure checks against floors and budgets · `publication`: released series with method and provenance attached |
 
 ## Objects
 

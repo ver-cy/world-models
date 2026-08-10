@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `constitution` | The instrument itself and how it changes | `foundingInstrument`: charter or statute text and its adoption Â· `amendment`: revisions, consolidation and the amendment procedure |
-| `powers` | What the instrument permits | `mandateGrant`: mandates and powers conferred on bodies and roles Â· `limits`: restrictions, reserved matters and required approvals |
-| `accountability` | To whom the organization answers | `oversight`: bodies to which duties are owed and their scope Â· `dischargeRecord`: reports filed, reviews held, duties met |
+| `constitution` | The instrument itself and how it changes | `foundingInstrument`: charter or statute text and its adoption · `amendment`: revisions, consolidation and the amendment procedure |
+| `powers` | What the instrument permits | `mandateGrant`: mandates and powers conferred on bodies and roles · `limits`: restrictions, reserved matters and required approvals |
+| `accountability` | To whom the organization answers | `oversight`: bodies to which duties are owed and their scope · `dischargeRecord`: reports filed, reviews held, duties met |
 
 ## Objects
 

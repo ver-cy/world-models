@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `agreement` | The instrument itself: parties, permission, duties | `grantTerms`: grantor, grantee, purpose and validity window Â· `scopeSelection`: which objects, in which disclosure shape Â· `obligations`: grantee duties such as no onward sharing and retention limits |
-| `consent` | The human act behind the instrument | `expression`: how and when consent was expressed, with evidence Â· `capacity`: who may consent, including guardians and delegates acting under S1 |
-| `lifecycle` | How a grant is born, changed and dies | `activation`: proposal, acceptance, entry into force Â· `termination`: revocation, expiry, supersession |
+| `agreement` | The instrument itself: parties, permission, duties | `grantTerms`: grantor, grantee, purpose and validity window · `scopeSelection`: which objects, in which disclosure shape · `obligations`: grantee duties such as no onward sharing and retention limits |
+| `consent` | The human act behind the instrument | `expression`: how and when consent was expressed, with evidence · `capacity`: who may consent, including guardians and delegates acting under S1 |
+| `lifecycle` | How a grant is born, changed and dies | `activation`: proposal, acceptance, entry into force · `termination`: revocation, expiry, supersession |
 
 ## Objects
 

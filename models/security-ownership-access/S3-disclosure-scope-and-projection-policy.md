@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `shape` | What an output looks like | `fieldSelection`: include and exclude lists over property paths Â· `transformation`: redaction, generalization, bucketing, pseudonymization per field Â· `aggregationGrain`: rollup definitions when only summaries leave |
-| `binding` | Where a shape applies | `policyAttachment`: attaching policies to contracts, object types and audiences Â· `sensitivityTiers`: classification of fields that constrains which shapes are lawful |
-| `lifecycle` | How policies are made and evolve | `authoringAndApproval`: drafting and owner sign-off Â· `versioning`: supersession and the version each disclosure was served under |
+| `shape` | What an output looks like | `fieldSelection`: include and exclude lists over property paths · `transformation`: redaction, generalization, bucketing, pseudonymization per field · `aggregationGrain`: rollup definitions when only summaries leave |
+| `binding` | Where a shape applies | `policyAttachment`: attaching policies to contracts, object types and audiences · `sensitivityTiers`: classification of fields that constrains which shapes are lawful |
+| `lifecycle` | How policies are made and evolve | `authoringAndApproval`: drafting and owner sign-off · `versioning`: supersession and the version each disclosure was served under |
 
 ## Objects
 

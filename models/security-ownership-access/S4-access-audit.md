@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `ledger` | The immutable record itself | `entries`: sealed records of access events in write order Â· `chainIntegrity`: hash links between entries and periodic published anchors |
-| `evidence` | What each entry proves | `attribution`: who read, as which resolved actor, under which contract Â· `servedShape`: which projection policy version and template fingerprint shaped the disclosure |
-| `oversight` | Who may see the log and for how long | `ownerVisibility`: the owner's standing right to their own timeline Â· `retentionAndSealing`: how long entries persist and when they are sealed from further detail queries |
+| `ledger` | The immutable record itself | `entries`: sealed records of access events in write order · `chainIntegrity`: hash links between entries and periodic published anchors |
+| `evidence` | What each entry proves | `attribution`: who read, as which resolved actor, under which contract · `servedShape`: which projection policy version and template fingerprint shaped the disclosure |
+| `oversight` | Who may see the log and for how long | `ownerVisibility`: the owner's standing right to their own timeline · `retentionAndSealing`: how long entries persist and when they are sealed from further detail queries |
 
 ## Objects
 

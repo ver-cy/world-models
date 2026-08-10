@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `reporting` | What must be reported and the act of filing | `reportDefinition`: templates, taxonomies, mandates Â· `submission`: filed reports, periods, receivers |
-| `content` | What the report says | `figures`: quantitative facts with units and contexts Â· `assertions`: declarative statements and disclosures |
-| `assurance` | Why the report can be relied on | `validationChecks`: rule checks against templates Â· `attestationAndOpinion`: responsibility statements and external opinions |
+| `reporting` | What must be reported and the act of filing | `reportDefinition`: templates, taxonomies, mandates · `submission`: filed reports, periods, receivers |
+| `content` | What the report says | `figures`: quantitative facts with units and contexts · `assertions`: declarative statements and disclosures |
+| `assurance` | Why the report can be relied on | `validationChecks`: rule checks against templates · `attestationAndOpinion`: responsibility statements and external opinions |
 
 ## Objects
 

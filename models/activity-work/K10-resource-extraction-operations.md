@@ -48,9 +48,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `authorization` | The right to extract and its limits | `grant`: the commons grant or licence under which extraction is allowed Â· `quota`: permitted volumes and periods Â· `conditions`: environmental and safety conditions attached |
-| `operation` | The extraction itself | `operationRecord`: mining, drilling, logging or fishing campaigns Â· `outputMeasurement`: extracted volumes, grades and catches |
-| `restoration` | What is owed afterwards | `restorationDuty`: obligations to restore or offset Â· `restorationProgress`: acts discharging the duties |
+| `authorization` | The right to extract and its limits | `grant`: the commons grant or licence under which extraction is allowed · `quota`: permitted volumes and periods · `conditions`: environmental and safety conditions attached |
+| `operation` | The extraction itself | `operationRecord`: mining, drilling, logging or fishing campaigns · `outputMeasurement`: extracted volumes, grades and catches |
+| `restoration` | What is owed afterwards | `restorationDuty`: obligations to restore or offset · `restorationProgress`: acts discharging the duties |
 
 ## Objects
 

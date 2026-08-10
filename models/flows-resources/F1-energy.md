@@ -51,10 +51,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `carrier` | What energy is and how it is measured | `carrierTypes`: catalogue of carriers (electricity, gas, heat, hydrogen, liquid fuels) and their physical qualities Â· `unitsAndConversion`: energy content units and conversion rules between carriers |
-| `production` | Where energy enters or changes form | `generationAssets`: generating units, their technology and capacity Â· `transformation`: conversion processes between carriers (refining, gas to power, power to heat) |
-| `consumption` | Where energy is drawn | `demandAndLoad`: consumption points, sectors and load profiles Â· `metering`: quantified readings at delivery points |
-| `balance` | Reconciling supply and demand | `gridBalance`: balance areas and settlement periods Â· `storageAndReserves`: buffering of carriers over time Â· `interchange`: scheduled and measured flows between areas |
+| `carrier` | What energy is and how it is measured | `carrierTypes`: catalogue of carriers (electricity, gas, heat, hydrogen, liquid fuels) and their physical qualities · `unitsAndConversion`: energy content units and conversion rules between carriers |
+| `production` | Where energy enters or changes form | `generationAssets`: generating units, their technology and capacity · `transformation`: conversion processes between carriers (refining, gas to power, power to heat) |
+| `consumption` | Where energy is drawn | `demandAndLoad`: consumption points, sectors and load profiles · `metering`: quantified readings at delivery points |
+| `balance` | Reconciling supply and demand | `gridBalance`: balance areas and settlement periods · `storageAndReserves`: buffering of carriers over time · `interchange`: scheduled and measured flows between areas |
 
 ## Objects
 

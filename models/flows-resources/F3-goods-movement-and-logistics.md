@@ -52,10 +52,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `consignment` | What moves | `shipmentAndCargo`: shipments and the cargo items they carry Â· `packagingHierarchy`: pallets, containers and package units nesting cargo |
-| `routing` | How it moves | `routePlan`: the intended origin-to-destination plan Â· `transportLegs`: ordered legs, modes and the means performing them |
-| `custody` | Who has it | `custodyChain`: handovers of physical responsibility along the route Â· `borderAndClearance`: authorizations required to cross regulatory boundaries |
-| `visibility` | What happened | `trackingEvents`: observed milestones tied to shipments and legs Â· `exceptionsAndDelays`: deviations from plan and their resolution |
+| `consignment` | What moves | `shipmentAndCargo`: shipments and the cargo items they carry · `packagingHierarchy`: pallets, containers and package units nesting cargo |
+| `routing` | How it moves | `routePlan`: the intended origin-to-destination plan · `transportLegs`: ordered legs, modes and the means performing them |
+| `custody` | Who has it | `custodyChain`: handovers of physical responsibility along the route · `borderAndClearance`: authorizations required to cross regulatory boundaries |
+| `visibility` | What happened | `trackingEvents`: observed milestones tied to shipments and legs · `exceptionsAndDelays`: deviations from plan and their resolution |
 
 ## Objects
 

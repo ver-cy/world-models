@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `authority` | Who is authoritative for which facts | `authorityScope`: declared subject domains per register, no overlaps unresolved Â· `precedence`: which register wins when declarations collide, and how conflicts are settled |
-| `linkage` | Pointing instead of copying | `referenceRules`: what a cross-register reference must carry to stay resolvable Â· `resolutionRouting`: where a consumer resolves a given reference, including fallbacks |
-| `mirroring` | Derived copies under discipline | `mirrorProvisioning`: when a mirror may exist, its scope and its marking as non-authoritative Â· `freshnessAndDrift`: staleness budgets, drift detection and reconciliation duties |
+| `authority` | Who is authoritative for which facts | `authorityScope`: declared subject domains per register, no overlaps unresolved · `precedence`: which register wins when declarations collide, and how conflicts are settled |
+| `linkage` | Pointing instead of copying | `referenceRules`: what a cross-register reference must carry to stay resolvable · `resolutionRouting`: where a consumer resolves a given reference, including fallbacks |
+| `mirroring` | Derived copies under discipline | `mirrorProvisioning`: when a mirror may exist, its scope and its marking as non-authoritative · `freshnessAndDrift`: staleness budgets, drift detection and reconciliation duties |
 
 ## Objects
 

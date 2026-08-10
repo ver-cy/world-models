@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `provision` | Who teaches and what is offered | `institutionProfile`: schools, universities and providers in their educational role Â· `programCatalogue`: programs, curricula and courses |
-| `learning` | The learner's path through provision | `enrollment`: admission, enrollment and progression Â· `assessment`: examinations, grading and learning outcomes achieved |
-| `qualification` | What learning certifies | `qualificationFramework`: qualification types, levels and frameworks Â· `credentialRegister`: issued credentials and their verification state |
+| `provision` | Who teaches and what is offered | `institutionProfile`: schools, universities and providers in their educational role · `programCatalogue`: programs, curricula and courses |
+| `learning` | The learner's path through provision | `enrollment`: admission, enrollment and progression · `assessment`: examinations, grading and learning outcomes achieved |
+| `qualification` | What learning certifies | `qualificationFramework`: qualification types, levels and frameworks · `credentialRegister`: issued credentials and their verification state |
 
 ## Objects
 

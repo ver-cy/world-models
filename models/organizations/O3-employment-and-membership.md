@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `relation` | The fact of the person-organization bond | `employmentRelation`: paid work relations of any kind Â· `membershipRelation`: belonging to associations, communities and clubs |
-| `terms` | What was agreed within the bond | `roleAssignment`: roles held, with occupation references Â· `conditions`: term dates, capacity, place of work, notice |
-| `lifecycle` | How the bond begins, pauses and ends | `commencement`: start and probation Â· `interruption`: leave and suspension Â· `separation`: end of relation and its cause |
+| `relation` | The fact of the person-organization bond | `employmentRelation`: paid work relations of any kind · `membershipRelation`: belonging to associations, communities and clubs |
+| `terms` | What was agreed within the bond | `roleAssignment`: roles held, with occupation references · `conditions`: term dates, capacity, place of work, notice |
+| `lifecycle` | How the bond begins, pauses and ends | `commencement`: start and probation · `interruption`: leave and suspension · `separation`: end of relation and its cause |
 
 ## Objects
 

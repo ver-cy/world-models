@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `program` | What support exists and who is meant to get it | `benefitDefinition`: benefit kinds, amounts or service scopes, funding basis Â· `eligibilityRules`: the declared conditions of entitlement per program |
-| `entitlement` | Deciding who actually qualifies | `assessment`: examining an application against the rules with stated evidence Â· `award`: the granted entitlement, its amount or scope, period and conditions |
-| `delivery` | Getting support to the person | `paymentDelivery`: monetary deliveries executed over payment accounts Â· `serviceDelivery`: care and in-kind services delivered as episodes |
-| `review` | Keeping awards correct and contestable | `circumstanceChange`: reported and detected changes affecting entitlement Â· `appealAndRedress`: challenges to decisions and their outcomes |
+| `program` | What support exists and who is meant to get it | `benefitDefinition`: benefit kinds, amounts or service scopes, funding basis · `eligibilityRules`: the declared conditions of entitlement per program |
+| `entitlement` | Deciding who actually qualifies | `assessment`: examining an application against the rules with stated evidence · `award`: the granted entitlement, its amount or scope, period and conditions |
+| `delivery` | Getting support to the person | `paymentDelivery`: monetary deliveries executed over payment accounts · `serviceDelivery`: care and in-kind services delivered as episodes |
+| `review` | Keeping awards correct and contestable | `circumstanceChange`: reported and detected changes affecting entitlement · `appealAndRedress`: challenges to decisions and their outcomes |
 
 ## Objects
 

@@ -50,10 +50,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `claim` | What is being asserted and about whom | `claimSchema`: typed claim content per attestation kind Â· `subjectBinding`: how the claim is cryptographically and legally tied to its subject |
-| `issuance` | Who may issue and how | `issuerAuthority`: the issuer's mandate for each attestation class Â· `issuanceProcess`: application, examination, decision and delivery of the holder copy |
-| `validity` | Whether the claim currently holds | `validityPeriod`: not-before and not-after windows, renewal Â· `revocationAndSuspension`: early termination, suspension and status publication |
-| `presentation` | Using and checking the claim | `holderPresentation`: how the holder presents, fully or selectively Â· `verification`: verifier checks of authenticity, binding and current status |
+| `claim` | What is being asserted and about whom | `claimSchema`: typed claim content per attestation kind · `subjectBinding`: how the claim is cryptographically and legally tied to its subject |
+| `issuance` | Who may issue and how | `issuerAuthority`: the issuer's mandate for each attestation class · `issuanceProcess`: application, examination, decision and delivery of the holder copy |
+| `validity` | Whether the claim currently holds | `validityPeriod`: not-before and not-after windows, renewal · `revocationAndSuspension`: early termination, suspension and status publication |
+| `presentation` | Using and checking the claim | `holderPresentation`: how the holder presents, fully or selectively · `verification`: verifier checks of authenticity, binding and current status |
 
 ## Objects
 

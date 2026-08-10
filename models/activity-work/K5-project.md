@@ -47,9 +47,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `intent` | Why the undertaking exists and where it ends | `goal`: objectives and success criteria Â· `scope`: deliverables, boundaries and exclusions |
-| `structure` | How the undertaking is organized and fed | `breakdown`: phases, milestones and work packages Â· `resourceAllocation`: people, budget and assets assigned to work |
-| `progress` | How the undertaking is actually going | `milestoneTracking`: reached and slipped milestones Â· `riskAndIssue`: threats, problems and their handling |
+| `intent` | Why the undertaking exists and where it ends | `goal`: objectives and success criteria · `scope`: deliverables, boundaries and exclusions |
+| `structure` | How the undertaking is organized and fed | `breakdown`: phases, milestones and work packages · `resourceAllocation`: people, budget and assets assigned to work |
+| `progress` | How the undertaking is actually going | `milestoneTracking`: reached and slipped milestones · `riskAndIssue`: threats, problems and their handling |
 
 ## Objects
 

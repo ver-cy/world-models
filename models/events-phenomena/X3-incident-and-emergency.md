@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `incident` | The harm event and how bad it is | `incidentCore`: kind, report and status of the incident Â· `severity`: graded judgements on declared scales Â· `impact`: harm attributed to people, assets and services |
-| `response` | Warning and organized reaction | `alerting`: warning messages, levels and audiences Â· `operations`: response efforts and responder deployments |
-| `closure` | How the incident ends and what is learned | `resolution`: the closure statement and residual risk Â· `review`: structured after-action findings |
+| `incident` | The harm event and how bad it is | `incidentCore`: kind, report and status of the incident · `severity`: graded judgements on declared scales · `impact`: harm attributed to people, assets and services |
+| `response` | Warning and organized reaction | `alerting`: warning messages, levels and audiences · `operations`: response efforts and responder deployments |
+| `closure` | How the incident ends and what is learned | `resolution`: the closure statement and residual risk · `review`: structured after-action findings |
 
 ## Objects
 

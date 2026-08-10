@@ -53,10 +53,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `taxonomy` | Which plant is meant, under which name | `taxonConcept`: taxon concepts, rank and circumscription with the reference that fixes them Â· `nameAndSynonymy`: scientific and vernacular names, synonymy and name changes over time |
-| `population` | Where plants are, how many, and in what phase | `occurrenceRecord`: individual observations and collections with place, time and evidence Â· `abundanceAndDemography`: population units, counts, cover estimates and size structure Â· `phenology`: timing of leafing, flowering, fruiting and senescence |
-| `cover` | What the vegetation looks like as continuous cover | `vegetationType`: the classification of vegetation communities and their diagnostic species Â· `standAndCanopyStructure`: mapped stands with cover fraction, height class, layering and biomass |
-| `protection` | What status a taxon or stand carries | `conservationAssessment`: assessed status, criteria applied and assessment date Â· `protectedListing`: listings that attach protection or trade control to a taxon |
+| `taxonomy` | Which plant is meant, under which name | `taxonConcept`: taxon concepts, rank and circumscription with the reference that fixes them · `nameAndSynonymy`: scientific and vernacular names, synonymy and name changes over time |
+| `population` | Where plants are, how many, and in what phase | `occurrenceRecord`: individual observations and collections with place, time and evidence · `abundanceAndDemography`: population units, counts, cover estimates and size structure · `phenology`: timing of leafing, flowering, fruiting and senescence |
+| `cover` | What the vegetation looks like as continuous cover | `vegetationType`: the classification of vegetation communities and their diagnostic species · `standAndCanopyStructure`: mapped stands with cover fraction, height class, layering and biomass |
+| `protection` | What status a taxon or stand carries | `conservationAssessment`: assessed status, criteria applied and assessment date · `protectedListing`: listings that attach protection or trade control to a taxon |
 
 ## Objects
 

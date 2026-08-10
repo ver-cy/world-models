@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `collective` | Named groups and their belonging | `groupIdentity`: groups and communities as named collectives Â· `membership`: member ties, roles, joining and leaving |
-| `cohort` | Rule-based statistical collectives | `cohortDefinition`: criteria, time frames and population base of a cohort Â· `cohortMaterialization`: computed snapshots, counts and distributions |
-| `addressability` | The collective as one addressable party | `representation`: stewards, spokespersons and their mandates Â· `collectiveChannel`: how the collective as a whole is reached |
+| `collective` | Named groups and their belonging | `groupIdentity`: groups and communities as named collectives · `membership`: member ties, roles, joining and leaving |
+| `cohort` | Rule-based statistical collectives | `cohortDefinition`: criteria, time frames and population base of a cohort · `cohortMaterialization`: computed snapshots, counts and distributions |
+| `addressability` | The collective as one addressable party | `representation`: stewards, spokespersons and their mandates · `collectiveChannel`: how the collective as a whole is reached |
 
 ## Objects
 

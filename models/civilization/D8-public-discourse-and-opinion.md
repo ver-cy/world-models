@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `topic` | What is being discussed and where | `discourseTopic`: topics, framings and agendas over time Â· `arena`: media arenas and channels where discourse circulates |
-| `measurement` | How opinion is measured and published | `pollDesign`: instruments, sampling frames, declared methodology Â· `fieldwork`: collection waves and response aggregates Â· `opinionMeasure`: published measures and their time series |
-| `campaign` | Organized attempts to shape discourse | `campaignProfile`: information campaigns, sponsors and declared aims Â· `messageTrace`: message variants and their distribution traces |
+| `topic` | What is being discussed and where | `discourseTopic`: topics, framings and agendas over time · `arena`: media arenas and channels where discourse circulates |
+| `measurement` | How opinion is measured and published | `pollDesign`: instruments, sampling frames, declared methodology · `fieldwork`: collection waves and response aggregates · `opinionMeasure`: published measures and their time series |
+| `campaign` | Organized attempts to shape discourse | `campaignProfile`: information campaigns, sponsors and declared aims · `messageTrace`: message variants and their distribution traces |
 
 ## Objects
 

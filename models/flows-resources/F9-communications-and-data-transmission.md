@@ -55,10 +55,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `spectrum` | The shared radio resource | `bandPlan`: frequency bands and their designated uses Â· `grantsAndLicences`: allocations of bands to operators with conditions and terms |
-| `addressing` | Making endpoints reachable | `numberingPlans`: telephone numbering resources and their assignment Â· `ipAddressBlocks`: internet address space allocations Â· `routingRegistry`: autonomous systems and route announcements |
-| `service` | What operators provide | `serviceOfferings`: network services and their characteristics Â· `coverageAndCapacity`: where services reach and at what capacity |
-| `traffic` | What actually flows | `interconnection`: links and exchange points between networks Â· `trafficAggregates`: measured volumes per link, service and period |
+| `spectrum` | The shared radio resource | `bandPlan`: frequency bands and their designated uses · `grantsAndLicences`: allocations of bands to operators with conditions and terms |
+| `addressing` | Making endpoints reachable | `numberingPlans`: telephone numbering resources and their assignment · `ipAddressBlocks`: internet address space allocations · `routingRegistry`: autonomous systems and route announcements |
+| `service` | What operators provide | `serviceOfferings`: network services and their characteristics · `coverageAndCapacity`: where services reach and at what capacity |
+| `traffic` | What actually flows | `interconnection`: links and exchange points between networks · `trafficAggregates`: measured volumes per link, service and period |
 
 ## Objects
 

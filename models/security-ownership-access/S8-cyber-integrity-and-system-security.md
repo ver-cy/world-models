@@ -56,10 +56,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `weakness` | What could be exploited | `vulnerabilities`: known weaknesses in software and components Â· `exposures`: which concrete systems carry them and their patch state |
-| `threat` | Who and what attacks | `actorsAndCampaigns`: actors, campaigns and techniques posing risk Â· `indicators`: observable signs of compromise and their attribution |
-| `incident` | What actually happened | `detection`: declared incidents, triage and impact scoping Â· `response`: containment, recovery and closure |
-| `assurance` | How well defended | `controls`: each owner's declared control baseline Â· `posture`: periodic assessments against that baseline |
+| `weakness` | What could be exploited | `vulnerabilities`: known weaknesses in software and components · `exposures`: which concrete systems carry them and their patch state |
+| `threat` | Who and what attacks | `actorsAndCampaigns`: actors, campaigns and techniques posing risk · `indicators`: observable signs of compromise and their attribution |
+| `incident` | What actually happened | `detection`: declared incidents, triage and impact scoping · `response`: containment, recovery and closure |
+| `assurance` | How well defended | `controls`: each owner's declared control baseline · `posture`: periodic assessments against that baseline |
 
 ## Objects
 

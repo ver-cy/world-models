@@ -46,9 +46,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `work` | The layered identity of the creation | `workIdentity`: abstract works, types, genres Â· `expressionAndEdition`: translations, arrangements, cuts, editions Â· `manifestationAndItem`: formats, carriers, published objects |
-| `rights` | Who made it and who controls it | `authorshipAndContribution`: creators and their roles Â· `rightsAndLicensing`: rights statements, territories, terms |
-| `distribution` | How it reaches audiences | `publicationAndRelease`: releases, channels, territories Â· `performanceAndExhibition`: performances, screenings, exhibitions |
+| `work` | The layered identity of the creation | `workIdentity`: abstract works, types, genres · `expressionAndEdition`: translations, arrangements, cuts, editions · `manifestationAndItem`: formats, carriers, published objects |
+| `rights` | Who made it and who controls it | `authorshipAndContribution`: creators and their roles · `rightsAndLicensing`: rights statements, territories, terms |
+| `distribution` | How it reaches audiences | `publicationAndRelease`: releases, channels, territories · `performanceAndExhibition`: performances, screenings, exhibitions |
 
 ## Objects
 

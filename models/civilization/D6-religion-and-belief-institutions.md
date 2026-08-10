@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `confession` | Belief traditions as described bodies of doctrine | `traditionTaxonomy`: religions, denominations, schools and their lineage Â· `doctrineAndText`: creeds and canonical texts as documented heritage artifacts |
-| `congregation` | Organized communities of belief | `communityBody`: congregations, orders and associations as living communities Â· `ministryRole`: clergy, ministers and lay service roles |
-| `practice` | Observance in time and place | `riteAndObservance`: rites, services and observances as practiced Â· `observanceCalendar`: liturgical calendars and recurring observance dates |
+| `confession` | Belief traditions as described bodies of doctrine | `traditionTaxonomy`: religions, denominations, schools and their lineage · `doctrineAndText`: creeds and canonical texts as documented heritage artifacts |
+| `congregation` | Organized communities of belief | `communityBody`: congregations, orders and associations as living communities · `ministryRole`: clergy, ministers and lay service roles |
+| `practice` | Observance in time and place | `riteAndObservance`: rites, services and observances as practiced · `observanceCalendar`: liturgical calendars and recurring observance dates |
 
 ## Objects
 

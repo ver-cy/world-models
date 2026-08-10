@@ -45,9 +45,9 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `destination` | Places in their role as visitor destinations | `destinationProfile`: destinations, attractions and their visitor-facing identity Â· `seasonality`: seasons, capacity and visitor flows over time |
-| `stay` | Lodging supply and the fact of staying | `accommodationOffer`: lodging offers, room types, availability Â· `stayRecord`: bookings, arrivals and departures as facts of the world |
-| `experience` | What visitors do and how well it is done | `experienceCatalogue`: tours, activities and packaged experiences Â· `serviceQuality`: classifications, star grades and quality signals |
+| `destination` | Places in their role as visitor destinations | `destinationProfile`: destinations, attractions and their visitor-facing identity · `seasonality`: seasons, capacity and visitor flows over time |
+| `stay` | Lodging supply and the fact of staying | `accommodationOffer`: lodging offers, room types, availability · `stayRecord`: bookings, arrivals and departures as facts of the world |
+| `experience` | What visitors do and how well it is done | `experienceCatalogue`: tours, activities and packaged experiences · `serviceQuality`: classifications, star grades and quality signals |
 
 ## Objects
 

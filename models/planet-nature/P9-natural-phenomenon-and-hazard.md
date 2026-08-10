@@ -54,10 +54,10 @@ imports:
 
 | Bundle | Responsibility | Layers |
 |---|---|---|
-| `hazardCharacterization` | What can happen here and how it is measured | `hazardType`: the catalogue of hazard kinds with definitions and onset behaviour Â· `sourceAndSusceptibility`: source zones, fault traces, susceptibility surfaces and triggering conditions Â· `intensityMeasure`: the scales and units in which severity is expressed |
-| `occurrence` | What actually happened and what it cost | `occurrenceRecord`: dated events with location, extent and measured intensity Â· `impactAndLoss`: attributed damage, disruption and affected counts |
-| `exposure` | Who and what stands in the way | `exposureZone`: mapped zones for a hazard type and return level Â· `elementAtRisk`: the assets, networks and population units within a zone Â· `riskScenario`: modelled combinations of hazard level and exposure with expected consequence |
-| `alerting` | What was communicated, to whom and when | `alertMessage`: graded alerts with area, onset, certainty, expiry and status Â· `disseminationChannel`: the routes an alert travelled and their delivery confirmations |
+| `hazardCharacterization` | What can happen here and how it is measured | `hazardType`: the catalogue of hazard kinds with definitions and onset behaviour · `sourceAndSusceptibility`: source zones, fault traces, susceptibility surfaces and triggering conditions · `intensityMeasure`: the scales and units in which severity is expressed |
+| `occurrence` | What actually happened and what it cost | `occurrenceRecord`: dated events with location, extent and measured intensity · `impactAndLoss`: attributed damage, disruption and affected counts |
+| `exposure` | Who and what stands in the way | `exposureZone`: mapped zones for a hazard type and return level · `elementAtRisk`: the assets, networks and population units within a zone · `riskScenario`: modelled combinations of hazard level and exposure with expected consequence |
+| `alerting` | What was communicated, to whom and when | `alertMessage`: graded alerts with area, onset, certainty, expiry and status · `disseminationChannel`: the routes an alert travelled and their delivery confirmations |
 
 ## Objects
 
