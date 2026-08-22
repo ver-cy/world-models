@@ -13,6 +13,7 @@ import hashlib
 import html
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,40 @@ def slugify(value: str) -> str:
 def load_json(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def load_json_projection(path: Path) -> dict[str, Any]:
+    text = path.read_text(encoding="utf-8")
+    if text.startswith("#"):
+        text = text.split("\n", 1)[1]
+    return json.loads(text)
+
+
+def archive_existing_publication(target: Path, new_version: str) -> list[dict[str, str]]:
+    """Keep an immutable URL for the package replaced by a newer draft."""
+    publication_path = target / "publication.json"
+    spec_path = target / "spec.yaml"
+    if not publication_path.is_file() or not spec_path.is_file():
+        return []
+    publication = load_json(publication_path)
+    old_version = str(publication.get("version", "")).strip()
+    old_spec = load_json_projection(spec_path)
+    previous = list(old_spec.get("metaModel", {}).get("previousVersions", []))
+    if not old_version or old_version == new_version:
+        return previous
+    if not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._+-]{0,127}", old_version):
+        raise SystemExit(f"unsafe existing publication version: {old_version}")
+    archive = target / "versions" / old_version
+    archive.mkdir(parents=True, exist_ok=True)
+    for name in ("index.html", "spec.yaml", "AGENTS.md", "publication.json"):
+        source = target / name
+        if source.is_file():
+            shutil.copy2(source, archive / name)
+    previous.insert(0, {
+        "version": old_version,
+        "url": f"/models/{target.name}/versions/{old_version}/",
+    })
+    return previous
 
 
 def write_json(path: Path, value: Any, *, header: str | None = None) -> None:
@@ -155,14 +190,18 @@ def main() -> int:
     slug = f"{args.model_id.casefold()}-{slugify(model['name'])}"
     target = args.output_root / slug
     target.mkdir(parents=True, exist_ok=True)
+    previous_versions = archive_existing_publication(target, args.version)
     synthesis_digest = hashlib.sha256(result_path.read_bytes()).hexdigest()
     source_url = args.source_url or (
         f"https://github.com/ver-cy/world-models/tree/feat/mega-model-registry/"
         f"research/runs/{args.model_id.casefold()}"
     )
-    previous_versions = []
     if args.previous_version and args.previous_url:
-        previous_versions.append({"version": args.previous_version, "url": args.previous_url})
+        previous_versions.insert(0, {"version": args.previous_version, "url": args.previous_url})
+    deduplicated_previous: dict[str, dict[str, str]] = {}
+    for item in previous_versions:
+        deduplicated_previous.setdefault(item["version"], item)
+    previous_versions = list(deduplicated_previous.values())
 
     metric = counts(result)
     spec = {

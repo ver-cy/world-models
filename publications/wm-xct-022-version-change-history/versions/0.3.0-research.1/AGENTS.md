@@ -4,7 +4,7 @@
 - Catalogue ID: WM-XCT-022
 - Registry ID: vr.wm-xct-022
 - Type: Vercy mixin (public research draft)
-- Version: 0.3.0-research.2
+- Version: 0.3.0-research.1
 - Specification: https://ver.cy/models/wm-xct-022-version-change-history/spec.yaml
 - Storage type: format-independent; select a binding in the page constructor
 - Interface: https://ver.cy/models/wm-xct-022-version-change-history/#template-builder

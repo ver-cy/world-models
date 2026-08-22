@@ -7,14 +7,16 @@ canonical release**.
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Claude | 27 | 6 | 12 | 25 | 115 | 23 | 17 |
 | Grok (normalized) | 9 | 4 | 8 | 13 | 59 | 12 | 11 |
-| Synthesis | 32 | 6 | 12 | 25 | 115 | 23 | 19 |
+| Synthesis | 32 | 6 | 12 | 26 | 119 | 24 | 21 |
 
 Both providers classify Version / Change History as a reusable `mixin`. The
 synthesis retains Claude's detailed boundaries for revision/series identity,
 lineage topology, change substance and migration, temporal/lifecycle semantics,
 authority/integrity, and history access/retention. Grok independently confirms
-the structure and adds explicit operations to freeze a released revision and to
-publish one immutable revision as the current member of a series.
+the structure. A no-tools adjudication pass adds its separately grounded
+replacement/supersession finding and the missing operations to compare version
+precedence, freeze a release, publish a current revision and supersede a
+revision. The earlier manual plan is retained for comparison.
 
 Grok's substantive answer completed with malformed JSON transport. Its raw
 wrapper is retained unchanged outside Git. A no-tools Claude pass performed only
@@ -38,7 +40,9 @@ Important decisions:
 
 Source verification and cross-representation profile tests remain open. See
 `synthesis-plan.json`, `adjudication.json`, `comparison.json` and
-`synthesis.validation.json` for the evidence trail.
+`synthesis.validation.json` for the evidence trail. The accepted auto-plan is
+also preserved as `synthesis-plan.auto.json`; `synthesis-plan.manual.json`
+records the earlier manual adjudication.
 
 Published draft:
 <https://ver.cy/models/wm-xct-022-version-change-history/>
