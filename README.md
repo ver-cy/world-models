@@ -11,6 +11,8 @@ Published by the [Vercy](https://ver.cy) project. The catalogue is standalone: b
 | [Library-Architecture.md](Library-Architecture.md) | The catalogue architecture: **112 meta-models in 15 clusters**, design commitments, conventions, adoption guide |
 | [world-models.csv](world-models.csv) | The machine register: one row per model (id, cluster, purpose, key objects, owner archetype, external standards, status) |
 | [models/](models/) | One MMAS-conformant card per model, each with **its own bundles and layers** |
+| [planning/MEGA-REGISTRY-ARCHITECTURE.md](planning/MEGA-REGISTRY-ARCHITECTURE.md) | Target mega-registry architecture, classification, composition rules and delivery waves |
+| [planning/VERCY-DESIRED-MODELS-MEGA-REGISTRY.csv](planning/VERCY-DESIRED-MODELS-MEGA-REGISTRY.csv) | Machine-readable backlog of 192 desired models with explicit prioritization factors |
 
 ## How each model is described
 
