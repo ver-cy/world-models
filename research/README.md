@@ -18,8 +18,12 @@ A model moves through these states:
 2. `claude_complete` and `grok_complete` — independent structured research.
 3. `synthesized` — agreements, conflicts and omissions are explicitly resolved.
 4. `validated` — schema and semantic completeness checks pass.
-5. `publishable_draft` — a human-reviewable Vercy specification may be projected
-   into the Bitrix catalogue. Research output is never published directly.
+5. `reviewable_draft` - a structurally valid synthesis may be projected into the
+   public catalogue only with an explicit research-draft badge and every hold
+   visible. It must not be described as canonical or complete.
+6. `publishable_draft` - all critical conflicts and publication holds are closed;
+   the result may be promoted toward a canonical release. Research output is
+   never published directly.
 
 The minimum subject structure is:
 
