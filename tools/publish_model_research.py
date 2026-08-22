@@ -243,7 +243,9 @@ claim canonical completeness while `researchAdjudication.publicationHolds` is
 non-empty. Preserve source references, master-system identity and access rules.
 """
     (target / "AGENTS.md").write_text(agents, encoding="utf-8")
-    (target / "index.html").write_text(render_page(spec, adjudication, synthesis_digest), encoding="utf-8")
+    page = render_page(spec, adjudication, synthesis_digest)
+    page = "\n".join(line.rstrip() for line in page.splitlines()) + "\n"
+    (target / "index.html").write_text(page, encoding="utf-8")
     print(json.dumps({"output": str(target), "statistics": metric}, ensure_ascii=False))
     return 0
 
