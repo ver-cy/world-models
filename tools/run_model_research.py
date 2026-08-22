@@ -114,7 +114,7 @@ def git_is_dirty() -> bool:
     return result.returncode != 0 or bool(result.stdout.strip())
 
 
-def build_command(provider: str, schema: str, prompt_path: Path, temporary_cwd: Path) -> list[str]:
+def build_command(provider: str, provider_model: str, schema: str, prompt_path: Path, temporary_cwd: Path) -> list[str]:
     if provider == "claude":
         executable = shutil.which("claude")
         if not executable:
@@ -122,7 +122,7 @@ def build_command(provider: str, schema: str, prompt_path: Path, temporary_cwd: 
         return [
             executable,
             "-p",
-            "--model", "opus",
+            "--model", provider_model,
             "--effort", "max",
             "--permission-mode", "dontAsk",
             "--tools", "WebSearch,WebFetch",
@@ -139,7 +139,7 @@ def build_command(provider: str, schema: str, prompt_path: Path, temporary_cwd: 
         executable,
         "--cwd", str(temporary_cwd),
         "--prompt-file", str(prompt_path),
-        "--model", "grok-4.6",
+        "--model", provider_model,
         "--reasoning-effort", "high",
         "--no-memory",
         "--no-subagents",
@@ -197,12 +197,14 @@ def write_json(path: Path, value: Any) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--provider", required=True, choices=sorted(PROVIDER_FOCUS))
+    parser.add_argument("--provider-model")
     parser.add_argument("--model-id", required=True)
     parser.add_argument("--output-root", type=Path, default=ROOT / "research" / "runs")
     parser.add_argument("--prompt-only", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--timeout", type=int, default=3600)
     args = parser.parse_args()
+    provider_model = args.provider_model or ("opus" if args.provider == "claude" else "grok-4.6")
 
     row = load_registry_row(args.model_id)
     run_dir = args.output_root / args.model_id.casefold()
@@ -255,7 +257,7 @@ def main() -> int:
     manifest: dict[str, Any] = {
         "contract_version": "1.0.0",
         "provider": args.provider,
-        "provider_model": "opus" if args.provider == "claude" else "grok-4.6",
+        "provider_model": provider_model,
         "model_id": args.model_id,
         "registry_id": row["registry_id"],
         "input_commit": git_commit(),
@@ -273,7 +275,7 @@ def main() -> int:
         temporary_cwd = Path(temp_name)
         temporary_prompt = temporary_cwd / "prompt.md"
         temporary_prompt.write_text(prompt, encoding="utf-8")
-        command = build_command(args.provider, schema_text, temporary_prompt, temporary_cwd)
+        command = build_command(args.provider, provider_model, schema_text, temporary_prompt, temporary_cwd)
         environment = os.environ.copy()
         environment["PYTHONUTF8"] = "1"
         try:
