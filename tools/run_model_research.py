@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import csv
 import hashlib
 import json
@@ -23,6 +24,7 @@ REGISTRY = ROOT / "planning" / "VERCY-UNIFIED-MEGA-REGISTRY.csv"
 RELATIONS = ROOT / "planning" / "VERCY-MODEL-RELATIONS.csv"
 PROMPT_TEMPLATE = ROOT / "research" / "MODEL-RESEARCH-PROMPT.md"
 SCHEMA_PATH = ROOT / "research" / "model-research.schema.json"
+CLAUDE_LOCAL_SETTINGS = Path.home() / ".claude" / "settings.local.json"
 
 PROVIDER_FOCUS = {
     "claude": (
@@ -114,6 +116,35 @@ def git_is_dirty() -> bool:
     return result.returncode != 0 or bool(result.stdout.strip())
 
 
+@contextmanager
+def hide_claude_local_settings(enabled: bool):
+    """Keep Grok from importing Claude permission entries and their secrets.
+
+    Grok 1.0 discovers the Windows user's Claude local settings even when HOME,
+    USERPROFILE and CLAUDE_CONFIG_DIR point elsewhere.  Rename the one local
+    settings file on the same volume for the duration of a Grok subprocess and
+    restore it in a finally block.  Provider runs are deliberately sequential.
+    """
+    if not enabled or not CLAUDE_LOCAL_SETTINGS.is_file():
+        yield
+        return
+    holding = CLAUDE_LOCAL_SETTINGS.with_name(CLAUDE_LOCAL_SETTINGS.name + ".vercy-grok-hold")
+    if holding.exists():
+        raise RuntimeError(f"Grok settings holding path already exists: {holding}")
+    before = hashlib.sha256(CLAUDE_LOCAL_SETTINGS.read_bytes()).hexdigest()
+    CLAUDE_LOCAL_SETTINGS.replace(holding)
+    try:
+        yield
+    finally:
+        if holding.exists():
+            holding.replace(CLAUDE_LOCAL_SETTINGS)
+        if not CLAUDE_LOCAL_SETTINGS.is_file():
+            raise RuntimeError("Claude local settings were not restored after Grok")
+        after = hashlib.sha256(CLAUDE_LOCAL_SETTINGS.read_bytes()).hexdigest()
+        if before != after:
+            raise RuntimeError("Claude local settings changed during Grok isolation")
+
+
 def build_command(provider: str, provider_model: str, schema: str, prompt_path: Path, temporary_cwd: Path) -> list[str]:
     if provider == "claude":
         executable = shutil.which("claude")
@@ -147,6 +178,7 @@ def build_command(provider: str, provider_model: str, schema: str, prompt_path: 
         "--deny", "MCPTool(*)",
         "--max-turns", "100",
         "--output-format", "json",
+        "--json-schema", schema,
     ]
 
 
@@ -278,19 +310,28 @@ def main() -> int:
         command = build_command(args.provider, provider_model, schema_text, temporary_prompt, temporary_cwd)
         environment = os.environ.copy()
         environment["PYTHONUTF8"] = "1"
+        if args.provider == "grok":
+            isolated_home = str(temporary_cwd / "home")
+            Path(isolated_home).mkdir(parents=True, exist_ok=True)
+            environment["HOME"] = isolated_home
+            environment["USERPROFILE"] = isolated_home
+            environment["CLAUDE_CONFIG_DIR"] = str(Path(isolated_home) / ".claude")
+            environment["XDG_CONFIG_HOME"] = str(Path(isolated_home) / ".config")
+            environment["GROK_HOME"] = str(Path.home() / ".grok")
         try:
-            completed = subprocess.run(
-                command,
-                cwd=temporary_cwd,
-                input=prompt if args.provider == "claude" else None,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=args.timeout,
-                env=environment,
-                check=False,
-            )
+            with hide_claude_local_settings(args.provider == "grok"):
+                completed = subprocess.run(
+                    command,
+                    cwd=temporary_cwd,
+                    input=prompt if args.provider == "claude" else None,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=args.timeout,
+                    env=environment,
+                    check=False,
+                )
         except subprocess.TimeoutExpired as error:
             manifest.update({"completed_at": now(), "status": "timeout", "error": str(error)})
             write_json(manifest_path, manifest)
@@ -299,10 +340,30 @@ def main() -> int:
 
     manifest["completed_at"] = now()
     manifest["return_code"] = completed.returncode
-    if completed.returncode != 0:
-        manifest.update({"status": "provider-error", "stderr": completed.stderr[-8000:]})
+    unsafe_stderr = any(marker in completed.stderr.casefold() for marker in (
+        str(CLAUDE_LOCAL_SETTINGS).casefold(),
+        "settings.local.json",
+        "allow.*password",
+        "allow.*token",
+        "allow.*secret",
+    ))
+    if args.provider == "grok" and unsafe_stderr:
+        manifest.update({
+            "status": "unsafe-config",
+            "stderr_sha256": hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest(),
+            "error": "Grok referenced Claude local settings; output was suppressed",
+        })
         write_json(manifest_path, manifest)
-        print(completed.stderr[-8000:])
+        print(manifest["error"])
+        return 2
+    if completed.returncode != 0:
+        manifest.update({
+            "status": "provider-error",
+            "stderr_sha256": hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest(),
+            "stderr_bytes": len(completed.stderr.encode("utf-8")),
+        })
+        write_json(manifest_path, manifest)
+        print("provider failed; stderr was suppressed and only its hash was recorded")
         return completed.returncode or 2
 
     try:
