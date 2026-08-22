@@ -35,7 +35,12 @@ PROVIDER_FOCUS = {
     "grok": (
         "Take the wide-union omission-hunter role. Search across jurisdictions, "
         "industries and technical ecosystems; surface rare lifecycle cases and "
-        "emerging standards, while marking anything that lacks primary support."
+        "emerging standards, while marking anything that lacks primary support. "
+        "The complete local context and schema are already in this prompt: do not "
+        "read the prompt file or list the working directory. To stay within the "
+        "research context budget, make no more than 10 focused web searches and "
+        "12 web fetches total, with at most four tool calls in any one turn. Prefer "
+        "one authoritative source that covers several claims over many duplicates."
     ),
 }
 
@@ -174,11 +179,12 @@ def build_command(provider: str, provider_model: str, schema: str, prompt_path: 
         "--reasoning-effort", "high",
         "--no-memory",
         "--no-subagents",
-        "--tools", "read_file,grep,list_dir,web_search,web_fetch",
+        "--tools", "web_search,web_fetch",
+        "--allow", "WebSearch(*)",
+        "--allow", "WebFetch(*)",
         "--deny", "MCPTool(*)",
         "--max-turns", "100",
         "--output-format", "json",
-        "--json-schema", schema,
     ]
 
 
@@ -249,6 +255,12 @@ def main() -> int:
     if result_path.exists() and not args.force and not args.prompt_only:
         print(f"result already exists; use --force to replace: {result_path}")
         return 0
+    if args.force and not args.prompt_only:
+        # A failed replacement must never leave an older provider result beside
+        # a newer parse-error/timeout manifest: downstream comparison would
+        # otherwise consume stale evidence as if the current run had passed.
+        for stale_path in (result_path, validation_path, run_dir / f"{args.provider}.raw.txt"):
+            stale_path.unlink(missing_ok=True)
     prompt = render_prompt(args.provider, row)
     prompt_path.write_text(prompt, encoding="utf-8")
 
@@ -263,27 +275,9 @@ def main() -> int:
     # Claude's bundled validator consume the schema as its default dialect.
     if args.provider == "claude":
         schema_data.pop("$schema", None)
-    else:
-        # Grok 1.0's constrained decoder retries large recursive schemas with
-        # placeholder objects. Keep the root envelope constrained and put the
-        # full canonical schema in the prompt; validate it locally afterward.
-        schema_data = {
-            "type": "object",
-            "required": [
-                "schema_version", "model", "sources", "structure", "functions",
-                "composition", "service_layers", "coverage",
-            ],
-            "properties": {
-                "schema_version": {"const": "1.0.0"},
-                "model": {"type": "object"},
-                "sources": {"type": "array"},
-                "structure": {"type": "object"},
-                "functions": {"type": "array"},
-                "composition": {"type": "array"},
-                "service_layers": {"type": "object"},
-                "coverage": {"type": "object"},
-            },
-        }
+    # Grok 1.0's constrained decoder repeats placeholder envelopes even with a
+    # shallow schema. The complete canonical schema stays in the prompt and the
+    # returned object is validated locally; do not pass --json-schema to Grok.
     schema_text = json.dumps(schema_data, separators=(",", ":"))
     started_at = now()
     manifest: dict[str, Any] = {
@@ -380,6 +374,12 @@ def main() -> int:
         if key not in {"thought", "thinking", "reasoning"}
     }
     write_json(raw_path, safe_wrapper)
+    session_id = wrapper.get("session_id") or wrapper.get("sessionId")
+    if session_id:
+        manifest["session_id"] = session_id
+    stop_reason = wrapper.get("stop_reason") or wrapper.get("stopReason")
+    if stop_reason:
+        manifest["stop_reason"] = stop_reason
     try:
         result = extract_result(wrapper)
     except ValueError as error:
@@ -396,9 +396,6 @@ def main() -> int:
         "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
         "validation": report,
     })
-    session_id = wrapper.get("session_id") or wrapper.get("sessionId")
-    if session_id:
-        manifest["session_id"] = session_id
     write_json(manifest_path, manifest)
     print(json.dumps({"result": str(result_path), **report}, ensure_ascii=False, indent=2))
     return 0 if report["valid"] else 1
