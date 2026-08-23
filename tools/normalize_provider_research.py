@@ -63,6 +63,43 @@ def repair_cross_grain_id_collisions(result: dict[str, Any]) -> list[dict[str, s
     return repairs
 
 
+def repair_authoritative_identity_priority(result: dict[str, Any]) -> list[dict[str, str]]:
+    """Make an already-authoritative identifier explicit as master-system ID.
+
+    The semantic validator intentionally requires the first artifact identity
+    priority to name the master system. Providers sometimes describe exactly
+    that identifier as an authoritative register/court number without using the
+    literal ``master-system`` token. Only that narrow, evidence-preserving case
+    is normalized; UUIDs, hashes and otherwise ambiguous priorities are left for
+    adjudication.
+    """
+    priority = (
+        result.get("service_layers", {})
+        .get("artifact_rules", {})
+        .get("identity_priority", [])
+    )
+    if not priority or not isinstance(priority[0], str):
+        return []
+    first = priority[0]
+    folded = first.casefold()
+    if "master" in folded:
+        return []
+    is_authoritative_registry_id = (
+        "authoritative" in folded
+        and any(token in folded for token in ("register", "registry", "court"))
+        and any(token in folded for token in ("identifier", "number", "code"))
+    )
+    if not is_authoritative_registry_id:
+        return []
+    replacement = f"Authoritative master-system identifier: {first}"
+    priority[0] = replacement
+    return [{
+        "kind": "identity-priority-label",
+        "from": first,
+        "to": replacement,
+    }]
+
+
 def provider_text(wrapper: dict[str, Any]) -> str:
     for key in ("text", "result", "response", "output"):
         value = wrapper.get(key)
@@ -92,6 +129,7 @@ def main() -> int:
     if args.repair_existing:
         result = json.loads(result_path.read_text(encoding="utf-8"))
         repairs = repair_cross_grain_id_collisions(result)
+        semantic_repairs = repair_authoritative_identity_priority(result)
         report = validate(result, args.model_id)
         write_json(result_path, result)
         write_json(validation_path, report)
@@ -100,10 +138,14 @@ def main() -> int:
         if normalization_manifest_path.is_file():
             normalization_manifest = json.loads(normalization_manifest_path.read_text(encoding="utf-8"))
             recorded_repairs = normalization_manifest.get("cross_grain_id_repairs", [])
+            recorded_semantic_repairs = normalization_manifest.get("semantic_repairs", [])
             normalization_manifest.update({
                 "status": "complete" if report["valid"] else "validation-failed",
                 "cross_grain_id_repairs": recorded_repairs + [
                     repair for repair in repairs if repair not in recorded_repairs
+                ],
+                "semantic_repairs": recorded_semantic_repairs + [
+                    repair for repair in semantic_repairs if repair not in recorded_semantic_repairs
                 ],
                 "result_sha256": result_sha256,
                 "validation": report,
@@ -111,11 +153,15 @@ def main() -> int:
             write_json(normalization_manifest_path, normalization_manifest)
         provider_manifest = json.loads(provider_manifest_path.read_text(encoding="utf-8"))
         recorded_repairs = provider_manifest.get("cross_grain_id_repairs", [])
+        recorded_semantic_repairs = provider_manifest.get("semantic_repairs", [])
         provider_manifest.update({
             "status": "complete" if report["valid"] else "validation-failed",
             "result_sha256": result_sha256,
             "cross_grain_id_repairs": recorded_repairs + [
                 repair for repair in repairs if repair not in recorded_repairs
+            ],
+            "semantic_repairs": recorded_semantic_repairs + [
+                repair for repair in semantic_repairs if repair not in recorded_semantic_repairs
             ],
             "validation": report,
         })
@@ -125,7 +171,12 @@ def main() -> int:
                 "normalization_manifest": normalization_manifest_path.name,
             })
         write_json(provider_manifest_path, provider_manifest)
-        print(json.dumps({"result": str(result_path), "repairs": repairs, **report}, ensure_ascii=False, indent=2))
+        print(json.dumps({
+            "result": str(result_path),
+            "repairs": repairs,
+            "semantic_repairs": semantic_repairs,
+            **report,
+        }, ensure_ascii=False, indent=2))
         return 0 if report["valid"] else 1
     if result_path.exists() and not args.force:
         print(f"result already exists; use --force to replace: {result_path}")
@@ -217,12 +268,14 @@ Return only the schema-conformant object through structured output.
     write_json(normalization_raw_path, safe_wrapper)
     result = extract_result(normalized_wrapper)
     repairs = repair_cross_grain_id_collisions(result)
+    semantic_repairs = repair_authoritative_identity_priority(result)
     report = validate(result, args.model_id)
     write_json(result_path, result)
     write_json(validation_path, report)
     normalization_manifest.update({
         "status": "complete" if report["valid"] else "validation-failed",
         "cross_grain_id_repairs": repairs,
+        "semantic_repairs": semantic_repairs,
         "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
         "validation": report,
     })
@@ -237,6 +290,8 @@ Return only the schema-conformant object through structured output.
         "normalization_status": "complete" if report["valid"] else "validation-failed",
         "normalization_manifest": normalization_manifest_path.name,
         "result_sha256": normalization_manifest["result_sha256"],
+        "cross_grain_id_repairs": repairs,
+        "semantic_repairs": semantic_repairs,
         "validation": report,
     })
     write_json(provider_manifest_path, provider_manifest)
