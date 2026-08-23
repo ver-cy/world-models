@@ -1,0 +1,159 @@
+{
+  "base_provider": "claude",
+  "confidence": "medium",
+  "coverage_claim": "A standards-led context structure for an embeddable Quantity/Unit value-object mixin, built on Claude's boundary set (BIPM SI Brochure 9th ed., JCGM VIM3 and GUM, ISO 80000-1:2022, CGPM 2022 Res 3, UCUM v2.2, UN/CEFACT Rec 20 Rev 17, QUDT v3.5.0, FHIR R5, D-SI v2.2.0, SOSA/SSN, RFC 3339, schema.org) and extended with three grok findings and three grok functions. Coverage is bounded to the value object: the measurement act, the measured thing, calendar identity, monetary amounts, calibration chains and domain property catalogues remain with sibling models, and ownership, access and retention stay declared evidence gaps rather than standards-derived content. No completeness across domains, jurisdictions or unit vocabularies is claimed, and no conformance to any cited standard is asserted.",
+  "boundary_decision": {
+    "entry_kind": "mixin",
+    "status": "accepted",
+    "rationale": "Both providers independently returned entry_kind=mixin and the registry marks vr.wm-xct-008 as an EMBED value object; FHIR models Quantity as a datatype rather than a resource and SOSA delegates result encoding to the host vocabulary, so the quantity carries no independent identity or lifecycle. Claude's boundary is adopted intact — value object only, with the observing act, calendar and instant semantics, monetary amounts, calibration hierarchies, registry curation and domain property catalogues delegated to named siblings, each delegation carrying source refs. One narrowing is applied to the single accepted grok addition in this area: metrological traceability enters as a claim plus evidence pointers, never as a calibration-chain or accreditation model, so Claude's stated out_of_scope holds."
+  },
+  "add_findings": [
+    {
+      "provider": "grok",
+      "source_finding_id": "system-of-quantities",
+      "target_finding_id": "system-of-quantities",
+      "target_layer_id": "kind-and-dimension",
+      "rationale": "Claude models quantity kind and dimension but never asks which system of quantities governs the record, which base kinds that system declares, which defining equations derive the kind from those bases, or whether the coupled unit system defines a unit for every kind in use. Grok grounds this in ISO 80000-1 and QUDT SystemOfQuantities and shows the choice of base kinds is conventional. Materially missing, evidence-backed, non-duplicative with dimension-and-consistency (which computes exponents but presumes a single fixed basis), and a natural fourth finding in the kind-and-dimension layer."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "quantity-calculus-homogeneity",
+      "target_finding_id": "quantity-calculus-homogeneity",
+      "target_layer_id": "kind-and-dimension",
+      "rationale": "Claude's dim-q2 stops at admission checks before addition or comparison and convert-quantity handles a single value against a single target unit. Neither derives the kind, dimension and coherent unit of an arithmetic result, nor accumulates prefix and conversion factors when a non-coherent unit such as hour or millimetre appears in a product so the numerical-value equation stays correct. Grok grounds this in ISO 80000-1 quantity calculus and UCUM's Abelian group with integer exponents. Genuinely absent operating surface, and dimensional homogeneity plus result-kind derivation belong in kind-and-dimension."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "metrological-traceability-and-evidence",
+      "target_finding_id": "metrological-traceability-claim",
+      "target_layer_id": "uncertainty-and-tolerance",
+      "rationale": "Claude's own boundary note states the model carries the traceability claim as a reference, yet implements it as a single question (vdp-q3) inside value-derivation-provenance. Grok supplies the reference target, evidence artefact identifiers, the responsible organisation and accreditation, and the chain-stop question that distinguishes internally consistent from metrologically traceable. Renamed to metrological-traceability-claim and placed alongside GUM uncertainty because VIM 2.41 makes each calibration in the chain an uncertainty contributor. Deliberately narrowed: the calibration hierarchy, certificates and accreditation records stay out of scope per Claude's boundary; only the claim and its evidence pointers enter."
+    }
+  ],
+  "add_functions": [
+    {
+      "provider": "grok",
+      "source_function_id": "apply-quantity-calculus",
+      "target_function_id": "apply-quantity-calculus",
+      "rationale": "Claude has no arithmetic operation at all: convert-quantity and normalise-to-coherent-si move a single value between units, and check-commensurability only gates comparison. Multiplying, dividing, exponentiating, adding or subtracting quantity values under dimensional homogeneity with coherent-factor accounting is an unmodelled operation, and it is the executable counterpart of the accepted quantity-calculus-homogeneity finding."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "map-unit-code",
+      "target_function_id": "map-unit-code",
+      "rationale": "Claude's resolve-unit resolves one code to a pinned registry entry but never translates an identifier from one vocabulary to another. The base already carries a unit-code-crosswalk artifact and an alignment-and-conflict register with mapping strength, so the crosswalk data structure exists with no function that writes or applies it. Grok's version records mapping type and refuses on recorded conflicts, which matches Claude's rule that advisory alignments must not drive automated conversion."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "freeze-original-value",
+      "target_function_id": "freeze-original-value",
+      "rationale": "Claude requires the pre-conversion value to be retained (cpl-q2) and treats trailing-zero precision as semantic, but no function creates the immutable snapshot of the original lexical value, unit, comparator and provenance before conversion runs. Without it the retention requirement has no operation behind it and convert-quantity can destroy the reported value in place. Grounded in FHIR decimal precision and NIST SP 811 rounding."
+    }
+  ],
+  "merge_service_layers": true,
+  "decisions": [
+    {
+      "concept": "Base provider selection",
+      "disposition": "claude",
+      "rationale": "Clearest complete boundaries, not size: seven boundary notes each naming a sibling model with source refs versus six; honest gap marking on ownership, access and retention; tighter version pins (FHIR R5, QUDT v3.5.0 releases, Rec 20 Rev 17, CGPM 2022 Resolution 3 and RFC 3339 as first-class sources); and a consistent inline_only_rationale on every artifact-free finding, which the deterministic synthesizer needs."
+    },
+    {
+      "concept": "Entry kind and model boundary",
+      "disposition": "accepted as mixin / EMBED value object",
+      "rationale": "Providers agree independently, the registry marks it EMBED, FHIR treats Quantity as a datatype not a resource, and SOSA delegates result encoding to the host. No reclassification or split is warranted, so nodes can be accepted against a settled boundary."
+    },
+    {
+      "concept": "System of quantities (ISQ) as governing frame",
+      "disposition": "accepted from grok into kind-and-dimension",
+      "rationale": "Claude presumes a single fixed ISQ basis and never records which system governs, its declared base kinds, its defining equations, or whether the coupled unit system covers every kind in use. Backed by ISO 80000-1 and QUDT SystemOfQuantities."
+    },
+    {
+      "concept": "Quantity calculus and coherent-factor accounting",
+      "disposition": "accepted from grok into kind-and-dimension",
+      "rationale": "Result-kind derivation and factor accumulation for non-coherent units in a product are absent from the base, which only gates operations and converts single values. ISO 80000-1 and the UCUM multiplicative group supply the evidence."
+    },
+    {
+      "concept": "Metrological traceability claim",
+      "disposition": "accepted from grok into uncertainty-and-tolerance, narrowed",
+      "rationale": "Base carries a first-class VIM 2.41 property in one question despite naming it in a boundary note. Accepted as claim, reference target, evidence identifiers and chain-stop only; the calibration hierarchy, certificates and accreditation records remain out of scope, preserving Claude's stated delegation."
+    },
+    {
+      "concept": "Delta versus absolute quantity",
+      "disposition": "rejected as duplicative",
+      "rationale": "Claude's conversion-functions finding already states the point-versus-difference rule with the same worked example (5 °C difference is 5 K; 5 °C temperature is 278.15 K) and carries cnv-q3 as an explicit designation question. Adding a second finding would fork the same rule."
+    },
+    {
+      "concept": "Special units on non-ratio scales",
+      "disposition": "rejected as duplicative; prefix-scaling trap deferred",
+      "rationale": "UCUM special units and function-based conversion are covered at both ends by scale-type-classification and conversion-functions. The one genuinely new item, prefix scaling on a special unit (milli-degree Celsius), is question-level material this plan cannot transfer, so it is deferred rather than justifying a duplicate finding."
+    },
+    {
+      "concept": "Comparator, range and ratio structures",
+      "disposition": "rejected as duplicative",
+      "rationale": "Claude's value-forms-and-bounds already covers point versus one-sided bound versus interval versus ratio, inclusive bounds sharing a unit, censored and detection-limit encoding, and prohibited forms per slot. The instrument that set the detection limit belongs to the host measurement model under Claude's boundary."
+    },
+    {
+      "concept": "Dimensionless quantities and the unit one",
+      "disposition": "rejected as duplicative; angle non-isomorphism deferred",
+      "rationale": "Claude's dimension-one-and-counts covers unit one, absent-unit versus unit-is-one, fractions and logarithmic quantities. The distinctive grok content — UCUM treating radian as a base while SI treats it as dimension one, and UCUM's deprecation of ppb/pptr — is conflict-register content that Claude's alignment-and-conflicts finding is already shaped to hold."
+    },
+    {
+      "concept": "Decimal and binary prefixes",
+      "disposition": "rejected as duplicative; UCUM prefix lag held for verification",
+      "rationale": "Claude's prefixes-and-scaled-units covers the CGPM 2022 additions, binary-versus-decimal separation, the prefixed kilogram, compound prefixes and prefixes on non-metric atoms. Grok's claim that UCUM v2.2 still stops at yotta/yocto is self-declared unverified against later revisions, so it fails the evidence-backed test for an addition."
+    },
+    {
+      "concept": "Unit code system split into UCUM / Rec 20 / QUDT findings",
+      "disposition": "rejected as duplicative",
+      "rationale": "Claude carries all three code systems in unit-identity-and-codes with an explicit precedence rule and a crosswalk artifact, the grammar in compound-unit-expression, and the non-1:1 trade-versus-scientific mismatch in its conflict list. Splitting into three findings would triple-count the same governed identity."
+    },
+    {
+      "concept": "SI defining constants and base-unit definitional expressions",
+      "disposition": "rejected as registry curation content",
+      "rationale": "Claude explicitly scopes out curation of external unit registries and consumes pinned releases instead; which defining constant fixes a base unit and the expression of a unit in base units are registry entry contents, resolved through resolve-unit rather than restated in the mixin."
+    },
+    {
+      "concept": "AGENTS.md bootstrap contract",
+      "disposition": "rejected as unsupported by the evidence pack",
+      "rationale": "Its source_refs are FHIR and QUDT, neither of which says anything about a bootstrap file. It is a Vercy platform convention belonging to the merged service layers and the specification scaffolding, not to a standards-researched context model."
+    },
+    {
+      "concept": "Ownership, access and retention coverage rating",
+      "disposition": "Claude's declared gaps retained; grok's covered rating rejected",
+      "rationale": "Grok rates all three covered but cites SI, UCUM, FHIR and NIST sources that assign no custody, access rule or retention period for a quantity value. Claude's position — inherit from the host, mark as gap, do not dress policy as normative — is the defensible one and must survive into the draft."
+    },
+    {
+      "concept": "Original-value retention and access",
+      "disposition": "finding rejected as duplicative; function accepted",
+      "rationale": "conversion-provenance-and-loss and access-disclosure-and-retention already carry the semantics, but no operation performs the freeze, leaving the retention requirement unexecutable. Only freeze-original-value is imported."
+    },
+    {
+      "concept": "Vector, tensor and complex quantities",
+      "disposition": "keep Claude's in-scope treatment",
+      "rationale": "Grok excludes them outright while Claude carries components inline via vrb-q2 without modelling tensor algebra. The base reading is narrower in obligation and wider in usability, and a scope divergence between providers is resolved in favour of the base rather than treated as a contradiction."
+    },
+    {
+      "concept": "Unit of presentation (ISO 11239 / ISO 11240) boundary",
+      "disposition": "deferred to a boundary-note pass",
+      "rationale": "Grok's distinction between a unit of presentation (tablet, ampoule, puff) and a metrological unit is real and is a live failure mode for UCUM atoms, but it is expressed as a boundary note, which this plan cannot add, and it depends on adopting ISO 11240 as a source the base does not hold."
+    }
+  ],
+  "critical_conflicts": [],
+  "publication_holds": [
+    "Source verification: every accepted source must be re-fetched live and confirmed against its stated version before publication. Claude records HTTP 403 on unece.org throughout and grok cites only the general UNECE recommendations index, so UN/CEFACT Rec 20 Revision 17 is currently confirmed by indexed listing rather than by reading the code list.",
+    "Version-pin reconciliation: the two providers pinned different releases of the same vocabularies (FHIR R5 versus R4, QUDT v3.5.0 releases versus schema 2.1.29). The draft must state one release per vocabulary with a content digest and must not mix claims drawn from different releases.",
+    "Multi-profile validation is incomplete: neither provider exercised the model across the healthcare/FHIR, trade/EDI Rec 20, scientific/SI-coherent and medicinal-product/ISO 11240 profiles. Domain-profile validation must be run before the structure is presented as deployable rather than as a research draft.",
+    "Ownership, access and retention must be published as declared evidence gaps inherited from the host record, not as covered dimensions. Grok's 'covered' rating is not standards-backed and must not be carried into the draft's checklist.",
+    "Paywalled normative text: ISO 80000-1:2022 and ISO 11240:2012 were read only as catalogue records and abstracts, and the SI Brochure and GUM PDFs were not machine-parsed. No clause-level claim or quotation may be published against any of them.",
+    "UCUM prefix currency: whether the current UCUM release includes ronna, quetta, ronto and quecto is unverified in both packs. Verify against the live UCUM terminal table before publishing either a conflict or an alignment on the CGPM 2022 prefix extension.",
+    "VIM4 is in committee draft and may change the definitions of quantity, quantity value and unit that this model is built on. The draft must state that it is built against VIM3 (JCGM 200:2012) and requires re-checking on VIM4 publication."
+  ],
+  "deferred_research": [
+    "Record the UCUM/SI dimension-basis non-isomorphism in the alignment-and-conflict register: UCUM's defining basis (metre, second, gram, radian, kelvin, coulomb, candela) is not isomorphic with the SI, and UCUM treats radian as a base while the SI treats plane angle as dimension one — which changes commensurability results for angle quantities.",
+    "Fold the prefix-on-special-unit scaling trap into the prefixes-and-scaled-units finding as a question: a prefix on a special unit scales the function output, so milli-degree Celsius is not 0.001 times a Celsius temperature.",
+    "Evaluate adding a unit-of-presentation boundary note (ISO 11239 / ISO 11240): tablet, ampoule, vial and puff are counted presentations, not metrological units, and must not be stored as bare UCUM atoms. Requires adopting ISO 11240 as a source first.",
+    "Confirm and record UCUM's deprecation of ppb and pptr on the grounds that billion and trillion are internationally ambiguous, and specify the power-of-ten replacement rule for the dimension-one-and-counts finding.",
+    "Decide whether the accepted metrological-traceability-claim finding needs its own artifact or should reference the host model's calibration record by identifier, so the claim never circulates without locatable evidence while the chain stays out of scope.",
+    "Retrieve the OM 2 ontology (Claude reports a TLS certificate mismatch on its published host) and IEC 80000-13 information-science units, both credible sibling vocabularies currently absent from the alignment set."
+  ]
+}
