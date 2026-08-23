@@ -21,45 +21,59 @@ from validate_model_research import validate
 
 
 def repair_cross_grain_id_collisions(result: dict[str, Any]) -> list[dict[str, str]]:
-    """Namespace only duplicate IDs that occur in different structural grains.
+    """Namespace unambiguous duplicate IDs without changing their meaning.
 
     A question and its answer element often receive the same natural local ID
     from a provider. Vercy's canonical contract requires global uniqueness, so
-    the later node receives a stable grain prefix. Duplicates within the same
-    grain are left untouched for semantic adjudication rather than guessed.
+    the later node receives a stable grain prefix. A data element repeated in
+    distinct findings is equally safe to namespace with its parent finding ID.
+    Other duplicates within the same grain are left untouched for semantic
+    adjudication rather than guessed.
     """
-    nodes: list[tuple[dict[str, Any], str]] = []
+    nodes: list[tuple[dict[str, Any], str, str]] = []
     for bundle in result.get("structure", {}).get("bundles", []):
-        nodes.append((bundle, "bundle"))
+        nodes.append((bundle, "bundle", ""))
         for layer in bundle.get("layers", []):
-            nodes.append((layer, "layer"))
+            nodes.append((layer, "layer", ""))
             for finding in layer.get("findings", []):
-                nodes.append((finding, "finding"))
-                nodes.extend((item, "question") for item in finding.get("questions", []))
-                nodes.extend((item, "data") for item in finding.get("data_elements", []))
-                nodes.extend((item, "artifact") for item in finding.get("artifacts", []))
-    nodes.extend((item, "function") for item in result.get("functions", []))
+                finding_id = finding.get("id", "")
+                nodes.append((finding, "finding", ""))
+                nodes.extend((item, "question", finding_id) for item in finding.get("questions", []))
+                nodes.extend((item, "data", finding_id) for item in finding.get("data_elements", []))
+                nodes.extend((item, "artifact", finding_id) for item in finding.get("artifacts", []))
+    nodes.extend((item, "function", "") for item in result.get("functions", []))
 
-    by_id: dict[str, list[tuple[dict[str, Any], str]]] = {}
-    for node, grain in nodes:
-        by_id.setdefault(node.get("id", ""), []).append((node, grain))
+    by_id: dict[str, list[tuple[dict[str, Any], str, str]]] = {}
+    for node, grain, parent_id in nodes:
+        by_id.setdefault(node.get("id", ""), []).append((node, grain, parent_id))
     occupied = {identifier for identifier in by_id if identifier}
     repairs: list[dict[str, str]] = []
     for identifier, matches in by_id.items():
         if not identifier or len(matches) < 2:
             continue
-        grains = [grain for _, grain in matches]
-        if len(grains) != len(set(grains)):
+        grains = [grain for _, grain, _ in matches]
+        cross_grain = len(grains) == len(set(grains))
+        parent_ids = [parent_id for _, _, parent_id in matches]
+        repeated_data_across_findings = (
+            set(grains) == {"data"}
+            and all(parent_ids)
+            and len(parent_ids) == len(set(parent_ids))
+        )
+        if not cross_grain and not repeated_data_across_findings:
             continue
-        for node, grain in matches[1:]:
-            candidate = f"{grain}-{identifier}"
+        for node, grain, parent_id in matches[1:]:
+            prefix = parent_id if repeated_data_across_findings else grain
+            candidate = f"{prefix}-{identifier}"
             counter = 2
             while candidate in occupied:
-                candidate = f"{grain}-{identifier}-{counter}"
+                candidate = f"{prefix}-{identifier}-{counter}"
                 counter += 1
             node["id"] = candidate
             occupied.add(candidate)
-            repairs.append({"from": identifier, "to": candidate, "grain": grain})
+            repair = {"from": identifier, "to": candidate, "grain": grain}
+            if repeated_data_across_findings:
+                repair["parent_finding_id"] = parent_id
+            repairs.append(repair)
     return repairs
 
 
@@ -84,12 +98,12 @@ def repair_authoritative_identity_priority(result: dict[str, Any]) -> list[dict[
     folded = first.casefold()
     if "master" in folded:
         return []
-    is_authoritative_registry_id = (
+    is_authoritative_master_id = (
         "authoritative" in folded
-        and any(token in folded for token in ("register", "registry", "court"))
+        and any(token in folded for token in ("register", "registry", "court", "directory"))
         and any(token in folded for token in ("identifier", "number", "code"))
     )
-    if not is_authoritative_registry_id:
+    if not is_authoritative_master_id:
         return []
     replacement = f"Authoritative master-system identifier: {first}"
     priority[0] = replacement
