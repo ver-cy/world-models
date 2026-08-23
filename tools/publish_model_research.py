@@ -9,6 +9,7 @@ review, but it cannot be labelled published or canonical.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import html
 import json
@@ -19,6 +20,16 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REGISTRY_PATH = ROOT / "planning" / "VERCY-UNIFIED-MEGA-REGISTRY.csv"
+
+CATEGORY_LABELS = {
+    "ACT": "Activities and processes",
+    "SOC": "Society, people and institutions",
+    "PHY": "Physical world and living systems",
+    "INF": "Information and virtual systems",
+    "XCT": "Cross-cutting context",
+}
+STOP_WORDS = {"a", "an", "and", "for", "in", "of", "or", "the", "to", "with"}
 
 
 def slugify(value: str) -> str:
@@ -35,6 +46,54 @@ def load_json_projection(path: Path) -> dict[str, Any]:
     if text.startswith("#"):
         text = text.split("\n", 1)[1]
     return json.loads(text)
+
+
+def split_values(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [part.strip() for part in re.split(r"\s*;\s*", value) if part.strip()]
+
+
+def stable_unique(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        key = value.casefold()
+        if value and key not in seen:
+            result.append(value)
+            seen.add(key)
+    return result
+
+
+def registry_metadata(model_id: str, model_name: str) -> dict[str, Any]:
+    with REGISTRY_PATH.open(encoding="utf-8-sig", newline="") as handle:
+        row = next(
+            (item for item in csv.DictReader(handle)
+             if item.get("model_id", "").casefold() == model_id.casefold()),
+            None,
+        )
+    if row is None:
+        raise SystemExit(f"model is absent from unified registry: {model_id}")
+    nav_path = row.get("nav_path", "")
+    match = re.search(r"(?:^|/)NAV\.([A-Z]+)", nav_path)
+    category = CATEGORY_LABELS.get(match.group(1), "World model") if match else "World model"
+    domains = split_values(row.get("domain_tags"))
+    words = [
+        word for word in re.findall(r"[a-z0-9]+", model_name.casefold())
+        if word not in STOP_WORDS and len(word) > 1
+    ]
+    tags = stable_unique(
+        words
+        + [value.casefold() for value in domains]
+        + [value.casefold() for value in split_values(row.get("alternate_names"))]
+    )
+    return {
+        "family": "World Models",
+        "category": category,
+        "industry": ["Cross-industry"],
+        "domain": domains,
+        "tags": tags,
+    }
 
 
 def archive_existing_publication(target: Path, new_version: str) -> list[dict[str, str]]:
@@ -187,6 +246,7 @@ def main() -> int:
     model = result["model"]
     if model["model_id"].casefold() != args.model_id.casefold():
         raise SystemExit("model id does not match synthesis")
+    catalogue = registry_metadata(model["model_id"], model["name"])
     slug = f"{args.model_id.casefold()}-{slugify(model['name'])}"
     target = args.output_root / slug
     target.mkdir(parents=True, exist_ok=True)
@@ -221,11 +281,11 @@ def main() -> int:
             "version": args.version,
             "previousVersions": previous_versions,
             "entryKind": model["entry_kind"],
-            "family": "World Models",
-            "category": "Cross-cutting context",
-            "industry": ["Cross-industry"],
-            "domain": ["identifier systems", "namespaces", "reference data"],
-            "tags": ["identifier", "namespace", "registry", "resolution", "interoperability"],
+            "family": catalogue["family"],
+            "category": catalogue["category"],
+            "industry": catalogue["industry"],
+            "domain": catalogue["domain"],
+            "tags": catalogue["tags"],
             "status": "research draft",
         },
         "canonicalUrl": f"https://ver.cy/models/{slug}/",
