@@ -95,22 +95,35 @@ def main() -> int:
         report = validate(result, args.model_id)
         write_json(result_path, result)
         write_json(validation_path, report)
-        normalization_manifest = json.loads(normalization_manifest_path.read_text(encoding="utf-8"))
-        normalization_manifest.update({
-            "status": "complete" if report["valid"] else "validation-failed",
-            "cross_grain_id_repairs": repairs,
-            "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
-            "validation": report,
-        })
-        write_json(normalization_manifest_path, normalization_manifest)
+        result_sha256 = hashlib.sha256(result_path.read_bytes()).hexdigest()
+        normalization_manifest: dict[str, Any] | None = None
+        if normalization_manifest_path.is_file():
+            normalization_manifest = json.loads(normalization_manifest_path.read_text(encoding="utf-8"))
+            recorded_repairs = normalization_manifest.get("cross_grain_id_repairs", [])
+            normalization_manifest.update({
+                "status": "complete" if report["valid"] else "validation-failed",
+                "cross_grain_id_repairs": recorded_repairs + [
+                    repair for repair in repairs if repair not in recorded_repairs
+                ],
+                "result_sha256": result_sha256,
+                "validation": report,
+            })
+            write_json(normalization_manifest_path, normalization_manifest)
         provider_manifest = json.loads(provider_manifest_path.read_text(encoding="utf-8"))
+        recorded_repairs = provider_manifest.get("cross_grain_id_repairs", [])
         provider_manifest.update({
             "status": "complete" if report["valid"] else "validation-failed",
-            "normalization_status": "complete" if report["valid"] else "validation-failed",
-            "normalization_manifest": normalization_manifest_path.name,
-            "result_sha256": normalization_manifest["result_sha256"],
+            "result_sha256": result_sha256,
+            "cross_grain_id_repairs": recorded_repairs + [
+                repair for repair in repairs if repair not in recorded_repairs
+            ],
             "validation": report,
         })
+        if normalization_manifest is not None:
+            provider_manifest.update({
+                "normalization_status": "complete" if report["valid"] else "validation-failed",
+                "normalization_manifest": normalization_manifest_path.name,
+            })
         write_json(provider_manifest_path, provider_manifest)
         print(json.dumps({"result": str(result_path), "repairs": repairs, **report}, ensure_ascii=False, indent=2))
         return 0 if report["valid"] else 1
