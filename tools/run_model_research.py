@@ -30,7 +30,10 @@ PROVIDER_FOCUS = {
     "claude": (
         "Take the conservative standards-led role. Stress-test model boundaries, "
         "distinguish normative requirements from common practice, search for "
-        "counterexamples and reject attractive but unsupported structure."
+        "counterexamples and reject attractive but unsupported structure. Keep "
+        "the complete JSON under 52,000 output tokens: target 5-7 bundles, 10-16 "
+        "layers and 20-28 well-bounded findings with 3-5 discriminating questions "
+        "each; use concise descriptions and never pad the result with repetition."
     ),
     "grok": (
         "Take the wide-union omission-hunter role. Search across jurisdictions, "
@@ -355,7 +358,23 @@ def main() -> int:
             "status": "provider-error",
             "stderr_sha256": hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest(),
             "stderr_bytes": len(completed.stderr.encode("utf-8")),
+            "stdout_sha256": hashlib.sha256(completed.stdout.encode("utf-8")).hexdigest(),
+            "stdout_bytes": len(completed.stdout.encode("utf-8")),
         })
+        # Headless providers can return a JSON diagnostic wrapper on stdout with
+        # a non-zero process code. Preserve that safe wrapper (minus reasoning)
+        # outside the canonical result path so failures remain diagnosable.
+        if completed.stdout.strip():
+            try:
+                error_wrapper = json.loads(completed.stdout)
+            except json.JSONDecodeError:
+                error_wrapper = None
+            if isinstance(error_wrapper, dict):
+                safe_error_wrapper = {
+                    key: value for key, value in error_wrapper.items()
+                    if key not in {"thought", "thinking", "reasoning"}
+                }
+                write_json(run_dir / f"{args.provider}.error.raw.json", safe_error_wrapper)
         write_json(manifest_path, manifest)
         print("provider failed; stderr was suppressed and only its hash was recorded")
         return completed.returncode or 2
