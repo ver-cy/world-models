@@ -101,9 +101,11 @@ def semantic_errors(data: dict[str, Any], expected_model_id: str | None = None) 
     if not identity_priority or "master" not in identity_priority[0].casefold():
         errors.append("identity priority must start with the authoritative master-system identifier")
     timestamp_rule = data.get("service_layers", {}).get("artifact_rules", {}).get("timestamp_rule", "")
-    for token in ("RFC 3339", "seconds", "offset"):
+    for token in ("RFC 3339", "offset"):
         if token.casefold() not in timestamp_rule.casefold():
             errors.append(f"timestamp rule does not explicitly require {token}")
+    if not re.search(r"(?<![a-z])seconds?(?![a-z])", timestamp_rule, re.IGNORECASE):
+        errors.append("timestamp rule does not explicitly require seconds")
 
     checklist_text = [
         f"{item.get('dimension', '')} {item.get('notes', '')}".casefold()
