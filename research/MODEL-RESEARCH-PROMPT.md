@@ -82,6 +82,25 @@ model links and the Vercy service layers needed to govern the model.
 {{LEGACY_EXCERPT}}
 ```
 
+## Machine-gate preflight
+
+Before returning JSON, verify all of these literal contract conditions. Do not
+merely imply or paraphrase them:
+
+- `service_layers.artifact_rules.identity_priority[0]` names the authoritative
+  master-system identifier.
+- `service_layers.artifact_rules.timestamp_rule` contains the literal terms
+  `RFC 3339`, `seconds` and `offset`; it also distinguishes event time from
+  observation or ingestion time when those differ.
+- `coverage.checklist` explicitly includes `identity`, `lifecycle`,
+  `relationships`, `temporal`, `provenance`, `ownership`, `validation`,
+  `access`, `retention and deletion`, and `interoperability`.
+- Every local ID is unique and contains no date-like component; every
+  `source_ref` resolves; every finding has an artifact or a substantive
+  inline-only rationale; question texts are distinct.
+- Use at least eight distinct question kinds, except that a `mixin` or
+  `classifier` may use six when the narrower surface is justified.
+
 ## Output
 
 Return only JSON that conforms to the supplied JSON Schema. Use stable
