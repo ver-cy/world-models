@@ -25,10 +25,10 @@ def repair_cross_grain_id_collisions(result: dict[str, Any]) -> list[dict[str, s
 
     A question and its answer element often receive the same natural local ID
     from a provider. Vercy's canonical contract requires global uniqueness, so
-    the later node receives a stable grain prefix. A data element repeated in
-    distinct findings is equally safe to namespace with its parent finding ID.
-    Other duplicates within the same grain are left untouched for semantic
-    adjudication rather than guessed.
+    the later node receives a stable grain prefix. A leaf question, data element
+    or artifact repeated in distinct findings is equally safe to namespace with
+    its parent finding ID. Other duplicates within the same grain are left
+    untouched for semantic adjudication rather than guessed.
     """
     nodes: list[tuple[dict[str, Any], str, str]] = []
     for bundle in result.get("structure", {}).get("bundles", []):
@@ -54,15 +54,16 @@ def repair_cross_grain_id_collisions(result: dict[str, Any]) -> list[dict[str, s
         grains = [grain for _, grain, _ in matches]
         cross_grain = len(grains) == len(set(grains))
         parent_ids = [parent_id for _, _, parent_id in matches]
-        repeated_data_across_findings = (
-            set(grains) == {"data"}
+        repeated_leaf_across_findings = (
+            len(set(grains)) == 1
+            and grains[0] in {"question", "data", "artifact"}
             and all(parent_ids)
             and len(parent_ids) == len(set(parent_ids))
         )
-        if not cross_grain and not repeated_data_across_findings:
+        if not cross_grain and not repeated_leaf_across_findings:
             continue
         for node, grain, parent_id in matches[1:]:
-            prefix = parent_id if repeated_data_across_findings else grain
+            prefix = parent_id if repeated_leaf_across_findings else grain
             candidate = f"{prefix}-{identifier}"
             counter = 2
             while candidate in occupied:
@@ -71,7 +72,7 @@ def repair_cross_grain_id_collisions(result: dict[str, Any]) -> list[dict[str, s
             node["id"] = candidate
             occupied.add(candidate)
             repair = {"from": identifier, "to": candidate, "grain": grain}
-            if repeated_data_across_findings:
+            if repeated_leaf_across_findings:
                 repair["parent_finding_id"] = parent_id
             repairs.append(repair)
     return repairs
