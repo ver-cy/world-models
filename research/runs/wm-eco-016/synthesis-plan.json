@@ -1,0 +1,148 @@
+{
+  "base_provider": "claude",
+  "confidence": "medium",
+  "coverage_claim": "Synthesis takes the Claude result as base: its six boundary notes assign every neighbouring object to a named sibling model (WM-ECO-015 account, WM-ECO-009 payment, invoice, reporting, party, REA ontology), and each finding without an artifact carries an explicit inline-only rationale naming the record or sibling model that already holds the data. The merged model covers identity and classification, header-to-line composition and the balancing invariant, monetary/FX and tax measurement, time roles and fiscal period, lifecycle and correction, provenance, authority and control, validation, reconciliation and audit risk signals, and access, retention and exchange for one accounting posting. Two Grok findings and three Grok functions close named gaps: top-side adjustments made outside the general ledger, management override of controls, explicit authorization as an operation, closed-period exception posting, and reconciliation of servicer-booked cash entries into counterpart journals. Coverage is asserted only for the operating surface an agent needs to create, validate, post, correct, audit, retain and export an entry under the standards actually read; it is alignment, not conformance, and it is not universal across jurisdictions, accounting frameworks, ledger products or distributed-ledger postings. Privacy remains a declared gap.",
+  "boundary_decision": {
+    "entry_kind": "aggregate",
+    "status": "accepted",
+    "rationale": "The two providers disagree (Claude: aggregate, Grok: event). Aggregate is retained because the defining constraint of the subject is an invariant that binds a header to two or more posting lines and cannot be evaluated on any single record: debits must equal credits within a declared scope. A flat event record cannot carry that consistency boundary, cannot express partial reversal, and cannot express the single-sided servicer booking that Grok itself distinguishes from a balanced journal. Grok's event framing is not discarded: it is preserved inside the base as distinct event-time roles (document, effective, posting, value, booking) separated from capture and ingestion time, so the posting remains time-stamped without becoming its own entry kind."
+  },
+  "add_findings": [
+    {
+      "provider": "grok",
+      "source_finding_id": "f-reversal-adjustment",
+      "target_finding_id": "fnd-top-side-adjustments",
+      "target_layer_id": "lyr-lifecycle-state",
+      "rationale": "Closes a gap the base declares against itself: Claude's known_omissions state that consolidating, intercompany elimination and multi-entity matching postings are referenced as a classification but not modelled as structure. Grok carries the PCAOB-evidenced case (SRC-003 Audit Focus, SRC-004 AS 2401, SRC-005 AS 2201) that consolidating, combination, reclassification and other top-side adjustments may never appear as formal general-ledger journal entries at all. The base has no place to represent an adjustment that never becomes a voucher. Narrowed to the top-side axis on ingest and named fnd-top-side-adjustments so it does not duplicate fnd-reversal-correction, which owns ledger-internal reversal, storno and correction linkage, nor fnd-risk-indicators, which owns late and unusual timing signals."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "f-authorization-control",
+      "target_finding_id": "fnd-control-activities-override",
+      "target_layer_id": "lyr-authority-policy",
+      "rationale": "The base layer owns entitlement shape (who may post to which accounts, periods and amounts; prohibited duty combinations; automated posting mandate) but never asks whether a control was in fact overridden, which is the central premise of the fraud standard both providers cite. Grok adds the ICFR control-activity framing from SRC-005 AS 2201 covering initiation, authorization, recording and processing across the general ledger, subsidiary ledgers and other IT systems, plus management and system override evidence. Non-duplicative on that axis; overlapping preparer/approver questions are already owned by fnd-actor-attribution and read access by fnd-access-control, and should be deduplicated rather than restated."
+    }
+  ],
+  "add_functions": [
+    {
+      "provider": "grok",
+      "source_function_id": "fn-authorize-entry",
+      "target_function_id": "fn-authorize-entry",
+      "rationale": "The base models approval as data (fnd-actor-attribution, art-approval-record) and asserts segregation of duties, but exposes no operation between fn-validate-entry and fn-post-entry that records an authorizer distinct from the initiator. Without it the segregation-of-duties invariant has no enforcement point in the function set."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "fn-reject-closed-period",
+      "target_function_id": "fn-reject-closed-period",
+      "rationale": "The base has fn-close-period (transition the period) but no operation that blocks a posting into an already closed period or records the documented exception grant that permits an authorized adjusting entry. Period state is modelled in fnd-period-and-cutoff; this supplies the missing enforcement and exception-grant operation rather than new structure."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "fn-apply-bank-transaction-code",
+      "target_function_id": "fn-apply-bank-transaction-code",
+      "rationale": "The base carries art-account-statement-entry and fnd-settlement-finality and asserts in its boundary notes that a servicer booking is not the account owner's journal entry, but offers no operation to classify a booked cash entry and route it to a counterpart journal. This is the reconciliation step that makes the base's own single-sided/balanced distinction actionable, evidenced by the ISO 20022 bank transaction code external code set."
+    }
+  ],
+  "merge_service_layers": true,
+  "decisions": [
+    {
+      "concept": "Base provider selection",
+      "disposition": "Claude adopted as base",
+      "rationale": "Not chosen on size. Claude states six boundary notes that each name the owning sibling model with source refs, nine out-of-scope items against Grok's seven, and an inline-only rationale on every artifact-less finding that names where the data already lives. Grok's boundaries are sound but thinner and its coverage checklist marks every dimension covered, which is a weaker self-assessment than Claude's declared privacy gap."
+    },
+    {
+      "concept": "Entry kind aggregate versus event",
+      "disposition": "Aggregate retained; event semantics kept as time roles",
+      "rationale": "The balancing invariant spans header and lines and defines a consistency boundary no single event record can carry. Grok's event reading is preserved as the distinct document, posting, value and booking event times separated from ingestion time, so nothing is lost by not promoting event to the entry kind."
+    },
+    {
+      "concept": "Top-side, consolidating and reclassification adjustments outside the general ledger",
+      "disposition": "Accepted from Grok into lyr-lifecycle-state as fnd-top-side-adjustments",
+      "rationale": "Materially missing and self-declared as an omission by the base, tier-1 PCAOB evidence in the source provider, and it fits an existing lifecycle layer. Narrowed on ingest to the top-side axis so it does not restate fnd-reversal-correction."
+    },
+    {
+      "concept": "Management override of controls and ICFR control activities",
+      "disposition": "Accepted from Grok into lyr-authority-policy as fnd-control-activities-override",
+      "rationale": "The base asks who may post and which duty combinations are prohibited but never asks whether a control was overridden or what override evidence exists, which is the core assertion of the fraud standard both providers cite as a primary source."
+    },
+    {
+      "concept": "Grok f-master-identifiers identifier ladder",
+      "disposition": "Rejected as duplicative",
+      "rationale": "The base fnd-entry-identifier already covers the issuing system of record, line addressing stable across export and re-import, external reference resolution and uniqueness scope, and its coverage checklist already states the identity priority and forbids dates as identifiers. Multi-book stability is covered by q-parallel-ledgers."
+    },
+    {
+      "concept": "Grok f-monetary-fx and the ISO 4217 minor-unit exponent",
+      "disposition": "Rejected as a finding; ISO 4217 deferred as a source addition",
+      "rationale": "Amount, direction, currency, scale, rounding, rate provenance and revaluation linkage are all carried by fnd-amount-and-direction and fnd-currency-translation. What Grok genuinely adds is a currency registry citation, which is a source-level gap in the base and is handled through deferred research rather than by duplicating two findings."
+    },
+    {
+      "concept": "Grok f-interchange-alignment standard mappings",
+      "disposition": "Rejected as duplicative",
+      "rationale": "The base fnd-exchange-profiles owns target profile and version, unmapped-field loss, asserted export scope, account code mapping and profile-conflict precedence, and already references the XBRL GL SRCD mapping module in its boundary notes. Grok's module inventory is instance detail inside that finding, not a second finding."
+    },
+    {
+      "concept": "Grok q-inquiry-of-processors audit inquiry procedure",
+      "disposition": "Rejected on boundary",
+      "rationale": "Inquiry of individuals involved in processing entries is an audit engagement procedure about people, not context carried by or about the posting. Admitting it would pull audit fieldwork into a ledger artifact model whose boundary already stops at entry-level risk attributes and completeness attestation."
+    },
+    {
+      "concept": "Grok f-period-lock-access",
+      "disposition": "Rejected as a finding; its operative half accepted as fn-reject-closed-period",
+      "rationale": "Period state, who may post into each state, default-deny access and personal data on lines are already split across fnd-period-and-cutoff and fnd-access-control in the base. Only the exception-grant operation was missing, so it enters as a function rather than as overlapping structure."
+    },
+    {
+      "concept": "Grok f-balancing-rule and the single-sided bank entry",
+      "disposition": "Rejected as duplicative structure",
+      "rationale": "Balancing scope, tolerance and imbalance handling are owned by fnd-balancing-invariant, and the single-sided servicer booking is already stated in the base boundary note against WM-ECO-009, in fnd-settlement-finality and in the base conflict list. The distinction is retained; a second balancing finding is not."
+    },
+    {
+      "concept": "Grok q-going-concern-basis",
+      "disposition": "Rejected as out of scope",
+      "rationale": "Whether the consuming financial statements are prepared on a going-concern basis is a property of the reporting model, which both providers place outside this boundary. Carrying it on a posting would make every entry assert a statement-level judgement it does not own."
+    },
+    {
+      "concept": "Privacy dimension status",
+      "disposition": "Claude's declared gap retained over Grok's covered",
+      "rationale": "Neither provider read a data protection instrument as a primary source. Grok's access checklist entry mentions privacy on personal-data lines but rests on auditing standards, so the honest status is the base's structural-only gap, and it becomes a publication hold."
+    },
+    {
+      "concept": "Spatial dimension status",
+      "disposition": "Claude's not-applicable retained",
+      "rationale": "A posting has jurisdiction and business-unit context, which both providers model, but no intrinsic geometry or physical location. Grok marking spatial covered on the strength of a books-jurisdiction question overstates it; place of supply belongs to the tax obligation model."
+    },
+    {
+      "concept": "Direction representation: indicator versus signed amount",
+      "disposition": "Indicator plus unsigned magnitude authoritative; signed forms derived",
+      "rationale": "Both providers reached the same canonical form independently from XBRL GL and ISO 20022 conventions, so this is a resolved convergence, not a conflict. The known lossiness when importing from a signed-only source is carried forward as a recorded conflict in the draft, not as a blocker."
+    },
+    {
+      "concept": "Service layers",
+      "disposition": "Merged",
+      "rationale": "Both providers place identical service concerns (identity priority, RFC 3339 timestamps with explicit offset, default-deny access, retention and legal hold, serial artifact naming) at compatible scopes, so a single merged service layer avoids two competing statements of the same rule."
+    },
+    {
+      "concept": "Standards conformance posture",
+      "disposition": "Alignment only, no conformance claim",
+      "rationale": "Both providers independently reached this through adversarial checking: two ISO standards were readable only at catalogue level for the base, and neither provider retrieved the OECD SAF-T or camt.053 schemas. Every external standard is recorded as an alignment with its conflicts listed."
+    }
+  ],
+  "critical_conflicts": [],
+  "publication_holds": [
+    "Source and live-version verification is outstanding: every accepted URL must be re-fetched and version-pinned, and the four base sources readable only at catalogue or metadata level (ISO 21378:2019 and ISO/IEC 15944-4:2015 paywalled; OECD SAF-T v2.0 guidance and the CPMI-IOSCO PFMI retrieved as non-extractable PDFs) must be labelled catalogue-level-only in the published draft, with no field-level claim resting on them.",
+    "Multi-profile domain validation is outstanding: the merged structure has not been exercised against at least two national tax-audit file profiles, one ERP journal projection and one ISO 20022 camt statement projection, so profile-specific field loss, code-list conflicts and round-trip behaviour remain unmeasured.",
+    "The privacy dimension is a declared gap in both providers: no data protection instrument was read as a primary source, so the personal-data and erasure-versus-retention treatment is structural only and must not be published as legal guidance.",
+    "No conformance claim to XBRL GL, SAF-T, ISO 20022, ISO 4217, ISO 21378, ISO/IEC 15944-4, IFRS or PCAOB standards may appear in the published draft; all external standards are recorded as alignments with their conflicts listed.",
+    "The entry-kind adjudication must be published with its rationale, including the fact that the two providers disagreed, so downstream Dimensions do not silently re-model the posting as a flat event record and lose the balancing consistency boundary.",
+    "Retention durations in the base are illustrated from a US securities rule and UK company law only; the draft must state that no universal period exists and that a per-jurisdiction declaration is required before any operational use."
+  ],
+  "deferred_research": [
+    "Top-side, consolidating, combination and reclassification adjustments that never become formal general-ledger vouchers: decide whether the newly added fnd-top-side-adjustments warrants its own structure in this model or an explicit hand-off to a consolidation model, and source it beyond PCAOB staff guidance.",
+    "Read a data protection instrument (GDPR or an equivalent national regime) as a primary source and rebuild the personal-data, erasure and retention-conflict treatment on it rather than on structural inference.",
+    "Add ISO 4217 as a cited source for currency code and minor-unit exponent governance; the base asserts scale and rounding rules without a currency registry citation, and only the non-base provider carried one.",
+    "Add the FIBO Business Process homonym boundary note distinguishing a market-side securities or derivatives transaction from a ledger posting; only the non-base provider carried it and boundary notes cannot be merged through this plan.",
+    "Obtain the ISO 21378:2019 and ISO/IEC 15944-4:2015 texts, the OECD SAF-T 2.0 XML schema and the camt.053 XSD field inventory so field-level and ontology-level claims can rest on primary text rather than corroboration.",
+    "Distributed-ledger, hash-chained and token-settlement postings and their effect on the immutability point are unsupported in both providers and are currently treated as a storage projection only.",
+    "Non-IFRS national GAAP, IPSAS public-sector accrual and AAOIFI Islamic accounting recognition and measurement differences, none of which either provider modelled beyond a generic framework reference on the ledger profile.",
+    "Governance of automated posting-rule authoring, testing and change control: the base references a posting-rule version but does not model who owns, tests or retires the rule that derives lines from a source event."
+  ]
+}
