@@ -126,14 +126,14 @@ def semantic_errors(data: dict[str, Any], expected_model_id: str | None = None) 
         dimension for dimension, tokens in aliases.items()
         if not any(any(token in text for token in tokens) for text in checklist_text)
     ]
+    missing_dimensions.sort()
+    if missing_dimensions:
+        errors.append("coverage checklist is missing: " + ", ".join(missing_dimensions))
     delete_rules = " ".join(
         data.get("service_layers", {}).get("crud", {}).get("delete", [])
     ).casefold()
     if not any(token in delete_rules for token in ("retention", "retain", "tombstone", "retire", "deletion", "delete")):
-        missing_dimensions.append("retention and deletion")
-    missing_dimensions.sort()
-    if missing_dimensions:
-        errors.append("coverage checklist is missing: " + ", ".join(missing_dimensions))
+        errors.append("service_layers.crud.delete is missing an explicit retention or deletion rule")
     if not findings:
         errors.append("no findings were produced")
     return errors

@@ -59,6 +59,19 @@ model links and the Vercy service layers needed to govern the model.
     model-specific dimensions): `identity`, `lifecycle`, `relationships`,
     `temporal`, `provenance`, `ownership`, `validation`, `access`,
     `retention and deletion`, `interoperability`.
+13. Treat the known-relation ledger as a strict composition and ownership
+    contract, not as optional background. For an outgoing `REFERENCE` or
+    `ALIGN`, the current model may carry the target reference, binding and
+    subject-specific parameters, but must not reproduce the target model's
+    lifecycle or operational functions. For an outgoing `EXTEND`, specialize
+    only the current subject; do not duplicate generic identity, authority,
+    lifecycle or conflict machinery that the relation rationale leaves in the
+    target. Before returning, compare every bundle, layer, finding and function
+    with every relation rationale. Move any target-owned concept to a
+    composition link, `out_of_scope` or `boundary_notes` entry rather than
+    modelling it locally. In particular, a reference to a runtime evaluator,
+    enforcement engine or audit record never grants ownership of evaluation,
+    execution, enforcement or audit-trail semantics.
 
 ## Provider focus
 
@@ -95,6 +108,13 @@ merely imply or paraphrase them:
 - `coverage.checklist` explicitly includes `identity`, `lifecycle`,
   `relationships`, `temporal`, `provenance`, `ownership`, `validation`,
   `access`, `retention and deletion`, and `interoperability`.
+- `service_layers.crud.delete` contains an explicit retention, disposition,
+  tombstone or deletion rule for this model's own records and says which
+  referenced model or adopting-Dimension policy owns execution when deletion
+  itself is outside this model's boundary.
+- Every bundle, layer, finding and function has been checked against every
+  known-relation rationale; none owns a target model's lifecycle or operational
+  evaluation, execution, enforcement or audit-trail semantics.
 - Every local ID is unique and contains no date-like component; every
   `source_ref` resolves; every finding has an artifact or a substantive
   inline-only rationale; question texts are distinct.
