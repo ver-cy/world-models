@@ -37,9 +37,12 @@ model links and the Vercy service layers needed to govern the model.
    state/lifecycle, time, location where relevant, provenance, ownership,
    authority, constraints, process/events, measurement, evidence/quality,
    access/exceptions and interoperability where they genuinely apply.
-6. A finding must have at least three distinct questions, candidate answer data
-   and at least one artifact or an explicit explanation of why it is purely
-   inline/reference data.
+6. A finding must have at least three distinct questions and candidate answer
+   data. It must then choose exactly one representation: either declare one or
+   more artifacts and set `inline_only_rationale` to JSON `null`, or declare an
+   empty `artifacts` array and provide a substantive `inline_only_rationale`
+   explaining why the context is purely inline/reference data. Never populate
+   both artifacts and the rationale.
 7. Identity priority is: authoritative master-system identifier; governed global
    identifier/IRI; UUID or ULID assigned by the adopting Dimension. A date is not
    an identifier. Time values use RFC 3339 with seconds and an explicit offset or
@@ -116,8 +119,9 @@ merely imply or paraphrase them:
   known-relation rationale; none owns a target model's lifecycle or operational
   evaluation, execution, enforcement or audit-trail semantics.
 - Every local ID is unique and contains no date-like component; every
-  `source_ref` resolves; every finding has an artifact or a substantive
-  inline-only rationale; question texts are distinct.
+  `source_ref` resolves; every finding satisfies the exclusive artifact rule:
+  non-empty `artifacts` with `inline_only_rationale: null`, or empty `artifacts`
+  with a substantive rationale, never both; question texts are distinct.
 - Use at least eight distinct question kinds, except that a `mixin` or
   `classifier` may use six when the narrower surface is justified.
 
