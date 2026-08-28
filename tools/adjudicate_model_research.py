@@ -165,6 +165,10 @@ Rules:
   is not decisive.
 - Add a finding only when it is materially missing from the base, evidence-backed
   in the source provider, non-duplicative, and fits an existing base layer.
+- The deterministic synthesizer copies an accepted finding verbatim. Inspect its
+  name, description and questions as a whole: reject or defer the finding when
+  any of them contradict the chosen aggregate root, entry kind or boundary. Do
+  not accept a node on the assumption that its wording will be edited later.
 - `provider` on each addition must be the non-base source provider; use exact
   source IDs and exact existing target layer IDs.
 - Prefer rejection/deferral over duplicate or weakly supported structure.
