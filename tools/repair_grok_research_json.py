@@ -15,6 +15,7 @@ from pathlib import Path
 from run_model_research import (
     CLAUDE_LOCAL_SETTINGS,
     ROOT,
+    SCHEMA_PATH,
     extract_result,
     hide_claude_local_settings,
     write_json,
@@ -25,12 +26,14 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-id", required=True)
     parser.add_argument("--run-root", type=Path, default=ROOT / "research" / "runs")
+    parser.add_argument("--provider-model", default="grok-4.6")
     parser.add_argument("--timeout", type=int, default=1800)
     args = parser.parse_args()
     run_dir = args.run_root / args.model_id.casefold()
     raw_path = run_dir / "grok.raw.json"
     research_raw_path = run_dir / "grok.research.raw.json"
-    wrapper = json.loads(raw_path.read_text(encoding="utf-8"))
+    source_path = research_raw_path if research_raw_path.exists() else raw_path
+    wrapper = json.loads(source_path.read_text(encoding="utf-8"))
     session_id = wrapper.get("sessionId") or wrapper.get("session_id")
     if not session_id:
         raise SystemExit("Grok wrapper has no session ID")
@@ -38,7 +41,9 @@ def main() -> int:
         key: value for key, value in wrapper.items()
         if key not in {"thought", "thinking", "reasoning"}
     }
-    write_json(research_raw_path, safe_original)
+    if not research_raw_path.exists():
+        write_json(research_raw_path, safe_original)
+    schema_text = SCHEMA_PATH.read_text(encoding="utf-8")
 
     executable = shutil.which("grok")
     if not executable:
@@ -60,13 +65,14 @@ def main() -> int:
             "--cwd", temp_name,
             "--resume", session_id,
             "-p", prompt,
-            "--model", "grok-4.6",
+            "--model", args.provider_model,
             "--reasoning-effort", "high",
             "--no-memory",
             "--no-subagents",
             "--tools", "",
             "--max-turns", "6",
             "--output-format", "json",
+            "--json-schema", schema_text,
             "--verbatim",
         ]
         environment = os.environ.copy()
