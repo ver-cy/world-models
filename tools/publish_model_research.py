@@ -18,6 +18,8 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from provider_policy import provider_label
+
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = ROOT / "planning" / "VERCY-UNIFIED-MEGA-REGISTRY.csv"
@@ -200,6 +202,22 @@ def render_page(spec: dict[str, Any], adjudication: dict[str, Any], digest: str)
         f"<a href=\"{html.escape(item['url'])}\">{html.escape(item['version'])}</a>"
         for item in meta.get("previousVersions", [])
     ) or "-"
+    active_labels = [provider_label(item) for item in adjudication.get("active_providers", [])]
+    provider_names = " + ".join(active_labels) or "Declared provider"
+    if adjudication.get("provider_mode") == "single-provider-waiver":
+        draft_note = (
+            f"The {provider_names}-only synthesis is public under an explicit "
+            "repository-owner provider waiver. It passed structural validation "
+            "and a separate no-tools adversarial audit, but remains a reviewable "
+            "draft until independent second-provider review and the holds below "
+            "are closed."
+        )
+    else:
+        draft_note = (
+            f"The {provider_names} synthesis is public for review and use with "
+            "caution. It passed structural validation but is not yet a canonical "
+            "Vercy release because the source and coverage holds below remain open."
+        )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(meta['name'])} · Vercy</title>
@@ -213,7 +231,7 @@ def render_page(spec: dict[str, Any], adjudication: dict[str, Any], digest: str)
 <span class="v-eyebrow">World Models · public research draft</span><h1>{html.escape(meta['name'])}</h1>
 <p class="v-lede">{html.escape(model['purpose'])}</p>
 <div class="v-actions"><a class="v-button v-button-primary" href="spec.yaml">AI YAML</a><a class="v-button" href="AGENTS.md">AGENTS.md</a><a class="v-button" href="{html.escape(spec['sourceUrl'])}">Research evidence</a></div>
-<div class="draft-note"><strong>Research draft.</strong> The Claude + Grok synthesis is public for review and use with caution. It passed structural validation but is not yet a canonical Vercy release because the source and coverage holds below remain open.</div>
+<div class="draft-note"><strong>Research draft.</strong> {html.escape(draft_note)}</div>
 <section class="facts"><div class="fact"><span>Catalogue ID</span><strong>{html.escape(meta['id'])}</strong></div><div class="fact"><span>Version</span><strong>{html.escape(meta['version'])}</strong></div><div class="fact"><span>Previous version</span><strong>{previous}</strong></div><div class="fact"><span>Type</span><strong>{html.escape(meta['entryKind'])}</strong></div><div class="fact"><span>Validation</span><strong>Passed</strong></div><div class="fact"><span>Synthesis digest</span><strong><code>sha256:{digest[:16]}…</code></strong></div></section>
 <section class="stats">{''.join(f'<div><strong>{metric[key]}</strong><span>{key.title()}</span></div>' for key in ('sources','bundles','layers','findings','questions','artifacts'))}</section>
 <section><span class="v-eyebrow">Format-independent logical structure</span><h2>Bundles → Layers → Findings → Questions + Artifacts</h2>{render_tree(spec)}</section>
@@ -264,6 +282,9 @@ def main() -> int:
     previous_versions = list(deduplicated_previous.values())
 
     metric = counts(result)
+    active = list(adjudication.get("active_providers", []))
+    waived = list(adjudication.get("waived_providers", []))
+    policy = adjudication.get("provider_policy", {})
     spec = {
         "vercy": "1.0-draft",
         "publication": {
@@ -272,7 +293,9 @@ def main() -> int:
             "publishableCanonical": bool(adjudication.get("publishable")),
             "generatedAt": adjudication["generated_at"],
             "synthesisSha256": synthesis_digest,
-            "providers": ["Claude", "Grok"],
+            "providerMode": adjudication.get("provider_mode", "dual-provider"),
+            "providers": [provider_label(item) for item in active],
+            "waivedProviders": [provider_label(item) for item in waived],
         },
         "metaModel": {
             "id": model["model_id"],
@@ -298,6 +321,10 @@ def main() -> int:
         "serviceLayers": result["service_layers"],
         "coverage": result["coverage"],
         "researchAdjudication": {
+            "providerMode": adjudication.get("provider_mode", "dual-provider"),
+            "activeProviders": active,
+            "waivedProviders": waived,
+            "providerPolicy": policy,
             "boundaryDecision": adjudication["boundary_decision"],
             "decisions": adjudication["decisions"],
             "publicationHolds": adjudication.get("publication_holds", []),
@@ -321,6 +348,9 @@ def main() -> int:
         "synthesis_sha256": synthesis_digest,
         "statistics": metric,
         "publication_holds": adjudication.get("publication_holds", []),
+        "provider_mode": adjudication.get("provider_mode", "dual-provider"),
+        "providers": active,
+        "waived_providers": waived,
     }
     write_json(target / "publication.json", publication)
     agents = f"""# {model['name']}

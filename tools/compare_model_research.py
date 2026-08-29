@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a deterministic Claude/Grok overlap and omission report."""
+"""Create a deterministic provider overlap or waiver-aware omission report."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
+
+from provider_policy import active_providers, load_provider_policy, waived_provider_names
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -101,13 +103,15 @@ def main() -> int:
     parser.add_argument("--run-root", type=Path, default=ROOT / "research" / "runs")
     args = parser.parse_args()
     run_dir = args.run_root / args.model_id.casefold()
-    claude = json.loads((run_dir / "claude.result.json").read_text(encoding="utf-8"))
-    grok = json.loads((run_dir / "grok.result.json").read_text(encoding="utf-8"))
-
-    claude_urls = {source["url"]: source for source in claude["sources"]}
-    grok_urls = {source["url"]: source for source in grok["sources"]}
+    policy = load_provider_policy()
+    active = active_providers(policy)
+    waived = waived_provider_names(policy)
+    providers = {
+        provider: json.loads((run_dir / f"{provider}.result.json").read_text(encoding="utf-8"))
+        for provider in active
+    }
     question_kinds = {}
-    for provider, result in (("claude", claude), ("grok", grok)):
+    for provider, result in providers.items():
         question_kinds[provider] = dict(sorted(Counter(
             question["kind"]
             for bundle in result["structure"]["bundles"]
@@ -116,28 +120,78 @@ def main() -> int:
             for question in finding["questions"]
         ).items()))
 
-    report = {
+    report: dict[str, Any] = {
+        "contract_version": "1.0.0",
         "model_id": args.model_id,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "provider_counts": {"claude": counts(claude), "grok": counts(grok)},
-        "entry_kind_agreement": {
-            "agrees": claude["model"]["entry_kind"] == grok["model"]["entry_kind"],
-            "claude": claude["model"]["entry_kind"],
-            "grok": grok["model"]["entry_kind"],
-        },
-        "sources": {
-            "common_urls": sorted(claude_urls.keys() & grok_urls.keys()),
-            "claude_only": sorted(claude_urls.keys() - grok_urls.keys()),
-            "grok_only": sorted(grok_urls.keys() - claude_urls.keys()),
-        },
-        "structure": {
-            "bundles": match_nodes(flatten(claude, "bundle"), flatten(grok, "bundle"), 0.44),
-            "layers": match_nodes(flatten(claude, "layer"), flatten(grok, "layer"), 0.48),
-            "findings": match_nodes(flatten(claude, "finding"), flatten(grok, "finding"), 0.52),
-            "questions": match_nodes(flatten(claude, "question"), flatten(grok, "question"), 0.68),
-        },
+        "mode": policy["mode"],
+        "provider_policy": policy,
+        "provider_counts": {provider: counts(result) for provider, result in providers.items()},
         "question_kinds": question_kinds,
-        "synthesis_gate": {
+    }
+    if len(active) == 1:
+        provider = active[0]
+        result = providers[provider]
+        urls = sorted(source["url"] for source in result["sources"])
+        report.update({
+            "entry_kind_agreement": {
+                "status": "waived",
+                "agrees": None,
+                "claude": result["model"]["entry_kind"] if provider == "claude" else None,
+                "grok": result["model"]["entry_kind"] if provider == "grok" else None,
+            },
+            "sources": {
+                "common_urls": [],
+                "claude_only": urls if provider == "claude" else [],
+                "grok_only": urls if provider == "grok" else [],
+            },
+            "structure": {
+                plural: {
+                    "matches": [],
+                    "claude_only": flatten(result, level) if provider == "claude" else [],
+                    "grok_only": flatten(result, level) if provider == "grok" else [],
+                }
+                for plural, level in (
+                    ("bundles", "bundle"),
+                    ("layers", "layer"),
+                    ("findings", "finding"),
+                    ("questions", "question"),
+                )
+            },
+            "synthesis_gate": {
+                "status": "requires-single-provider-adjudication",
+                "requirements": [
+                    "Run a separate no-tools adversarial audit of the active provider result.",
+                    "Verify the model boundary and entry kind against the frozen relationship contract.",
+                    "Verify live URLs and version pins for all accepted sources.",
+                    "Expose the owner-authorized provider waiver in every publication artifact.",
+                    "Keep the result reviewable-draft while independent second-provider review is waived.",
+                ],
+            },
+            "waived_providers": waived,
+        })
+    else:
+        claude, grok = providers["claude"], providers["grok"]
+        claude_urls = {source["url"]: source for source in claude["sources"]}
+        grok_urls = {source["url"]: source for source in grok["sources"]}
+        report.update({
+            "entry_kind_agreement": {
+                "agrees": claude["model"]["entry_kind"] == grok["model"]["entry_kind"],
+                "claude": claude["model"]["entry_kind"],
+                "grok": grok["model"]["entry_kind"],
+            },
+            "sources": {
+                "common_urls": sorted(claude_urls.keys() & grok_urls.keys()),
+                "claude_only": sorted(claude_urls.keys() - grok_urls.keys()),
+                "grok_only": sorted(grok_urls.keys() - claude_urls.keys()),
+            },
+            "structure": {
+                "bundles": match_nodes(flatten(claude, "bundle"), flatten(grok, "bundle"), 0.44),
+                "layers": match_nodes(flatten(claude, "layer"), flatten(grok, "layer"), 0.48),
+                "findings": match_nodes(flatten(claude, "finding"), flatten(grok, "finding"), 0.52),
+                "questions": match_nodes(flatten(claude, "question"), flatten(grok, "question"), 0.68),
+            },
+            "synthesis_gate": {
             "status": "requires-adjudication",
             "requirements": [
                 "Resolve every provider-only bundle, layer and finding against primary evidence.",
@@ -145,9 +199,9 @@ def main() -> int:
                 "Verify live URLs and version pins for all accepted sources.",
                 "Record every rejected and deferred node with a reason.",
                 "Do not publish while any critical conflict remains unresolved."
-            ]
-        }
-    }
+                ],
+            },
+        })
     output = run_dir / "comparison.json"
     output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(output)

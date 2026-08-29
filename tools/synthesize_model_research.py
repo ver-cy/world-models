@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from provider_policy import active_providers, load_provider_policy, waived_provider_names
 from run_model_research import ROOT, write_json
 from validate_model_research import validate
 
@@ -74,14 +75,19 @@ def main() -> int:
     run_dir = args.run_root / args.model_id.casefold()
     plan_path = run_dir / "synthesis-plan.json"
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    policy = load_provider_policy()
+    active = active_providers(policy)
+    waived = waived_provider_names(policy)
     providers = {
         provider: json.loads((run_dir / f"{provider}.result.json").read_text(encoding="utf-8"))
-        for provider in ("claude", "grok")
+        for provider in active
     }
+    if len(active) == 1 and (plan.get("add_findings") or plan.get("add_functions")):
+        raise ValueError("single-provider synthesis cannot add nodes from a waived provider")
 
     source_by_url: dict[str, dict[str, Any]] = {}
-    source_maps: dict[str, dict[str, str]] = {"claude": {}, "grok": {}}
-    for provider in ("claude", "grok"):
+    source_maps: dict[str, dict[str, str]] = {provider: {} for provider in active}
+    for provider in active:
         for source in providers[provider]["sources"]:
             url_key = source["url"].rstrip("/")
             if url_key not in source_by_url:
@@ -95,6 +101,8 @@ def main() -> int:
         for provider in providers
     }
     base_provider = plan["base_provider"]
+    if base_provider not in active:
+        raise ValueError(f"base provider is not active under provider policy: {base_provider}")
     result = copy.deepcopy(transformed[base_provider])
     result["sources"] = list(source_by_url.values())
 
@@ -119,7 +127,7 @@ def main() -> int:
             result["functions"].append(function)
             function_ids.add(function["id"])
 
-    if plan.get("merge_service_layers", True):
+    if len(active) > 1 and plan.get("merge_service_layers", True):
         other_provider = "grok" if base_provider == "claude" else "claude"
         other_service = transformed[other_provider]["service_layers"]
         result["service_layers"]["policies"] = unique(
@@ -130,11 +138,12 @@ def main() -> int:
                 result["service_layers"]["access"][key] + other_service["access"][key]
             )
 
-    other_provider = "grok" if base_provider == "claude" else "claude"
-    for key in ("known_omissions", "conflicts", "regional_assumptions", "adversarial_checks"):
-        result["coverage"][key] = unique(
-            result["coverage"][key] + transformed[other_provider]["coverage"][key]
-        )
+    if len(active) > 1:
+        other_provider = "grok" if base_provider == "claude" else "claude"
+        for key in ("known_omissions", "conflicts", "regional_assumptions", "adversarial_checks"):
+            result["coverage"][key] = unique(
+                result["coverage"][key] + transformed[other_provider]["coverage"][key]
+            )
     result["coverage"]["confidence"] = plan.get("confidence", "medium")
     result["coverage"]["claim"] = plan["coverage_claim"]
 
@@ -146,25 +155,42 @@ def main() -> int:
         provider: hashlib.sha256((run_dir / f"{provider}.result.json").read_bytes()).hexdigest()
         for provider in providers
     }
-    publication_holds = plan.get("publication_holds", [])
+    publication_holds = list(plan.get("publication_holds", []))
+    if len(active) == 1:
+        publication_holds = unique(publication_holds + [
+            "Independent second-provider review was explicitly waived by the repository owner; this Claude-only result remains a reviewable draft."
+        ])
+    publishable = (
+        len(active) > 1
+        and validation["valid"]
+        and not plan.get("critical_conflicts", [])
+        and not publication_holds
+    )
+    reviewable = validation["valid"] and not plan.get("critical_conflicts", [])
     adjudication = {
         "contract_version": "1.0.0",
         "model_id": args.model_id,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "input_sha256": input_hashes,
+        "provider_mode": policy["mode"],
+        "active_providers": active,
+        "waived_providers": waived,
+        "provider_policy": policy,
         "base_provider": base_provider,
         "boundary_decision": plan["boundary_decision"],
         "decisions": plan["decisions"],
         "critical_conflicts": plan.get("critical_conflicts", []),
         "deferred_research": plan.get("deferred_research", []),
         "publication_holds": publication_holds,
-        "status": "publishable-draft" if validation["valid"] and not plan.get("critical_conflicts", []) and not publication_holds else "reviewable-draft",
-        "publishable": validation["valid"] and not plan.get("critical_conflicts", []) and not publication_holds,
+        "status": "publishable-draft" if publishable else "reviewable-draft",
+        "publishable": publishable,
+        "reviewable": reviewable,
         "validation": validation,
     }
+    write_json(run_dir / "provider-policy.json", policy)
     write_json(run_dir / "adjudication.json", adjudication)
     print(json.dumps(adjudication, ensure_ascii=False, indent=2))
-    return 0 if adjudication["publishable"] else 1
+    return 0 if adjudication["reviewable"] else 1
 
 
 if __name__ == "__main__":

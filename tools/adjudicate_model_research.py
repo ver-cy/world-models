@@ -10,11 +10,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
+from provider_policy import active_providers, load_provider_policy, waived_provider_names
 from run_model_research import ROOT, extract_result, now, write_json
 
 
@@ -129,6 +131,32 @@ def compact_result(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def frozen_context(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    context = {}
+    for tag in ("registry-record", "relationship-contract", "legacy-source"):
+        match = re.search(rf"<{tag}>(.*?)</{tag}>", text, flags=re.DOTALL)
+        if match:
+            context[tag] = match.group(1).strip()
+    # Current prompts use Markdown sections rather than XML wrappers. The
+    # previous-version material contains its own level-two headings, so its
+    # stable terminator is the machine-gate section instead of the next heading.
+    section_patterns = {
+        "registry-record": r"^## Registry context\s*(.*?)(?=^## Known relations\s*$)",
+        "relationship-contract": r"^## Known relations\s*(.*?)(?=^## Previous-version material \(non-authoritative\)\s*$)",
+        "legacy-source": r"^## Previous-version material \(non-authoritative\)\s*(.*?)(?=^## Machine-gate preflight\s*$)",
+    }
+    for key, pattern in section_patterns.items():
+        if key in context:
+            continue
+        match = re.search(pattern, text, flags=re.DOTALL | re.MULTILINE)
+        if match:
+            context[key] = match.group(1).strip()
+    return context
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-id", required=True)
@@ -145,17 +173,52 @@ def main() -> int:
     if output_path.exists() and not args.force:
         print(f"adjudication plan exists; use --force to replace: {output_path}")
         return 0
+    policy = load_provider_policy()
+    active = active_providers(policy)
+    waived = waived_provider_names(policy)
     providers = {
         provider: json.loads((run_dir / f"{provider}.result.json").read_text(encoding="utf-8"))
-        for provider in ("claude", "grok")
+        for provider in active
     }
     comparison = json.loads((run_dir / "comparison.json").read_text(encoding="utf-8"))
     payload = {
         "model_id": args.model_id,
+        "provider_policy": policy,
         "providers": {provider: compact_result(result) for provider, result in providers.items()},
         "comparison": comparison,
+        "frozen_context": frozen_context(run_dir / f"{active[0]}.prompt.md"),
     }
-    prompt = """You are the Vercy dual-research adjudicator. You cannot browse or
+    if len(active) == 1:
+        prompt = """You are the Vercy single-provider adversarial auditor operating
+under an explicit repository-owner waiver. You cannot browse, use tools or add
+facts. Audit the already validated active-provider result below against its own
+evidence, frozen registry record, relationship contract, legacy source and
+declared omissions. Return an explicit synthesis plan for the deterministic
+Vercy synthesizer.
+
+Rules:
+- `base_provider` must be the sole active provider.
+- `add_findings` and `add_functions` must be empty because no second provider
+  exists. `merge_service_layers` remains true for schema compatibility but the
+  deterministic synthesizer will not merge a waived provider.
+- Challenge the aggregate root, entry kind, ownership boundary, composition
+  relations, source support, retention, access and artifact identity rules.
+- Inspect names, descriptions, questions and functions as a whole. Record at
+  least five concrete accepted/rejected/deferred decisions.
+- Confidence cannot be high in single-provider mode.
+- The publication holds must expose both live source/version verification and
+  the owner-authorized absence of independent second-provider review.
+- Critical conflicts are only unresolved contradictions that prevent even a
+  public reviewable draft. Do not manufacture a conflict merely because Grok
+  was waived.
+- Do not claim universal completeness.
+
+Return only the structured synthesis-plan object.
+
+<evidence-pack>
+""" + json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n</evidence-pack>\n"
+    else:
+        prompt = """You are the Vercy dual-research adjudicator. You cannot browse or
 add facts. Compare the two independently researched, already validated provider
 results below and return an explicit synthesis plan for the deterministic Vercy
 synthesizer.
@@ -205,6 +268,9 @@ Return only the structured synthesis-plan object.
     manifest: dict[str, Any] = {
         "contract_version": "1.0.0", "model_id": args.model_id,
         "provider": "claude", "provider_model": args.model,
+        "provider_mode": policy["mode"],
+        "active_providers": active,
+        "waived_providers": waived,
         "started_at": started_at, "completed_at": now(), "tools_enabled": [],
         "return_code": completed.returncode,
         "input_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest(),
@@ -238,6 +304,15 @@ Return only the structured synthesis-plan object.
         manifest.update({"status": "parse-error"})
         write_json(manifest_path, manifest)
         raise SystemExit("adjudicator response did not contain a synthesis plan")
+    if len(active) == 1 and (
+        plan.get("base_provider") != active[0]
+        or plan.get("add_findings")
+        or plan.get("add_functions")
+        or plan.get("confidence") == "high"
+    ):
+        manifest.update({"status": "single-provider-contract-error"})
+        write_json(manifest_path, manifest)
+        raise SystemExit("adjudicator violated the single-provider waiver contract")
     write_json(output_path, plan)
     manifest.update({
         "status": "complete",

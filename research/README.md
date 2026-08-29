@@ -1,8 +1,9 @@
-# Vercy dual-provider model research
+# Vercy model research
 
 This directory turns the unified Vercy registry into evidence-backed model
-specifications. Every world-model record is researched independently by Claude
-and Grok before a synthesis can be promoted to the website catalogue.
+specifications. Dual-provider research by Claude and Grok is the default. The
+repository-wide `provider-policy.json` may record an explicit owner-authorized
+single-provider waiver when a provider is unavailable or unreliable.
 
 Scope is 401 world-model records plus two separately queued Vercy assemblies
 (AISMM and PLMM). The 1,180 external registry entries are standards, schemas,
@@ -15,8 +16,11 @@ A model moves through these states:
 
 1. `queued` — ordered by `planning/VERCY-TOP-50-DELIVERY-SEQUENCE.csv`, then by
    wave and priority score in the unified registry.
-2. `claude_complete` and `grok_complete` — independent structured research.
+2. `provider_complete` — every active provider in `provider-policy.json`
+   completed independent structured research; waived providers remain visible.
 3. `synthesized` — agreements, conflicts and omissions are explicitly resolved.
+   Single-provider mode additionally requires a separate no-tools adversarial
+   audit that cannot add facts or silently substitute the waived provider.
 4. `validated` — schema and semantic completeness checks pass.
 5. `reviewable_draft` - a structurally valid synthesis may be projected into the
    public catalogue only with an explicit research-draft badge and every hold
@@ -24,6 +28,11 @@ A model moves through these states:
 6. `publishable_draft` - all critical conflicts and publication holds are closed;
    the result may be promoted toward a canonical release. Research output is
    never published directly.
+
+Single-provider results are always `reviewable_draft`: the provider waiver and
+independent-review hold must appear in the synthesis evidence, publication
+manifest, AI specification and human-facing page. They cannot become canonical
+or `publishable_draft` until an independent second-provider review is restored.
 
 The minimum subject structure is:
 
@@ -49,6 +58,9 @@ placeholder structures do not pass validation.
 python tools/run_model_research.py --provider claude --model-id WM-XCT-011
 python tools/run_model_research.py --provider grok --model-id WM-XCT-011
 ```
+
+With the current repository policy, `run_research_batch.py` invokes only the
+declared active providers unless `--providers` is explicitly supplied.
 
 Use `--prompt-only` to materialize the exact input without calling a provider.
 The runner uses a temporary empty working directory, denies local write tools and

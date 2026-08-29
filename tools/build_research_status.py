@@ -7,6 +7,8 @@ import csv
 import json
 from pathlib import Path
 
+from provider_policy import load_provider_policy, waived_provider_names
+
 
 ROOT = Path(__file__).resolve().parents[1]
 QUEUE = ROOT / "research" / "queue.csv"
@@ -25,6 +27,8 @@ def read_json(path: Path) -> dict:
 
 
 def main() -> int:
+    policy = load_provider_policy()
+    waived = set(waived_provider_names(policy))
     with QUEUE.open(encoding="utf-8-sig", newline="") as handle:
         queue = list(csv.DictReader(handle))
     rows = []
@@ -40,7 +44,7 @@ def main() -> int:
             "model_id": item["model_id"],
             "name": item["name"],
             "claude_status": claude.get("status", "queued"),
-            "grok_status": grok.get("status", "queued"),
+            "grok_status": grok.get("status", "waived" if "grok" in waived else "queued"),
             "synthesis_status": adjudication.get("status", "blocked-on-providers"),
             "validation_status": "valid" if synthesis_validation.get("valid") else "not-valid-or-not-run",
             "bundles": counts.get("bundles", ""),

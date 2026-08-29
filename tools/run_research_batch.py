@@ -11,6 +11,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from provider_policy import active_providers, load_provider_policy
+
 
 ROOT = Path(__file__).resolve().parents[1]
 QUEUE = ROOT / "research" / "queue.csv"
@@ -59,11 +61,18 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-sequence", type=int, default=1)
     parser.add_argument("--limit", type=int, default=1)
-    parser.add_argument("--providers", default="claude,grok")
+    parser.add_argument(
+        "--providers", default="",
+        help="Comma-separated override; defaults to research/provider-policy.json",
+    )
     parser.add_argument("--timeout", type=int, default=3600)
     parser.add_argument("--continue-on-error", action="store_true")
     args = parser.parse_args()
-    providers = [item.strip() for item in args.providers.split(",") if item.strip()]
+    providers = (
+        [item.strip() for item in args.providers.split(",") if item.strip()]
+        if args.providers
+        else active_providers(load_provider_policy())
+    )
     if not providers or any(item not in {"claude", "grok"} for item in providers):
         raise SystemExit("--providers must contain claude and/or grok")
 
@@ -87,14 +96,13 @@ def main() -> int:
             if not args.continue_on_error:
                 return 1
             continue
-        if set(providers) == {"claude", "grok"}:
-            compared = subprocess.run([
-                sys.executable, str(COMPARE), "--model-id", model_id,
-            ], cwd=ROOT, check=False)
-            if compared.returncode:
-                failed = True
-                if not args.continue_on_error:
-                    return 1
+        compared = subprocess.run([
+            sys.executable, str(COMPARE), "--model-id", model_id,
+        ], cwd=ROOT, check=False)
+        if compared.returncode:
+            failed = True
+            if not args.continue_on_error:
+                return 1
     return 1 if failed else 0
 
 
