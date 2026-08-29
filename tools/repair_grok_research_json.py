@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -11,7 +12,13 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from run_model_research import ROOT, extract_result, write_json
+from run_model_research import (
+    CLAUDE_LOCAL_SETTINGS,
+    ROOT,
+    extract_result,
+    hide_claude_local_settings,
+    write_json,
+)
 
 
 def main() -> int:
@@ -47,6 +54,7 @@ def main() -> int:
         "researched substantive values; never delete a node merely to pass validation."
     )
     with tempfile.TemporaryDirectory(prefix="vercy-grok-json-repair-") as temp_name:
+        temporary_cwd = Path(temp_name)
         command = [
             executable,
             "--cwd", temp_name,
@@ -61,16 +69,54 @@ def main() -> int:
             "--output-format", "json",
             "--verbatim",
         ]
-        completed = subprocess.run(
-            command, cwd=temp_name, capture_output=True, text=True,
-            encoding="utf-8", errors="replace", timeout=args.timeout,
-            env={**os.environ, "PYTHONUTF8": "1"}, check=False,
-        )
+        environment = os.environ.copy()
+        environment["PYTHONUTF8"] = "1"
+        isolated_home = temporary_cwd / "home"
+        isolated_home.mkdir(parents=True, exist_ok=True)
+        environment["HOME"] = str(isolated_home)
+        environment["USERPROFILE"] = str(isolated_home)
+        environment["CLAUDE_CONFIG_DIR"] = str(isolated_home / ".claude")
+        environment["XDG_CONFIG_HOME"] = str(isolated_home / ".config")
+        environment["GROK_HOME"] = str(Path.home() / ".grok")
+        try:
+            with hide_claude_local_settings(True):
+                completed = subprocess.run(
+                    command, cwd=temporary_cwd, capture_output=True, text=True,
+                    encoding="utf-8", errors="replace", timeout=args.timeout,
+                    env=environment, check=False,
+                )
+        except subprocess.TimeoutExpired:
+            print(f"repair timed out after {args.timeout}s; provider output suppressed")
+            return 2
+    unsafe_stderr = any(marker in completed.stderr.casefold() for marker in (
+        str(CLAUDE_LOCAL_SETTINGS).casefold(),
+        "settings.local.json",
+        "allow.*password",
+        "allow.*token",
+        "allow.*secret",
+    ))
+    if unsafe_stderr:
+        stderr_hash = hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest()
+        print(f"repair stderr referenced local settings; suppressed sha256={stderr_hash}")
+        return 2
     if completed.returncode:
-        print(completed.stderr[-8000:])
+        stderr_hash = hashlib.sha256(completed.stderr.encode("utf-8")).hexdigest()
+        print(
+            f"repair failed with code {completed.returncode}; "
+            f"provider stderr suppressed sha256={stderr_hash}"
+        )
         return completed.returncode
-    repaired_wrapper = json.loads(completed.stdout)
-    result = extract_result(repaired_wrapper)
+    try:
+        repaired_wrapper = json.loads(completed.stdout)
+    except json.JSONDecodeError:
+        stdout_hash = hashlib.sha256(completed.stdout.encode("utf-8")).hexdigest()
+        print(f"repair returned a non-JSON wrapper; suppressed sha256={stdout_hash}")
+        return 2
+    try:
+        result = extract_result(repaired_wrapper)
+    except ValueError as error:
+        print(str(error))
+        return 2
     safe_repaired = {
         key: value for key, value in repaired_wrapper.items()
         if key not in {"thought", "thinking", "reasoning"}
