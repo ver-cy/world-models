@@ -81,7 +81,25 @@ def main() -> int:
     plan_path = args.plan_path or (run_dir / "synthesis-plan.json")
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if args.plan_path:
-        write_json(run_dir / "synthesis-plan.json", plan)
+        canonical_plan_path = run_dir / "synthesis-plan.json"
+        write_json(canonical_plan_path, plan)
+        if plan_path.resolve() != canonical_plan_path.resolve():
+            manifest_path = run_dir / "adjudication-run.manifest.json"
+            if not manifest_path.is_file():
+                raise ValueError("adjudication manifest is absent for promoted plan")
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            input_sha256 = hashlib.sha256(plan_path.read_bytes()).hexdigest()
+            if (
+                manifest.get("status") != "complete"
+                or manifest.get("output") != plan_path.name
+                or manifest.get("output_sha256") != input_sha256
+            ):
+                raise ValueError("adjudication manifest does not match promoted plan")
+            manifest["output"] = canonical_plan_path.name
+            manifest["output_sha256"] = hashlib.sha256(
+                canonical_plan_path.read_bytes()
+            ).hexdigest()
+            write_json(manifest_path, manifest)
     policy = load_provider_policy()
     active = active_providers(policy)
     waived = waived_provider_names(policy)
