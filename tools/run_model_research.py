@@ -9,6 +9,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -241,14 +242,29 @@ def main() -> int:
     parser.add_argument("--provider-model")
     parser.add_argument("--model-id", required=True)
     parser.add_argument("--output-root", type=Path, default=ROOT / "research" / "runs")
+    parser.add_argument(
+        "--run-label",
+        help="Store an isolated split pass under <model>/parts/<label>.",
+    )
+    parser.add_argument(
+        "--focus-file",
+        type=Path,
+        help="Append a bounded split-pass scope that overrides the normal size targets.",
+    )
     parser.add_argument("--prompt-only", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--timeout", type=int, default=3600)
     args = parser.parse_args()
+    if args.run_label and not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", args.run_label):
+        parser.error("--run-label must match [a-z0-9][a-z0-9-]{0,63}")
+    if args.focus_file and not args.focus_file.is_file():
+        parser.error(f"--focus-file does not exist: {args.focus_file}")
     provider_model = args.provider_model or ("opus" if args.provider == "claude" else "grok-4.6")
 
     row = load_registry_row(args.model_id)
     run_dir = args.output_root / args.model_id.casefold()
+    if args.run_label:
+        run_dir = run_dir / "parts" / args.run_label
     prompt_path = run_dir / f"{args.provider}.prompt.md"
     raw_path = run_dir / f"{args.provider}.raw.json"
     result_path = run_dir / f"{args.provider}.result.json"
@@ -265,6 +281,20 @@ def main() -> int:
         for stale_path in (result_path, validation_path, run_dir / f"{args.provider}.raw.txt"):
             stale_path.unlink(missing_ok=True)
     prompt = render_prompt(args.provider, row)
+    focus_text = None
+    if args.focus_file:
+        focus_text = args.focus_file.read_text(encoding="utf-8")
+        prompt += (
+            "\n\n## Bounded split-pass override\n\n"
+            "This is one deliberately bounded part of a larger provider pass. "
+            "The instructions below supersede the normal bundle/layer/finding "
+            "quantity targets, but not the canonical JSON contract, evidence "
+            "quality rules, or local validation requirements. Return only the "
+            "assigned subject structure and do not duplicate adjacent split "
+            "areas. The result must still be a complete schema-valid object.\n\n"
+            + focus_text.strip()
+            + "\n"
+        )
     prompt_path.write_text(prompt, encoding="utf-8")
 
     if args.prompt_only:
@@ -292,6 +322,11 @@ def main() -> int:
         "input_commit": git_commit(),
         "input_worktree_dirty": git_is_dirty(),
         "prompt_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+        "run_label": args.run_label,
+        "focus_sha256": (
+            hashlib.sha256(focus_text.encode("utf-8")).hexdigest()
+            if focus_text is not None else None
+        ),
         "schema_sha256": hashlib.sha256(SCHEMA_PATH.read_bytes()).hexdigest(),
         "started_at": started_at,
         "completed_at": None,

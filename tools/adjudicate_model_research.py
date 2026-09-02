@@ -109,6 +109,7 @@ def compact_result(result: dict[str, Any]) -> dict[str, Any]:
                             "id": a["id"], "name": a["name"],
                             "media_or_form": a.get("media_or_form"),
                             "serial": a.get("serial"),
+                            "identity_strategy": a.get("identity_strategy"),
                         }
                         for a in finding["artifacts"]
                     ],
@@ -127,6 +128,7 @@ def compact_result(result: dict[str, Any]) -> dict[str, Any]:
             {key: function.get(key) for key in ("id", "name", "description", "source_refs")}
             for function in result["functions"]
         ],
+        "service_layers": result["service_layers"],
         "coverage": result["coverage"],
     }
 

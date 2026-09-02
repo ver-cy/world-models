@@ -71,10 +71,17 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-id", required=True)
     parser.add_argument("--run-root", type=Path, default=ROOT / "research" / "runs")
+    parser.add_argument(
+        "--plan-path",
+        type=Path,
+        help="Use an adjudicator-generated plan and snapshot it as synthesis-plan.json.",
+    )
     args = parser.parse_args()
     run_dir = args.run_root / args.model_id.casefold()
-    plan_path = run_dir / "synthesis-plan.json"
+    plan_path = args.plan_path or (run_dir / "synthesis-plan.json")
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    if args.plan_path:
+        write_json(run_dir / "synthesis-plan.json", plan)
     policy = load_provider_policy()
     active = active_providers(policy)
     waived = waived_provider_names(policy)
