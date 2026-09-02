@@ -36,7 +36,12 @@ PLAN_SCHEMA: dict[str, Any] = {
             "type": "object", "additionalProperties": False,
             "required": ["entry_kind", "status", "rationale"],
             "properties": {
-                "entry_kind": {"type": "string", "minLength": 1},
+                "entry_kind": {
+                    "enum": [
+                        "entity", "event", "relationship", "mixin", "pattern",
+                        "registry", "classifier", "aggregate",
+                    ]
+                },
                 "status": {"enum": ["accepted", "reclassified", "split", "merge", "deferred"]},
                 "rationale": {"type": "string", "minLength": 40},
             },
@@ -205,6 +210,10 @@ Rules:
   deterministic synthesizer will not merge a waived provider.
 - Challenge the aggregate root, entry kind, ownership boundary, composition
   relations, source support, retention, access and artifact identity rules.
+- `boundary_decision.entry_kind` is the subject-model kind and must use the
+  schema enum. A frozen registry value such as `standalone-mm` classifies the
+  record plane and is never a valid subject-model entry kind; choose the most
+  defensible schema kind instead and explain both axes.
 - Inspect names, descriptions, questions and functions as a whole. Record at
   least five concrete accepted/rejected/deferred decisions.
 - Confidence cannot be high in single-provider mode.
@@ -238,6 +247,8 @@ Rules:
   source IDs and exact existing target layer IDs.
 - Prefer rejection/deferral over duplicate or weakly supported structure.
 - Decide the model boundary and entry kind before accepting nodes.
+- `boundary_decision.entry_kind` is the subject-model kind and must use the
+  schema enum. Do not copy record-plane values such as `standalone-mm` into it.
 - Record important accepted and rejected concepts with concrete rationale.
 - Critical conflicts are only unresolved contradictions that prevent even a
   public research draft. Source/live-version and domain-profile verification are

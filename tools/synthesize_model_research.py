@@ -131,6 +131,15 @@ def main() -> int:
     result = copy.deepcopy(transformed[base_provider])
     result["sources"] = list(source_by_url.values())
 
+    boundary = plan["boundary_decision"]
+    adjudicated_entry_kind = boundary["entry_kind"]
+    if adjudicated_entry_kind != result["model"]["entry_kind"]:
+        if boundary.get("status") != "reclassified":
+            raise ValueError(
+                "entry-kind change requires an explicit reclassified boundary decision"
+            )
+        result["model"]["entry_kind"] = adjudicated_entry_kind
+
     for addition in plan.get("add_findings", []):
         provider = addition["provider"]
         finding = find_finding(transformed[provider], addition["source_finding_id"])
