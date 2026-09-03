@@ -1,0 +1,1668 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-032",
+    "model_id": "WM-XCT-032",
+    "name": "Currency / Monetary Value",
+    "entry_kind": "mixin",
+    "purpose": "Provide a reusable, storage-neutral monetary assertion — amount, currency reference, effective/valuation time and declared precision — that can be bound to a host record, together with the declarative contract for reading, creating, correcting, reviewing and retiring that assertion.",
+    "scope_statement": "WM-XCT-032 is a mixin. It defines one bound monetary assertion: a decimal amount, a reference to a currency or funds code, the effective (valuation) instant or interval the amount is asserted to hold for, the observation instant at which the version was recorded, and an explicit scale/precision and rounding declaration. It also defines the operation semantics for that assertion: deterministic as-of resolution, resolvable host binding with precondition and idempotency checks, correction by supersession under optimistic concurrency, review and approval evidence, and disposition-readiness reporting. All operations are declarative: they resolve, check, plan and report. Persistence belongs to the host, permit/deny to the external authorization component, audit capture to the audit component, and retention execution and destruction to the records authority. The model never defines a lifecycle for a currency, price, offer, transaction, account, rate feed or financial instrument.",
+    "in_scope": [
+      "Monetary assertion payload: decimal amount in canonical string form, referenced currency or funds code, declared scale/precision and rounding declaration",
+      "Effective (valuation) instant or interval, recorded separately from the observation/ingestion instant of the version",
+      "Resolvable binding of the assertion to a host entity or event and to a named attribute path within it",
+      "Deterministic as-of read resolution over the assertion's version series, including none-applicable and tombstoned outcomes",
+      "Create/bind preconditions, request idempotency and referential-integrity reporting",
+      "Correction by supersession: immutable originals, version validators, effective-interval closure, invalidation marking and correction reason",
+      "Review and approval evidence attached to a proposed monetary state change, including evidence validity and status checks",
+      "Advisory eligibility reporting for read and change requests, supplying attributes without issuing a decision",
+      "Disposition-readiness reporting: applicable holds, referenced retention class, tombstone content and blocker list",
+      "Structured, machine-readable failure semantics for every operation outcome",
+      "Alignment mappings to established monetary payload types and provenance vocabularies, recorded as claims rather than conformance"
+    ],
+    "out_of_scope": [
+      "Creation, amendment, redenomination or withdrawal of a currency or funds code — owned by the ISO 4217 Maintenance Agency register",
+      "Exchange-rate observation, rate selection, rate-feed lifecycle and currency conversion arithmetic",
+      "Lifecycle and business rules of price, offer, invoice, transaction, ledger posting, account, portfolio or financial instrument",
+      "Authorization decisions (permit/deny), policy administration and enforcement at the host",
+      "Physical persistence, storage engine behaviour, transaction management and index maintenance",
+      "Audit-trail record production, audit-trail retention and audit tamper-evidence",
+      "Accounting recognition and measurement basis, functional/presentation currency policy and financial-statement translation",
+      "Retention-schedule authoring, disposition decisions, physical destruction and archival transfer",
+      "Tax computation, fee derivation, interest accrual and any other amount-producing calculation",
+      "Locale presentation: decimal separator, digit grouping, symbol placement and negative-amount formatting"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "ISO 4217 currency and funds register maintained by the ISO 4217 Maintenance Agency",
+        "distinction": "The register owns allocation, amendment and withdrawal of alphabetic codes, numeric codes and minor units, and publishes current, funds and historic lists. This model only references a code and records which register list and status applied at the assertion's effective instant; it never mints or retires a code.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "Foreign-exchange rate and currency-conversion model",
+        "distinction": "Rate observation, rate selection and conversion arithmetic are external. A converted amount is a distinct monetary assertion produced elsewhere and referenced; no read or report in this model derives one.",
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Price, offer, invoice, transaction, ledger and account models",
+        "distinction": "Those models own their own identifiers, states and business rules. This mixin contributes only an amount, a currency reference, an effective interval and a precision declaration bound to one of their attribute paths.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "External authorization component (policy decision point and policy enforcement point)",
+        "distinction": "The decision point renders the authoritative permit or deny and the enforcement point enforces it. This model supplies attributes and emits an advisory eligibility report that may be safely disregarded; it owns no evaluation or enforcement semantics.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-015"
+        ]
+      },
+      {
+        "neighbor": "Records authority, retention schedule and disposition programme",
+        "distinction": "Retention classes, disposition authorities, freezes/holds and physical destruction are owned and executed by the records authority. This model reports readiness and carries hold and schedule references; a readiness report is never evidence that destruction occurred.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Audit trail and event log model",
+        "distinction": "Audit capture, audit retention and tamper-evidence of the trail belong to the audit component. This model stores resolvable pointers to audit records and never asserts that an entry exists.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Accounting recognition and measurement model",
+        "distinction": "Measurement basis, functional versus presentation currency policy and reporting translation are decided in the accounting model. This model records the amount and currency asserted, and the effective instant, not the basis on which the amount was measured.",
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "WM-ECO-004 parent economics model",
+        "distinction": "The parent owns economic value, markets and exchange concepts generally. This model owns only the concrete bound monetary assertion and the declarative contract for operating on it.",
+        "source_refs": [
+          "SRC-011"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "ISO 4217 Currency Codes — data standards of the ISO 4217 Maintenance Agency",
+      "organization": "SIX Group AG (ISO 4217 Maintenance Agency)",
+      "url": "https://www.six-group.com/en/products-services/financial-information/data-standards.html",
+      "version_or_date": "Current lists with amendments effective 1 January 2026",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Sole recognised authoritative source for currency code designations. Publishes List One (current currencies and funds), List Two (fund codes) and List Three (historic), each carrying entity, currency name, alphabetic code, numeric code and minor unit. Anchors currency-code validity at an effective instant and the handling of withdrawn codes on read."
+    },
+    {
+      "id": "SRC-002",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Defines Entity, Activity and Agent plus wasDerivedFrom, wasRevisionOf, specializationOf, wasGeneratedBy, generatedAtTime and invalidatedAtTime, and the qualified-influence pattern. Grounds supersession links, responsible-agent recording and generation/invalidation instants for assertion versions."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "RFC 9110, June 2022 (Internet Standard, STD 97)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Safe methods (9.2.1), idempotent methods (9.2.2), strong validators and ETag (8.8.3), If-Match (13.1.1) and If-Unmodified-Since (13.1.4), 412 Precondition Failed (15.5.13) and 409 Conflict (15.5.10). Grounds optimistic concurrency, precondition contracts and the read/write safety distinction independently of any transport choice."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "RFC 3339, July 2002 (Standards Track)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Mandates seconds in the time component and an explicit offset of Z or +/-HH:MM, and distinguishes -00:00 (UTC instant, unknown local offset) from +00:00/Z. Grounds the model's timestamp rule and the separation of effective from observation instants."
+    },
+    {
+      "id": "SRC-005",
+      "title": "Universal Electronic Records Management (ERM) Requirements",
+      "organization": "National Archives and Records Administration (NARA), United States",
+      "url": "https://www.archives.gov/records-mgmt/policy/universalermrequirements",
+      "version_or_date": "Version 3, June 2023",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Organises requirements as Capture, Maintenance and Use, Disposal, Transfer, Metadata and Reporting, derived from statutes, regulations and NARA policy. Grounds the separation of readiness reporting from disposition execution and the requirement that records carry disposition-relevant metadata."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Federal Records Centers Program Freeze Process Overview / FAQ",
+      "organization": "National Archives and Records Administration (NARA), United States",
+      "url": "https://www.archives.gov/frc/arcis/freeze-faq",
+      "version_or_date": "Last reviewed 29 January 2024",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Defines a freeze as temporary suspension of scheduled disposition due to circumstances altering administrative, legal or fiscal value; the agency requests and lifts the freeze in writing and the records centre resumes disposition only after formal notification. Grounds hold semantics and the external ownership of destruction."
+    },
+    {
+      "id": "SRC-007",
+      "title": "eXtensible Access Control Markup Language (XACML) Version 3.0",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html",
+      "version_or_date": "OASIS Standard, 22 January 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Separates PAP, PDP, PEP and PIP; the PDP renders the authorization decision (Permit, Deny, Indeterminate, NotApplicable) and the PEP enforces it, while Advice may be safely ignored. Grounds the rule that this model supplies attributes and advisory verdicts only."
+    },
+    {
+      "id": "SRC-008",
+      "title": "HL7 FHIR Release 5 — RESTful API (http.html)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/http.html",
+      "version_or_date": "FHIR R5 (5.0.0), normative RESTful API sections",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Version-aware update via ETag/If-Match with 409 or 412 on mismatch; conditional create via If-None-Exist; conditional update outcomes by match count; vread for prior versions; 410 Gone for deleted resources versus 404 for unknown; 422 for referential-integrity violations; controls on logical-id reuse. A worked, normative precedent for the operation contract."
+    },
+    {
+      "id": "SRC-009",
+      "title": "HL7 FHIR Release 5 — Data Types (Money, decimal precision)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/datatypes.html",
+      "version_or_date": "FHIR R5 (5.0.0), normative base types",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Money = value (decimal, implicit precision) + currency with a required binding to ISO 4217. States that decimal precision is significant (0.010 differs from 0.01) and that original precision must be preserved. Grounds verbatim amount/scale handling on read and the prohibition on silent re-scaling."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Extensible Business Reporting Language (XBRL) 2.1",
+      "organization": "XBRL International",
+      "url": "https://www.xbrl.org/Specification/XBRL-2.1/REC-2003-12-31/XBRL-2.1-REC-2003-12-31+corrected-errata-2013-02-20.html",
+      "version_or_date": "Recommendation, 31 December 2003, with corrected errata 20 February 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Requires monetary items to reference a unit whose measure is an ISO 4217 namespace-qualified currency, enforces instant versus duration period contexts via periodType, and defines the decimals and precision attributes for numeric facts. Grounds the currency-unit binding and the instant/interval distinction for effective time."
+    },
+    {
+      "id": "SRC-011",
+      "title": "IAS 21 The Effects of Changes in Foreign Exchange Rates",
+      "organization": "IFRS Foundation / International Accounting Standards Board",
+      "url": "https://www.ifrs.org/issued-standards/list-of-standards/ias-21-the-effects-of-changes-in-foreign-exchange-rates/",
+      "version_or_date": "IFRS Accounting Standard as issued in the 2026 volume; Lack of Exchangeability amendments issued August 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Distinguishes functional from presentation currency, requires foreign-currency transactions to be recorded at the spot rate at the transaction date, and addresses lack of exchangeability. Grounds the boundary between an asserted monetary value and any translated or converted value, and the significance of the valuation date."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Issuer, credentialSubject, validFrom/validUntil, credentialStatus (status-list revocation) and securing proofs; credentials are not modified but revoked and reissued. Grounds review-evidence validity intervals, revocation checking and the correction-by-reissue pattern rather than in-place edit."
+    },
+    {
+      "id": "SRC-013",
+      "title": "The Idempotency-Key HTTP Header Field",
+      "organization": "Internet Engineering Task Force (IETF) HTTP API Working Group",
+      "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/",
+      "version_or_date": "draft-ietf-httpapi-idempotency-key-header-07, latest revision 15 October 2025 (Internet-Draft, expired)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Key uniqueness and non-reuse with a different payload, optional request fingerprinting, replay of the first recorded outcome, 409 for a duplicate arriving while the original is in flight, 422 for key reuse with a different payload, and a published expiry policy. Adopted here as a documented convention only — it is an expired draft, not a normative standard."
+    },
+    {
+      "id": "SRC-014",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+      "version_or_date": "RFC 9457, July 2023 (Standards Track; obsoletes RFC 7807)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Defines type, title, status, detail and instance members plus extension members for machine-readable error identification, with resolvable type URIs. Grounds the model's explicit, structured failure semantics independently of transport."
+    },
+    {
+      "id": "SRC-015",
+      "title": "NIST Special Publication 800-162, Guide to Attribute Based Access Control (ABAC) Definition and Considerations",
+      "organization": "National Institute of Standards and Technology (NIST), United States",
+      "url": "https://csrc.nist.gov/pubs/sp/800/162/upd1/final",
+      "version_or_date": "January 2014, Update 1 including updates as of 25 February 2019",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Defines authorization as the evaluation of subject, object, operation and environment attributes against policy. Grounds the distinction between supplying attributes (this model) and rendering an access decision (the external authorization component)."
+    },
+    {
+      "id": "SRC-016",
+      "title": "Time Ontology in OWL",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl-time/",
+      "version_or_date": "W3C Candidate Recommendation Draft, 15 November 2022",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "TemporalEntity split into Instant and ProperInterval, hasBeginning/hasEnd, inXSDDateTimeStamp requiring a timezone, and the thirteen Allen interval relations including intervalMeets, intervalOverlaps and intervalDuring. Grounds interval containment, overlap and gap tests over an assertion's version series."
+    },
+    {
+      "id": "SRC-017",
+      "title": "Schema.org type: MonetaryAmount",
+      "organization": "Schema.org (W3C Schema.org Community Group)",
+      "url": "https://schema.org/MonetaryAmount",
+      "version_or_date": "Schema.org V30.0, released 2026-03-19",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Models a monetary value with currency (ISO 4217 text), value, minValue/maxValue and validFrom/validThrough. Independent corroboration that a monetary amount carries an explicit validity interval rather than an implied always-current value."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "money-svcstate-operations",
+        "name": "Monetary assertion operation semantics",
+        "description": "The complete state-reading and state-changing operation surface of a monetary assertion bound to a host record: deterministic as-of resolution, binding and creation preconditions, correction by supersession, review and approval evidence, and disposition readiness. Every operation is declarative and produces a resolution, a check result, a plan, an evidence compilation or a readiness verdict.",
+        "rationale": "A monetary assertion is only meaningful relative to a host, an effective time and a declared precision, so its operation contract cannot be inferred from the payload alone. Precision must survive round-trips (SRC-009), the currency reference must be resolved against the register list that applied at the effective instant (SRC-001), effective and observation time must be distinguished (SRC-004, SRC-010, SRC-016), concurrent change must be mediated by validators and preconditions (SRC-003, SRC-008), correction must be expressed as derivation and invalidation rather than mutation (SRC-002, SRC-012), and removal readiness must be reported separately from disposition execution (SRC-005, SRC-006). Authorization stays advisory because the decision belongs to a policy decision point (SRC-007, SRC-015), and every outcome — including failure — must be machine-identifiable (SRC-014).",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-005",
+          "SRC-006",
+          "SRC-007",
+          "SRC-008",
+          "SRC-009",
+          "SRC-014",
+          "SRC-016"
+        ],
+        "layers": [
+          {
+            "id": "money-svcstate-read-plane",
+            "name": "Read plane: effective-time resolution",
+            "description": "How a request selects exactly one version of a bound monetary assertion for a stated effective instant and observation cut-off, what it returns verbatim, and how it reports a non-result, a broken binding or a tombstone. Reads are safe: they change no state.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-008",
+              "SRC-009",
+              "SRC-010",
+              "SRC-016",
+              "SRC-017"
+            ],
+            "findings": [
+              {
+                "id": "money-svcstate-effective-read",
+                "name": "Deterministic as-of read of a bound monetary assertion",
+                "description": "The rules that make a read reproducible: which two instants the caller supplies, which single version those instants select, what must be returned unchanged, and how an unresolvable, absent or retired result is reported. A monetary amount carries an explicit validity interval rather than an implied always-current value, so a read without an as-of pair is under-specified.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-014",
+                  "SRC-016",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svcstate-q-asof-inputs",
+                    "text": "Which effective instant and which observation cut-off instant does a read supply, and what is the declared default when either is omitted?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Requested effective (valuation) instant as an RFC 3339 value with seconds and an explicit offset or Z",
+                      "Requested observation/ingestion cut-off instant in the same form",
+                      "Declared defaults, for example effective = request instant and observation = latest recorded",
+                      "Statement of whether a caller-supplied offset is preserved or normalised, and which form is used for comparison"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-version-selection",
+                    "text": "Which single assertion version is selected when more than one effective interval covers the requested instant, and how is a tie broken?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Ordered list of candidate versions with their effective intervals",
+                      "Interval boundary convention (inclusive start, exclusive end) and the containment test applied",
+                      "Deterministic tie-break key, for example latest observation instant then highest version counter",
+                      "Explicit none-applicable outcome marker used instead of returning the nearest version"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-read-nonderivation",
+                    "text": "Which stored values must a read return verbatim, and which derivations are forbidden in the read path?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Amount returned as the stored canonical decimal string including trailing zeros, with the declared scale",
+                      "Currency code returned as stored, plus the register list and status that applied at the effective instant",
+                      "Prohibition on conversion, re-scaling, rounding or unit substitution during a read",
+                      "Flag raised when the stored currency code is historic or withdrawn at the effective instant"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-read-failure",
+                    "text": "How does a read report an unresolvable host binding, a tombstoned assertion, or an as-of request outside the supported range?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Structured failure descriptor with a resolvable type URI, title, status, detail and instance",
+                      "Distinct codes for unknown identifier, unresolvable binding, tombstoned assertion and unsupported as-of window",
+                      "Gone-style outcome for a tombstoned assertion, kept distinct from unknown-identifier",
+                      "Reference to the advisory eligibility report when a value is withheld rather than absent"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svcstate-de-effective-instant",
+                    "name": "Requested effective instant",
+                    "description": "The valuation instant for which the caller wants the monetary assertion resolved.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-observation-instant",
+                    "name": "Requested observation cut-off instant",
+                    "description": "The recording-time cut-off; versions recorded after this instant are excluded, allowing a past view of what was known at a given time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-selection-trace",
+                    "name": "Version selection trace",
+                    "description": "Ordered record of candidate versions considered, the containment test result for each, and the tie-break key applied, sufficient to reproduce the selection.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-resolution-outcome",
+                    "name": "Resolution outcome code",
+                    "description": "Coded result of the read: resolved, none-applicable, unresolvable-binding, tombstoned or withheld.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-register-status",
+                    "name": "Currency register status at effective instant",
+                    "description": "Which maintenance-agency list the referenced code belonged to at the effective instant: current currency, fund code or historic/withdrawn.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "An as-of read is a deterministic projection computed over assertion versions the host already persists; it creates no new governed content. Emitting a stored artifact for every read would produce a second, divergent copy of a host-owned record and would imply ownership of persistence and of audit-trail production, both of which belong to the host and to the audit component respectively. The read therefore exists only as inline request parameters plus reference values — the selected version identifier, its validator, and the outcome code — with no artifact of its own."
+              }
+            ]
+          },
+          {
+            "id": "money-svcstate-change-plane",
+            "name": "Change plane: binding, creation and correction",
+            "description": "How a monetary assertion is attached to a resolvable host anchor and created under explicit preconditions and idempotency, and how an erroneous or overtaken assertion is corrected by issuing a superseding version while the original stays immutable.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-008",
+              "SRC-009",
+              "SRC-012",
+              "SRC-013",
+              "SRC-014",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "money-svcstate-host-bind",
+                "name": "Create and bind a monetary assertion to a resolvable host anchor",
+                "description": "The anchor that ties an assertion to one host record and attribute path, the preconditions that must hold before a create is accepted, the mechanism that distinguishes a retried request from a second assertion, and the references whose continued resolvability keeps the binding valid.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-013",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svcstate-q-host-anchor",
+                    "text": "Which resolvable identifier and attribute path anchor the assertion to its host, and how is that anchor demonstrated to resolve?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Host master-system identifier and the host model or type it belongs to",
+                      "Attribute path or role name the assertion occupies within the host",
+                      "Resolver reference, resolution outcome and the observation instant of the resolution attempt",
+                      "Cardinality rule stating whether the path admits one assertion or a series"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-create-preconditions",
+                    "text": "Which preconditions must hold before a create is accepted, and which of them are hard failures rather than warnings?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Currency code present in the applicable maintenance-agency list at the effective instant",
+                      "Declared scale consistent with the minor unit, or an explicit over-precision declaration with a stated reason",
+                      "Host anchor resolves and is neither tombstoned nor under a blocking hold",
+                      "Per-precondition severity classification and the aggregate accept/reject verdict"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-idempotency",
+                    "text": "How is a repeated create recognised as the same request rather than as a second assertion?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Client-supplied idempotency key, its uniqueness scope and its published expiry policy",
+                      "Request fingerprint computed over the canonical assertion payload",
+                      "Replay behaviour returning the first recorded outcome, success or failure alike",
+                      "Distinct outcomes for a duplicate arriving while the original is in flight and for key reuse with a different fingerprint"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-integrity-refs",
+                    "text": "Which outbound references must stay resolvable for the binding to remain valid, and what is reported when one of them breaks?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Host anchor reference and its last successful resolution instant",
+                      "Currency register entry reference and the list it was drawn from",
+                      "References to the authorization context, retention class and any review record",
+                      "Broken-reference report giving reference kind, failure mode, severity and whether reads remain permitted"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svcstate-de-host-anchor",
+                    "name": "Host anchor reference",
+                    "description": "Resolvable reference to the host record that carries the monetary assertion, expressed as the host's authoritative identifier plus its model reference.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-attribute-path",
+                    "name": "Host attribute path",
+                    "description": "Named path or role within the host at which the assertion is bound, disambiguating multiple monetary attributes on one host.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-idempotency-key",
+                    "name": "Request idempotency key",
+                    "description": "Caller-supplied unique key identifying one logical create request across retries; must not be reused with a different payload.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-request-fingerprint",
+                    "name": "Canonical request fingerprint",
+                    "description": "Digest over the canonical form of the submitted assertion payload, compared alongside the idempotency key to detect payload divergence.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-precondition-outcome",
+                    "name": "Precondition outcome entry",
+                    "description": "One evaluated precondition with its identifier, verdict, severity, evidence reference and the observation instant of evaluation.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svcstate-art-precondition-report",
+                    "name": "Binding precondition and idempotency report",
+                    "description": "Declarative record of every precondition evaluated for a create/bind request: the resolved host anchor, the currency register lookup, the scale/minor-unit consistency check, the idempotency key and fingerprint state, and the aggregate readiness verdict with a structured failure descriptor where applicable. It records findings only and performs no write.",
+                    "media_or_form": [
+                      "structured record",
+                      "human-readable check report",
+                      "reference-only pointer set"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system report identifier issued by the host workflow system where one exists; otherwise a governed IRI minted in a namespace the adopting Dimension controls; otherwise a ULID minted by the adopting Dimension. The report carries its creation instant as content and is never identified by it.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "money-svcstate-supersede-correct",
+                "name": "Correct a monetary assertion by supersession",
+                "description": "How a wrong or overtaken monetary assertion is replaced: a new version linked to the one it supersedes, the prior effective interval closed without gap or overlap, a current concurrency validator presented, and the original left byte-for-byte intact but marked invalid where appropriate.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-008",
+                  "SRC-012",
+                  "SRC-014",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svcstate-q-supersession-link",
+                    "text": "Which links connect a correcting version to the version it supersedes, and which agent and reason are recorded with it?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Identifier and validator of the superseded version",
+                      "Relation type distinguishing revision of the same assertion from derivation of a new one",
+                      "Correction reason code plus free-text justification",
+                      "Responsible agent reference and the activity that generated the new version, with its generation instant"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-interval-closure",
+                    "text": "How is the effective interval of the superseded version closed, and how are gaps and overlaps across the version series detected?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "End instant applied to the prior interval and the boundary convention used",
+                      "Overlap and gap test results across the whole series, expressed as interval relations",
+                      "Retroactive flag set when the new interval begins before the current instant, with the reason",
+                      "Rule for an open-ended final interval and how it is closed"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-concurrency",
+                    "text": "Which concurrency validator must a correction present, and what happens when the validator is stale?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Current version validator or version counter obtained from the last read",
+                      "Required conditional predicate that the change must carry",
+                      "Stale-validator outcome code, whether it is reported as precondition failure or conflict, and the remediation instruction",
+                      "Serialisation rule for two corrections targeting the same version"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-immutability",
+                    "text": "Which parts of a superseded version may never be rewritten, and how is an unusable version marked without erasing it?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Immutable fields of the original version: amount, currency, scale, effective interval and observation instant",
+                      "Invalidation instant and coded invalidation reason",
+                      "Status marker such as entered-in-error, withdrawn or superseded, with the marker's own observation instant",
+                      "Explicit statement that correction never mutates the original payload and never reuses its identifier"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svcstate-de-supersedes-ref",
+                    "name": "Superseded version reference",
+                    "description": "Reference to the assertion version that this version replaces, together with that version's validator at the time the correction was planned.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-version-validator",
+                    "name": "Version validator",
+                    "description": "Opaque strong validator or monotonic version counter identifying the exact current state of the assertion, used as the concurrency token.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-effective-interval",
+                    "name": "Effective interval",
+                    "description": "Begin and end instants during which the asserted amount is held to be valid, with the boundary convention declared; the end may be open.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-017",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-correction-reason",
+                    "name": "Correction reason code",
+                    "description": "Coded reason for the supersession, distinguishing data error, late-arriving information, restatement and re-measurement instructed elsewhere.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-invalidation-instant",
+                    "name": "Invalidation instant",
+                    "description": "Instant from which the superseded version is no longer usable for new decisions, recorded without deleting the version.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svcstate-art-correction-plan",
+                    "name": "Monetary assertion correction plan",
+                    "description": "Declarative proposal naming the version to be superseded and its validator, the replacement amount, currency reference, scale and effective interval, the closure applied to the prior interval, the interval overlap/gap test results, the correction reason and agent, and the enumerated failure outcomes if the validator is stale. The host decides whether to apply it.",
+                    "media_or_form": [
+                      "structured record",
+                      "reviewable change proposal",
+                      "diff-style summary"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system change-request identifier where the host issues one; otherwise a governed IRI in a Dimension-controlled namespace; otherwise a ULID minted by the adopting Dimension. Plan identifiers never embed an effective date, an amount or a currency code.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-008",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "money-svcstate-assurance-plane",
+            "name": "Assurance plane: review evidence and disposition readiness",
+            "description": "What evidence must accompany a proposed monetary state change before it can be relied on, how eligibility is reported without deciding access, and how readiness for removal is assessed and handed to the parties that actually execute disposition.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-007",
+              "SRC-012",
+              "SRC-014",
+              "SRC-015"
+            ],
+            "findings": [
+              {
+                "id": "money-svcstate-review-evidence",
+                "name": "Review and approval evidence for a proposed monetary state change",
+                "description": "The evidence set that makes a proposed create, correction or disposition action reviewable: reviewer identity and asserted competence, the decision recorded, the securing proof and validity of the evidence, and an advisory eligibility statement that explicitly declines to decide access.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-012",
+                  "SRC-014",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svcstate-q-review-evidence-set",
+                    "text": "Which evidence items must be present before a proposed monetary state change counts as reviewed?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Reviewer identity reference and the role under which the review was performed",
+                      "Review decision value and its decision instant",
+                      "Reference to the precondition report or correction plan actually reviewed, pinned by digest",
+                      "Supporting document references with integrity digests, and a named-gaps list where an item is missing"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-review-authority",
+                    "text": "Which authority is asserted to give the reviewer competence for this action, and where is that mandate recorded?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Reference to the mandate, delegation or role assignment relied on",
+                      "Scope limits of the mandate, including amount thresholds and currency or host restrictions",
+                      "Validity interval of the mandate and its status reference",
+                      "Pointer to the external register that holds the mandate, with a statement that this model does not confer it"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-eligibility-advisory",
+                    "text": "What does the eligibility report assert, and what does it explicitly decline to determine?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Requested action and the target assertion version with its validator",
+                      "Attributes supplied about subject, object, operation and environment",
+                      "Advisory verdict drawn from eligible, not-eligible, indeterminate or not-applicable",
+                      "Explicit statement that the external authorization component issues the binding permit or deny and that this report may be disregarded"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-evidence-validity",
+                    "text": "How is review evidence checked for currency and revocation before anyone relies on it?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Evidence validity interval and whether the check instant falls inside it",
+                      "Status or revocation list reference and the instant of the last successful status check",
+                      "Verification outcome for the securing proof or digest",
+                      "Aggregate completeness verdict listing every missing or stale item by name"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svcstate-de-reviewer-ref",
+                    "name": "Reviewer reference",
+                    "description": "Reference to the agent that performed a review, with the role asserted for the review and the instant of their decision.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-review-decision",
+                    "name": "Review decision value",
+                    "description": "Coded outcome of the review: approved, approved-with-conditions, rejected or returned-for-information.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-authority-ref",
+                    "name": "Asserted authority reference",
+                    "description": "Reference to the external mandate or delegation relied on for the review, with its scope limits and validity interval.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-eligibility-verdict",
+                    "name": "Advisory eligibility verdict",
+                    "description": "Non-binding verdict about whether the requested action appears permissible, alongside the attributes supplied to the external decision point.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-evidence-status-ref",
+                    "name": "Evidence status reference",
+                    "description": "Reference to the revocation or status mechanism for a piece of review evidence, plus the instant of the last successful check.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svcstate-art-review-record",
+                    "name": "Monetary change review record",
+                    "description": "Compiled evidence record for one proposed monetary state change: the reviewed plan or report pinned by digest, reviewer identities and asserted mandates, decision values and instants, evidence validity and status-check outcomes, the completeness verdict with named gaps, and the advisory eligibility statement with its explicit disclaimer of decision authority.",
+                    "media_or_form": [
+                      "structured record",
+                      "signed or otherwise secured evidence set",
+                      "human-readable review summary"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system review identifier from the governing workflow or case system where one exists; otherwise a governed IRI in a Dimension-controlled namespace; otherwise a UUID or ULID minted by the adopting Dimension. Review instants are content, never identifier components.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "money-svcstate-disposition-readiness",
+                "name": "Deletion and tombstone readiness for a monetary assertion",
+                "description": "How readiness for removal is assessed and reported: which holds currently suspend disposition, which retention class governs and who owns it, what must survive as a tombstone so existing references stay interpretable, and which unresolved conditions block a verdict. Execution stays with the records authority and the host.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svcstate-q-hold-state",
+                    "text": "Which holds or freezes currently suspend disposition of this assertion, and where does each one originate?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Hold identifier, issuing authority reference and the instrument type relied on",
+                      "Hold scope: whether it attaches to the assertion, the host record or a wider aggregate",
+                      "Applied instant and lift instant where known, with the lift request reference",
+                      "Effect statement recording that scheduled disposition is suspended until the hold is formally lifted"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-retention-class",
+                    "text": "Which retention class or records schedule governs this assertion, and which authority owns that schedule?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Retention class or records-schedule reference and its version",
+                      "Owning records authority reference and contact route",
+                      "Retention trigger event and period as recorded by that authority, carried as a reference value",
+                      "Explicit statement that this model neither sets, interprets nor executes the schedule"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-tombstone-content",
+                    "text": "What must remain after removal so that references from the host and from prior versions stay interpretable?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Tombstone marker carrying the assertion identifier and version-series identifier",
+                      "Removal instant and coded removal reason",
+                      "Reference to the disposition authorisation relied on",
+                      "Rule that the amount, the currency code and the effective interval values are not retained in the tombstone, and that the identifier is never reused"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-q-disposition-blockers",
+                    "text": "Which unresolved conditions block a readiness verdict, and how is an incomplete assessment expressed?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Blocker list typed as active hold, unresolved host reference, missing or stale schedule reference, or pending review",
+                      "Per-blocker severity and the external owner responsible for clearing it",
+                      "Aggregate verdict drawn from ready, blocked or indeterminate, never from a silent default",
+                      "Re-evaluation instant and the structured failure descriptor for an unassessable assertion"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svcstate-de-hold-ref",
+                    "name": "Applicable hold reference",
+                    "description": "Reference to a hold or freeze that suspends scheduled disposition, with its issuing authority, scope and applied instant.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-retention-class-ref",
+                    "name": "Retention class reference",
+                    "description": "Reference to the externally owned retention class or records schedule that governs the assertion, including its version.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-tombstone-marker",
+                    "name": "Tombstone marker",
+                    "description": "Post-removal placeholder holding the assertion identifier, version-series identifier, removal instant, removal reason and disposition authorisation reference, and nothing of the monetary content.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svcstate-de-readiness-verdict",
+                    "name": "Disposition readiness verdict",
+                    "description": "Aggregate assessment of whether the assertion is ready for disposition, blocked, or cannot be assessed, with the blocker list attached.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svcstate-art-readiness-report",
+                    "name": "Disposition readiness report",
+                    "description": "Declarative report listing every hold in force, the referenced retention class and its owning authority, the reference-integrity results, the proposed tombstone content, the blocker list with owners and severities, and the aggregate verdict with a re-evaluation instant. It is an input to the records authority's decision and is never evidence that destruction occurred.",
+                    "media_or_form": [
+                      "structured record",
+                      "human-readable readiness statement",
+                      "reference-only pointer set"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system disposition-case identifier issued by the records authority where one exists; otherwise a governed IRI in a Dimension-controlled namespace; otherwise a ULID minted by the adopting Dimension. Report identifiers never encode a retention date or a removal instant.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "money-svcstate-fn-resolve-effective",
+      "name": "Resolve effective monetary assertion version",
+      "description": "Select exactly one version of a bound monetary assertion for a stated effective instant and observation cut-off, and return it verbatim with a reproducible selection trace.",
+      "inputs": [
+        "Assertion identifier or host anchor with attribute path",
+        "Requested effective instant",
+        "Requested observation cut-off instant",
+        "Interval boundary convention and tie-break key in force"
+      ],
+      "outputs": [
+        "Selected version identifier and validator, or an explicit none-applicable outcome",
+        "Verbatim amount string, declared scale and referenced currency code",
+        "Currency register list and status that applied at the effective instant",
+        "Ordered selection trace and, on failure, a structured failure descriptor"
+      ],
+      "preconditions": [
+        "The assertion identifier or host anchor is syntactically resolvable",
+        "Both instants are RFC 3339 values carrying seconds and an explicit offset or Z",
+        "The version series is readable and its effective intervals are well formed"
+      ],
+      "effects": [
+        "Returns a declarative resolution result only",
+        "Performs no write, no conversion, no rounding and no re-scaling",
+        "Emits no audit entry; audit capture belongs to the external audit component"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-004",
+        "SRC-008",
+        "SRC-009",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-check-bind-preconditions",
+      "name": "Check binding and creation preconditions",
+      "description": "Evaluate every precondition for creating a monetary assertion and binding it to a host anchor, including currency-register validity, scale consistency, anchor resolvability and idempotency key state, and emit the precondition report.",
+      "inputs": [
+        "Proposed assertion payload in canonical form",
+        "Host anchor reference and attribute path",
+        "Idempotency key and prior-request state where supplied",
+        "Applicable currency register lists and minor-unit reference values"
+      ],
+      "outputs": [
+        "Binding precondition and idempotency report with per-check verdicts and severities",
+        "Aggregate accept or reject recommendation",
+        "Computed request fingerprint",
+        "Structured failure descriptor for each failing check"
+      ],
+      "preconditions": [
+        "The canonical form of the payload can be computed",
+        "The currency register reference is resolvable for the effective instant",
+        "The host anchor reference is well formed"
+      ],
+      "effects": [
+        "Produces a report; creates and persists nothing",
+        "Does not reserve, lock or allocate any identifier in the host",
+        "Makes no authorization decision and enforces no outcome"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-008",
+        "SRC-009",
+        "SRC-013",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-plan-correction",
+      "name": "Plan a correction by supersession",
+      "description": "Compose a correction plan that names the version to be superseded and its validator, states the replacement values, closes the prior effective interval, and reports overlap and gap conditions across the version series.",
+      "inputs": [
+        "Target assertion version identifier and the validator observed on the last read",
+        "Proposed replacement amount, currency reference, scale and effective interval",
+        "Correction reason code, justification and responsible agent reference",
+        "Existing version series with its effective intervals"
+      ],
+      "outputs": [
+        "Monetary assertion correction plan",
+        "Interval overlap and gap findings across the series",
+        "Retroactivity flag and the required conditional predicate for submission",
+        "Enumerated failure outcomes for a stale validator or an ill-formed interval"
+      ],
+      "preconditions": [
+        "The target version exists and is readable",
+        "A validator for the target version has been supplied",
+        "The proposed interval is well formed under the declared boundary convention"
+      ],
+      "effects": [
+        "Produces a proposal; applies nothing and mutates no stored version",
+        "Never rewrites the superseded version or reuses its identifier",
+        "Leaves acceptance, ordering and persistence entirely to the host"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-008",
+        "SRC-012",
+        "SRC-014",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-compile-review-evidence",
+      "name": "Compile review and approval evidence",
+      "description": "Assemble the evidence set for a proposed monetary state change, verify evidence validity intervals, status and securing proofs, and report completeness with named gaps.",
+      "inputs": [
+        "Reference to the precondition report or correction plan under review, pinned by digest",
+        "Reviewer identity references and asserted mandate references",
+        "Recorded review decisions and their instants",
+        "Status or revocation references for each evidence item"
+      ],
+      "outputs": [
+        "Monetary change review record",
+        "Per-item validity, status and integrity verification outcomes",
+        "Completeness verdict listing every missing or stale item by name",
+        "Structured failure descriptor where evidence cannot be verified"
+      ],
+      "preconditions": [
+        "The reviewed plan or report is retrievable and its digest can be recomputed",
+        "Each evidence item exposes a validity interval or an explicit absence statement",
+        "Status references, where present, are resolvable"
+      ],
+      "effects": [
+        "Produces a compiled evidence record only",
+        "Does not approve, reject or enforce anything and issues no credential",
+        "Does not operate a status list; revocation is owned by the issuing party"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-007",
+        "SRC-012",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-report-eligibility",
+      "name": "Report advisory eligibility for a monetary operation",
+      "description": "Assemble the subject, object, operation and environment attributes for a requested read or change and emit a non-binding eligibility statement that names the external component holding decision authority.",
+      "inputs": [
+        "Requested action and the target assertion version with its validator",
+        "Subject attribute references supplied by the caller or an attribute source",
+        "Object attributes of the assertion and its host anchor",
+        "Environment attributes such as request instant and channel reference"
+      ],
+      "outputs": [
+        "Advisory eligibility verdict drawn from eligible, not-eligible, indeterminate or not-applicable",
+        "The attribute set as supplied, with sources and observation instants",
+        "Explicit disclaimer naming the external decision point as the holder of permit or deny",
+        "Structured failure descriptor when required attributes cannot be resolved"
+      ],
+      "preconditions": [
+        "The target assertion version is identifiable",
+        "The requested action is one of the operations defined by this model",
+        "Attribute sources, where referenced, are resolvable or explicitly recorded as unavailable"
+      ],
+      "effects": [
+        "Emits an advisory statement that may be safely disregarded",
+        "Renders no authorization decision and performs no enforcement",
+        "Grants, denies and revokes nothing, and writes no access log"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-014",
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-report-disposition-readiness",
+      "name": "Report disposition readiness",
+      "description": "Assess whether a monetary assertion is ready for removal by collecting holds in force, the referenced retention class, reference-integrity results and outstanding blockers, and emit the readiness report with proposed tombstone content.",
+      "inputs": [
+        "Assertion identifier and its full version series",
+        "Hold and freeze references applying to the assertion or its host",
+        "Retention class reference and its owning authority",
+        "Inbound reference inventory from the host and from prior versions"
+      ],
+      "outputs": [
+        "Disposition readiness report",
+        "Blocker list with types, severities and external owners",
+        "Proposed tombstone content excluding amount, currency and interval values",
+        "Aggregate verdict of ready, blocked or indeterminate with a re-evaluation instant"
+      ],
+      "preconditions": [
+        "Hold and retention references are resolvable, or their unavailability is recorded as a blocker",
+        "The version series and its invalidation markers are readable",
+        "The inbound reference inventory can be enumerated or its incompleteness is declared"
+      ],
+      "effects": [
+        "Produces a readiness assessment only",
+        "Deletes, destroys, transfers and anonymises nothing",
+        "Never asserts that disposition occurred; execution belongs to the records authority and the host"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-008",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "money-svcstate-fn-describe-failure",
+      "name": "Describe an operation failure",
+      "description": "Render any refusal, precondition failure, conflict or unresolvable reference from the operations above as a machine-identifiable failure descriptor with a resolvable type and a stable title.",
+      "inputs": [
+        "Failing operation identifier and its inputs digest",
+        "Failure category such as unknown identifier, unresolvable binding, stale validator, duplicate in flight, fingerprint mismatch, tombstoned, blocked by hold or unverifiable evidence",
+        "Contextual references relevant to the failure",
+        "Observation instant of the failure"
+      ],
+      "outputs": [
+        "Failure descriptor carrying a resolvable type identifier, stable title, status, instance and detail",
+        "Extension members naming the target assertion version, validator and offending reference",
+        "Remediation instruction where one is defined",
+        "Correlation reference for reconciliation with the external audit entry"
+      ],
+      "preconditions": [
+        "The failure category is drawn from the model's published enumeration",
+        "A resolvable type identifier exists for that category"
+      ],
+      "effects": [
+        "Produces a descriptor only and changes no state",
+        "Does not suppress, retry or escalate the failing operation",
+        "Writes no audit record; it emits a correlation reference for the audit component to use"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-008",
+        "SRC-013",
+        "SRC-014"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-ECO-004 (parent economics model)",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-032 sits beneath the economics parent. The parent owns economic value, markets and exchange concepts; this model contributes only the concrete bound monetary assertion and its declarative operation contract, and must not restate the parent's economic semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Host entity or event model that carries the monetary assertion (adopting-Dimension model)",
+      "relation": "MIX-IN",
+      "purpose": "The assertion is mixed into a host record at a named attribute path. The host owns its own identifiers, its own lifecycle, persistence and enforcement; this model supplies the anchor, the version series, the operation preconditions and the reports. No host lifecycle state is defined here.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "ISO 4217 currency and funds register (ISO 4217 Maintenance Agency lists One, Two and Three)",
+      "relation": "REFERENCE",
+      "purpose": "Alphabetic codes, numeric codes and minor units are referenced from the register together with the list and status that applied at the effective instant. Allocation, amendment, redenomination and withdrawal of codes remain wholly with the maintenance agency.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "External authorization component (policy decision point and policy enforcement point)",
+      "relation": "REFERENCE",
+      "purpose": "This model supplies attributes and emits advisory eligibility statements. The decision point renders the authoritative Permit, Deny, Indeterminate or NotApplicable outcome and the enforcement point enforces it, including any obligations. No evaluation, decision or enforcement semantics are owned locally.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "Records authority, retention schedule and disposition programme",
+      "relation": "REFERENCE",
+      "purpose": "Retention classes, disposition authorities, holds and physical destruction are authored, decided and executed by the records authority. This model carries the references and reports readiness only; it never schedules, approves or performs disposition.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Audit trail and event log model",
+      "relation": "REFERENCE",
+      "purpose": "Operation attempts and outcomes are captured, secured and retained by the audit component. This model emits correlation references so an outcome can be reconciled with an audit entry, and owns no audit-trail production, retention or tamper-evidence semantics.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Foreign-exchange rate observation and conversion model",
+      "relation": "REFERENCE",
+      "purpose": "Rate feeds, rate selection, spot and closing rate policy and conversion arithmetic live in that model. A converted amount is a separate monetary assertion produced there and referenced here; no operation in this model derives one.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "W3C PROV-O provenance vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Supersession, derivation, responsible agent, generation instant and invalidation instant are expressed as mappings to PROV terms. The alignment is a mapping claim for interoperability; no conformance to PROV-O is asserted and no PROV processing behaviour is adopted.",
+      "required": false,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Monetary payload types: HL7 FHIR Money and XBRL monetary items with ISO 4217 unit measures",
+      "relation": "ALIGN",
+      "purpose": "Amount plus currency reference with preserved precision is mapped to established payload types for exchange, including the instant-versus-duration period distinction. Field-level differences, especially permitted fraction digits, are recorded as conflicts rather than reconciled by assumption.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credentials Data Model 2.0",
+      "relation": "ALIGN",
+      "purpose": "Review and approval evidence may be carried as verifiable credentials with a validity interval, a status reference and a securing proof. Issuance, verification, presentation and status-list operation stay with the issuer, holder and verifier; this model only compiles and checks what it is given.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name one accountable owner for the monetary assertion operation contract inside the adopting Dimension, distinct from the owner of any host model into which the mixin is bound.",
+        "Register every host model and attribute path the mixin may occupy, with the cardinality rule for each path and the identifier scheme the host uses for its anchors.",
+        "Register the external dependencies the contract relies on — currency register, authorization component, records authority, audit component and conversion model — with resolution routes and the behaviour to apply when a dependency is unavailable.",
+        "Publish the Dimension's fixed choices for the interval boundary convention, the tie-break key, the stale-validator outcome code, the idempotency key scope and expiry, and the default rounding declaration policy, so that reads are reproducible across implementations."
+      ],
+      "namespace_guidance": "Mint local identifiers only in a namespace the adopting Dimension controls or has been delegated. Never reuse an ISO 4217 alphabetic or numeric code, a host record identifier, a records-schedule identifier or an external decision identifier as a local identifier, and never derive one from an amount, a currency or a date. Local structural identifiers are lower-kebab-case, stable across versions, and carry no date-like component; artifact identifiers follow the artifact identity priority. Alignment mappings are declared in a separate mapping namespace so that a mapping change cannot silently alter local semantics.",
+      "registry_links": [
+        "Registry entry vr.wm-xct-032 on the world-model record plane (WM-XCT-032, entry kind mixin)",
+        "Parent registry entry WM-ECO-004",
+        "ISO 4217 Maintenance Agency currency lists: List One (current currencies and funds), List Two (fund codes), List Three (historic)",
+        "The adopting Dimension's register of host bindings, retention classes and authorization component endpoints"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Amount is canonicalised as a signed decimal string that preserves the declared scale including trailing zeros; binary floating-point representations are never canonical and never authoritative, because the represented precision is itself significant.",
+        "Currency reference is canonicalised as the uppercase three-letter alphabetic code plus the register list identifier and the numeric code, so that a historic code stays interpretable after withdrawal.",
+        "Instants are canonicalised as RFC 3339 values with seconds present; the originally supplied offset is retained in storage, while comparison and digest computation use the equivalent UTC form, and -00:00 is preserved as meaning a known UTC instant with unknown local offset.",
+        "Effective intervals are canonicalised as an inclusive begin instant and an exclusive end instant, with an explicit open-end marker rather than a sentinel date.",
+        "Reference sets are canonicalised in a declared sort order, and the request fingerprint is computed over this canonical form so that reordering alone never looks like a payload change."
+      ],
+      "patch_rules": [
+        "A published assertion version is never patched in place. Any change to amount, currency reference, declared scale or effective interval is a supersession that produces a new version linked to the one it replaces.",
+        "Every change submission must carry the validator observed on the last read; a submission without a validator, or with a stale one, is rejected with the Dimension's published stale-validator outcome and no partial application.",
+        "Closing the prior effective interval belongs to the same correction plan as the replacement values, and the plan reports overlap and gap findings across the series before it can be considered applicable.",
+        "Metadata-only patches are permitted solely on unpublished drafts and solely for fields outside the canonical monetary payload; a metadata patch may never change a canonicalised value.",
+        "A superseded version may only receive an invalidation instant, an invalidation reason and a status marker; its payload and its identifier are otherwise frozen."
+      ],
+      "compatibility_rules": [
+        "Adding an optional field, a new failure category with its own resolvable type, or a new alignment mapping is a compatible change.",
+        "Changing the interval boundary convention, the tie-break key, the canonical amount form, the idempotency key scope or the stale-validator outcome is a breaking change, because each of them changes what a previously reproducible read returns.",
+        "Removing a failure category, narrowing its meaning or repointing its type identifier is breaking; retired categories are deprecated with a replacement pointer and retained for readers of historic outcomes.",
+        "Tightening a precondition from warning to hard failure is breaking for writers; loosening it is compatible for writers but must be announced because it changes report semantics.",
+        "An alignment mapping change never changes local semantics; where an external type revises its constraints, the difference is recorded as a conflict rather than absorbed."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record for the artifact — the host's or records authority's own report, change-request, review or disposition-case identifier — used whenever such a system exists.",
+        "Governed global identifier or IRI minted in a namespace the adopting Dimension owns or has been formally delegated, used when no master system issues an identifier.",
+        "UUID or ULID minted by the adopting Dimension as the last resort, recorded together with the minting agent and the minting instant.",
+        "A date, an effective interval, an observation instant, an amount, a scale or a currency code is never an identifier and must never be embedded in one; identifiers are opaque and are never reused after an artifact or assertion is tombstoned."
+      ],
+      "timestamp_rule": "All instants are recorded in RFC 3339 form with seconds present and an explicit numeric offset or Z, and -00:00 is reserved for a known UTC instant whose local offset is unknown. Event time — the effective or valuation instant at which the monetary amount is asserted to hold — is always recorded separately from observation or ingestion time, the instant at which the version, report or decision was recorded by the host; both are carried whenever they differ, and neither may be inferred from the other. Review, invalidation, hold, lift, resolution-attempt and readiness instants are stamped as observation time, each with its own offset, and comparison uses the equivalent UTC value while the supplied offset is preserved.",
+      "serial_naming_rule": "Serial artifacts — precondition reports, correction plans, review records and readiness reports — are named `<artifact-kind>-<assertion-identifier>-<zero-padded-sequence>`, where the sequence is monotonic within one assertion version series and starts at 1. The sequence never encodes a date, an amount or a currency, gaps in the sequence are preserved rather than renumbered after an artifact is withdrawn, and chronological ordering is established from the observation instant carried inside the artifact rather than from its name.",
+      "integrity_rule": "Every artifact carries a digest over its canonical form together with the identifier and validator of the assertion version it describes, so that a report can be shown to describe one exact state. A published artifact is never rewritten: it is marked invalidated with an instant and a reason and a replacement artifact is issued, which cites the invalidated one. Digest verification failure, a missing validator, or a validator that no longer matches the current version is reported as an integrity failure, blocks any readiness or completeness verdict, and is surfaced as a structured failure descriptor rather than resolved silently."
+    },
+    "policies": [
+      "Operations act only on the monetary assertion bound to its host. No function in this model creates, advances or terminates a lifecycle for a currency, a price, an offer, a transaction, an account, a rate feed or a financial instrument.",
+      "All functions are declarative. They resolve, check, plan, compile and report. Persistence belongs to the host, permit and deny to the external authorization component, audit capture and retention to the audit component, and disposition execution and physical destruction to the records authority.",
+      "No read, plan or report performs currency conversion, re-scaling or rounding. A converted or restated value is a distinct assertion produced by the external conversion or accounting model and referenced, never derived here.",
+      "Retroactive correction is permitted only as a supersession carrying an explicit retroactivity flag, a coded reason and a review record; originals stay immutable and keep their identifiers.",
+      "Where a jurisdictional, accounting or precision rule is unresolved, the operation records a blocker or a declared gap rather than selecting a default, and returns an indeterminate verdict instead of a confident one."
+    ],
+    "crud": {
+      "read": [
+        "Resolve exactly one assertion version for a stated effective instant and observation cut-off, applying the published boundary convention and tie-break key, and return an explicit none-applicable outcome rather than the nearest available version.",
+        "Return the amount, declared scale and currency reference verbatim, together with the register list and status that applied at the effective instant, including a flag when the code was historic or withdrawn.",
+        "Version-history reads return prior versions, including invalidated ones, each with its invalidation instant, reason and status marker; history is never silently pruned when a correcting version exists.",
+        "A read of a tombstoned assertion returns the tombstone marker with a gone-style outcome, kept distinct from an unknown-identifier outcome, and never resurrects the removed monetary values.",
+        "Reads are safe: they change no state, allocate no identifier and produce no stored artifact."
+      ],
+      "create": [
+        "Accept a create only when the host anchor resolves and is not tombstoned, the currency code is present in the applicable register list at the effective instant, and the declared scale is consistent with the minor unit or carries an explicit over-precision declaration with a stated reason.",
+        "Honour a client idempotency key within its published scope and expiry: an identical replayed request returns the first recorded outcome whether success or failure, a duplicate arriving while the original is in flight is reported as a conflict, and the same key with a different request fingerprint is reported as an unprocessable request.",
+        "Record the effective (event) instant and the observation instant separately at creation, and record the responsible agent and the generating activity.",
+        "Emit the precondition report and stop there; the host performs the write, assigns its own identifiers and decides whether to apply the result."
+      ],
+      "update": [
+        "A published version is never mutated in place; every correction is a new version carrying a link to the version it supersedes, a correction reason, a responsible agent and a generation instant.",
+        "A correction must present the validator observed on the last read; a stale validator is rejected with the Dimension's published outcome — precondition failure or conflict, fixed and documented, not chosen per call — and nothing is partially applied.",
+        "Closing the prior effective interval is part of the same correction plan, and the plan reports overlap and gap findings across the whole version series before it is considered applicable.",
+        "Changes to amount, currency reference, declared scale or effective interval are supersessions and never metadata patches; the superseded version may thereafter receive only an invalidation instant, reason and status marker."
+      ],
+      "delete": [
+        "This model performs no deletion. It reports disposition readiness only: the holds in force, the referenced retention class, reference-integrity findings, the proposed tombstone content, and an aggregate verdict of ready, blocked or indeterminate with a re-evaluation instant.",
+        "While any hold or freeze applies to the assertion or to its host, the assertion is not eligible for disposition; scheduled disposition stays suspended until the issuing authority formally lifts the hold, and the lift reference is recorded before readiness can change.",
+        "When disposition is executed externally, a tombstone is retained in place of the assertion: assertion identifier, version-series identifier, removal instant, coded removal reason and a reference to the disposition authorisation. The tombstone must not retain the amount, the currency code or the effective interval, and the identifier is never reused.",
+        "Execution ownership is external and explicit: the referenced records authority owns the retention schedule, the disposition decision and physical destruction; the external host owns removal from its store and the writing of the tombstone; the external audit component owns capture and retention of the disposition audit record. A readiness report from this model is never evidence that destruction occurred.",
+        "Superseded and invalidated versions are themselves retained for the period set by the records authority and are not deleted merely because a correcting version exists; where the authority has not classified them, the readiness verdict is indeterminate and a blocker is raised."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Monetary assertion contract owner",
+        "responsibilities": [
+          "Own the operation contract: the boundary convention, tie-break key, canonical amount form, failure enumeration and idempotency scope, and publish every change to them.",
+          "Approve compatibility classifications and deprecate retired failure categories with replacement pointers.",
+          "Maintain the register of host bindings and the declared gaps and holds."
+        ]
+      },
+      {
+        "name": "Host system custodian",
+        "responsibilities": [
+          "Persist assertion versions, assign host identifiers, apply or reject correction plans and enforce authorization outcomes at the host.",
+          "Expose stable version validators and version history, and write tombstones when disposition is executed.",
+          "Report reference-integrity breakages back to the contract owner."
+        ]
+      },
+      {
+        "name": "Records authority liaison",
+        "responsibilities": [
+          "Maintain the resolvable references to retention classes, disposition authorities and holds that readiness reports depend on.",
+          "Relay hold applications and formal lift notifications, and confirm when disposition has been executed by the authority.",
+          "Escalate assertions that no schedule covers, so that they are recorded as blockers rather than defaulted."
+        ]
+      },
+      {
+        "name": "Reviewer and approver",
+        "responsibilities": [
+          "Review precondition reports and correction plans pinned by digest, and record a decision value with its instant and the mandate relied on.",
+          "Declare scope limits and conflicts of interest, and decline where the mandate does not cover the amount, currency or host.",
+          "Ensure evidence items carry a validity interval and a resolvable status reference."
+        ]
+      },
+      {
+        "name": "Interoperability steward",
+        "responsibilities": [
+          "Maintain alignment mappings to external monetary payload types and provenance vocabularies, in a separate mapping namespace.",
+          "Record conflicts — notably permitted fraction digits versus register minor units — rather than reconciling them by assumption.",
+          "Re-verify mappings whenever an aligned external specification publishes a new version, and never assert conformance without evidence."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. Every read and every proposed state change is accompanied by an advisory eligibility report that names the attributes supplied and the external component holding decision authority; the binding permit or deny is rendered by that component and enforced at the host's enforcement point. Absence of an eligibility report is treated as not-eligible, and an indeterminate verdict is never read as permission.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Where an exact amount is restricted, a range-masked or banded value may be released at finding scope provided the mask and its bands are declared in the read outcome, so that a masked value is never mistaken for a precise one.",
+        "Break-glass reads for incident response are permitted only with a recorded justification reference and a mandatory post-hoc review record compiled within the Dimension's published window.",
+        "Assertions under a legal hold remain readable to hold administrators even where ordinary access has lapsed, because a hold suspends disposition without suspending accountability.",
+        "Where the currency code is itself disclosive — a single-jurisdiction currency within a small cohort — the code may be withheld and the withholding declared explicitly in the outcome rather than returned as absent.",
+        "Alignment mappings and failure-category definitions are readable at bundle scope without an eligibility report, since they carry no monetary content."
+      ],
+      "audit_requirements": [
+        "Every eligibility report, precondition report, correction plan, review record and readiness report carries the requester reference, the requested action, the target assertion version and validator, and the observation instant of the operation.",
+        "Audit records are written, secured and retained by the external audit component; this model stores only resolvable pointers and correlation references and never asserts that an audit entry exists or has been retained.",
+        "Failure outcomes are recorded with the same structured failure descriptor returned to the caller, including its type identifier and instance, so that the caller's result and the audit entry can be reconciled after the fact.",
+        "Break-glass reads, mask releases and withheld-currency outcomes are flagged in the outcome itself so that the audit component can select them without re-deriving the exception."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md — resolve Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL before attempting any read or change; this file is required even where the projection is a document store or a tool-calling interface rather than a file tree.",
+        "Specification URL — the WM-XCT-032 boundary, in-scope and out-of-scope statements, composition links and the declared gaps and conflicts.",
+        "Storage type URL — the projection in force (document store, relational store, graph, version-controlled files); storage is a projection and never a source of semantics.",
+        "Interface URL — the operation surface: as-of parameters, validator format, idempotency key scope and expiry, failure category enumeration with resolvable type identifiers.",
+        "Processes URL — the read-resolution, binding, correction, review and disposition-readiness procedures, their escalation paths, and the named external owners of persistence, decision, audit and destruction."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This bundle states a storage-neutral, standards-grounded contract for reading and changing the state of a monetary assertion bound to a host record: deterministic as-of resolution, binding and creation preconditions with idempotency, correction by supersession under optimistic concurrency, review and approval evidence, and disposition-readiness reporting. Every operation is declarative and returns a resolution, a check result, a plan, an evidence compilation, a readiness verdict or a structured failure descriptor. No node performs persistence, authorization enforcement, audit capture or destruction, and none defines a lifecycle for a currency, price, transaction, account, rate feed or instrument.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Host anchor plus attribute path identifies the binding; version identifier and validator identify state. Identity priority names the authoritative master-system identifier first, then a governed IRI, then UUID/ULID, and explicitly bars dates, amounts and currency codes from identifiers. Identifier reuse after tombstoning is prohibited."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Only the assertion's own version series has states: created, current, superseded, invalidated, tombstoned. Currency, price, transaction, account, rate-feed and instrument lifecycles are excluded in out_of_scope and in boundary notes, and no function advances them."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Outbound references are enumerated — host anchor, currency register entry, authorization context, retention class, review record, audit correlation — each with a resolution outcome and a broken-reference report. Composition links assign ownership of every referenced concern to its target."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Effective (event) time and observation time are recorded separately and neither is inferred from the other; intervals use an inclusive-start, exclusive-end convention with explicit open ends; overlap and gap detection uses interval relations; the timestamp rule mandates RFC 3339 with seconds and an explicit offset or Z."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Supersession carries the superseded version identifier and validator, a relation type, a correction reason, a responsible agent, a generation instant and an invalidation instant, aligned to PROV terms as a mapping claim rather than a conformance claim."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five roles separate contract ownership from host custody, records-authority liaison, review and interoperability stewardship. Execution ownership for persistence, decision, audit and destruction is named explicitly in the delete rules and the boundary notes."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Preconditions cover anchor resolvability, currency-register membership at the effective instant, scale versus minor-unit consistency with an explicit over-precision path, idempotency key and fingerprint state, evidence validity, status and proof verification, and per-check severity with an aggregate verdict."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny by default with advisory-only eligibility reporting; the external decision point owns permit and deny and the enforcement point owns enforcement. Scopes cover bundle, layer, finding and artifact, with five declared exceptions including masked amounts and break-glass reads."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "The model performs no deletion. It reports readiness with holds in force, the referenced retention class, blockers and proposed tombstone content that excludes monetary values; the records authority owns the schedule, decision and destruction, the host owns store removal, the audit component owns the audit record. Superseded versions are retained on the authority's schedule."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to FHIR Money, XBRL monetary items with ISO 4217 unit measures, PROV-O and Verifiable Credentials are declared as mapping claims in a separate namespace, with conflicts recorded rather than reconciled. Storage and interface choices are treated as projections."
+      },
+      {
+        "dimension": "concurrency and idempotency",
+        "status": "covered",
+        "notes": "Strong validators with a required conditional predicate, a Dimension-fixed stale-validator outcome, and an idempotency key with published scope and expiry, fingerprint comparison, replay of the first outcome, a conflict outcome for in-flight duplicates and an unprocessable outcome for fingerprint mismatch."
+      },
+      {
+        "dimension": "failure semantics",
+        "status": "covered",
+        "notes": "A dedicated function renders every refusal as a machine-identifiable descriptor with a resolvable type, stable title, status, instance and extension members naming the target version and offending reference, plus a correlation reference for the audit component."
+      },
+      {
+        "dimension": "precision and rounding",
+        "status": "gap",
+        "notes": "Verbatim scale preservation on read and scale-versus-minor-unit checking on create are specified, but the model does not decide whose rounding rule governs when a host, a payment payload and a jurisdiction disagree; the rounding declaration is carried per assertion and the conflict is recorded."
+      },
+      {
+        "dimension": "measurement basis",
+        "status": "not-applicable",
+        "notes": "Whether an amount is historical cost, fair value or a translated figure is decided in the accounting model. This model records the asserted amount, currency and effective instant, not the basis on which the amount was measured."
+      },
+      {
+        "dimension": "jurisdictional variation",
+        "status": "gap",
+        "notes": "Legal-tender rounding rules, cash-rounding conventions, statutory retention periods and hold instruments vary by jurisdiction. The contract carries references and effects but declares no jurisdictional defaults; unresolved cases produce an indeterminate verdict and a blocker."
+      }
+    ],
+    "known_omissions": [
+      "No local migration procedure for a currency redenomination or withdrawal that occurs while an effective interval is still open; the amendment record is referenced but the treatment of the straddling interval is undecided.",
+      "No rule for amounts denominated in a currency that lacks exchangeability, where an operational read must return the asserted value while accounting practice may require a different measurement.",
+      "Multi-currency composite assertions such as baskets and dual-currency instruments are not modelled; each currency is treated as a separate bound assertion and their mutual constraints are not expressed.",
+      "Cryptoassets and other units outside the ISO 4217 register have no register binding, so the currency-membership precondition cannot be evaluated for them.",
+      "No Dimension-wide default for sub-minor-unit scales such as unit pricing; the scale is declared per assertion with a reason, which permits inconsistent declarations across hosts.",
+      "The concurrency validator format is delegated to the host projection, so cross-host correction plans cannot always be compared or replayed.",
+      "Bulk operations — resolving or correcting many assertions atomically — are not specified; the contract addresses one assertion at a time.",
+      "Negative amounts, zero and signed-zero conventions are not constrained here; sign meaning is left to the host attribute path."
+    ],
+    "conflicts": [
+      "Precision authority: the currency register fixes a minor unit per currency while payment and reporting payloads permit greater fraction digits, and one prominent payload type treats represented decimal precision as itself significant. Both are recorded; the declared scale governs locally and the minor unit is carried as a reference value.",
+      "Conditional-request semantics permit either a conflict or a precondition-failure outcome for a stale validator, and a widely used precedent returns either. The contract requires the adopting Dimension to fix one and publish it, since callers cannot branch reliably otherwise.",
+      "The idempotency key mechanism is an expired Internet-Draft, not a normative standard. Its conflict and unprocessable outcomes are adopted as a documented convention and explicitly not claimed as conformance.",
+      "Records-management practice differs on whether a superseded version is itself a record with its own retention trigger or merely a prior state of one record. The question is unresolved and produces an indeterminate readiness verdict with a blocker rather than a default.",
+      "Accounting standards require a foreign-currency transaction to be translated at the spot rate for the transaction date, while this contract forbids derivation in the read path. The two are reconciled by treating a translated figure as a separate referenced assertion, which some reporting pipelines will find surprising.",
+      "Provenance vocabularies distinguish revision of the same entity from derivation of a new one, while records systems often model both as versions of one record. The relation type is recorded explicitly so consumers can choose their interpretation."
+    ],
+    "regional_assumptions": [
+      "Hold and freeze semantics are drawn from a United States federal records authority: a freeze suspends scheduled disposition and is lifted only by a formal written request. Other jurisdictions use different instruments; the contract carries the reference and the effect, never the procedure.",
+      "Functional and presentation currency concepts follow IFRS. Jurisdictions applying other accounting frameworks may define the reporting currency, and therefore the meaning of the effective instant for reporting, differently.",
+      "Minor-unit expectations assume the ISO 4217 register. Jurisdictions with statutory cash-rounding rules, or with a legal tender whose practical smallest unit differs from the registered minor unit, must declare the rounding rule on the assertion.",
+      "Presentation conventions — decimal separator, digit grouping, symbol placement, negative-amount notation — are treated as locale projections and are excluded from the canonical form, which assumes a point decimal separator and no grouping.",
+      "The assumption that a records authority exists and can be referenced holds in regulated and public-sector settings; in lightly governed settings the retention-class reference will be absent and readiness will be indeterminate by design."
+    ],
+    "adversarial_checks": [
+      "Ownership probe: does any function persist, decide, enforce, destroy or produce an audit entry? Every function's effects list denies all five explicitly, and the delete rules name the external owner of each. The failure-description function emits a correlation reference rather than an audit record precisely so that referencing the audit component does not become owning it.",
+      "Lifecycle-creep probe: does any node define states for a currency, price, transaction, account, rate feed or instrument? No. States apply only to the assertion's version series, and currency withdrawal is read from the register as a status flag rather than modelled as a local transition.",
+      "Derivation probe: does any read or report compute a converted, rounded or re-scaled amount? No. The read finding forbids it, the policies restate it, and conversion is assigned to an external model by composition link. This is the check most likely to be violated by an implementation under pressure to be convenient.",
+      "Identity probe: does any identifier embed a date, amount or currency? No. Serial names use a monotonic per-series sequence, artifacts carry instants as content, and identifier reuse after tombstoning is barred.",
+      "Evidence probe: is any structural node asserted without primary support? Each bundle, layer, finding and function cites live primary sources. The idempotency convention is explicitly downgraded to a non-normative draft, and precision and jurisdictional questions are recorded as gaps rather than presented as settled.",
+      "Falsifiability probe: could an implementer disprove the read contract? Yes — the boundary convention, tie-break key, none-applicable outcome and forbidden derivations are stated concretely enough that two implementations returning different versions for the same as-of pair constitute a demonstrable defect.",
+      "Substitution probe: could a readiness report be mistaken for a disposition certificate? The delete rules and the artifact description both state it is never evidence that destruction occurred, and the tombstone excludes monetary content so that a surviving marker cannot be misread as a retained amount."
+    ]
+  }
+}
