@@ -164,6 +164,28 @@ def frozen_context(path: Path) -> dict[str, str]:
     return context
 
 
+def provider_prompt_path(run_dir: Path, provider: str) -> Path:
+    """Resolve the prompt that supplied frozen context to a provider result.
+
+    Ordinary runs keep it at the model root. Split-pass merges instead keep
+    prompts under ``parts/<label>`` and record which part supplied the merged
+    model boundary. Using that base-part prompt prevents no-tools adjudication
+    from silently losing the frozen registry and relationship contract.
+    """
+    root_prompt = run_dir / f"{provider}.prompt.md"
+    if root_prompt.is_file():
+        return root_prompt
+    manifest_path = run_dir / f"{provider}.manifest.json"
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        base_part = manifest.get("base_part")
+        if isinstance(base_part, str) and base_part:
+            base_prompt = run_dir / "parts" / base_part / f"{provider}.prompt.md"
+            if base_prompt.is_file():
+                return base_prompt
+    return root_prompt
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model-id", required=True)
@@ -193,7 +215,7 @@ def main() -> int:
         "provider_policy": policy,
         "providers": {provider: compact_result(result) for provider, result in providers.items()},
         "comparison": comparison,
-        "frozen_context": frozen_context(run_dir / f"{active[0]}.prompt.md"),
+        "frozen_context": frozen_context(provider_prompt_path(run_dir, active[0])),
     }
     if len(active) == 1:
         prompt = """You are the Vercy single-provider adversarial auditor operating

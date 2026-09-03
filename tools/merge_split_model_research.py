@@ -35,7 +35,16 @@ def sha256(path: Path) -> str:
 def canonical_url_key(url: str) -> str:
     """Collapse only presentation-suffix variants of the same HTTPS resource."""
     normalized = url.strip().rstrip("/")
-    return re.sub(r"\.(?:html?|xhtml)$", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(
+        r"\.(?:html?|xhtml|txt)$", "", normalized, flags=re.IGNORECASE
+    )
+    # Unicode publishes UTS #35 both at the report landing path and at the
+    # explicit Part 1 document path.  They are two presentations of the same
+    # normative resource, not independent corroborating sources.
+    normalized = re.sub(
+        r"(/reports/tr35)/tr35$", r"\1", normalized, flags=re.IGNORECASE
+    )
+    return normalized
 
 
 def stable_unique(values: list[Any]) -> list[Any]:
