@@ -1,0 +1,2312 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-036",
+    "model_id": "WM-XCT-036",
+    "name": "Alias / Same-as Mapping",
+    "entry_kind": "mixin",
+    "purpose": "Provide a reusable mixin that records and answers questions about asserted equivalence and non-equivalence between identifiers for the same subject held by independent authorities, carrying asserting authority, relation semantics, confidence, declared context, temporal validity, evidence and lifecycle state with every assertion, and exposing read, resolution, traversal and comparison operations that return candidate answers with provenance instead of selecting a canonical identifier.",
+    "scope_statement": "WM-XCT-036 models federated identity equivalence as a set of attributed, contextual, time-bounded assertions between identifier endpoints, plus the query surface that reads, resolves, traverses and compares those assertions. The model is storage- and interface-neutral: RDF/SPARQL, JSON, Markdown, Git, MCP and document stores are projections. It owns assertion structure and the semantics of answering questions about assertions; it does not own the identifier schemes at either endpoint, the matching processes that might propose new assertions, reasoning execution, resolution-protocol execution, authorization decisions, or provenance and audit storage. Every answer is a report with declared parameters, per-edge provenance and an explicit completeness statement; absence of an equivalence answer is never presented as evidence of non-equivalence.",
+    "in_scope": [
+      "Alias assertion structure: the two identifier endpoints, the relation kind, the asserting authority, the declared context, a confidence or strength value, an evidence reference and a lifecycle state.",
+      "Explicit non-equivalence (not-same) assertions and their interaction with equivalence assertions from the same or other authorities.",
+      "Declared semantics of every supported relation kind, including symmetry, transitivity and disjointness properties, held in a versioned relation-property profile.",
+      "Current-state and as-of read operations using separate assertion validity time and record or observation time.",
+      "Resolution of a supplied identifier to a candidate set of equivalent identifiers, always returned as a set with per-candidate supporting evidence.",
+      "Multi-hop traversal with explicit relation-kind filter, direction, hop limit, maximum allowed strength loss, context and as-of instant.",
+      "Path-level reporting: every candidate path, per-edge provenance, derivation labels, composed strength, cycle notices, contradiction notices and truncation reasons.",
+      "Non-adjudicating comparison of competing assertions across authority, relation semantics, confidence, context, time, evidence and lifecycle state.",
+      "Result integrity disclosure covering ambiguity, no-answer, truncation, stale endpoints, access-suppressed content and unreachable sources.",
+      "Capability declaration for the alias query surface, including supported relation kinds, entailment stance, temporal coverage and hard limits."
+    ],
+    "out_of_scope": [
+      "Identifier schemes, minting rules, syntax and registry lifecycle for the endpoints themselves; alias mapping references endpoint identifiers but does not govern them.",
+      "Entity resolution, record linkage, similarity scoring or any matching process that would propose new alias candidates where no assertion exists.",
+      "Materialisation or persistence of entailment closures, and rewriting of host data under substitution of equivalent identifiers.",
+      "Selection or minting of a canonical or preferred identifier for downstream consumers.",
+      "Execution of HTTP redirects, datetime negotiation or any identifier-resolution protocol against external endpoints.",
+      "Mutation of endpoint records or of any host entity that carries the mixin, including merge, survivorship and golden-record processing.",
+      "Authorization decisions and their enforcement; the model consumes an access scope and an externally produced decision reference.",
+      "Creation, storage, integrity and retention execution of provenance and audit trails.",
+      "Adjudication of which authority is correct about the world, and any ranking of authorities by trustworthiness.",
+      "Storage format, index design, query language choice and transport protocol."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Entity matching and record-linkage models",
+        "distinction": "This model consumes equivalence assertions that already exist and never derives new candidate equivalences from attribute similarity; the documented over-assertion of identity links makes a generative matching surface inside an alias model actively harmful.",
+        "source_refs": [
+          "SRC-019",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Reasoning services and entailment regimes",
+        "distinction": "An answer declares which regime it was computed under and labels each edge asserted or derived, but reasoner execution, closure materialisation and inconsistency handling policy belong to the reasoning service; regimes differ on whether inconsistency is an error or a warning.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Access-decision and enforcement services",
+        "distinction": "Query inputs carry an access scope and results disclose suppression, but Permit, Deny, Indeterminate and NotApplicable evaluation and the enforcement of obligations remain with the decision and enforcement points.",
+        "source_refs": [
+          "SRC-015",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Identifier resolution and versioned-retrieval services",
+        "distinction": "The model may report a TimeGate or TimeMap reference and the as-of parameters it used, but never performs datetime negotiation, memento selection or redirect following on behalf of the caller.",
+        "source_refs": [
+          "SRC-012",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Provenance and audit record services",
+        "distinction": "Every returned edge carries a reference to attribution, generation and derivation records; creating, storing and retaining those records, and the audit trail of the query itself, belong to the provenance and logging services.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Concept-scheme alignment and vocabulary mapping models",
+        "distinction": "SKOS mapping relations are aligned relation kinds that an alias assertion may carry, with their own transitivity and disjointness rules; governance of concept schemes and of mapping projects is not modelled here.",
+        "source_refs": [
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Credential issuance and verification services",
+        "distinction": "Evidence references and verification state are carried and reported; cryptographic verification and the business-rule validation that decides whether to rely on a claim stay with the verifier.",
+        "source_refs": [
+          "SRC-016"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "SPARQL 1.1 Query Language",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/sparql11-query/",
+      "version_or_date": "W3C Recommendation 21 March 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:10:00Z",
+      "relevance": "Normative source for property-path traversal, cycle-safe connectivity matching, solution sequences and RDF dataset / named-graph scoping; grounds hop-limited traversal and scope echoing."
+    },
+    {
+      "id": "SRC-002",
+      "title": "SPARQL 1.1 Entailment Regimes",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/sparql11-entailment/",
+      "version_or_date": "W3C Recommendation 21 March 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:12:00Z",
+      "relevance": "Defines conditions a regime must satisfy, finiteness of answers, and the divergent inconsistency handling (MUST raise an error under OWL 2 Direct Semantics, MAY warn under RDF-Based Semantics); grounds the entailment-stance declaration."
+    },
+    {
+      "id": "SRC-003",
+      "title": "SPARQL 1.1 Federated Query",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/sparql11-federated-query/",
+      "version_or_date": "W3C Recommendation 21 March 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:14:00Z",
+      "relevance": "Normative SERVICE/SILENT semantics: a silenced failure yields a single solution with no bindings, indistinguishable from an empty answer; grounds the mandatory completeness and source-failure disclosure."
+    },
+    {
+      "id": "SRC-004",
+      "title": "SPARQL 1.1 Service Description",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/sparql11-service-description/",
+      "version_or_date": "W3C Recommendation 21 March 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:16:00Z",
+      "relevance": "Vocabulary for declaring endpoint capability, default dataset, available graphs and default entailment regime; grounds the capability-profile artifact and pre-request discovery."
+    },
+    {
+      "id": "SRC-005",
+      "title": "SPARQL 1.1 Protocol",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/sparql11-protocol/",
+      "version_or_date": "W3C Recommendation 21 March 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:18:00Z",
+      "relevance": "Defines the read-only query operation, MalformedQuery and QueryRequestRefused faults, and the rule that a protocol-level dataset overrides a request-embedded dataset; grounds request validation and scope precedence."
+    },
+    {
+      "id": "SRC-006",
+      "title": "OWL 2 Web Ontology Language Structural Specification and Functional-Style Syntax (Second Edition)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl2-syntax/",
+      "version_or_date": "W3C Recommendation 11 December 2012",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:20:00Z",
+      "relevance": "Defines SameIndividual and DifferentIndividuals assertions and states that OWL 2 makes no unique name assumption; grounds strict-equivalence and explicit not-same relation kinds."
+    },
+    {
+      "id": "SRC-007",
+      "title": "OWL 2 Web Ontology Language Direct Semantics (Second Edition)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl2-direct-semantics/",
+      "version_or_date": "W3C Recommendation 11 December 2012",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:22:00Z",
+      "relevance": "Formal satisfaction conditions for equality and difference of individuals, and the substitutivity that equality licenses; grounds why unrestricted closure over mixed relation kinds is unsafe."
+    },
+    {
+      "id": "SRC-008",
+      "title": "SKOS Simple Knowledge Organization System Reference",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/skos-reference/",
+      "version_or_date": "W3C Recommendation 18 August 2009",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:24:00Z",
+      "relevance": "Normative mapping relations with per-relation transitivity (exactMatch transitive, closeMatch deliberately not, to avoid compound errors when chaining), symmetry and disjointness; grounds per-relation-kind traversal rules and the strength-loss budget."
+    },
+    {
+      "id": "SRC-009",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:26:00Z",
+      "relevance": "Entity/Activity/Agent, wasAttributedTo, wasDerivedFrom, qualified attribution, generatedAtTime and invalidatedAtTime; grounds per-edge provenance references and record-time semantics."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Shapes Constraint Language (SHACL)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/shacl/",
+      "version_or_date": "W3C Recommendation 20 July 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:28:00Z",
+      "relevance": "Validation report structure (conforms flag, focus node, severity, source shape) and the requirement that validation leaves data and shapes immutable and idempotent; grounds report-only validation and comparison output."
+    },
+    {
+      "id": "SRC-011",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "Standards Track, July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:30:00Z",
+      "relevance": "Grammar requiring seconds and an explicit offset or Z, with -00:00 meaning unknown local offset; grounds the timestamp rule for as-of instants."
+    },
+    {
+      "id": "SRC-012",
+      "title": "RFC 7089: HTTP Framework for Time-Based Access to Resource States -- Memento",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7089.html",
+      "version_or_date": "Informational, December 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:32:00Z",
+      "relevance": "Original Resource, Memento, TimeGate and TimeMap, Accept-Datetime negotiation and server-discretionary best-match selection with interval coverage; grounds as-of reads, nearest-preceding disclosure and the time-map artifact."
+    },
+    {
+      "id": "SRC-013",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "Internet Standard STD 97, June 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:34:00Z",
+      "relevance": "300 Multiple Choices leaves selection to the user agent; 404 may be returned to conceal a forbidden resource; redirects may require confirmation. Grounds the no-canonical-selection rule and the existence-leak treatment."
+    },
+    {
+      "id": "SRC-014",
+      "title": "RFC 8288: Web Linking",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8288.html",
+      "version_or_date": "Standards Track, October 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:36:00Z",
+      "relevance": "Registered link relation types including next/prev for continuation and canonical for preferred versions; grounds truncation continuation and the treatment of canonical as a publisher claim."
+    },
+    {
+      "id": "SRC-015",
+      "title": "eXtensible Access Control Markup Language (XACML) Version 3.0",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html",
+      "version_or_date": "OASIS Standard, 22 January 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:38:00Z",
+      "relevance": "PDP/PEP/PIP/PAP separation, the four decision values including Indeterminate and NotApplicable, and obligation discharge; grounds access-scope inputs and the prohibition on owning evaluation or enforcement."
+    },
+    {
+      "id": "SRC-016",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:40:00Z",
+      "relevance": "States that verification does not imply evaluation of the truth of claims and that verifiers validate with their own business rules; requires RFC 3339 validity instants. Grounds non-adjudicating comparison and evidence/verification-state reporting."
+    },
+    {
+      "id": "SRC-017",
+      "title": "Decentralized Identifiers (DIDs) v1.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/did-core/",
+      "version_or_date": "W3C Recommendation 19 July 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:42:00Z",
+      "relevance": "alsoKnownAs asserts co-reference but is best not treated as equivalence without a reciprocated inverse and does not prove the assertion is true; equivalentId/canonicalId carry method guarantees. Grounds relation-kind strength differences and authority-published canonical claims."
+    },
+    {
+      "id": "SRC-018",
+      "title": "Time Ontology in OWL",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl-time/",
+      "version_or_date": "W3C Candidate Recommendation Draft 15 November 2022",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:44:00Z",
+      "relevance": "Instant and Interval entities, interval relations and the requirement to state a temporal reference system; grounds served-state intervals. Not a Recommendation, so used as alignment only."
+    },
+    {
+      "id": "SRC-019",
+      "title": "When owl:sameAs Isn't the Same: An Analysis of Identity in Linked Data",
+      "organization": "Springer (International Semantic Web Conference 2010 proceedings)",
+      "url": "https://link.springer.com/chapter/10.1007/978-3-642-17746-0_20",
+      "version_or_date": "ISWC 2010, published 2010",
+      "source_type": "scientific",
+      "primary_source": false,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:46:00Z",
+      "relevance": "Empirical analysis of owl:sameAs over-assertion, the similarity scale behind identity links and referentially opaque contexts; used to discover omissions and to reject uniform closure as a default."
+    },
+    {
+      "id": "SRC-020",
+      "title": "Data on the Web Best Practices: Data Quality Vocabulary",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vocab-dqv/",
+      "version_or_date": "W3C Working Group Note 15 December 2016",
+      "source_type": "ontology",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-04T09:48:00Z",
+      "relevance": "Quality as annotation from multiple assessors rather than an intrinsic fact, with metric, measurement and value; grounds confidence handling as a declared measurement. Non-normative Note."
+    },
+    {
+      "id": "SRC-021",
+      "title": "LEI Mapping",
+      "organization": "Global Legal Entity Identifier Foundation (GLEIF)",
+      "url": "https://www.gleif.org/en/lei-data/lei-mapping",
+      "version_or_date": "Accessed 4 September 2026; mapping services dated February 2018 to June 2026",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:50:00Z",
+      "relevance": "Real-world authority-published, certified identifier-to-identifier mapping files with declared owners and update cadence (daily to monthly); grounds authority-scoped assertion sources, staleness and cadence metadata."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "als-query-read-and-resolution",
+        "name": "Alias Read and Resolution Semantics",
+        "description": "The request contract, resolution semantics and temporal read semantics that let an agent ask what an identifier is asserted to be equivalent to, under fully explicit parameters, without any canonical choice being made on its behalf.",
+        "rationale": "SPARQL 1.1 makes dataset scope, entailment regime and solution sequences explicit constituents of a query's meaning, and its protocol makes scope precedence and refusal explicit; HTTP 300 shows an authority can enumerate alternatives and leave selection to the agent; Memento makes as-of retrieval a negotiated parameter with a disclosed best-match rule. Equivalence answers need at least this level of explicitness because identity links are empirically over-asserted.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-012",
+          "SRC-013",
+          "SRC-019"
+        ],
+        "layers": [
+          {
+            "id": "als-query-request-contract",
+            "name": "Query Request Contract and Capability Declaration",
+            "description": "What a caller must supply, and what the answering service must publish in advance, before an alias read, resolution or traversal has a defined meaning and a replayable result.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-005",
+              "SRC-015"
+            ],
+            "findings": [
+              {
+                "id": "als-query-parameter-set",
+                "name": "Explicit Query Parameter Set and Declared Capability",
+                "description": "An alias read, resolution or traversal is meaningful only when relation kinds, direction, hop limit, maximum allowed strength loss, declared context, as-of instants, access scope and dataset or authority scope are explicit, and only when the answering service has published which of these it supports and with what hard limits. Every applied parameter, including service defaults, is echoed in the result.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-011",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-param-required",
+                    "text": "Which request parameters must be supplied explicitly, and which have service defaults that must be echoed back in the result?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Parameter list with required or optional flag",
+                      "Service default value per optional parameter",
+                      "Echo obligation and the location of the echo in the result"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-param-capability",
+                    "text": "How does the answering service publish its supported relation kinds, entailment stance, temporal coverage and hard hop and result limits before a request is built?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Capability profile reference and version identifier",
+                      "Supported relation-kind codes with external alignment IRIs",
+                      "Maximum hop count, maximum result count and temporal coverage window"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-param-scope",
+                    "text": "Which dataset, graph or authority scope was actually used to answer, and does a protocol-level scope override a scope embedded in the request?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Effective scope identifier list",
+                      "Precedence rule between protocol-level and request-level scope",
+                      "Record of the override when precedence was applied"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-param-validation",
+                    "text": "What makes a request malformed or refused, and how is that outcome distinguished from a well-formed request that returns no candidates?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Malformed-request condition list",
+                      "Refusal condition list with reason codes",
+                      "Distinct answer-state code for an empty but valid answer"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-param-identity",
+                    "text": "How is a request record identified so that its result can be replayed later and compared with an earlier answer?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Request record identifier assigned by the adopting Dimension",
+                      "Bound capability profile and relation-property profile versions",
+                      "Request receipt instant recorded as an attribute, not as the identifier"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-relation-kind-filter",
+                    "name": "Relation Kind Filter",
+                    "description": "The set of relation-kind codes admitted into the answer; an empty filter is invalid because it would leave the composed semantics of the answer undefined.",
+                    "value_kind": "collection",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-direction",
+                    "name": "Traversal Direction",
+                    "description": "Whether asymmetric relation kinds are followed outbound, inbound or in both directions from the supplied identifier.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-hop-limit",
+                    "name": "Hop Limit",
+                    "description": "Maximum number of alias edges the answer may cross, bounded by the service maximum published in the capability profile.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-max-strength-loss",
+                    "name": "Maximum Allowed Strength Loss",
+                    "description": "The caller's budget for cumulative confidence or semantic strength lost along a path; paths exceeding it are excluded with a stated reason rather than dropped silently.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-020"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-context-ref",
+                    "name": "Declared Context Reference",
+                    "description": "The context in which equivalence is claimed to hold and in which the caller intends to use the answer; referentially opaque contexts make an assertion valid for one purpose and not another.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-019",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-capability-profile",
+                    "name": "Alias Query Capability Profile",
+                    "description": "The versioned, publishable declaration of what the alias query surface supports: relation kinds and their alignments, entailment stance, temporal coverage and timelines, hard hop and result limits, supported scopes and default parameter values.",
+                    "media_or_form": [
+                      "machine-readable service capability description",
+                      "human-readable capability page"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Authoritative master-system identifier of the answering service endpoint where one exists, otherwise a governed IRI published by the service, otherwise a Dimension-assigned UUID; each release carries a version identifier that is not a date.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-query-art-request-record",
+                    "name": "Alias Query Request Record",
+                    "description": "The immutable record of one submitted request: every supplied parameter, every applied default, the effective scope, the access scope reference and the profile versions in force at receipt.",
+                    "media_or_form": [
+                      "structured request record",
+                      "request log entry"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID per request, ordered by receipt; the receipt instant is an attribute and never the identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-query-access-scope-binding",
+                "name": "Access Scope Carried Into a Query",
+                "description": "Every alias query carries an access scope reference and, where one exists, a reference to an externally produced access decision. The model binds those references to the request and to the disclosure statement and signals that content was withheld, but the decision itself and its enforcement are produced elsewhere. An Indeterminate or unavailable decision is treated as deny and reported as not answerable in scope, never as an absence of equivalence.",
+                "source_refs": [
+                  "SRC-015",
+                  "SRC-013",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-access-scope-ref",
+                    "text": "Which access scope, subject attributes and external decision reference were bound to this particular request?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Access scope identifier",
+                      "Reference to the decision record produced by the external decision point",
+                      "Attribute set names supplied, without their values"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-access-suppression",
+                    "text": "How does a result signal that candidates or evidence exist but were withheld, without revealing what was withheld?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Suppression flag on the result",
+                      "Coarse suppression band instead of an exact withheld count",
+                      "Channel in which the suppression signal itself is authorised to appear"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-access-indeterminate",
+                    "text": "What does the query surface return when the external access decision is Indeterminate, NotApplicable or unavailable?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Mapping from each decision value to an answer state",
+                      "Deny-by-default rule for Indeterminate and unavailable outcomes",
+                      "Reason code distinguishing this outcome from an empty answer"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-access-policy-owner",
+                    "text": "Who owns the policy that produced the decision, and where is that policy resolvable for review?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Policy administration owner reference",
+                      "Resolvable policy identifier or location",
+                      "Statement that evaluation and enforcement are performed outside this model"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-access-scope-ref",
+                    "name": "Access Scope Reference",
+                    "description": "Identifier of the access scope under which the request was submitted; an input to the query, never a decision made by it.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-decision-ref",
+                    "name": "External Access Decision Reference",
+                    "description": "Reference to the decision record produced by the external decision point, retained so the answer can be reviewed without reproducing the decision.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-suppression-flag",
+                    "name": "Suppression Flag",
+                    "description": "Indicates that at least one candidate, edge or evidence reference was withheld from this result by the access scope.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-suppression-band",
+                    "name": "Suppression Magnitude Band",
+                    "description": "Coarse band describing how much was withheld, used instead of an exact count so that the existence of specific withheld items is not disclosed.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The access scope is purely reference data pointing at an externally owned decision and its governing policy: this model stores a scope identifier, an optional decision reference and a coarse suppression signal. Producing an access artifact here would duplicate the decision point's own record and would imply that this model owns policy evaluation, enforcement or the audit trail of access, none of which are within its boundary."
+              }
+            ]
+          },
+          {
+            "id": "als-query-resolution-semantics",
+            "name": "Resolution Semantics and Candidate Sets",
+            "description": "How a supplied identifier maps to a set of candidate equivalents, how relation-kind semantics and the declared entailment stance constrain that set, and how ambiguity, no-answer and authority-published canonical claims are expressed.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-006",
+              "SRC-008",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "als-query-candidate-set-result",
+                "name": "Candidate Set Result Without Canonical Selection",
+                "description": "Resolution returns the complete admitted candidate set with the supporting path and per-edge provenance for each candidate, plus an explicit answer state. The service never collapses the set to one preferred identifier. Where an authority publishes its own canonical or preferred identifier, that is carried as an attributed claim of that authority, not as a selection made by the query surface.",
+                "source_refs": [
+                  "SRC-013",
+                  "SRC-017",
+                  "SRC-014",
+                  "SRC-019",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-candidate-ambiguity",
+                    "text": "What is returned when several mutually inconsistent candidates satisfy the request, and how is that ambiguity state distinguished from a single-candidate answer?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Answer-state code for ambiguous resolution",
+                      "Full candidate list with per-candidate supporting paths",
+                      "Statement that no automatic tie-break or collapse was applied"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-candidate-no-answer",
+                    "text": "How is no equivalent asserted distinguished from not answerable within the requested scope?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Distinct answer-state codes for each outcome",
+                      "Scope and limit values that produced the not-answerable outcome",
+                      "Explicit statement that neither outcome is evidence of non-equivalence"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-candidate-canonical-claim",
+                    "text": "When an authority publishes its own canonical identifier for a subject, how is that recorded without the query surface adopting it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Canonical claim value with the asserting authority reference",
+                      "Guarantee level declared by that authority for the claim",
+                      "Flag marking the claim as attributed and not applied"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-candidate-ordering",
+                    "text": "Is the ordering of candidates meaningful, and which ordering key and tie-breaking rule were disclosed?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Ordering key reference or an explicit unordered marker",
+                      "Tie-breaking rule",
+                      "Warning that ordering must not be read as preference unless declared meaningful"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-candidate-identifier",
+                    "name": "Candidate Identifier",
+                    "description": "An identifier returned as a candidate equivalent of the supplied identifier, carried in the canonical form of its issuing authority and never rewritten.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-021"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-candidate-relation-kind",
+                    "name": "Candidate Relation Kind",
+                    "description": "The relation kind or kinds by which the candidate is connected to the supplied identifier, retained per candidate because strength differs by kind.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-answer-state",
+                    "name": "Answer State",
+                    "description": "Single code covering resolved-single, resolved-multiple-ambiguous, no-asserted-equivalent, not-answerable-in-scope and truncated outcomes.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-authority-canonical-claim",
+                    "name": "Authority Canonical Claim",
+                    "description": "A canonical or preferred identifier published by an authority about its own subject, carried with its attribution and guarantee level and explicitly not applied by this model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-ordering-key",
+                    "name": "Ordering Key Declaration",
+                    "description": "The declared basis of candidate ordering, or an explicit statement that the sequence carries no meaning.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-candidate-result-set",
+                    "name": "Alias Candidate Resolution Result Set",
+                    "description": "The complete admitted candidate set for one resolution request, with per-candidate relation kinds, supporting paths, edge provenance references, answer state, parameter echo and attributed canonical claims.",
+                    "media_or_form": [
+                      "structured result set",
+                      "tabular candidate listing",
+                      "narrative resolution summary"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID bound one-to-one to the request record identifier; each endpoint inside retains the authoritative master-system identifier issued by its own authority.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-query-entailment-stance",
+                "name": "Relation Semantics and Entailment Stance of an Answer",
+                "description": "Each answer declares the relation-kind semantics applied, including symmetry, transitivity and disjointness per kind, and the entailment stance under which it was computed. Every returned edge is labelled asserted or derived, derived edges exist only for the duration of the answer, and inconsistency detected under the requested stance is reported rather than resolved.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-019"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-entail-regime",
+                    "text": "Under which entailment regime or closure rules was this answer computed, and was that regime requested by the caller or applied as a service default?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Entailment regime identifier",
+                      "Requested or default indicator",
+                      "Capability profile version that declared the available regimes"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-entail-asserted-derived",
+                    "text": "How is an asserted edge distinguished from an edge derived by symmetry or transitivity within a returned path?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Per-edge derivation label",
+                      "Reference to the asserted edges a derived edge was computed from",
+                      "Statement that derived edges are not written back to any store"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-entail-relation-properties",
+                    "text": "Which relation kinds in this answer are transitive, symmetric or mutually disjoint, and from which declaration is that sourced?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Relation-property profile reference and version",
+                      "Per-kind transitivity, symmetry and disjointness flags",
+                      "External alignment IRI per relation kind where one exists"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-entail-inconsistency",
+                    "text": "What is returned when the requested stance finds the underlying assertions inconsistent, for example an exact match that is also asserted as a not-same pair?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Inconsistency signal code",
+                      "Whether the regime treats inconsistency as an error or a warning",
+                      "The specific assertion references implicated, without adjudication"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-entailment-regime-ref",
+                    "name": "Entailment Regime Reference",
+                    "description": "Identifier of the regime or closure rule set under which the answer was computed, echoed on every result because the same data yields different outcomes under different regimes.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-edge-derivation-label",
+                    "name": "Edge Derivation Label",
+                    "description": "Per-edge label recording whether the edge was asserted by an authority or derived for this answer by symmetry or transitivity.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-relation-property-profile",
+                    "name": "Relation Property Profile Reference",
+                    "description": "Versioned declaration of symmetry, transitivity and disjointness per supported relation kind, with external alignment references.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-inconsistency-signal",
+                    "name": "Inconsistency Signal",
+                    "description": "Code reporting that the requested stance detected an inconsistency among the assertions used, together with the regime's prescribed handling.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The entailment stance is a declared parameter plus per-edge labels attached to results that the capability profile and the candidate result set already carry. Issuing a separate artifact would create a standing derived-edge record, which is indistinguishable in practice from materialising a closure, and would imply that this model owns a reasoner's output rather than reporting the stance an external reasoning service applied."
+              }
+            ]
+          },
+          {
+            "id": "als-query-temporal-read",
+            "name": "Temporal and As-Of Read Semantics",
+            "description": "Bitemporal read semantics for alias assertions: assertion validity time against record or observation time, as-of instants, exact against nearest-preceding match disclosure, admitted lifecycle states and stale endpoint detection.",
+            "source_refs": [
+              "SRC-011",
+              "SRC-012",
+              "SRC-009",
+              "SRC-018",
+              "SRC-021"
+            ],
+            "findings": [
+              {
+                "id": "als-query-as-of-read",
+                "name": "As-Of Read With Separate Assertion and Record Time",
+                "description": "A read may be requested at an as-of instant on the assertion validity timeline, on the record or observation timeline, or on both. The answer reports which instants were used and on which timeline, whether the served state is an exact or nearest-preceding match, the interval that state covers, which lifecycle states were admitted, and whether any endpoint or evidence reference is stale or invalidated as at those instants.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-009",
+                  "SRC-018",
+                  "SRC-016",
+                  "SRC-021"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-asof-instants",
+                    "text": "Which as-of instants were supplied, on which timeline does each apply, and in which offset were they interpreted?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "As-of validity instant with explicit offset or Z",
+                      "As-of record or observation instant with explicit offset or Z",
+                      "Timeline label per instant and the handling of an unknown offset"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-asof-match",
+                    "text": "Was the served assertion state an exact match for the requested instant or the nearest preceding state, and which interval does that state cover?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Match mode code",
+                      "Start and end of the covered interval",
+                      "Rule used to select the served state when no exact match exists"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-asof-stale",
+                    "text": "How is an endpoint or evidence reference flagged as stale, unresolvable or invalidated as at the as-of instant?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Staleness flag per endpoint or evidence reference",
+                      "Last successful observation instant",
+                      "Source refresh cadence declared by the asserting authority"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-asof-lifecycle",
+                    "text": "Which assertion lifecycle states are admitted by default at an as-of instant, and how is a retraction distinguished from a deletion?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Admitted lifecycle state list and the default set",
+                      "Retraction record with its own record-time instant",
+                      "Distinction between a retracted assertion that remains readable and a disposed record"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-asof-replay",
+                    "text": "What must be recorded so that the same as-of query returns the same answer when it is run again later?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Parameter echo including both instants and admitted states",
+                      "Capability and relation-property profile versions in force",
+                      "Content digest of the served state set"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-as-of-valid-instant",
+                    "name": "As-Of Validity Instant",
+                    "description": "Instant on the timeline over which the assertion is claimed to hold, expressed with seconds and an explicit offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-018"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-as-of-record-instant",
+                    "name": "As-Of Record Instant",
+                    "description": "Instant on the timeline of when this service observed, ingested or recorded the assertion, kept separately from validity time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-served-state-interval",
+                    "name": "Served State Interval",
+                    "description": "The interval that the served assertion state covers, with a stated temporal reference system, so that a nearest-preceding answer can be evaluated by the caller.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-018"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-match-mode",
+                    "name": "Temporal Match Mode",
+                    "description": "Whether the served state is an exact match for the requested instant, the nearest preceding state, or whether no state exists before the instant.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-staleness-flag",
+                    "name": "Staleness Flag",
+                    "description": "Per endpoint or evidence reference, an indicator that it was unresolvable, invalidated or older than the authority's declared refresh cadence as at the as-of instant.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-021"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-assertion-time-map",
+                    "name": "Alias Assertion Time Map",
+                    "description": "An index of the retrievable prior states of the alias assertions held for a subject, each entry giving the interval it covers on the validity and record timelines and a reference to that state, so that an as-of read is auditable and replayable.",
+                    "media_or_form": [
+                      "structured time index",
+                      "list of state references with covered intervals"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Composite of the authoritative master-system identifier of the subject endpoint and a Dimension-assigned ULID for the index build; the build instant is an attribute and never the identifier.",
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-011",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "als-query-traversal-and-comparison",
+        "name": "Alias Traversal, Comparison and Result Integrity",
+        "description": "Multi-hop path enumeration across mixed relation kinds, non-adjudicating comparison of competing assertions, and the disclosure contract covering ambiguity, truncation, cycles, contradictions, stale endpoints, withheld evidence and unreachable sources.",
+        "rationale": "SKOS makes transitivity a per-relation property and refuses it for closeMatch precisely to prevent compound errors when mappings are chained; SPARQL property paths define cycle-safe connectivity; SPARQL Federated Query shows that a silenced source failure is indistinguishable from an empty answer at the solution level; SHACL and the Verifiable Credentials model establish report-only, non-adjudicating output where verification is separated from deciding whether to rely on a claim.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-008",
+          "SRC-010",
+          "SRC-016"
+        ],
+        "layers": [
+          {
+            "id": "als-query-traversal-paths",
+            "name": "Path Traversal and Path Reporting",
+            "description": "Directed and undirected multi-hop enumeration with hop limits, cycle handling, strength-loss budgets, contradictory not-same edges and explicit truncation reporting.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-008",
+              "SRC-007",
+              "SRC-014"
+            ],
+            "findings": [
+              {
+                "id": "als-query-path-enumeration",
+                "name": "Path Enumeration, Cycles and Truncation",
+                "description": "Traversal returns every candidate path satisfying the request within the hop and result limits, in a cycle-safe way that neither loops nor drops genuine paths, and states explicitly whether the enumeration is complete, truncated by a limit, or truncated because a source was unreachable. Asymmetric relation kinds keep their direction on every returned path.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-014",
+                  "SRC-004",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-path-completeness",
+                    "text": "Is the returned path list complete for the requested parameters, and if not, which limit or failure truncated it?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Completeness state code",
+                      "Limit or failure that caused truncation",
+                      "Count of paths returned against the applicable limit"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-path-cycles",
+                    "text": "How are cycles detected and reported so that traversal terminates without duplicating or discarding a genuine path?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Cycle notice per affected path",
+                      "Termination rule applied at the cycle",
+                      "Statement that connectivity matching does not produce duplicate results"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-path-continuation",
+                    "text": "How can a caller continue a truncated traversal deterministically without re-running the entire request?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Continuation token",
+                      "Continuation link relation and its target",
+                      "Validity window of the token against the profile versions in force"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-path-edge-provenance",
+                    "text": "What provenance must accompany each individual edge on each returned path?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Asserting authority reference per edge",
+                      "Attribution and generation record references per edge",
+                      "Assertion identifier and its record-time instant"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-path-direction",
+                    "text": "How is direction handled for asymmetric relation kinds such as broader or narrower match when traversal is requested in both directions?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Per-edge direction marker",
+                      "Inverse relation pairing used",
+                      "Statement of whether a mixed-direction path is admitted by the profile"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-path-edge-sequence",
+                    "name": "Path Edge Sequence",
+                    "description": "Ordered sequence of edges forming one candidate path, each carrying its relation kind, direction, derivation label and provenance references.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-path-hop-count",
+                    "name": "Path Hop Count",
+                    "description": "Number of edges crossed on the path, compared against the requested and service hop limits.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-cycle-notice",
+                    "name": "Cycle Notice",
+                    "description": "Notice that a cycle was encountered on or adjacent to a path, with the termination rule applied.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-truncation-reason",
+                    "name": "Truncation Reason",
+                    "description": "Reason the enumeration stopped short of completeness: hop limit, result limit, timeout, refused source or unreachable source.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-continuation-token",
+                    "name": "Continuation Token",
+                    "description": "Opaque token allowing deterministic continuation of a truncated traversal under the same profile versions and parameters.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-traversal-path-report",
+                    "name": "Alias Traversal Path Report",
+                    "description": "The report of one traversal request: every candidate path with per-edge provenance and derivation labels, composed strength and exclusion reasons, cycle and contradiction notices, truncation reason, continuation token and the full parameter echo.",
+                    "media_or_form": [
+                      "structured path report",
+                      "graph path rendering",
+                      "narrative traversal explanation"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID bound to the request record identifier and to the capability and relation-property profile versions; continuation segments reuse the report identifier with an incrementing segment number.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-014",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-query-strength-and-contradiction",
+                "name": "Strength Loss Budget and Contradictory Edges",
+                "description": "A path carries a composed strength derived from per-edge confidence and relation-kind semantics under a declared, versioned composition method. Paths exceeding the requested maximum strength loss are excluded with a stated reason rather than dropped. A path crossing an asserted not-same pair, or combining relation kinds declared disjoint, is reported as contradicted and is never silently removed from the answer.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-020",
+                  "SRC-019"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-strength-method",
+                    "text": "Which composition method converted per-edge confidence into a path strength, and is it presented as a declared measurement rather than a truth claim?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Composition method reference and version",
+                      "Per-edge confidence inputs and any defaults applied",
+                      "Statement that the value is an annotation, not an assertion of fact"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-strength-budget",
+                    "text": "How was the maximum allowed strength loss applied, and are excluded paths reported together with the reason for exclusion?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Budget value applied",
+                      "Excluded path references with computed loss",
+                      "Exclusion reason code per excluded path"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-strength-contradiction",
+                    "text": "How is a path that crosses an asserted not-same pair or a disjoint relation-kind combination reported to the caller?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Contradiction notice with the implicated assertion references",
+                      "Both conflicting assertions with their authorities and instants",
+                      "Explicit statement that the contradiction is reported and not resolved"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-strength-heterogeneous",
+                    "text": "How is strength composed across a path that mixes relation kinds with different transitivity guarantees?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Per-kind transitivity flags encountered on the path",
+                      "Rule applied where a non-transitive kind is chained",
+                      "Warning marker where the composed value is not defensible"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-edge-confidence",
+                    "name": "Edge Confidence Value",
+                    "description": "Confidence or strength value asserted for an individual edge by its asserting authority, or the declared default for its relation kind where none was asserted.",
+                    "value_kind": "number",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-020",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-path-strength",
+                    "name": "Composed Path Strength",
+                    "description": "Value computed for a whole path under the declared composition method, together with the loss relative to a fully asserted exact-equivalence path.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-020",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-strength-method-ref",
+                    "name": "Strength Composition Method Reference",
+                    "description": "Versioned reference to the arithmetic and per-kind weighting used, without which a composed value is not interpretable across authorities.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-020"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-contradiction-notice",
+                    "name": "Contradiction Notice",
+                    "description": "Notice that a path crosses an asserted not-same pair or combines relation kinds declared disjoint, listing the implicated assertions.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-exclusion-reason",
+                    "name": "Path Exclusion Reason",
+                    "description": "Reason a path satisfying the structural filter was nevertheless excluded from the admitted answer, such as exceeding the strength-loss budget.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-020"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Strength values, exclusion reasons and contradiction notices are computed annotations attached to paths that the traversal path report already carries. Emitting them as a separate artifact would create a standing conflict record with its own lifecycle, which would imply that this model resolves contradictions between authorities; resolution belongs to the asserting authorities and to the adopting Dimension's stewardship process."
+              }
+            ]
+          },
+          {
+            "id": "als-query-comparison-integrity",
+            "name": "Assertion Comparison and Result Integrity",
+            "description": "Non-adjudicating comparison of competing assertions, and the completeness and disclosure statement that must accompany every answer, including access-suppressed content, unreachable sources and request-validation outcomes.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-010",
+              "SRC-015",
+              "SRC-016",
+              "SRC-020"
+            ],
+            "findings": [
+              {
+                "id": "als-query-assertion-comparison",
+                "name": "Non-Adjudicating Comparison of Competing Assertions",
+                "description": "Given two or more assertions about the same endpoint pair or the same candidate, the comparison reports how they differ across asserting authority, relation semantics, confidence, declared context, temporal validity, evidence and lifecycle state, and identifies which dimensions were unavailable. It does not rank authorities, does not declare a winner, and separates verification of an assertion's integrity from any decision to rely on it.",
+                "source_refs": [
+                  "SRC-016",
+                  "SRC-010",
+                  "SRC-009",
+                  "SRC-020",
+                  "SRC-019",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-compare-dimensions",
+                    "text": "Along which dimensions were the assertions compared, and which of those dimensions were unavailable for at least one of them?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Comparison dimension set applied",
+                      "Per-dimension difference summary",
+                      "List of dimensions marked unavailable and why"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-compare-authority",
+                    "text": "How is a difference in asserting authority represented without implying a precedence order between those authorities?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Authority reference and declared remit per assertion",
+                      "Guarantee level each authority states for its own claims",
+                      "Explicit marker that no precedence was applied"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-compare-context",
+                    "text": "How are two assertions that hold in different declared contexts reported, given that neither refutes the other?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Declared context per assertion",
+                      "Context overlap or disjointness assessment",
+                      "Outcome code recording context divergence rather than conflict"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-compare-evidence",
+                    "text": "What evidence reference and verification state are shown for each assertion, and is verification kept separate from acceptance of the claim?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Evidence reference per assertion",
+                      "Verification state and the mechanism that produced it",
+                      "Statement that verification does not establish the truth of the claim"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-compare-outcome",
+                    "text": "Which outcome vocabulary is used when the comparison cannot be settled from the recorded facts alone?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Outcome code set covering context, time, authority, contradiction and non-comparability",
+                      "Referral target for unresolved outcomes",
+                      "Statement that the query surface does not adjudicate"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-compared-assertion-ref",
+                    "name": "Compared Assertion Reference",
+                    "description": "Reference to each assertion entering the comparison, using the authoritative master-system identifier issued by its asserting authority.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-021"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-difference-dimension",
+                    "name": "Difference Dimension",
+                    "description": "The dimension along which a difference was found: authority, relation semantics, confidence, context, time, evidence or lifecycle state.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-difference-summary",
+                    "name": "Difference Summary",
+                    "description": "Factual statement of how the assertions differ on one dimension, phrased without preference between them.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-evidence-verification-state",
+                    "name": "Evidence Verification State",
+                    "description": "Whether the evidence supporting an assertion was verified, unverifiable within scope, or not verified, kept distinct from any judgement of the claim.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-comparison-outcome",
+                    "name": "Comparison Outcome Code",
+                    "description": "Single code recording the nature of the divergence, such as differ-in-context, differ-in-time, differ-in-authority, mutually-contradictory or not-comparable.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-assertion-comparison-report",
+                    "name": "Alias Assertion Comparison Report",
+                    "description": "The report of one comparison request: the assertions compared, the dimensions applied, per-dimension differences, evidence and verification states, unavailable dimensions and a single outcome code, with no ranking or selection.",
+                    "media_or_form": [
+                      "structured comparison record",
+                      "side-by-side comparison table",
+                      "narrative difference explanation"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID bound to the request record identifier; each compared assertion is referenced by the authoritative master-system identifier issued by its asserting authority.",
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-query-result-integrity-disclosure",
+                "name": "Result Integrity and Disclosure Statement",
+                "description": "Every answer is accompanied by a statement of what was and was not reachable: sources consulted, skipped, refused or failed, and whether a failure was silenced or hard; limits reached; access-suppressed candidates or evidence; unresolvable endpoints; and the request-validation outcome with severities. Absence of an answer is never presented as evidence of non-equivalence.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-010",
+                  "SRC-013",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "als-query-q-integrity-sources",
+                    "text": "Which sources were consulted, which failed or were skipped, and was a failure treated as silent or as a hard error?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Source list with per-source outcome",
+                      "Failure mode per failed source",
+                      "Effect of each failure on the completeness state"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-integrity-hidden",
+                    "text": "How does the statement separate nothing asserted, withheld by access scope, and source unavailable?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Distinct completeness codes for each condition",
+                      "Suppression signal that does not reveal withheld content",
+                      "Note that transport-level concealment may collapse these at the projection layer"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-integrity-validation",
+                    "text": "Which request-validation results, severities and focus parameters are returned to the caller?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Conformance flag for the request",
+                      "Per-result severity and focus parameter",
+                      "Constraint or capability limit that produced each result"
+                    ]
+                  },
+                  {
+                    "id": "als-query-q-integrity-retention",
+                    "text": "For how long are a result and its disclosure statement retained for replay and dispute handling, and who owns the disposition decision?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retention period and its governing policy reference",
+                      "Tombstone content retained after disposition",
+                      "Owner accountable for executing disposition"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-query-de-sources-consulted",
+                    "name": "Sources Consulted",
+                    "description": "The authority scopes, datasets or endpoints actually consulted for this answer, including those consulted and returning nothing.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-source-failure-mode",
+                    "name": "Source Failure Mode",
+                    "description": "Per source, whether a failure was silenced into an empty result, raised as a hard error, refused by the service, or skipped as out of scope.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-completeness-state",
+                    "name": "Completeness State",
+                    "description": "Overall statement of whether the answer is complete for the requested parameters, partial with disclosed causes, or not answerable in scope.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-validation-severity",
+                    "name": "Validation Result Severity",
+                    "description": "Severity attached to each request-validation result, with the focus parameter it concerns.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-query-de-retention-policy-ref",
+                    "name": "Retention Policy Reference",
+                    "description": "Reference to the adopting Dimension's retention and disposition policy governing this result record; the policy is referenced, not implemented here.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-query-art-disclosure-statement",
+                    "name": "Alias Query Completeness and Disclosure Statement",
+                    "description": "The mandatory companion record to any result set or path report, stating sources consulted and their outcomes, limits reached, suppression signal, unresolvable endpoints and the resulting completeness state.",
+                    "media_or_form": [
+                      "structured disclosure record",
+                      "human-readable caveat note"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID bound one-to-one to the identifier of the result set or path report it qualifies, and through it to the request record identifier.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "als-query-art-request-validation-report",
+                    "name": "Alias Query Request Validation Report",
+                    "description": "Report of validating a request against the capability profile: a conformance flag plus, for each result, a severity, the focus parameter and the constraint or limit that produced it, leaving the request and the assertions unchanged.",
+                    "media_or_form": [
+                      "structured validation report",
+                      "validation summary listing"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Dimension-assigned ULID bound to the request record identifier and to the capability profile version validated against.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "als-query-fn-read-current",
+      "name": "Read Current Alias Assertions",
+      "description": "Return the alias assertions currently held for a subject identifier within an explicit scope, with per-assertion provenance references, a parameter echo and a completeness statement.",
+      "inputs": [
+        "Subject identifier",
+        "Relation kind filter",
+        "Declared context filter",
+        "Dataset or authority scope",
+        "Access scope reference",
+        "Result limit"
+      ],
+      "outputs": [
+        "Candidate result set with per-assertion relation kind and provenance references",
+        "Answer state code",
+        "Parameter echo including applied defaults and effective scope",
+        "Disclosure statement reference"
+      ],
+      "preconditions": [
+        "The request has passed validation against the published capability profile",
+        "The access scope reference resolves and an external decision is available or the call is denied",
+        "The relation kinds requested are all declared in the relation-property profile"
+      ],
+      "effects": [
+        "Read-only: no alias assertion, endpoint record or host entity is created, modified or deleted",
+        "Emits a result record and a bound disclosure statement; the audit trail of the call belongs to the adopting Dimension's logging service",
+        "Never selects a preferred identifier and never rewrites an endpoint identifier into a local form"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-013",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "als-query-fn-read-as-of",
+      "name": "Read Alias Assertions As At an Instant",
+      "description": "Return the alias assertion state for a subject as at a supplied validity instant, record instant, or both, disclosing whether the served state is an exact or nearest-preceding match and which lifecycle states were admitted.",
+      "inputs": [
+        "Subject identifier",
+        "As-of validity instant in RFC 3339 with seconds and explicit offset or Z",
+        "As-of record or observation instant in the same form",
+        "Admitted lifecycle state set",
+        "Relation kind filter",
+        "Access scope reference"
+      ],
+      "outputs": [
+        "As-of result set with served-state intervals",
+        "Temporal match mode code",
+        "Staleness flags for endpoints and evidence references",
+        "Disclosure statement reference and content digest for replay"
+      ],
+      "preconditions": [
+        "The capability profile declares as-of support and which timelines are supported",
+        "The requested instants fall within the declared temporal coverage window",
+        "Each supplied instant carries an explicit offset; an unknown offset is preserved and not rewritten"
+      ],
+      "effects": [
+        "Read-only over stored states; performs no datetime negotiation and follows no redirect against an external resolver",
+        "Reports a TimeGate or TimeMap reference where one is known, without invoking it",
+        "Records both instants and the profile versions so the same query is replayable"
+      ],
+      "source_refs": [
+        "SRC-011",
+        "SRC-012",
+        "SRC-018",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "als-query-fn-resolve-candidates",
+      "name": "Resolve Identifier to Candidate Equivalents",
+      "description": "Resolve a supplied identifier to the complete admitted set of candidate equivalent identifiers under explicit relation kinds, direction, hop limit, strength-loss budget, context and as-of instants, returning every candidate with its supporting evidence.",
+      "inputs": [
+        "Subject identifier",
+        "Relation kind filter and direction",
+        "Hop limit and maximum allowed strength loss",
+        "Declared context",
+        "As-of instants",
+        "Access scope reference"
+      ],
+      "outputs": [
+        "Complete candidate set with supporting paths and per-edge provenance",
+        "Answer state covering single, ambiguous, none-asserted, not-answerable and truncated outcomes",
+        "Attributed authority canonical claims where published",
+        "Ordering key declaration or an explicit unordered marker"
+      ],
+      "preconditions": [
+        "The relation-property profile is resolvable and versioned",
+        "The requested hop limit does not exceed the service maximum",
+        "An entailment stance is either requested or supplied as a declared service default"
+      ],
+      "effects": [
+        "Never selects, mints, caches or persists a canonical identifier; canonical claims are attributed to the authority that published them",
+        "Produces no new alias candidates: nothing is matched, scored for similarity or inferred from attributes",
+        "Read-only with respect to all assertions, endpoints and host entities"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-017",
+        "SRC-019",
+        "SRC-001",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "als-query-fn-traverse-paths",
+      "name": "Enumerate Alias Paths",
+      "description": "Enumerate every candidate path between a start identifier and either a target identifier or any reachable endpoint, under explicit relation kinds, direction, hop limit, strength budget, context, as-of instants and access scope, in a cycle-safe way.",
+      "inputs": [
+        "Start identifier and optional target identifier",
+        "Relation kind filter and direction",
+        "Hop limit and maximum allowed strength loss",
+        "Declared context and as-of instants",
+        "Access scope reference",
+        "Continuation token for a resumed traversal"
+      ],
+      "outputs": [
+        "Every candidate path with ordered edges, per-edge provenance and derivation labels",
+        "Cycle notices and contradiction notices",
+        "Truncation reason and continuation token",
+        "Completeness state and parameter echo"
+      ],
+      "preconditions": [
+        "Cycle-safe connectivity matching is available so that traversal terminates",
+        "Every requested relation kind has declared symmetry, transitivity and disjointness properties",
+        "Result and hop limits from the capability profile are in force"
+      ],
+      "effects": [
+        "Read-only: derived edges exist only within the returned report and are never written back to any store",
+        "Reports rather than resolves contradictions and never removes a contradicted path silently",
+        "Truncation is always disclosed; a truncated traversal is never presented as a complete answer"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-008",
+        "SRC-014",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "als-query-fn-calculate-path-strength",
+      "name": "Calculate Composed Path Strength",
+      "description": "Compute the composed strength and cumulative loss for a path from its per-edge confidence values and relation-kind properties under a declared, versioned composition method, and mark the path admitted or excluded against the caller's budget.",
+      "inputs": [
+        "Path edge sequence with per-edge relation kinds and confidence values",
+        "Composition method reference and version",
+        "Maximum allowed strength loss",
+        "Per-relation-kind default confidence values"
+      ],
+      "outputs": [
+        "Composed path strength and cumulative loss",
+        "Admitted or excluded flag with an exclusion reason code",
+        "Echo of the composition method reference and any defaults applied",
+        "Warning marker where a non-transitive relation kind was chained"
+      ],
+      "preconditions": [
+        "The composition method is declared and versioned before use",
+        "Every edge carries a confidence value or a declared default for its relation kind",
+        "Relation-kind transitivity flags are available for every edge"
+      ],
+      "effects": [
+        "Calculation only: produces an annotation on the path report and no standing quality or conflict record",
+        "The value is reported as a declared measurement, never as an assertion that the endpoints are the same",
+        "Leaves all assertions and confidence values unchanged"
+      ],
+      "source_refs": [
+        "SRC-020",
+        "SRC-008",
+        "SRC-019"
+      ]
+    },
+    {
+      "id": "als-query-fn-compare-assertions",
+      "name": "Compare Competing Alias Assertions",
+      "description": "Compare two or more assertions about the same endpoint pair or candidate across authority, relation semantics, confidence, declared context, temporal validity, evidence and lifecycle state, and report the differences with an outcome code.",
+      "inputs": [
+        "Two or more assertion references",
+        "Comparison dimension set",
+        "As-of instants",
+        "Access scope reference"
+      ],
+      "outputs": [
+        "Per-dimension difference summaries",
+        "Evidence reference and verification state per assertion",
+        "Comparison outcome code",
+        "List of dimensions unavailable for at least one assertion"
+      ],
+      "preconditions": [
+        "All referenced assertions are readable within the access scope, or the unreadable ones are reported as unavailable",
+        "The relation-property profile is available so that semantic differences can be stated factually",
+        "Verification state, where reported, comes from the mechanism that produced it"
+      ],
+      "effects": [
+        "Reports differences only: does not rank authorities, retract, supersede, merge or accept any assertion",
+        "Verification is kept separate from any decision to rely on a claim, which remains with the caller",
+        "Emits a comparison report bound to the request record and changes nothing in the compared assertions"
+      ],
+      "source_refs": [
+        "SRC-016",
+        "SRC-010",
+        "SRC-009",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "als-query-fn-validate-request",
+      "name": "Validate a Query Request Against the Capability Profile",
+      "description": "Validate a submitted request against the published capability profile and relation-property profile, returning a conformance flag and per-result severities with the focus parameter, and a normalised request with defaults made explicit.",
+      "inputs": [
+        "Request record",
+        "Capability profile reference and version",
+        "Relation-property profile reference and version"
+      ],
+      "outputs": [
+        "Conformance flag",
+        "Validation results with severity, focus parameter and the constraint or limit breached",
+        "Normalised request with every applied default echoed",
+        "Refusal reason code where the request cannot be executed"
+      ],
+      "preconditions": [
+        "Both profiles are resolvable and versioned",
+        "The request record has been assigned an identifier before validation"
+      ],
+      "effects": [
+        "Validation is idempotent and leaves the request, the profiles and all alias assertions unchanged",
+        "A malformed or refused request is rejected as a whole and never partially executed",
+        "Distinguishes a refused request from a valid request that returns no candidates"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-005",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "als-query-fn-report-integrity",
+      "name": "Report Result Completeness and Disclosure",
+      "description": "Produce the disclosure statement that must accompany any result set or path report, recording sources consulted and their outcomes, limits reached, suppression signalled by the access scope, and unresolvable endpoints.",
+      "inputs": [
+        "Result set or path report reference",
+        "Sources consulted with per-source outcome",
+        "Limits reached during execution",
+        "Suppression flag and band derived from the external access decision",
+        "Endpoint resolvability check outcomes"
+      ],
+      "outputs": [
+        "Completeness state code",
+        "Per-source failure mode including whether a failure was silenced",
+        "Suppression signal without disclosure of withheld content",
+        "Caveat text stating that absence is not evidence of non-equivalence"
+      ],
+      "preconditions": [
+        "The result being qualified exists and carries an identifier",
+        "The suppression signal derives from an external decision reference and not from a local judgement",
+        "Silenced source failures are known to the executor and are recoverable for reporting"
+      ],
+      "effects": [
+        "Report only: the model does not evaluate, enforce, override or log the access decision and does not create the audit trail",
+        "Binds the statement one-to-one to the result it qualifies; a result without one is invalid and must not be cached or forwarded",
+        "Never converts a silenced failure into an ordinary empty answer"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-013",
+        "SRC-015",
+        "SRC-005"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-011",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-036 is registered beneath WM-XCT-011 and specialises it for asserted identifier equivalence and its query surface. Generic identity, authority and conflict machinery that the parent already carries is not restated here; only equivalence-specific relation semantics, traversal and comparison are modelled locally.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-019"
+      ]
+    },
+    {
+      "target": "Identifier scheme and registry model for alias endpoints, designated by the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Endpoints are carried by reference in the canonical form of their issuing authority. Minting, syntax, check characters, registry lifecycle and endpoint deletion belong to the identifier-scheme model; this model carries the reference, a resolvability flag and a staleness flag only.",
+      "required": true,
+      "source_refs": [
+        "SRC-017",
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "Access-decision and enforcement service aligned to OASIS XACML 3.0",
+      "relation": "REFERENCE",
+      "purpose": "The query surface accepts an access scope and an external decision reference and reports suppression. Evaluation producing Permit, Deny, Indeterminate or NotApplicable, the discharge of obligations and all enforcement remain with the decision and enforcement points.",
+      "required": true,
+      "source_refs": [
+        "SRC-015",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "Provenance record service aligned to W3C PROV-O",
+      "relation": "REFERENCE",
+      "purpose": "Every returned edge carries references to attribution, generation and derivation records. Creating, storing, securing and retaining provenance records and the audit trail of queries belongs to that service; this model neither writes nor retains them.",
+      "required": true,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Versioned-state retrieval service aligned to RFC 7089 Memento",
+      "relation": "REFERENCE",
+      "purpose": "An as-of read may report a TimeGate or TimeMap reference for an endpoint's prior states and the interval a served state covers. Datetime negotiation, memento selection and redirect execution are performed by that service and never by this model.",
+      "required": false,
+      "source_refs": [
+        "SRC-012",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "Host entity models that adopt the alias mixin",
+      "relation": "MIX-IN",
+      "purpose": "The alias assertion structure and its query surface attach to host entity models. Host lifecycle, attributes, merge, survivorship and golden-record processing remain owned by the host model; adoption grants no right to rewrite host identifiers under equivalence.",
+      "required": true,
+      "source_refs": [
+        "SRC-019",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "W3C SKOS mapping relations (exactMatch, closeMatch, broadMatch, narrowMatch, relatedMatch)",
+      "relation": "ALIGN",
+      "purpose": "Supported relation kinds are aligned to SKOS mapping properties together with their declared transitivity, symmetry and disjointness, so that traversal rules are inherited per kind rather than assumed uniformly. This is an alignment for interoperability and not a conformance claim.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "W3C OWL 2 SameIndividual and DifferentIndividuals axioms",
+      "relation": "ALIGN",
+      "purpose": "Strict equivalence and explicit not-same relation kinds are aligned to OWL 2 assertions and to the absence of a unique name assumption. Entailment computation, closure and the regime-specific handling of inconsistency stay with the reasoning service.",
+      "required": false,
+      "source_refs": [
+        "SRC-006",
+        "SRC-007",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "SPARQL 1.1 Service Description and Federated Query capability and failure semantics",
+      "relation": "ALIGN",
+      "purpose": "Capability declaration, dataset and graph scoping, scope precedence and remote-source failure semantics are aligned to SPARQL 1.1 so that an RDF projection is interoperable. The model does not require SPARQL as its interface and does not inherit its execution engine.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-003",
+        "SRC-001",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Assertion authoring and stewardship surface of WM-XCT-036",
+      "relation": "COMPOSE",
+      "purpose": "The query surface reads assertions that the authoring surface creates, retracts and supersedes, and refers contradicted paths and unresolved comparisons to stewardship. Authoring, retraction and stewardship decisions are never performed by a query function.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-016"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must designate an owner accountable for the published capability profile, its version history and its declared hard limits, and that owner must be resolvable from the bootstrap file.",
+        "The owner package must name every authority whose alias assertions are readable through the surface, the access scope under which each is exposed, and each authority's declared refresh cadence so staleness can be assessed.",
+        "The owner package must bind an access-decision service, a provenance record service and a retention and disposition policy by reference before the surface is enabled; none of the three is implemented inside this model.",
+        "The owner package must record the strength composition method, its version and the per-relation-kind default confidence values, since composed strength is uninterpretable without them."
+      ],
+      "namespace_guidance": "Records this model creates (request records, result sets, path reports, comparison reports, validation reports, disclosure statements, time maps) are namespaced under the adopting Dimension. Endpoint and assertion identifiers keep the namespace of their issuing authority and are never rewritten, folded or reissued into the local namespace, because a rewritten identifier silently asserts the equivalence the model is meant to report. Relation-kind codes live in a versioned local vocabulary in which each code carries an explicit alignment reference to a SKOS or OWL 2 term where one exists, and an explicit statement where none does.",
+      "registry_links": [
+        "Registry entry vr.wm-xct-036 for WM-XCT-036 Alias / Same-as Mapping",
+        "Parent registry entry WM-XCT-011",
+        "IANA Link Relations registry for the continuation and canonical relation types used in paged results",
+        "Capability profile and relation-property profile registries maintained by the adopting Dimension"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Instants are canonicalised to RFC 3339 with seconds and an explicit offset or Z before comparison, ordering or digest computation; an offset of -00:00 is preserved as offset-unknown and never silently rewritten to Z.",
+        "Endpoint identifiers are compared as opaque strings in the canonical form published by their issuing authority: no case folding, percent-decoding, scheme substitution or trailing-slash normalisation is applied when deciding whether two candidates are the same identifier.",
+        "Result sets and path lists are canonicalised by a declared, stable ordering key before any digest is computed, and the ordering is reported as presentational unless the capability profile declares it meaningful.",
+        "Relation-kind codes are canonicalised against the versioned relation-property profile in force at request receipt, not against the current profile, so that a replayed as-of query resolves the same semantics."
+      ],
+      "patch_rules": [
+        "Removing a relation kind, lowering a hop or result limit, narrowing temporal coverage, or changing a default parameter value is a breaking change and requires a new capability profile version identifier.",
+        "Emitted result sets, path reports, comparison reports, validation reports and disclosure statements are immutable; a correction is issued as a new record referencing the superseded record identifier and stating the reason for correction.",
+        "Changes to relation-kind properties (symmetry, transitivity, disjointness) are versioned and carry an effective instant on the record timeline, so answers computed before and after remain distinguishable.",
+        "A patch may add answer-state, failure-mode or disclosure codes but may not redefine an existing code; redefinition requires a new code and deprecation of the old one."
+      ],
+      "compatibility_rules": [
+        "A caller omitting an optional parameter must receive the service default echoed in the result, and defaults must never change within a capability profile version.",
+        "Consumers must treat unrecognised relation kinds, answer states and disclosure codes as unrecognised and must not collapse them into a nearest known value; adding a code is backward compatible only under that rule.",
+        "Alignment to SKOS, OWL 2, PROV-O or Memento is declarative: a change in an external vocabulary has no local effect until the relation-property profile is versioned to adopt it.",
+        "A continuation token is valid only while the capability and relation-property profile versions it was issued under remain in force; otherwise the traversal must be restarted and the caller told why."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record: the asserting authority's own assertion identifier, or the issuing registry's endpoint identifier, used exactly as issued.",
+        "Governed global identifier or IRI where the authority publishes one and it resolves, such as a registry IRI, a decentralized identifier or another persistent identifier.",
+        "UUID or ULID assigned by the adopting Dimension, used only for records this model itself creates, such as request records, result sets, path reports, comparison reports, validation reports, disclosure statements and time-map builds.",
+        "A date, an as-of instant, a query string, a natural-language label or a content digest is never an identifier, although any of them may be an attribute of an identified record."
+      ],
+      "timestamp_rule": "All instants use RFC 3339 with seconds and an explicit offset or Z; an offset of -00:00 means the local offset is unknown and must be preserved rather than rewritten to Z. Event time (when an alias assertion is claimed to hold, and when the asserting authority made it) and observation or ingestion time (when this service read or recorded that assertion) are recorded separately whenever they differ, and every as-of read states which timeline each supplied instant applies to and which timeline produced the served state.",
+      "serial_naming_rule": "Serial records are named by a stable series name plus a monotonically increasing, non-date sequence value or ULID, in the form series-sequence. Request records, result sets, path reports, comparison reports, validation reports, disclosure statements and time-map builds are all serial; continuation segments reuse the parent report identifier with an incrementing segment number. Instants may be attributes of a serial record but are never part of its name.",
+      "integrity_rule": "Every emitted record carries a digest over its canonicalised content together with the request record identifier, the capability profile version and the relation-property profile version under which it was computed, so that an answer can be replayed and compared against an earlier one. This model computes, carries and reports integrity values; it does not sign records, does not store the audit trail and does not enforce retention, all of which belong to the adopting Dimension's provenance, signing and logging services."
+    },
+    "policies": [
+      "No function of this model selects a canonical or preferred identifier. Where a canonical claim is returned it is attributed to the authority that published it, and the choice remains with the caller.",
+      "No function of this model creates alias candidates. Matching, similarity scoring, entailment materialisation, redirect or resolution-protocol execution, endpoint mutation and authorization are all prohibited on this surface.",
+      "Absence of a returned equivalence is never reported as, or usable as, evidence of non-equivalence; only an explicit not-same assertion supports that conclusion.",
+      "Every result carries a parameter echo and a bound disclosure statement; a result lacking either is invalid and must not be cached, forwarded or relied upon.",
+      "Access-suppressed content is signalled without disclosing what was withheld, and a suppression signal is released only through a channel the access decision authorises.",
+      "Closure is never applied uniformly across relation kinds: transitivity and symmetry are applied only where the relation-property profile declares them for that kind, and chaining a non-transitive kind is marked as a warning on the affected path."
+    ],
+    "crud": {
+      "read": [
+        "Reads are the primary surface: current read, as-of read, candidate resolution, path traversal and assertion comparison, each returning a parameter echo, per-edge provenance references and a bound disclosure statement.",
+        "Reads are scoped by dataset or authority scope, relation kinds, direction, hop limit, declared context, as-of instants and access scope; a protocol-level scope overrides a request-embedded scope and the override is reported in the echo.",
+        "Reads never mutate alias assertions, endpoints or host entities, and derived edges computed for an answer are never written back to any store.",
+        "A read that cannot be completed within scope returns not-answerable-in-scope with its causes, distinct from an empty but complete answer."
+      ],
+      "create": [
+        "This surface creates only its own records: request records, result sets, path reports, comparison reports, validation reports, disclosure statements and time-map builds.",
+        "Creation of alias assertions themselves belongs to the assertion authoring surface and to the asserting authority, and is never a side effect of a query.",
+        "Every created record is bound at creation to the request record identifier and to the capability and relation-property profile versions it used.",
+        "A result set or path report may not be created without its disclosure statement being created in the same operation."
+      ],
+      "update": [
+        "Emitted result and report records are immutable; a correction is a new record referencing the superseded record identifier with a stated reason, never an in-place edit.",
+        "Capability profiles and relation-property profiles are updated by version with an effective instant on the record timeline and an explicit breaking or non-breaking classification.",
+        "No update path exists from this surface to alias assertions, endpoint records, provenance records or external authority data.",
+        "Continuation of a truncated traversal appends a new segment record rather than extending an existing report."
+      ],
+      "delete": [
+        "Result sets, path reports, comparison reports, validation reports, disclosure statements and time-map builds are retained for the period set by the adopting Dimension's retention and disposition policy, which this model references and does not implement; where no policy is bound, the default is to retain until the replay or dispute need that justified the record closes, then dispose.",
+        "Disposition leaves a tombstone carrying the record identifier, the request record identifier, the profile versions and the disposition instant, with the content removed, so that a later replay request is answered as disposed rather than as never existing.",
+        "Deletion of alias assertions, endpoint records, provenance records and audit entries is outside this model's boundary: execution belongs to the assertion authoring surface, the referenced identifier-scheme model, the provenance record service and the adopting Dimension's retention and erasure policy respectively.",
+        "An erasure request arriving at this surface is forwarded by reference to the owning policy; this model records only that a disposition reference exists and never performs cascading deletion across authorities or endpoints."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Alias Query Surface Owner",
+        "responsibilities": [
+          "Publish and version the capability profile, including relation kinds, entailment stance, temporal coverage and hard hop and result limits",
+          "Approve breaking changes and communicate their effective instant",
+          "Ensure the bootstrap file resolves to current specification, storage, interface and process references"
+        ]
+      },
+      {
+        "name": "Relation Semantics Steward",
+        "responsibilities": [
+          "Maintain the versioned relation-property profile covering symmetry, transitivity and disjointness per relation kind",
+          "Maintain and review external alignments to SKOS and OWL 2 terms and record where no alignment exists",
+          "Record conflicts between aligned vocabularies rather than resolving them by local fiat"
+        ]
+      },
+      {
+        "name": "Access Scope Liaison",
+        "responsibilities": [
+          "Bind access scope references and the external decision service to the surface and keep those bindings current",
+          "Verify that suppression signalling discloses magnitude bands only and does not leak the existence of specific withheld items",
+          "Route Indeterminate and unavailable decisions to the deny-by-default path and confirm they are reported as not answerable in scope, not as absence of equivalence"
+        ]
+      },
+      {
+        "name": "Provenance Liaison",
+        "responsibilities": [
+          "Ensure every returned edge resolves to an attribution and generation record held by the provenance service",
+          "Coordinate observation and ingestion instants so record time is distinguishable from assertion validity time",
+          "Escalate edges whose provenance cannot be resolved so they are reported rather than quietly returned"
+        ]
+      },
+      {
+        "name": "Result Integrity Reviewer",
+        "responsibilities": [
+          "Review disclosure statements for completeness and sample-replay as-of queries against retained parameter echoes",
+          "Track drift between composed strength values and the declared composition method version",
+          "Report contradicted paths and unresolved comparison outcomes to the stewardship process without adjudicating them"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. No bundle, layer, finding or artifact of this model is readable without an access scope reference that an external decision point has evaluated to Permit. Indeterminate, NotApplicable and unavailable decisions are treated as deny and are reported to the caller as not answerable in scope, never as an absence of asserted equivalence.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "The capability profile finding and its artifact may be published openly so that callers can construct valid requests before obtaining data access.",
+        "Disclosure statements may be released at coarser granularity than the results they qualify, using suppression magnitude bands rather than exact counts, so that the existence of specific withheld items is not revealed.",
+        "Break-glass or legally compelled release is executed by the adopting Dimension's process; this surface records only the decision reference and marks the affected result as released under exception.",
+        "Aggregate, non-identifying counts of requests and completeness states may be released for service-health review without exposing subjects, endpoints or scopes."
+      ],
+      "audit_requirements": [
+        "Every emitted record must carry the request record identifier, access scope reference, external decision reference and profile versions so that the adopting Dimension's audit service can reconstruct the call; this model supplies those references and does not own, write or retain the audit trail.",
+        "Suppression events must be countable by the audit service without exposing withheld content, which requires the suppression flag and band to be recorded separately from the withheld items themselves.",
+        "An as-of query must be reconstructable from the retained parameter echo, profile versions and content digest, so that a disputed answer can be replayed by the reviewing party rather than re-derived from current data.",
+        "Where a source failure was silenced, the failure mode must be recorded in the disclosure statement so that an incomplete answer is never indistinguishable from an empty one in the retained record."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Capability Profile URL",
+        "Relation Property Profile URL",
+        "Access Scope Reference",
+        "Retention Policy URL",
+        "Provenance Service Reference"
+      ],
+      "read_order": [
+        "AGENTS.md: resolve Name, Type and the Specification URL for WM-XCT-036 before issuing any request.",
+        "Capability Profile URL: read supported relation kinds, entailment stance, temporal coverage and the hard hop and result limits, and note the profile version.",
+        "Relation Property Profile URL: read symmetry, transitivity and disjointness per relation kind together with external alignments, since traversal semantics depend on them.",
+        "Storage type URL and Interface URL: bind the projection actually in use before assuming any query syntax, identifier form or paging mechanism.",
+        "Processes URL: read the request validation, disclosure, correction and stewardship-referral processes.",
+        "Access Scope Reference, Provenance Service Reference and Retention Policy URL: resolve the externally owned decision, provenance and disposition services last, before any result is cached, forwarded or relied upon."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This structure covers the query, resolution, traversal and comparison surface of WM-XCT-036 as grounded in primary standards for graph query and cycle-safe path traversal, equivalence and non-equivalence semantics, entailment regimes, time-based access to prior states, provenance attribution, report-only validation, and access-safe disclosure. It is defensible rather than complete: it deliberately excludes assertion authoring, matching, entailment materialisation, resolution-protocol execution, authorization and audit-trail ownership, and it marks the parameters that no normative source defines.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Records this model creates are identified by Dimension-assigned ULIDs bound to the request record; endpoint and assertion identities remain those issued by their authorities and are never rewritten. A date, instant or digest is explicitly excluded as an identifier."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "As-of reads declare which assertion lifecycle states are admitted and distinguish retraction from disposal. The authoring lifecycle that produces those states is referenced through a composition link and is not modelled here."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Relation kinds carry declared symmetry, transitivity and disjointness from a versioned profile aligned to SKOS and OWL 2, so traversal rules are per kind. Chaining a non-transitive kind is flagged rather than silently permitted."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Separate assertion validity and record or observation timelines, RFC 3339 instants with explicit offsets, exact against nearest-preceding match disclosure, served-state intervals with a stated reference system, and staleness flags."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Per-edge attribution, generation and derivation references with asserted or derived labelling. Creation, storage and retention of provenance records belong to the referenced provenance service."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Owner package requirements, five roles, and explicit assignment of endpoint governance, access decisions, provenance records, audit trails and retention execution to models and services outside this boundary."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Request validation returns a conformance flag with per-result severity and focus parameter, is idempotent, leaves the request and assertions unchanged, and separates a refused request from a valid empty answer."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Access scope is an input; deny by default; Indeterminate and unavailable decisions map to deny and to not-answerable-in-scope; suppression is signalled in magnitude bands. Evaluation and enforcement remain with the decision and enforcement points."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention, tombstone and disposition rules apply to this model's own records only, with a stated default where no policy is bound. Deletion of assertions, endpoints, provenance and audit entries is assigned by name to the owning model or policy."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Capability declaration, scope precedence and remote-failure semantics aligned to SPARQL 1.1; relation kinds aligned to SKOS and OWL 2; continuation aligned to registered link relations. All are alignments, not conformance claims, and unknown codes must not be collapsed."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Composed path strength is a declared, versioned measurement with per-edge inputs, defaults and exclusion reasons, presented as an annotation and never as an assertion that endpoints are the same."
+      },
+      {
+        "dimension": "exception handling",
+        "status": "covered",
+        "notes": "Ambiguity, no-answer, not-answerable-in-scope, truncation, cycles, contradictions, stale endpoints, refused and silenced sources, and inconsistency under the requested regime each have a distinct reported state."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Existence-leak handling follows the HTTP allowance for concealing a forbidden resource, with the suppression signal confined to an authorised channel. Content digests bind an answer to the profile versions that produced it."
+      },
+      {
+        "dimension": "entailment stance",
+        "status": "covered",
+        "notes": "Every answer echoes the regime applied and whether it was requested or default, labels each edge asserted or derived, forbids write-back of derived edges, and reports regime-specific inconsistency handling."
+      },
+      {
+        "dimension": "canonical selection",
+        "status": "covered",
+        "notes": "No function selects a canonical identifier. Authority-published canonical claims, including method-guaranteed ones, are carried as attributed claims with their declared guarantee level and an explicit not-applied marker."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Alias equivalence and its query surface have no intrinsic spatial extent. Jurisdictional restriction is expressed through authority scope and access-scope attributes rather than geometry, so no spatial modelling is warranted."
+      }
+    ],
+    "known_omissions": [
+      "No normative standard defines a maximum-strength-loss budget for chained identity links. The parameter is grounded in the SKOS rationale for refusing transitivity to closeMatch and in the linked-data identity literature, not in a normative rule, and the composition arithmetic itself is left to a declared local method. This is the largest evidence gap in the structure.",
+      "No widely adopted normative vocabulary exists for negative mapping assertions outside OWL 2 DifferentIndividuals; SKOS has no negative mapping relation. Contradiction reporting therefore rests on OWL 2 alignment plus local codes.",
+      "Truncation, hop limits and continuation semantics for graph traversal are not normatively specified by SPARQL, which defines cycle-safe connectivity but not result-bounding. The continuation-token design borrows a registered link-relation pattern and is common practice rather than a requirement.",
+      "Bitemporal as-of reads over assertion graphs have no single normative standard; the structure combines HTTP-level datetime negotiation, provenance generation and invalidation instants, and interval modelling from a specification that is still a Candidate Recommendation Draft.",
+      "Confidence scales are not standardised and the vocabulary treating quality as an annotation is a non-normative Note, so confidence values from different authorities are explicitly not comparable without a declared method.",
+      "Cost, latency, index design and caching of large traversals are excluded as projection concerns, even though they materially determine whether a hop limit is reachable in practice.",
+      "Human stewardship of contradicted paths and unresolved comparison outcomes is referenced through a composition link but not modelled; it belongs to the adopting Dimension's process layer.",
+      "Multilingual and transliterated label evidence often used to justify alias assertions is not modelled; only the evidence reference is carried, so label-level comparison is out of reach of this surface."
+    ],
+    "conflicts": [
+      "OWL 2 equality licenses substitution and full transitive closure, while SKOS deliberately makes closeMatch non-transitive to prevent compound errors across chained schemes. A path mixing these kinds cannot inherit one closure rule, so the model requires per-kind declaration and forbids uniform closure.",
+      "Decentralized identifier methods supply a method-guaranteed canonical identifier and recommend its use, whereas this model forbids canonical selection. The conflict is resolved by carrying such a value as an attributed claim of the publishing authority with its guarantee level, never as the query surface's choice.",
+      "An also-known-as style claim and an OWL 2 equality assertion look interchangeable but differ sharply in strength: the former is explicitly not to be treated as equivalence absent a reciprocated inverse and out-of-method verification. Collapsing both onto one relation kind would be a semantic error and is prohibited.",
+      "The federated-query SILENT modifier turns a source failure into a single empty solution that is indistinguishable from nothing asserted at the solution level. The model therefore requires the failure mode to be recorded in the disclosure statement and treats any silenced result as incomplete.",
+      "Entailment regimes disagree on inconsistency: an inconsistent OWL 2 DL ontology must raise an error, while under RDF-based semantics a system may merely warn. Identical alias data can therefore yield an error or an answer, so the regime must be echoed with every result.",
+      "HTTP permits a server to return not-found in order to conceal a forbidden resource, which conflicts with the requirement to distinguish nothing asserted from withheld. The model resolves this by carrying the suppression signal inside an authorised channel while permitting existence-concealing behaviour at the transport projection.",
+      "Authority-published mapping files are refreshed on cadences ranging from daily to monthly, so a current read and an as-of read can disagree purely because of ingestion lag; the model therefore requires observation time and refresh cadence rather than treating a current read as authoritative."
+    ],
+    "regional_assumptions": [
+      "Instants are assumed to be RFC 3339 with explicit offsets and a stated temporal reference system; non-Gregorian and ordinal reference systems are supported only by declaring the system explicitly.",
+      "Erasure obligations such as statutory rights of deletion are assumed to be executed by the adopting Dimension's retention policy and by the authority holding the assertion; this model carries only a disposition reference and encodes no jurisdiction-specific rule.",
+      "Cross-border restrictions on evidence disclosure are assumed to be expressed as access-scope attributes evaluated by an external decision point, so no regional policy is embedded in the query surface.",
+      "Named registries and identifier systems are illustrative of authority-published mappings and are not assumed to exist or be reachable in every adopting Dimension.",
+      "Language, script and transliteration conventions of endpoint identifiers are assumed to be governed by the issuing authority; the model compares identifiers as opaque strings and applies no locale-sensitive normalisation."
+    ],
+    "adversarial_checks": [
+      "Tried to justify a preferred-identifier output using method-guaranteed canonical identifiers and the registered canonical link relation. Rejected: both are claims a publisher makes about its own resources, not a licence for a third-party query surface to collapse a candidate set. Retained as attributed claims with a not-applied marker.",
+      "Tried to make transitive closure the default traversal semantics on the strength of equality transitivity. Rejected: SKOS explicitly refuses transitivity for closeMatch to avoid compound errors and the empirical literature documents systematic over-assertion of identity links. Closure is now declared per relation kind and chaining a non-transitive kind is flagged.",
+      "Tried to add a matching or similarity finding that would generate candidates where no assertion exists. Rejected as outside the boundary: it would convert the model into an entity-resolution engine and would allow a no-answer state to be filled with inference.",
+      "Tried to model an audit trail and a policy-evaluation record inside the access layer. Rejected: decision and enforcement are separated by the access-control standard and attribution records are owned by the provenance service. Both were moved to composition links, boundary notes and reference-only data elements, and the audit requirements were rewritten as reference obligations.",
+      "Tried to treat a silenced federated-source failure as an ordinary empty result. Rejected after reading the normative service-invocation definition, which makes the two indistinguishable at the solution level. A mandatory disclosure statement bound one-to-one to every result was added instead.",
+      "Tried to name serial records by their as-of date for operator convenience. Rejected under the identity rule that a date is not an identifier; serial ULIDs bound to the request record are used, with instants retained as attributes.",
+      "Tried to implement as-of reads by following a TimeGate and negotiating a datetime. Rejected as execution of a resolution protocol owned by another service; the model reports the TimeGate or TimeMap reference and serves its own stored state with an explicit match mode.",
+      "Tried to let comparison emit a recommended assertion when one authority's evidence was verified and the other's was not. Rejected: verification does not establish the truth of a claim and the decision to rely on it belongs to the caller, so the outcome vocabulary records divergence and non-comparability instead."
+    ]
+  }
+}

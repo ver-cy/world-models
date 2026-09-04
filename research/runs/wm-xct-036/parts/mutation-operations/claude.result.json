@@ -1,0 +1,2372 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-036",
+    "model_id": "WM-XCT-036",
+    "name": "Alias / Same-as Mapping",
+    "entry_kind": "mixin",
+    "purpose": "Provide a reusable, format-neutral mixin for asserting that two or more identifiers or endpoint references denote the same subject, carrying the asserting authority, relation property, confidence, evidence, effective interval and an append-only, idempotent mutation-command surface for changing those assertions.",
+    "scope_statement": "WM-XCT-036 governs the recorded assertion that identifier endpoints are equivalent (or explicitly not equivalent), including the declared relation property and its binding to a governed vocabulary, directionality and canonical designation, asserting authority and confidence, supporting evidence, effective interval, version chain and lifecycle state. It governs the complete mutation-command surface over those assertions: propose, validate, submit evidence, approve or reject, activate, supersede, retract and quarantine, each requiring an idempotency key and an optimistic-concurrency precondition, each producing immutable append-only records. It does not compute equivalence, does not resolve or merge endpoints, and does not decide or enforce access; those remain with composable sibling models. The model is independent of storage format and access interface: JSON, YAML, Markdown, Git, MCP and MongoDB are projections of the same semantics.",
+    "in_scope": [
+      "Equivalence assertions between two or more identifier endpoints, with declared relation property, directionality, canonical designation and explicit not-same (distinctness) constraints.",
+      "Asserting authority, confidence declaration, supporting evidence attachments and their provenance.",
+      "Effective interval, version chain, lifecycle state and supersession relationships of each assertion.",
+      "Mutation-command semantics: propose, validate, submit evidence, approve/reject, activate, supersede, retract and emergency quarantine marking.",
+      "Command envelope requirements: idempotency key, canonical request fingerprint, optimistic-concurrency validator and command receipt.",
+      "Declarative validation check set (endpoint reference and version, relation-property contract, type/scheme/context compatibility, required evidence and review, contradictions, not-same constraints, effective interval, declared access scope) and machine-readable validation outcome records.",
+      "Failure classification, partial-failure detection and compensating-record derivation within this register."
+    ],
+    "out_of_scope": [
+      "Entity matching, similarity scoring, blocking and probabilistic record linkage that would produce candidate equivalences.",
+      "Reasoning, entailment closure or substitution over asserted equivalences (for example computing owl:sameAs or skos:exactMatch transitive closure).",
+      "Identifier resolution, canonical redirect execution, endpoint dereferencing and record merge.",
+      "Authorization decisions, policy evaluation and enforcement over commands or over the aliased subjects.",
+      "Audit-trail construction, tamper-evident logging and retention scheduling of audit records.",
+      "Notification, message delivery and transport-level retry execution.",
+      "Minting of new subject identifiers and definition of the subject types themselves, which belong to the parent model.",
+      "Physical deletion or erasure of stored records."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Entity resolution / record linkage service",
+        "distinction": "This model records equivalence that has been asserted by a named authority together with its evidence; it never derives equivalence. Authoritative practice is explicit that an alias assertion is not proof: DID Core states that the presence of an alsoKnownAs assertion does not prove the assertion is true and that a requesting party is strongly advised to obtain independent verification.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Reasoning / inference service",
+        "distinction": "SKOS makes skos:exactMatch symmetric and transitive, and OWL 2 gives owl:sameAs full substitution semantics under no unique name assumption. Those entailments are computed by external reasoners over the asserted statements; this model stores only asserted statements, declared bindings and validation outcomes, and never materialises a closure.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Identifier resolution / redirect service",
+        "distinction": "This model records which endpoint is designated canonical and which are equivalent; resolution, redirect execution and endpoint merge are performed by the resolver or the owning master system.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Authorization / policy decision model",
+        "distinction": "A command envelope declares an access scope, and validation checks that the declared scope is registered and not broader than the scope recorded on the target assertion. Whether the actor may act is decided elsewhere; the verifiable-credentials model makes the same separation by stating that verifiability does not imply truth and that relying parties validate against their own policies.",
+        "source_refs": [
+          "SRC-010",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Audit-trail model",
+        "distinction": "Command receipts, validation reports, decision assertions and transition records are domain state of the alias register. Tamper-evident audit logging, log retention and log query are owned by the referenced audit model; this model emits correlation data only and never writes or reads an audit log.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "HTTP interface projection",
+        "distinction": "Idempotency-Key and If-Match/If-Unmodified-Since are transport bindings of model-level preconditions defined here. The model requires an idempotency key and a concurrency validator abstractly; HTTP status codes such as 409, 412 and 422 are projections of model outcome codes, not the semantics themselves.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Retention, privacy and deletion model",
+        "distinction": "This model appends tombstones and disposition references and retains superseded records for historic reference, consistent with registry practice that entries are marked deprecated or obsolete rather than deleted. Retention schedules, legal hold and physical erasure are executed by the adopting Dimension's retention and privacy models.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "STD 97, June 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Defines idempotent methods (Sec. 9.2.2), conditional-request preconditions If-Match / If-None-Match / If-Unmodified-Since (Sec. 13.1), strong and weak validators and entity-tags (Sec. 8.8.1, 8.8.3), 409 Conflict (Sec. 15.5.10), 412 Precondition Failed (Sec. 15.5.13), 503 and Retry-After (Sec. 15.6.4, 10.2.3). Grounds the optimistic-concurrency precondition and stale-version outcomes."
+    },
+    {
+      "id": "SRC-002",
+      "title": "The Idempotency-Key HTTP Header Field (draft-ietf-httpapi-idempotency-key-header-07)",
+      "organization": "IETF HTTP API Working Group",
+      "url": "https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header",
+      "version_or_date": "draft-07, 2025-10-15; expired Internet-Draft, not a standard",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Defines the client-generated idempotency key, key uniqueness and non-reuse across differing payloads, optional server-side request fingerprinting, composite lookup keys, published key-expiry policy, and the duplicate-handling outcomes: cached result on completed replay, conflict while the original is still processing, and rejection when a key is reused with a different payload. Cited as work in progress, not as a normative requirement."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+      "version_or_date": "July 2023 (obsoletes RFC 7807)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Defines the machine-readable failure document: type, title, status, detail, instance (Sec. 3.1), extension members that consumers must ignore when unrecognised (Sec. 3.2), the guidance to represent the most relevant problem rather than a generic batch type, and the validation-error pattern using an errors extension array with pointers to the offending element."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Mandatory seconds in partial-time and mandatory time-offset of Z or +/-hh:mm (Sec. 5.6); the -00:00 convention for a known UTC instant with unknown local offset (Sec. 4.3); string-sortability conditions for time-ordered sequences (Sec. 5.1). Grounds the timestamp rule and the separation of event, observation and effective times."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 8126 (BCP 26): Guidelines for Writing an IANA Considerations Section in RFCs",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8126.html",
+      "version_or_date": "BCP 26, June 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Registry governance: registration request contents (Sec. 3.1), registration policies including Expert Review and Specification Required (Sec. 4.5, 4.6), change control and named change controller (Sec. 2.3), modification of existing registrations under the same review as new registrations (Sec. 3.2), and status marking as reserved, deprecated or obsolete with entries retained for historic purposes rather than deleted (Sec. 6, 9.6)."
+    },
+    {
+      "id": "SRC-006",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Supplies the provenance pattern for append-only records: Entity, Activity, Agent; wasGeneratedBy, wasDerivedFrom, wasRevisionOf, wasAttributedTo, qualifiedAssociation; generatedAtTime, invalidatedAtTime and wasInvalidatedBy for expressing retraction as invalidation rather than deletion."
+    },
+    {
+      "id": "SRC-007",
+      "title": "SKOS Simple Knowledge Organization System Reference",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/skos-reference/",
+      "version_or_date": "W3C Recommendation, 18 August 2009",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Defines the mapping-property vocabulary bound by an alias assertion: exactMatch, closeMatch, broadMatch, narrowMatch, relatedMatch under skos:mappingRelation; symmetry of relatedMatch/closeMatch/exactMatch; transitivity of exactMatch; the disjointness of exactMatch with broadMatch and relatedMatch, which is the normative basis for the contradiction check."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Shapes Constraint Language (SHACL)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/shacl/",
+      "version_or_date": "W3C Recommendation, 20 July 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Supplies the validation-report structure: ValidationReport with conforms and result; ValidationResult with focusNode, resultPath, value, sourceShape, sourceConstraintComponent, resultMessage and resultSeverity (Violation, Warning, Info); and the separation of data graph from shapes graph, which grounds the check-catalogue / instance-report split."
+    },
+    {
+      "id": "SRC-009",
+      "title": "OWL 2 Web Ontology Language Primer (Second Edition)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl2-primer/",
+      "version_or_date": "W3C Recommendation, 11 December 2012",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "States that OWL does not make the unique name assumption, that stating two names denote the same individual licenses transfer of all information between them, and that distinctness must be asserted explicitly. Grounds the not-same constraint and the treatment of same/different pairs as a contradiction rather than a merge instruction."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Supplies the effective-interval pattern (validFrom / validUntil as RFC 3339 date-times), the evidence property describing how an issuer verified claims before issuance, credentialStatus with status checking explicitly defined elsewhere, and the separation between an issuer asserting and a verifier deciding under its own policy."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Decentralized Identifiers (DIDs) v1.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/did-1.0/",
+      "version_or_date": "W3C Recommendation, 19 July 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Defines alsoKnownAs as a set of URIs asserting other identifiers for the same subject, states that equivalence should not be assumed unless the relationship is reciprocated, and warns that the presence of an alsoKnownAs assertion does not prove it is true so independent verification is strongly advised. Grounds directionality, reciprocity and the no-inference boundary."
+    },
+    {
+      "id": "SRC-012",
+      "title": "ISO/IEC 11179-6:2023 Information technology — Metadata registries (MDR) — Part 6: Registration",
+      "organization": "ISO/IEC JTC 1/SC 32",
+      "url": "https://committee.iso.org/es/sites/isoorg/contents/data/standard/07/89/78916.html",
+      "version_or_date": "Edition 4, published 2023-01-16, stage 60.60",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Establishes that registration of an administered item specifies the information to be supplied, the conditions to be met and the procedures to be followed, under a registration authority. Consulted through the ISO catalogue record only; the normative status enumeration was not accessible, so it is used as an alignment for the existence of a governed registration procedure, not as a source of specific status values."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "als-cmd-bundle-envelope-and-validation",
+        "name": "Command Envelope, Concurrency Control and Pre-commit Validation",
+        "description": "Everything a mutation command must carry before the alias register will consider it, and everything the register checks before any record is appended: command identity and idempotency, the optimistic-concurrency precondition, the declarative validation check set and the machine-readable outcome or failure report.",
+        "rationale": "Alias assertions are federated statements about identity that other systems act on; an unsafe retry, a lost update or an unvalidated contradiction propagates a false equivalence. HTTP semantics supply the normative precondition and conflict vocabulary, the idempotency-key work supplies duplicate-command handling, SHACL supplies the report structure and Problem Details supplies the failure projection. Grouping them as one concern keeps the accept/reject gate in a single auditable place.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "als-cmd-layer-envelope-control",
+            "name": "Command Envelope and Concurrency Control",
+            "description": "The identity, idempotency and version-precondition contract that every mutation command must satisfy, and how duplicate, in-flight and stale commands are distinguished from one another.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ],
+            "findings": [
+              {
+                "id": "als-cmd-find-idempotency-envelope",
+                "name": "Idempotency key, request fingerprint and duplicate-command resolution",
+                "description": "Every mutation command carries a client-generated idempotency key and is reduced to a canonical fingerprint. The register keeps a receipt series keyed by (submitting client, idempotency key) and uses it to classify an arriving command as a first occurrence, an in-flight duplicate, a completed replay whose recorded outcome is returned unchanged, or a key reuse with a differing payload. This makes retry safe for commands that are not naturally idempotent, without ever applying an effect twice.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-001",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-envelope-required-identity",
+                    "text": "What command identifier, idempotency key and command-type code must a mutation command carry before the alias register will accept it for processing?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Command identifier minted by the submitting agent",
+                      "Idempotency key value and its generation method (for example a random UUID)",
+                      "Command-type code drawn from the governed command vocabulary",
+                      "Submitting client or agent reference forming the composite lookup key"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-envelope-fingerprint-scope",
+                    "text": "Which parts of a command are included in the canonical fingerprint compared against a replayed idempotency key, and which are deliberately excluded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Included: command type, target assertion reference, endpoint references, relation property, effective interval, declared access scope, evidence references",
+                      "Excluded: transport headers, trace identifiers, observation timestamp, retry counter",
+                      "Canonicalisation profile identifier and digest algorithm identifier",
+                      "Fingerprint digest value"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-envelope-replay-classification",
+                    "text": "How is an incoming command classified as a first occurrence, an in-flight duplicate, a completed replay or a key reuse with a different payload?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Receipt lookup result for the composite key",
+                      "Receipt state value (accepted, in-progress, completed, failed)",
+                      "Fingerprint comparison result (match or mismatch)",
+                      "Resulting outcome code and, for a completed replay, the reference to the previously recorded outcome"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-envelope-key-retention",
+                    "text": "How long is a command receipt retained for replay resolution, and how is a retry that arrives after the key has expired treated?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Published key retention window and its start reference (observation time of first acceptance)",
+                      "Receipt expiry instant",
+                      "Post-expiry treatment rule (treated as a new first occurrence, with the concurrency precondition as the remaining safeguard)",
+                      "Reference to the retention model that executes receipt disposal"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-envelope-missing-key",
+                    "text": "Which outcome is recorded when the required idempotency key is absent, malformed or exceeds the declared length or entropy constraints?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Outcome code for a missing or malformed key",
+                      "Problem type identifier for the failure document",
+                      "Whether any record other than a rejection receipt is appended (none)",
+                      "Whether the failure is retryable after correction"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-command-identifier",
+                    "name": "Command identifier",
+                    "description": "Identifier of the individual mutation command instance as submitted.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-idempotency-key",
+                    "name": "Idempotency key",
+                    "description": "Client-generated value, unique per distinct payload and never reused across differing payloads, used to recognise retries of the same command.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-command-type",
+                    "name": "Command type code",
+                    "description": "Governed code naming the mutation command: propose, validate, submit-evidence, approve, reject, activate, supersede, retract or quarantine.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-request-fingerprint",
+                    "name": "Canonical request fingerprint",
+                    "description": "Digest over the canonical serialisation of the semantically significant command content, used only for comparison; it is never an identifier.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-receipt-state",
+                    "name": "Command receipt state",
+                    "description": "State of the receipt for a composite (client, idempotency key) pair: in-progress, completed, failed or expired.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-receipt-expiry",
+                    "name": "Receipt expiry instant",
+                    "description": "Instant after which the receipt no longer resolves replays, expressed with seconds and an explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-command-receipt",
+                    "name": "Alias Command Receipt",
+                    "description": "Append-only record of one accepted or rejected mutation command: command identifier, composite idempotency lookup key, fingerprint digest, submitting agent reference, command event time, register observation time, outcome code and reference to the records the command produced. Replays return the recorded outcome rather than reprocessing.",
+                    "media_or_form": [
+                      "structured record in the alias register",
+                      "interface projection carrying the idempotency key and recorded response"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the register's own receipt identifier; the composite (submitting client reference, idempotency key) is a unique lookup constraint within the retention window, not the identifier. Sequenced per submitting client.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-cmd-find-concurrency-precondition",
+                "name": "Optimistic-concurrency precondition and stale-version detection",
+                "description": "Every command that targets an existing assertion must supply a validator proving which version the submitter observed. The register compares that validator against the current version token of the target and refuses the command if they differ, so concurrent proposals cannot silently overwrite one another. Precondition failure is semantically distinct from idempotent replay: a replay returns the earlier outcome, a stale validator is a rejection that requires the submitter to re-read and re-derive.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-concurrency-validator-source",
+                    "text": "Which validator does a mutation command supply to prove it observed the current assertion version, and how is that validator derived?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Observed version token of the target assertion",
+                      "Validator strength (strong validator over the canonical assertion state, or weak validator)",
+                      "Derivation rule linking the token to the appended record series",
+                      "Interface projection of the validator, such as an entity-tag carried in a conditional request"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-concurrency-vs-replay",
+                    "text": "What distinguishes a stale-version rejection from a duplicate-command replay when both arrive from the same submitting agent?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Fingerprint comparison result against the receipt series",
+                      "Validator comparison result against the current version token",
+                      "Distinct outcome codes for precondition failure and for replay",
+                      "Rule that replay resolution is evaluated before precondition evaluation"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-concurrency-race-order",
+                    "text": "How are two concurrent proposals against the same endpoint pair ordered, and which one is recorded as losing the race?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Register-assigned sequence position at durable acceptance",
+                      "Version token held by each command at submission",
+                      "Loser outcome code and the recorded reason",
+                      "Whether the losing submitter must re-propose or may re-target the winning version"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-concurrency-scope-granularity",
+                    "text": "At what granularity is the concurrency token scoped: the individual assertion, the endpoint pair or the whole alias register?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Declared concurrency scope code",
+                      "Identifier of the scoped unit",
+                      "Rule for commands that span more than one assertion",
+                      "Behaviour when a scoped unit has no prior version (creation case)"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-concurrency-validator-strength",
+                    "text": "When is a weak validator acceptable for an alias command and when must the validator be strong?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Command types requiring a strong validator (activate, supersede, retract, quarantine)",
+                      "Command types permitted a weak validator (evidence submission that cannot change decided state)",
+                      "Definition of equivalence used by the weak validator",
+                      "Outcome code when validator strength is insufficient"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-observed-version-token",
+                    "name": "Observed version token",
+                    "description": "Validator supplied by the command asserting which version of the target assertion the submitter observed.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-current-version-token",
+                    "name": "Current version token",
+                    "description": "Register-maintained validator for the current version of an assertion, derived from its appended record series.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-precondition-mode",
+                    "name": "Precondition mode",
+                    "description": "Whether the command requires the target to match the observed version, to be absent, or to be unmodified since a stated instant.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-concurrency-scope",
+                    "name": "Concurrency scope",
+                    "description": "The unit over which the version token is defined: assertion, endpoint pair or register partition.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-conflict-outcome-code",
+                    "name": "Conflict outcome code",
+                    "description": "Governed code distinguishing precondition failure, in-flight duplicate, key reuse with differing payload and state conflict.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The concurrency precondition is a declared parameter of the command envelope evaluated against the register's current version pointer; it produces no durable object of its own. Its successful outcome is already recorded on the command receipt series and its failure is already recorded in the validation and failure report series. Declaring a third artifact here would create two competing records of the same event and would make the version chain ambiguous, so the precondition is modelled purely as inline envelope data plus a comparison result."
+              }
+            ]
+          },
+          {
+            "id": "als-cmd-layer-precommit-validation",
+            "name": "Pre-commit Validation Contract",
+            "description": "The declarative catalogue of checks a command must pass before any assertion record is appended, and the machine-readable outcome record that reports which checks passed, which failed and on which element.",
+            "source_refs": [
+              "SRC-008",
+              "SRC-003",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "als-cmd-find-validation-check-set",
+                "name": "Declared validation check set for alias commands",
+                "description": "A versioned catalogue of named checks with declared severity and applicability per command type. It covers endpoint reference and version presence, the relation-property contract and its vocabulary binding, type/scheme/context compatibility of the two endpoints, required evidence and review sufficiency, contradiction with existing active assertions, violation of declared not-same constraints, effective-interval well-formedness and overlap, and the declared access scope. The catalogue states what must be checked; it does not resolve endpoints, does not infer entailments and does not decide access.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-checkset-blocking-vs-advisory",
+                    "text": "Which checks must pass before a proposed alias assertion may be activated, and which are advisory only?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Check identifier and its governed name",
+                      "Severity assigned per command type (blocking or advisory)",
+                      "Applicability expression naming the command types the check applies to",
+                      "Catalogue version in force at evaluation time"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-checkset-endpoint-reference",
+                    "text": "How is the endpoint reference and its version verified without resolving or dereferencing the endpoint itself?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Endpoint reference syntax and namespace conformance result",
+                      "Presence and format of the endpoint version or validator token supplied with the reference",
+                      "Comparison of the supplied endpoint version against the version last recorded on this assertion",
+                      "Explicit statement that dereferencing and resolution are delegated to the resolver model"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-checkset-property-compatibility",
+                    "text": "Which relation-property, type, scheme and context compatibility rules make a proposed endpoint pairing admissible?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Declared relation property and its governed vocabulary term (for example an exact-match or close-match mapping property)",
+                      "Subject type compatibility rule between the two endpoints",
+                      "Concept scheme or namespace pairing rule",
+                      "Context or profile identifier under which the pairing is asserted"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-checkset-contradiction",
+                    "text": "How are contradictions with existing active assertions and with declared not-same constraints detected and reported?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Set of existing active assertions over the same endpoint pair and their relation properties",
+                      "Disjointness rule violated (for example an exact-match asserted where a broader-match already holds)",
+                      "Existing distinctness or not-same constraint that the proposal would violate",
+                      "Contradiction result records with the offending element path, without any attempt to resolve which side is correct"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-checkset-interval-and-scope",
+                    "text": "How are the effective interval and the declared access scope of a proposal checked against the target assertion?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective interval start and end with seconds and explicit offset, and the ordering check between them",
+                      "Overlap result against existing active intervals for the same pair",
+                      "Declared access scope value and whether it is registered",
+                      "Result of comparing the declared scope against the scope recorded on the target assertion"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-check-identifier",
+                    "name": "Check identifier",
+                    "description": "Governed identifier of a single named check in the catalogue.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-check-severity",
+                    "name": "Check severity",
+                    "description": "Declared severity of a failed check: blocking violation, warning or informational.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-check-applicability",
+                    "name": "Check applicability",
+                    "description": "The command types and assertion classes to which a check applies.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-relation-property-binding",
+                    "name": "Relation-property binding",
+                    "description": "Reference to the governed vocabulary term that the assertion's relation property is bound to.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-not-same-constraint-ref",
+                    "name": "Not-same constraint reference",
+                    "description": "Reference to a recorded distinctness constraint that forbids equating the named endpoints.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-check-catalogue-version",
+                    "name": "Check catalogue version",
+                    "description": "Version of the check catalogue applied to a given command evaluation.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-check-catalogue",
+                    "name": "Alias Command Check Catalogue",
+                    "description": "Versioned, non-serial declaration of every named check, its severity, its applicability per command type and the governed vocabulary bindings it enforces. It is the shapes-side counterpart to the per-command validation report and changes only through the register's own registration procedure.",
+                    "media_or_form": [
+                      "check catalogue record",
+                      "constraint-shapes graph projection",
+                      "tabular catalogue projection"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by a governed catalogue IRI in the adopting Dimension's namespace plus an explicit version identifier; individual checks are identified by governed check IRIs that are never reused after retirement.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-cmd-find-validation-outcome-report",
+                "name": "Validation outcome record and machine-readable failure report",
+                "description": "Each validation run produces one outcome record stating whether the command conforms and, if not, one result per failed check naming the focus element, the path within it, the offending value, the check that produced the result and its severity. The same outcome projects into a machine-readable failure document for the calling interface. The report binds the digest of the exact command payload and catalogue version it judged, so a later edit of either is detectable.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-003",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-outcome-result-content",
+                    "text": "What must a validation outcome record contain so a caller can tell exactly which check failed on which element?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Overall conformance boolean",
+                      "Per-result focus element reference and path within it",
+                      "Offending value and the check identifier that produced the result",
+                      "Human-readable result message and its language"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-outcome-severity-mapping",
+                    "text": "How are check severities mapped to a machine-readable failure response and to an accept, hold or reject outcome?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Severity to outcome-code mapping table",
+                      "Rule that any blocking violation prevents any assertion record being appended",
+                      "Treatment of warnings (recorded, does not block)",
+                      "Interface status projection for each outcome code"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-outcome-input-binding",
+                    "text": "Which evidence of the validated input is bound into the outcome so a later change to the proposal is detectable?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Digest of the canonical command payload evaluated",
+                      "Identifier and version of the proposal version evaluated",
+                      "Check catalogue version identifier",
+                      "Register observation time of the evaluation with seconds and explicit offset"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-outcome-multiple-failures",
+                    "text": "How are multiple simultaneous check failures reported without collapsing them into a single opaque error?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Single problem type identifier for validation failure",
+                      "Extension array carrying one entry per failed check with its element pointer",
+                      "Ordering or ranking rule for the primary reported problem",
+                      "Rule that unrecognised extension members are ignored by consumers"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-outcome-retryable",
+                    "text": "Which validation and processing failures are retryable, and how is that signalled to the submitting agent?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Retryable classification per outcome code",
+                      "Whether the same idempotency key may be reused for the retry",
+                      "Advisory retry delay where the failure is transient",
+                      "Failures that are permanently non-retryable without a corrected payload"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-conforms-flag",
+                    "name": "Conformance flag",
+                    "description": "True when the validation run produced no blocking results, false otherwise.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-validation-result",
+                    "name": "Validation result entry",
+                    "description": "One failed or advisory check with focus element, path, value, source check and severity.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-problem-type",
+                    "name": "Problem type identifier",
+                    "description": "Stable URI identifying the class of failure reported to the caller.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-evaluated-payload-digest",
+                    "name": "Evaluated payload digest",
+                    "description": "Digest of the canonical command payload the outcome was computed over.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-retryability",
+                    "name": "Retryability classification",
+                    "description": "Whether the outcome is transient and retryable, retryable only after payload correction, or permanent.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-validation-report",
+                    "name": "Alias Command Validation Report",
+                    "description": "Append-only report for one validation run over one command: conformance flag, ordered result entries with element pointers and severities, the digests of the evaluated payload and catalogue version, and the evaluation observation time. It is the record a decision assertion later cites as the basis it relied on.",
+                    "media_or_form": [
+                      "validation report record",
+                      "problem-details projection for the calling interface",
+                      "shapes validation report graph projection"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned report identifier; sequenced per target assertion and per validation attempt so that repeated attempts against the same proposal remain individually citable. Sequence gaps are permitted and never renumbered.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "als-cmd-bundle-lifecycle-commands",
+        "name": "Alias Assertion Lifecycle Commands and Immutable Decision Record",
+        "description": "The append-only command sequence that moves an alias assertion through its life: proposal, evidence submission, approval or rejection, activation, supersession, retraction and emergency quarantine, together with the compensating records used when a command applies only partially.",
+        "rationale": "Registry practice requires that changes to registered items follow a declared procedure under a named change controller and that entries be marked rather than removed, and provenance practice requires that revision and invalidation be recorded as first-class events attributed to agents. Modelling the commands as an append-only series of immutable records gives a defensible history without duplicating any downstream decision, resolution or enforcement behaviour.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006",
+          "SRC-012",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "als-cmd-layer-proposal-intake",
+            "name": "Proposal Intake and Evidence Submission",
+            "description": "How an alias assertion is first proposed, how repeated proposals over the same endpoint pair are versioned, and how supporting evidence is attached to a specific proposal version.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-010",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "als-cmd-find-propose-command",
+                "name": "Propose command and proposal versioning",
+                "description": "The propose command records a candidate equivalence: the endpoint references and their versions, the declared relation property and its vocabulary binding, direction and canonical designation, proposed effective interval, declared confidence, asserting authority reference and declared access scope. It creates a new immutable proposal version; it never edits an earlier one. A re-proposal over the same endpoint pair appends a new version linked as a revision of its predecessor.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-propose-minimum-content",
+                    "text": "What minimum content must a propose command carry to create the first version of an alias assertion?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Two or more endpoint references with their version or validator tokens",
+                      "Declared relation property and its governed vocabulary binding",
+                      "Direction and canonical designation, or an explicit statement that the assertion is symmetric",
+                      "Proposed effective interval, declared confidence and asserting authority reference"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-propose-version-identity",
+                    "text": "How is a proposal identified and versioned when the same endpoint pair is proposed repeatedly by different agents?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Assertion identifier that is stable across versions",
+                      "Proposal version identifier and its sequence position",
+                      "Revision link to the predecessor version",
+                      "Rule that the endpoint pair is a lookup constraint, not the identifier"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-propose-initial-state",
+                    "text": "Which state does a newly recorded proposal enter, and which commands are legal from that state?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Initial state code for a recorded proposal",
+                      "Legal successor commands from that state (validate, submit evidence, approve, reject, retract)",
+                      "Commands that are illegal from that state (activate before approval, supersede a never-active assertion)",
+                      "Outcome code for an illegal transition attempt"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-propose-agent-vs-authority",
+                    "text": "How are the proposing agent and the asserting authority recorded, and how do they differ?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Proposing agent reference and its role in the proposal activity",
+                      "Asserting authority reference on whose behalf the equivalence is claimed",
+                      "Command event time asserted by the agent and register observation time, recorded separately",
+                      "Attribution link from the proposal version to the responsible agent"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-propose-superseding-proposal",
+                    "text": "What happens to a pending proposal when a competing proposal over the same endpoint pair is recorded before any decision is taken?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Whether both proposals remain pending or the earlier is marked overtaken",
+                      "Version tokens held by each pending proposal",
+                      "Rule requiring a decision to name the exact proposal version it judges",
+                      "Outcome code recorded on the proposal that is not carried forward"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-assertion-identifier",
+                    "name": "Assertion identifier",
+                    "description": "Stable identifier of the alias assertion, constant across all its versions.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-proposal-version-id",
+                    "name": "Proposal version identifier",
+                    "description": "Identifier of one immutable proposal version within an assertion's version chain.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-endpoint-reference",
+                    "name": "Endpoint reference",
+                    "description": "Reference to one identifier endpoint participating in the equivalence, together with its version or validator token.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-declared-confidence",
+                    "name": "Declared confidence",
+                    "description": "Confidence declared by the asserting authority, expressed on a scale named by the adopting Dimension.",
+                    "value_kind": "other",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-asserting-authority-ref",
+                    "name": "Asserting authority reference",
+                    "description": "Reference to the party on whose authority the equivalence is claimed; this model records the reference and does not evaluate competence.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-command-event-time",
+                    "name": "Command event time",
+                    "description": "Instant at which the submitting agent asserts the command was issued, with seconds and explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-proposal-version",
+                    "name": "Alias Assertion Proposal Version",
+                    "description": "Immutable record of one proposed state of an alias assertion, carrying the endpoint references and versions, relation property binding, direction and canonical designation, proposed effective interval, declared confidence, asserting authority reference, declared access scope, proposing agent and both event and observation times, plus a revision link to its predecessor.",
+                    "media_or_form": [
+                      "structured assertion record",
+                      "serialised graph projection using mapping and provenance vocabularies"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the assertion identifier plus a monotonic version sequence assigned by the register; the version sequence is never reused or renumbered and gaps are permitted.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-cmd-find-evidence-submission",
+                "name": "Evidence submission bound to a proposal version",
+                "description": "The submit-evidence command appends an evidence item to a named proposal version rather than to the assertion as a whole, so a decision can be traced to exactly the material available when it was taken. Evidence items are immutable: a mistaken attachment is corrected by appending a withdrawal record, never by editing or removing the original entry.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-006",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-evidence-binding",
+                    "text": "How is a submitted evidence item bound to a specific proposal version rather than to the assertion as a whole?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Target proposal version identifier",
+                      "Evidence item identifier and its sequence position within the version",
+                      "Digest of the evidence payload or of its external reference",
+                      "Evidence role code stating which check it is offered to satisfy"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-evidence-provenance",
+                    "text": "Which provenance attributes must accompany an evidence item for it to count toward the required-evidence check?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Submitting agent reference and the party responsible for the evidence content",
+                      "Source system or document reference from which the evidence was obtained",
+                      "Evidence generation time and register observation time, recorded separately",
+                      "Method or verification procedure by which the evidence was produced"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-evidence-withdrawal",
+                    "text": "Can an evidence item be withdrawn, and what record remains if the underlying material must be removed?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Withdrawal record referencing the withdrawn evidence item and its reason code",
+                      "Rule that the original entry and its digest are retained as a tombstone",
+                      "Reference to the retention or privacy model that executes any removal of the payload itself",
+                      "Effect of withdrawal on any decision that already cited the item (none retroactively; a new decision is required)"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-evidence-restricted",
+                    "text": "How is restricted or confidential evidence declared so the decision record stays readable when the evidence itself is not?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Declared access scope or classification code on the evidence item",
+                      "Which fields remain visible when the payload is withheld (identifier, digest, role, provenance summary)",
+                      "Reference to the authorization model that decides who may read the payload",
+                      "Outcome code when a reader requests a withheld payload"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-evidence-correction",
+                    "text": "Which command corrects an evidence item that was attached to the wrong proposal version?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Withdrawal record on the incorrect binding",
+                      "New evidence submission against the correct proposal version",
+                      "Idempotency key and concurrency validator required for both commands",
+                      "Link recording that the second submission compensates the first"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-evidence-item-id",
+                    "name": "Evidence item identifier",
+                    "description": "Identifier of one immutable evidence attachment.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-evidence-role",
+                    "name": "Evidence role code",
+                    "description": "Which validation check or review requirement the evidence item is offered to satisfy.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-evidence-digest",
+                    "name": "Evidence payload digest",
+                    "description": "Digest over the evidence payload or over the canonical form of its external reference.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-evidence-classification",
+                    "name": "Evidence access classification",
+                    "description": "Declared classification or access scope governing visibility of the evidence payload.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-evidence-observation-time",
+                    "name": "Evidence observation time",
+                    "description": "Instant at which the register durably recorded the evidence item, with seconds and explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-evidence-attachment",
+                    "name": "Evidence Attachment Record",
+                    "description": "Immutable record binding one evidence item to one proposal version, carrying the evidence role, payload digest or external reference, provenance attributes, declared classification, submitting agent and both generation and observation times. Withdrawals are appended as separate records in the same series.",
+                    "media_or_form": [
+                      "structured evidence record",
+                      "external document or dataset reference with digest"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned evidence identifier; sequenced per proposal version. Where the evidence originates in a master system, that system's identifier is recorded as the authoritative source reference alongside the register identifier.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "als-cmd-layer-decision-record",
+            "name": "Immutable Decision Record",
+            "description": "How approval and rejection are recorded as immutable decision assertions bound to the exact proposal version and validation report they relied on, referencing but never evaluating the deciding authority.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-005",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "als-cmd-find-decision-assertion",
+                "name": "Approve and reject decision assertions",
+                "description": "An approve or reject command appends a decision assertion naming the decided proposal version, the validation report relied on, the deciding authority reference, the decision outcome and reason code, and both decision event time and register observation time. Decision assertions are immutable; a reversal is expressed by appending a later decision or a retraction, never by editing the earlier record. The register records that a decision was made by a named authority; it does not determine whether that authority was competent to make it.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-010",
+                  "SRC-005",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-decision-content",
+                    "text": "What does an approve or reject decision assertion record, and what does it deliberately not record?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Decision outcome code and governed reason code",
+                      "Decided proposal version identifier and validation report identifier",
+                      "Deciding authority reference and decision event time",
+                      "Explicit exclusion: no authorization evaluation result and no enforcement instruction"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-decision-authority-reference",
+                    "text": "How is the deciding authority referenced without this model determining whether that authority was competent to decide?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Authority reference resolvable in the referenced authority or role model",
+                      "Delegation or mandate reference presented with the decision",
+                      "Rule that presence of a reference is validated but competence is not evaluated here",
+                      "Outcome code when the authority reference is absent or unresolvable in form"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-decision-immutability",
+                    "text": "Why can a recorded decision never be edited, and how is a reversal expressed instead?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Append-only rule and the digest chain that makes edits detectable",
+                      "Reversal expressed as a later decision assertion or a retraction record",
+                      "Link type relating the reversing record to the reversed one",
+                      "Effect on the assertion's current state pointer"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-decision-input-binding",
+                    "text": "How is a decision bound to the exact proposal version and validation report it relied on?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Proposal version identifier and its payload digest",
+                      "Validation report identifier, its conformance flag and its digest",
+                      "Check catalogue version in force at the time of validation",
+                      "Rule that a decision citing a superseded validation report is rejected"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-decision-emergency-basis",
+                    "text": "How is a decision taken under delegated or emergency authority distinguished from an ordinary decision?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Decision basis code (ordinary, delegated, emergency)",
+                      "Mandate or break-glass reference supporting the basis",
+                      "Required post-hoc review marker and its due condition",
+                      "Whether advisory check warnings were overridden and on what recorded ground"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-decision-outcome",
+                    "name": "Decision outcome code",
+                    "description": "Approved, rejected or returned for revision.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-decision-reason",
+                    "name": "Decision reason code",
+                    "description": "Governed reason accompanying the decision outcome.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-deciding-authority-ref",
+                    "name": "Deciding authority reference",
+                    "description": "Reference to the authority recorded as having taken the decision.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-relied-report-ref",
+                    "name": "Relied-upon validation report reference",
+                    "description": "Reference to the validation report the decision cites as its basis, with its digest.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-decision-basis",
+                    "name": "Decision basis code",
+                    "description": "Whether the decision was ordinary, delegated or taken under emergency mandate.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-decision-event-time",
+                    "name": "Decision event time",
+                    "description": "Instant at which the authority states the decision was taken, recorded separately from the register observation time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-decision-assertion",
+                    "name": "Alias Decision Assertion Record",
+                    "description": "Immutable record of one approve or reject decision, binding decision outcome and reason to the decided proposal version, the relied-upon validation report and their digests, the deciding authority reference and decision basis, and both decision event time and register observation time.",
+                    "media_or_form": [
+                      "structured decision record",
+                      "provenance graph projection with qualified attribution",
+                      "optionally secured record carrying a cryptographic proof"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned decision identifier; sequenced per assertion. Where the deciding authority's own case-management system is the master, its case or decision identifier is recorded as the authoritative source identifier alongside the register identifier.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "als-cmd-layer-state-transition",
+            "name": "Activation, Supersession, Retraction and Quarantine",
+            "description": "The commands that change which assertion is in force: activation with an effective interval, supersession of a conflicting or outdated assertion, retraction of one previously in force, emergency quarantine marking, and the compensating records used after a partial failure.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-010",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "als-cmd-find-activate-supersede",
+                "name": "Activation and supersession with effective intervals",
+                "description": "Activation makes an approved assertion version the one in force from a stated effective start, optionally until a stated end. Supersession appends a record relating a new version to the one it replaces and closes the predecessor's effective interval; the predecessor is retained and remains readable. Where two active assertions over the same endpoint pair would conflict, the register records the conflict and the supersession that resolves it, and does not attempt to decide the truth of either.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-006",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-activate-event-record",
+                    "text": "Which event marks an assertion as active, and what is recorded at that moment?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Activation transition record identifier and its sequence position",
+                      "Approved proposal version being activated and the decision assertion authorising it",
+                      "Effective start instant and optional effective end, each with seconds and explicit offset",
+                      "Register observation time of the activation, recorded separately from the effective start"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-activate-interval-overlap",
+                    "text": "How is the effective interval of an activation set, and what happens when it overlaps an existing active interval for the same endpoint pair?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective start and end values and their ordering constraint",
+                      "Overlap detection result against existing active intervals",
+                      "Whether overlap is permitted for compatible relation properties and forbidden for conflicting ones",
+                      "Outcome code and required supersession when overlap is not permitted"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-supersede-conflict-rule",
+                    "text": "When two active assertions conflict, which one is superseded and by what recorded rule?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Conflict type (incompatible relation properties, violated distinctness constraint, contradictory canonical designation)",
+                      "Recorded precedence rule applied, including authority precedence where declared",
+                      "Superseding and superseded version identifiers",
+                      "Reference to the decision assertion authorising the supersession"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-supersede-linkage",
+                    "text": "How does supersession relate a new assertion version to the one it replaces without removing the replaced record?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Revision or derivation link from the new version to its predecessor",
+                      "Terminal state code applied to the superseded version",
+                      "Closed effective interval on the superseded version",
+                      "Rule that the superseded record remains readable and citable"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-activate-downstream-ownership",
+                    "text": "Which downstream systems learn of an activation, and who owns delivering that signal?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Correlation identifier emitted with the transition record",
+                      "Reference to the notification or eventing model that owns delivery",
+                      "Explicit statement that this model performs no delivery, retry or acknowledgement tracking",
+                      "Reference to the resolver model that owns any redirect or merge behaviour"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-lifecycle-state",
+                    "name": "Assertion lifecycle state",
+                    "description": "Current state of an assertion version: proposed, under review, approved, rejected, active, superseded, retracted or quarantined.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-effective-start",
+                    "name": "Effective start",
+                    "description": "Instant from which the assertion is in force, with seconds and explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-effective-end",
+                    "name": "Effective end",
+                    "description": "Instant after which the assertion is no longer in force, with seconds and explicit offset; absent while open-ended.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-supersedes-ref",
+                    "name": "Supersedes reference",
+                    "description": "Reference from a superseding assertion version to the version it replaces.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-conflict-type",
+                    "name": "Conflict type code",
+                    "description": "Governed code naming the kind of conflict between two active assertions.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-correlation-id",
+                    "name": "Transition correlation identifier",
+                    "description": "Identifier emitted with a transition record for downstream correlation by other models.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-transition-record",
+                    "name": "Alias Assertion State Transition Record",
+                    "description": "Immutable record of one lifecycle transition (activation or supersession), naming the prior and resulting states, the authorising decision assertion, the effective interval applied, any superseded version and conflict type, the acting agent, and both transition event time and register observation time.",
+                    "media_or_form": [
+                      "structured transition record",
+                      "provenance graph projection using generation and revision relations",
+                      "state-history table projection"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned transition identifier; sequenced per assertion so the state history is a gap-tolerant monotonic series. Sequence positions are never reused.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "als-cmd-find-retract-quarantine",
+                "name": "Retraction, emergency quarantine and compensating records",
+                "description": "Retraction records that an assertion previously in force is withdrawn by its asserting or deciding authority, closing its effective interval and marking it invalidated without removing it. Emergency quarantine marks an assertion as not to be relied upon pending review, and may be applied before or after a decision. When a command applies only partially, the register derives a compensating record set that restores a consistent state by appending counter-records; it never rewrites or deletes what was already appended.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-005",
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "als-cmd-q-retract-meaning",
+                    "text": "What exactly does a retract command assert about an assertion that was previously in force?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Retraction reason code (erroneous, no longer asserted, evidence withdrawn, authority withdrawn)",
+                      "Whether the assertion is withdrawn from a stated instant or treated as never valid",
+                      "Invalidating agent and invalidation time",
+                      "Rule that the retracted record and its history remain readable"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-quarantine-conditions",
+                    "text": "Under what emergency conditions may an assertion be quarantined before a decision, and who may lift the hold?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Quarantine trigger code and the recorded justification",
+                      "Requesting party reference and quarantine basis (ordinary or break-glass)",
+                      "Required review deadline or expiry of the hold",
+                      "Reference to the party permitted to append a lift record and the required decision basis"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-partial-failure-compensation",
+                    "text": "When a command applies only partially, which compensating records are appended to restore a consistent state?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Set of records already durably appended by the failed command",
+                      "Derived counter-record set with a link to the records each compensates",
+                      "Idempotency key and concurrency validator required for the compensating command",
+                      "Outcome code recorded when compensation itself cannot complete and manual custodial action is required"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-retract-retention",
+                    "text": "What is retained after retraction or quarantine, and which model executes any physical erasure?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Tombstone content retained: assertion identifier, version chain, terminal state, reason code and digests",
+                      "Retention class and any legal-hold reference",
+                      "Reference to the retention model that owns schedule and erasure execution",
+                      "Reference to the privacy model where personal-data erasure duties apply"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-q-retract-visibility",
+                    "text": "How is a retracted or quarantined assertion represented to readers so it is not silently missing from results?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Terminal state code exposed on read",
+                      "Default read filter behaviour and the parameter that includes terminal states",
+                      "Declared access scope governing who may read the reason code",
+                      "Reference to the authorization model that decides read access"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "als-cmd-de-retraction-reason",
+                    "name": "Retraction reason code",
+                    "description": "Governed reason for withdrawing an assertion previously in force.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-invalidation-time",
+                    "name": "Invalidation time",
+                    "description": "Instant at which the assertion ceased to be asserted, with seconds and explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-quarantine-basis",
+                    "name": "Quarantine basis code",
+                    "description": "Whether the hold was applied under ordinary review or under an emergency break-glass mandate.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-compensates-ref",
+                    "name": "Compensates reference",
+                    "description": "Reference from a compensating record to the record whose effect it neutralises.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-tombstone-marker",
+                    "name": "Tombstone marker",
+                    "description": "Marker preserving the identifier, version chain and terminal state of a record whose payload may later be removed by the retention model.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-de-retention-class",
+                    "name": "Retention class reference",
+                    "description": "Reference to the retention class assigned to the record series by the adopting Dimension.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "als-cmd-art-retraction-record",
+                    "name": "Alias Retraction and Quarantine Record",
+                    "description": "Immutable record of a retraction or quarantine marking: terminal state applied, reason and basis codes, requesting and invalidating agent references, invalidation time and register observation time, any review deadline, and the tombstone marker preserving identifier and version chain.",
+                    "media_or_form": [
+                      "structured terminal-state record",
+                      "provenance graph projection using invalidation relations"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned record identifier; sequenced per assertion within the same terminal-state series so retraction, quarantine and lift records are ordered without renumbering.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "als-cmd-art-compensation-plan",
+                    "name": "Compensating Record Plan",
+                    "description": "Derived, recorded plan listing each record already appended by a partially applied command and the counter-record proposed to neutralise it, with the originating command identifier, the failure outcome code and the concurrency validators required to apply each counter-record. It is a calculation and a record, not an execution.",
+                    "media_or_form": [
+                      "structured plan record",
+                      "problem-details projection describing the partial failure"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by a register-assigned plan identifier; sequenced per originating command identifier so repeated compensation attempts remain distinguishable.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "als-cmd-fn-canonicalize-command",
+      "name": "Canonicalise command and compute fingerprint",
+      "description": "Produce the canonical serialisation of a mutation command's semantically significant content under the declared canonicalisation profile and compute its digest, so that a replayed idempotency key can be compared against the original payload.",
+      "inputs": [
+        "Mutation command payload",
+        "Canonicalisation profile identifier",
+        "Digest algorithm identifier"
+      ],
+      "outputs": [
+        "Canonical serialisation",
+        "Canonical request fingerprint digest"
+      ],
+      "preconditions": [
+        "The declared canonicalisation profile is registered and its version is resolvable",
+        "All time values in the payload carry seconds and an explicit offset"
+      ],
+      "effects": [
+        "Calculation only; no record is appended and no external system is contacted",
+        "The fingerprint is a comparison value and is never used as an identifier"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-classify-command-replay",
+      "name": "Classify command against the receipt series",
+      "description": "Look up the composite (submitting client reference, idempotency key) in the receipt series and classify the incoming command as first occurrence, in-flight duplicate, completed replay or key reuse with a differing payload.",
+      "inputs": [
+        "Submitting client reference",
+        "Idempotency key",
+        "Canonical request fingerprint digest",
+        "Current time for expiry evaluation"
+      ],
+      "outputs": [
+        "Replay classification code",
+        "Reference to the previously recorded outcome when the classification is a completed replay",
+        "Outcome code when the classification is a conflict"
+      ],
+      "preconditions": [
+        "The command carries a well-formed idempotency key",
+        "The receipt series for the composite key is readable"
+      ],
+      "effects": [
+        "Calculation only; the command is not applied and no assertion record is appended",
+        "Does not deliver any response and does not write an audit-log entry"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-evaluate-version-precondition",
+      "name": "Evaluate optimistic-concurrency precondition",
+      "description": "Compare the version validator supplied by the command with the register's current version token for the target assertion at the declared concurrency scope, and report whether the precondition holds.",
+      "inputs": [
+        "Target assertion reference",
+        "Observed version token",
+        "Precondition mode",
+        "Declared concurrency scope"
+      ],
+      "outputs": [
+        "Precondition result (holds or fails)",
+        "Current version token at evaluation time",
+        "Conflict outcome code on failure"
+      ],
+      "preconditions": [
+        "The target assertion exists, or the precondition mode expects absence",
+        "Replay classification has already been determined so a replay is not misreported as a stale version"
+      ],
+      "effects": [
+        "Validation only; no state is changed",
+        "Failure prevents any subsequent record from being appended by the same command"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-run-validation-check-set",
+      "name": "Run the declared validation check set",
+      "description": "Evaluate every applicable check from the in-force catalogue version against the command payload and the current register state, covering endpoint reference and version, relation-property contract, type/scheme/context compatibility, required evidence and review, contradictions, not-same constraints, effective interval and declared access scope.",
+      "inputs": [
+        "Command payload",
+        "Check catalogue version identifier",
+        "Current state of the target assertion and of active assertions over the same endpoint pair",
+        "Recorded not-same constraints and declared access scopes"
+      ],
+      "outputs": [
+        "Conformance flag",
+        "Ordered validation result entries with element pointers, offending values, source check identifiers and severities"
+      ],
+      "preconditions": [
+        "The check catalogue version is resolvable and in force",
+        "Endpoint references are syntactically well formed and carry version tokens where required"
+      ],
+      "effects": [
+        "Validation only; produces results without appending any assertion record",
+        "Does not dereference or resolve endpoints, does not compute entailments, and does not decide whether the actor is authorised"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-007",
+        "SRC-009",
+        "SRC-011",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-compose-problem-report",
+      "name": "Compose machine-readable failure report",
+      "description": "Project a failed validation run, a precondition failure or a replay conflict into a machine-readable failure document with a stable problem type, a summary title, an occurrence-specific detail and an extension array carrying one entry per failed check with its element pointer.",
+      "inputs": [
+        "Validation result entries or conflict outcome code",
+        "Problem type registry",
+        "Occurrence reference"
+      ],
+      "outputs": [
+        "Failure report document",
+        "Primary reported problem type",
+        "Retryability classification"
+      ],
+      "preconditions": [
+        "Every reported problem type is registered and stable",
+        "The occurrence reference identifies the specific command attempt"
+      ],
+      "effects": [
+        "Calculation only; the document is returned to the caller and, where the failure is durable, recorded in the validation report series",
+        "Unrecognised extension members are ignored by consumers rather than treated as errors"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-008",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-record-proposal-version",
+      "name": "Record a proposal version",
+      "description": "Append a new immutable proposal version to an assertion's version chain, carrying the endpoint references, relation-property binding, direction and canonical designation, proposed effective interval, declared confidence, asserting authority reference, declared access scope and revision link to any predecessor.",
+      "inputs": [
+        "Validated propose command payload",
+        "Assertion identifier or a request to mint one",
+        "Proposing agent reference",
+        "Command event time and register observation time"
+      ],
+      "outputs": [
+        "Proposal version identifier and sequence position",
+        "Updated current version token",
+        "Command receipt entry"
+      ],
+      "preconditions": [
+        "Replay classification is first occurrence",
+        "The concurrency precondition holds",
+        "The validation run reported no blocking violation"
+      ],
+      "effects": [
+        "Appends one immutable record; no earlier record is modified",
+        "Does not resolve endpoints, does not merge records and does not notify any downstream system"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-005",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-record-evidence-attachment",
+      "name": "Record an evidence attachment",
+      "description": "Append an immutable evidence item bound to a named proposal version, with its role, payload digest or external reference, provenance attributes, declared classification and both generation and observation times.",
+      "inputs": [
+        "Validated submit-evidence command payload",
+        "Target proposal version identifier",
+        "Submitting agent reference"
+      ],
+      "outputs": [
+        "Evidence item identifier and sequence position",
+        "Updated required-evidence sufficiency indicator for the target version"
+      ],
+      "preconditions": [
+        "The target proposal version exists and is not in a terminal state",
+        "The concurrency precondition holds for the target version",
+        "The evidence payload digest is present"
+      ],
+      "effects": [
+        "Appends one immutable record; withdrawal is a separate appended record and never an edit",
+        "Does not evaluate the truth of the evidence and does not store or transmit any withheld payload"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-record-decision-assertion",
+      "name": "Record an approve or reject decision assertion",
+      "description": "Append an immutable decision assertion binding the decision outcome and reason to the decided proposal version, the relied-upon validation report and their digests, the deciding authority reference, the decision basis and both decision event time and register observation time.",
+      "inputs": [
+        "Validated approve or reject command payload",
+        "Decided proposal version identifier and digest",
+        "Relied-upon validation report identifier and digest",
+        "Deciding authority reference and decision basis"
+      ],
+      "outputs": [
+        "Decision assertion identifier and sequence position",
+        "Updated lifecycle state of the decided version",
+        "Command receipt entry"
+      ],
+      "preconditions": [
+        "The cited validation report exists and was computed over the cited proposal version",
+        "No prior decision assertion for the same proposal version exists, unless the command is an explicit later decision",
+        "The concurrency precondition holds"
+      ],
+      "effects": [
+        "Appends one immutable record; a reversal is a later appended record, never an edit",
+        "Records that a named authority decided; performs no authorization evaluation, no enforcement and no audit-log write"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-010",
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-record-state-transition",
+      "name": "Record a lifecycle state transition",
+      "description": "Append an immutable transition record for activation, supersession, retraction or quarantine marking, naming prior and resulting states, the authorising decision assertion, the effective interval applied, any superseded version and conflict type, and the acting agent.",
+      "inputs": [
+        "Validated transition command payload",
+        "Authorising decision assertion reference where the transition requires one",
+        "Effective interval values",
+        "Acting agent reference"
+      ],
+      "outputs": [
+        "Transition record identifier and sequence position",
+        "Updated lifecycle state and current version token",
+        "Transition correlation identifier"
+      ],
+      "preconditions": [
+        "The requested transition is legal from the assertion's current state",
+        "The concurrency precondition holds",
+        "Effective start precedes any effective end and overlap rules are satisfied or an accompanying supersession is present"
+      ],
+      "effects": [
+        "Appends one immutable record and updates only the derived current-state pointer",
+        "Emits a correlation identifier for other models to consume; performs no notification delivery, no redirect execution, no endpoint merge and no physical deletion"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "als-cmd-fn-derive-compensation-plan",
+      "name": "Derive a compensating record plan",
+      "description": "For a command that applied only partially, enumerate the records it already appended and compute the counter-record set that would restore a consistent state, together with the concurrency validators each counter-record requires.",
+      "inputs": [
+        "Originating command identifier and its receipt",
+        "Records appended by that command",
+        "Current state and version tokens of the affected assertions"
+      ],
+      "outputs": [
+        "Compensating record plan with one proposed counter-record per appended record",
+        "Residual inconsistency report where no automatic compensation exists"
+      ],
+      "preconditions": [
+        "The originating command receipt exists and is in a failed or partially applied state",
+        "The affected assertions are readable at their current versions"
+      ],
+      "effects": [
+        "Calculation and recording only; the plan is appended as a record and is not executed by this function",
+        "Applying any counter-record requires a separate command with its own idempotency key and concurrency precondition"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-006"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-011 (registered parent model of WM-XCT-036)",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-036 is registered as a child of WM-XCT-011 and inherits the subject and identifier definitions it governs. This model contributes only equivalence assertions over those identifiers and the mutation-command surface that changes them; identifier minting, subject typing and register-wide governance remain with the parent.",
+      "required": true,
+      "source_refs": [
+        "SRC-012",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Host entity, catalogue or registry model that carries the aliased endpoints",
+      "relation": "MIX-IN",
+      "purpose": "Attach the alias assertion and its command surface to a host subject record without altering the host's own identity or lifecycle, in the same way an also-known-as set attaches to a subject document and a mapping property attaches to a concept.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension authorization and policy-decision model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the declared access scope, the actor reference and the deciding authority reference on the command envelope and the decision record. Evaluating whether an actor may issue a command, and enforcing that evaluation, belong entirely to the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-010",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension audit-trail model",
+      "relation": "REFERENCE",
+      "purpose": "Emit the correlation identifier, command identifier, idempotency key, fingerprint digest, actor reference and outcome code for every accepted, rejected and replayed command. Audit-record construction, tamper-evidence, retention and query are owned by the target; this model neither writes nor reads audit records.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "W3C SKOS mapping properties (skos:exactMatch, skos:closeMatch, skos:relatedMatch, skos:broadMatch, skos:narrowMatch)",
+      "relation": "ALIGN",
+      "purpose": "Bind the declared relation property of an alias assertion to a governed external vocabulary term, and take the vocabulary's disjointness statements as the basis for the contradiction check. SKOS defines no mutation commands, so nothing of this model's command lifecycle is derived from it and no conformance is claimed.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "OWL 2 individual equality and difference (owl:sameAs, owl:differentFrom)",
+      "relation": "ALIGN",
+      "purpose": "Bind strong equivalence and explicit distinctness assertions to a governed logical vocabulary and take the absence of a unique name assumption as the reason distinctness must be asserted rather than inferred. Entailment and consistency checking are performed by an external reasoner, not here.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Interface projection model for the alias register (HTTP or MCP binding)",
+      "relation": "REFERENCE",
+      "purpose": "Bind the model-level idempotency key and concurrency validator to concrete transport constructs and map outcome codes to transport status codes and failure documents. Transport execution, connection handling and retry scheduling are owned by the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension retention, disposition and privacy model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the retention-class reference, legal-hold reference and disposition-decision reference on terminal-state and evidence records. Retention scheduling, erasure execution and personal-data rectification duties are owned by the target; this model only appends tombstones and disposition references.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Status, revocation or resolution service for aliased endpoints",
+      "relation": "REFERENCE",
+      "purpose": "Expose the assertion's current lifecycle state and effective interval for consumption by resolvers and status checkers. Status checking, resolution, canonical redirect execution and endpoint merge are defined and performed by the target, consistent with credential status semantics being defined outside the data model that carries the status reference.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-011"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension names one Alias Register Custodian who is the recorded change controller for the alias register, its command vocabulary and its check catalogue, and publishes how that role is reassigned when the holder is unavailable.",
+        "The Dimension publishes the registration procedure for alias assertions: what a propose command must contain, which checks are blocking, what evidence and review each relation property requires, and which authority may decide.",
+        "The Dimension publishes the idempotency-key retention window, the canonicalisation profile and digest algorithm used for fingerprints, and the concurrency scope at which version tokens are defined.",
+        "The Dimension declares the confidence scale in use and the precedence rule applied when two authorities assert conflicting equivalences, since neither is fixed by this model.",
+        "The Dimension binds each referenced model — authority, audit, retention, notification and resolution — to a concrete owner package before any command surface is exposed."
+      ],
+      "namespace_guidance": "Command type codes, check identifiers, outcome codes, reason codes and problem type URIs are minted in a governed namespace owned by the adopting Dimension and are never reused after retirement. Relation properties are referenced by their external vocabulary IRI and are not re-minted locally. Assertion, proposal-version, evidence, decision and transition identifiers are minted in the register's own namespace; endpoint references retain the namespace of their owning master system. Problem type URIs are stable across versions because consumers key behaviour on them.",
+      "registry_links": [
+        "The Vercy registry record vr.wm-xct-036 is the authoritative registration entry for this model, its status and its review state.",
+        "The parent registration WM-XCT-011 governs the identifier and subject definitions this model asserts equivalence over.",
+        "The external relation-property vocabulary registries supplying mapping and equality terms are referenced by IRI and versioned independently of this model.",
+        "The adopting Dimension's problem type registry and check catalogue registry are named in AGENTS.md and are versioned alongside the command vocabulary."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Serialise only semantically significant command content: command type, target assertion reference, endpoint references and their version tokens, relation-property binding, direction and canonical designation, effective interval, declared confidence, declared access scope and evidence references. Exclude transport headers, trace identifiers, retry counters and the register observation time.",
+        "Order object members lexicographically by key and order unordered sets of endpoint references by their canonical reference string, so that a symmetric assertion produces one fingerprint regardless of submission order.",
+        "Normalise all time values to RFC 3339 with seconds and an explicit offset before digesting; preserve the submitted offset rather than converting to UTC, and use -00:00 only where the local offset is genuinely unknown.",
+        "Normalise identifier references to their governed canonical form (case, percent-encoding and trailing-separator rules) without dereferencing them.",
+        "Record the canonicalisation profile identifier and digest algorithm identifier alongside every fingerprint so a stored fingerprint remains interpretable after the profile changes."
+      ],
+      "patch_rules": [
+        "The record series are append-only. There is no in-place patch of a proposal version, evidence item, validation report, decision assertion or transition record.",
+        "A change to an assertion is expressed as a new proposal version linked as a revision of its predecessor; a change to a decision is expressed as a later decision assertion or a retraction record; a change to evidence is expressed as a withdrawal record plus a new attachment.",
+        "Every command that changes state must carry an idempotency key and a concurrency validator, and must be safe to replay: a replay returns the recorded outcome and appends nothing further.",
+        "Partial application is repaired by appending counter-records derived from a recorded compensation plan, each applied by its own command with its own key and validator; records are never rewritten or removed to repair state.",
+        "Only the register-maintained derived pointers — current version token, current lifecycle state, effective-interval index — change without a new appended record, and they are always recomputable from the record series."
+      ],
+      "compatibility_rules": [
+        "Adding a new advisory check, a new optional command field or a new reason code is a minor change; existing commands remain valid.",
+        "Raising a check from advisory to blocking, removing or renaming a check identifier, changing a relation-property binding, narrowing an accepted value set or shortening the idempotency-key retention window is a breaking change requiring a new catalogue major version and a published transition period.",
+        "Problem type URIs, outcome codes and reason codes are stable identifiers; a change of meaning requires a new code rather than redefinition of an existing one.",
+        "Consumers must ignore unrecognised extension members in failure documents and unrecognised advisory result entries, so that additive changes do not break existing integrations.",
+        "Every record states the check catalogue version and command vocabulary version under which it was produced, so historic records remain interpretable after a breaking change."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the identifier assigned by the system of record that governs the artifact — the registration authority's item identifier for a register entry, or the deciding authority's case or decision identifier for a decision assertion. Where such an identifier exists it is the identity of record.",
+        "Governed global identifier or IRI: a resolvable identifier in a governed namespace, such as the register's own assertion IRI or an external identifier IRI, used when no master-system identifier exists.",
+        "UUID or ULID minted by the adopting Dimension, recorded together with the minting agent reference and the minting instant, used only when neither of the above is available.",
+        "Never an identifier: a date or timestamp, a sequence position, an endpoint pair, an idempotency key or a canonical request fingerprint. The idempotency key is a scoped uniqueness constraint within its retention window and the fingerprint is a comparison value only."
+      ],
+      "timestamp_rule": "All time values are RFC 3339 date-time strings that include seconds and an explicit offset of Z or +/-hh:mm; -00:00 is used only where the instant is known in UTC but the local offset is genuinely unknown. Command event time (the instant the submitting agent asserts the command was issued) is recorded separately from register observation or ingestion time (the instant the register durably recorded it), and both are recorded separately from the effective interval start and end that state when the assertion is in force. Decision event time and invalidation time are likewise distinct from observation time. These values must never be collapsed into a single field, and any ordering or expiry rule states which of them it uses.",
+      "serial_naming_rule": "Serial artifacts are named as `<assertion identifier>/<artifact kind>/<zero-padded monotonic sequence>`, with command receipts sequenced per submitting client and all other series sequenced per assertion and per kind. Sequence positions are assigned at durable acceptance, are never reused and are never renumbered; gaps arising from rejected or abandoned commands are permitted and must be left in place, since closing a gap would falsify the version chain.",
+      "integrity_rule": "Every serial artifact carries a content digest over its canonical serialisation together with the digest of its predecessor in the same series, so any later alteration of an earlier record is detectable within the register itself. Validation reports additionally bind the digest of the exact command payload and the check catalogue version they evaluated, and decision assertions additionally bind the digests of the proposal version and validation report they relied on. Where a record is cryptographically secured, the securing mechanism is named on the record; the integrity guarantee here is internal to the record series and does not depend on, and does not substitute for, the referenced audit-trail model."
+    },
+    "policies": [
+      "Immutability: prior assertions, evidence items, validation reports, decision assertions and transition records are never edited or deleted. Every change appends a new version, a counter-record or a later decision, and the superseded record remains readable and citable.",
+      "Safe retry: every mutation command carries an idempotency key and an optimistic-concurrency validator. A replay returns the recorded outcome and applies nothing further; a stale validator is rejected and must be re-derived from a fresh read. These two mechanisms are evaluated in that order and their failures are reported with distinct outcome codes.",
+      "No inference and no resolution: the register records asserted equivalences and validation outcomes only. It never computes candidate matches, never materialises transitive or substitution closure, never dereferences or merges endpoints, and never issues a redirect.",
+      "Reference, do not assume, authority: the register validates that an authority reference and a declared access scope are present, registered and no broader than the target's recorded scope. Whether the actor may act is decided by the referenced authorization model, and enforcement of that decision happens there.",
+      "Validate before append: no assertion record is appended while any blocking check fails. Advisory failures are recorded on the validation report and may be overridden only by a decision assertion that names the overridden checks and its decision basis.",
+      "Retain rather than remove: terminal states are expressed by marking and tombstoning, following registry practice that entries are marked deprecated or obsolete and retained for historic purposes; physical removal is requested from the retention model and never performed here."
+    ],
+    "crud": {
+      "read": [
+        "Reads are safe and side-effect free: reading an assertion, a version chain, a validation report or a decision never changes state and never advances an idempotency receipt.",
+        "A read returns the current lifecycle state, the effective interval and the current version token, so a caller can immediately derive the concurrency validator for a following mutation.",
+        "Superseded, retracted and quarantined records remain readable by identifier and version; default result sets exclude terminal states, and an explicit parameter includes them so nothing is silently missing.",
+        "Reads of records with a restricted declared classification return the record's identifier, state and digests while withholding the classified payload, and the authorization model decides who may see the payload."
+      ],
+      "create": [
+        "Every create command carries an idempotency key, a canonical request fingerprint and, where a target already exists, a concurrency validator; a create without a key is rejected before any evaluation.",
+        "Creation proceeds only after replay classification returns first occurrence, the precondition holds and the validation run reports no blocking violation.",
+        "A successful create appends exactly one immutable record plus its command receipt, and advances only derived pointers.",
+        "A concurrent duplicate arriving while the original is still processing is reported as a conflict rather than being processed twice; a completed replay returns the recorded outcome unchanged."
+      ],
+      "update": [
+        "There is no in-place update of any appended record. An update is an append of a new proposal version, a later decision assertion, a transition record or a withdrawal record.",
+        "Every update command must supply the version validator it observed; a mismatch is a precondition failure and nothing is appended.",
+        "Only register-maintained derived pointers change without an appended record, and every one of them is recomputable from the record series alone.",
+        "Corrections to evidence or to a mis-targeted command are recorded as compensating appends that link explicitly to the records they neutralise."
+      ],
+      "delete": [
+        "This model performs no physical deletion. Withdrawal of an assertion is a retract command that appends a terminal-state record, closes the effective interval and preserves the assertion identifier, its full version chain, the reason code and all record digests as a tombstone.",
+        "Quarantine is a reversible marking that suppresses reliance without removing anything; lifting a quarantine is itself an appended record.",
+        "Superseded, rejected and retracted records are retained for historic reference, consistent with registry practice that entries are marked rather than removed, and remain resolvable by identifier.",
+        "Retention duration, disposition scheduling, legal hold and any physical erasure or crypto-shredding of record payloads are executed by the adopting Dimension's retention and disposition model; where personal data is involved, erasure and rectification duties are executed by the referenced privacy model. This model records only the retention-class reference, the disposition-decision reference and the resulting tombstone, and never initiates or performs the erasure itself.",
+        "Deletion of the register as a whole, or closure of it to new registrations, is a governance act of the Alias Register Custodian recorded as a register-level status change; existing records remain readable after closure."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Alias Register Custodian",
+        "responsibilities": [
+          "Act as the recorded change controller for the alias register, its command vocabulary, its check catalogue and its problem type registry.",
+          "Publish and version the registration procedure, the idempotency-key retention window and the canonicalisation profile.",
+          "Approve breaking changes to the check catalogue and manage the published transition period.",
+          "Record register-level status changes such as closure to new registrations."
+        ]
+      },
+      {
+        "name": "Proposing Agent",
+        "responsibilities": [
+          "Submit propose, submit-evidence and correction commands with a well-formed idempotency key and a freshly derived concurrency validator.",
+          "Supply endpoint references with version tokens, the declared relation property, the proposed effective interval, the declared confidence and the asserting authority reference.",
+          "Re-read and re-derive after a precondition failure rather than retrying with a stale validator.",
+          "Retry safely using the same key after a transient failure and never reuse a key with a changed payload."
+        ]
+      },
+      {
+        "name": "Reviewing Authority",
+        "responsibilities": [
+          "Take approve and reject decisions and have them recorded against the exact proposal version and validation report relied on.",
+          "State the decision basis and, where advisory checks are overridden, name the overridden checks and the ground for the override.",
+          "Express reversals as later decisions or retractions rather than requesting edits to earlier records.",
+          "Authorise activations and supersessions and record the precedence rule applied when active assertions conflict."
+        ]
+      },
+      {
+        "name": "Evidence Steward",
+        "responsibilities": [
+          "Ensure evidence items carry their role, digest, source reference, generation time and responsible party before submission.",
+          "Declare the classification of restricted evidence so decisions remain readable when payloads are withheld.",
+          "Append withdrawal records for evidence attached in error and coordinate any payload removal with the retention and privacy models.",
+          "Confirm that the required-evidence check is satisfied by material bound to the version actually under decision."
+        ]
+      },
+      {
+        "name": "Platform Integrator",
+        "responsibilities": [
+          "Bind model-level idempotency keys and concurrency validators to the concrete interface projection and map outcome codes to transport statuses and failure documents.",
+          "Implement the receipt store and its published expiry policy, and ensure composite lookup keys include the client identity.",
+          "Forward correlation records to the referenced audit model and lifecycle signals to the referenced notification and resolution models without adding local audit or delivery semantics.",
+          "Recompute derived pointers deterministically from the record series after any restore or replication event."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default at every scope. A command is considered only if its envelope declares an access scope that is registered and is no broader than the scope recorded on the target assertion; validation reports the presence, registration and breadth of that declaration. The access decision itself — whether the named actor may issue this command against this target — is made by the referenced authorization model, and this model records the decision reference without re-deriving or enforcing it.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Emergency quarantine may be requested under a break-glass mandate before a decision exists; the mandate reference and quarantine basis are recorded, and the hold carries a review deadline after which it must be confirmed or lifted by an appended record.",
+        "Evidence attachments may carry a restricted classification: the decision assertion, its reason code and the evidence identifier and digest stay readable at the finding scope while the payload is withheld at the artifact scope.",
+        "A proposal may be embargoed so that its existence and state are readable but its endpoint references are withheld until activation, for cases where disclosing a proposed equivalence would itself be sensitive.",
+        "Custodians retain read access to terminal-state and tombstone records regardless of the assertion's declared scope, so that history remains auditable after withdrawal.",
+        "Where an assertion links identifiers of natural persons, the referenced privacy model may narrow the readable scope below the declared scope; the narrower of the two always governs."
+      ],
+      "audit_requirements": [
+        "Every accepted, rejected and replayed command emits a correlation record containing the command identifier, idempotency key, fingerprint digest, submitting agent reference, target assertion and version, outcome code, decision reference where one exists, command event time and register observation time.",
+        "Every break-glass quarantine, every override of an advisory check and every access-scope exception emits a correlation record naming the mandate or override ground.",
+        "Correlation records are handed to the referenced audit-trail model, which owns their storage, ordering guarantees, tamper-evidence, retention and query; this model neither stores nor interprets audit records and its own integrity guarantee does not depend on them.",
+        "The register's internal record digests and predecessor chaining are maintained independently so that internal tampering is detectable even if the external audit trail is unavailable."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Registry ID",
+        "Owner or maintainer"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Name, Type and Registry ID to confirm which model and which register instance is being addressed.",
+        "Read the Specification URL to obtain the model boundary, the command vocabulary, the check catalogue version in force and the identity and timestamp rules before issuing any command.",
+        "Read the Storage type URL to learn how the append-only record series are projected into the concrete store, including how derived pointers are recomputed and how sequence positions are assigned.",
+        "Read the Interface URL to learn how the idempotency key, the concurrency validator and the outcome codes are bound to the concrete transport, and where the problem type registry is published.",
+        "Read the Processes URL last to learn the registration procedure, the evidence and review requirements per relation property, the decision authorities and the compensation and quarantine procedures.",
+        "Resolve the referenced authorization, audit, retention and resolution models named in AGENTS.md before issuing any mutation command, since this model records references into them but performs none of their functions."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This is a defensible, standards-grounded structure for WM-XCT-036 Alias / Same-as Mapping: it defines the equivalence assertion together with its complete append-only mutation-command surface, grounded in HTTP conditional-request and idempotency semantics, problem-details failure reporting, shapes-based validation reporting, provenance revision and invalidation patterns, registry change-control and status-marking practice, and the mapping and equality vocabularies whose disjointness statements make contradiction checking possible. It is not a claim of conformance to any of those standards, and it deliberately owns no matching, inference, resolution, authorization, audit or deletion behaviour.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority runs master-system identifier, then governed IRI, then minted UUID or ULID. Assertion identifiers are stable across versions; proposal, evidence, decision and transition records are separately identified and sequenced. Idempotency keys and fingerprints are explicitly excluded from being identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Propose, validate, submit evidence, approve or reject, activate, supersede, retract and quarantine are defined with states, legal transitions, preconditions and terminal markings; every transition is an appended immutable record."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Endpoint pairing, direction and canonical designation, relation-property binding, supersession links, revision links, compensation links and not-same constraints are modelled. Entailment over those relationships is explicitly external."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Command event time, decision event time, invalidation time, register observation time and effective interval start and end are distinct fields, all RFC 3339 with seconds and explicit offset. Overlap and ordering checks are part of the check set."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Proposing agent, asserting authority, deciding authority, evidence source and invalidating agent are recorded; records carry revision and derivation links and predecessor digests following the provenance revision and invalidation pattern."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Change control sits with the named Alias Register Custodian; endpoint references retain their owning master system's namespace; downstream delivery, resolution, authorization, audit and retention ownership are assigned to referenced models."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "A versioned check catalogue with declared severity and applicability, and a per-run outcome report with focus element, path, value, source check and severity, plus a machine-readable failure projection with one entry per failed check."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny by default; the declared access scope is validated for registration and breadth but never decided here. Exceptions cover break-glass quarantine, restricted evidence, embargoed proposals, custodial history access and privacy narrowing."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "No physical deletion. Retraction appends a terminal-state record and tombstone preserving identifier, version chain, reason and digests; retention class, legal hold and erasure execution are delegated to the retention and privacy models, with only the disposition reference recorded here."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Relation properties bind to external vocabulary IRIs rather than local re-minting; failure reporting uses a stable problem type with an ignorable extension array; validators and idempotency keys have declared transport bindings; the model is projection-independent."
+      },
+      {
+        "dimension": "idempotency and concurrency",
+        "status": "covered",
+        "notes": "Every mutation requires a key and a validator, evaluated in that order, with distinct outcome codes for replay, in-flight duplicate, key reuse with differing payload and stale version. Receipt expiry and post-expiry behaviour are specified."
+      },
+      {
+        "dimension": "failure handling and compensation",
+        "status": "covered",
+        "notes": "Failure classification, retryability signalling, partial-failure detection and a derived compensating-record plan are defined; compensation is appended and applied by separate keyed commands, never executed as a rewrite."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Alias assertions relate identifier endpoints, not locations. Where an aliased subject is itself spatial, that geometry belongs to the host subject model, not to the equivalence assertion or its command surface."
+      },
+      {
+        "dimension": "measurement",
+        "status": "gap",
+        "notes": "Declared confidence is carried as an opaque value on the proposal, but no confidence scale, no comparability rule between scales and no precedence arithmetic for competing authorities is fixed by any primary source consulted. The adopting Dimension must declare its scale; this node is a gap, not canonical structure."
+      }
+    ],
+    "known_omissions": [
+      "No cross-register distributed transaction protocol. Compensation is defined within a single alias register; a command spanning two registers is out of scope and no two-phase commit or saga coordination is specified.",
+      "No canonical confidence scale, no rule for comparing confidence values expressed on different scales, and no arithmetic for combining evidence into a confidence value.",
+      "No bulk or batch command semantics beyond per-command idempotency: batch atomicity, partial batch acceptance and batch-level validators are not specified.",
+      "The securing mechanism for decision assertions is referenced as an option but no signature suite, key management or proof format is selected.",
+      "Machine-readable shapes for the check catalogue are referenced by identifier; the concrete shapes graph and its authoring rules belong to the adopting Dimension.",
+      "Reciprocity handling is only partially specified: the practice of not treating an alias as equivalence unless the reverse assertion exists is recorded as a check, but no procedure is defined for soliciting or verifying the reciprocal assertion from the other endpoint's owner.",
+      "No normative status enumeration is adopted from ISO/IEC 11179-6, since only its catalogue record was accessible; the lifecycle state codes here are model-specific and are not claimed to align with that standard's registration statuses."
+    ],
+    "conflicts": [
+      "RFC 9457 recommends representing the single most relevant problem and discourages generic batch problem types, while the validation contract must report every failed check at once. This model resolves the tension by emitting one stable validation-failure problem type with an errors extension array carrying per-check pointers, following the specification's own validation-error example pattern. This is a documented accommodation, not a conformance claim.",
+      "The Idempotency-Key HTTP Header Field specification is an expired IETF Internet-Draft (draft-07, 2025-10-15), not a standard. Its status choices for an in-flight duplicate and for key reuse with a differing payload are widely implemented but not normative, whereas RFC 9110 normatively assigns 412 to a failed precondition. Implementations therefore differ on whether a reused key with a changed payload is a 409 or a 422, and this model keeps its own outcome codes primary with transport mapping declared by the interface projection.",
+      "SKOS makes exactMatch symmetric and transitive and asserts disjointness with broadMatch and relatedMatch, while OWL sameAs carries full substitution semantics under no unique name assumption. The two are not interchangeable: recording an assertion bound to a SKOS mapping property does not license OWL-strength substitution, and this model computes neither closure. A consumer that treats them as equivalent will over-infer.",
+      "DID Core advises that alias assertions should not be treated as equivalence unless reciprocated, whereas a great deal of federated practice treats a single-direction same-as assertion as sufficient. This model records direction and reciprocity explicitly and makes reciprocity a declared check rather than an assumption, which is stricter than common practice.",
+      "Registry practice retains entries permanently for historic purposes, while privacy regimes may compel erasure of records containing personal data. The model resolves this by separating the tombstone, which is always retained here, from the payload, whose erasure is executed by the referenced retention and privacy models — but the two obligations remain in genuine tension and the adopting Dimension must decide the boundary."
+    ],
+    "regional_assumptions": [
+      "Time values follow RFC 3339 with explicit offsets; no jurisdiction-specific business calendar, working-day arithmetic or local civil-time interpretation is assumed for effective intervals, and any such interpretation must be declared by the adopting Dimension.",
+      "Where alias assertions link identifiers of natural persons, jurisdictions with rectification and erasure duties (for example EU or UK data-protection regimes) may require the referenced privacy model to erase evidence payloads while this model retains only the tombstone; jurisdictions without such duties may retain complete history including payloads.",
+      "Legal hold, records-retention schedules and the admissibility requirements for decision records are jurisdiction-specific and are owned by the adopting Dimension; this model carries only the references.",
+      "Authority precedence between competing asserting authorities is assumed to be declared locally; no cross-border or cross-sector precedence order is asserted here.",
+      "No assumption is made that the register and its referenced authorization, audit and retention models are operated in the same jurisdiction or under the same data-residency constraints."
+    ],
+    "adversarial_checks": [
+      "Does any function perform matching, inference, resolution, merge, authorization, audit-log writing, notification delivery or physical deletion? Checked against all ten functions: each is confined to canonicalisation and digesting, receipt classification, validator comparison, check evaluation, failure-document composition, record appending or compensation-plan derivation. Every function that touches an external concern emits a reference or correlation identifier and explicitly disclaims the target's behaviour.",
+      "Could the idempotency key or the request fingerprint be mistaken for an identifier? Explicitly forbidden in the identity priority rule: the key is a scoped uniqueness constraint within its retention window and the fingerprint is a comparison value. Record identity always comes from the master-system identifier, the governed IRI or a minted UUID or ULID.",
+      "Does replay resolution mask a genuine lost update? Ordering is specified: replay classification runs before precondition evaluation, and the two produce distinct outcome codes, so a stale validator can never be silently absorbed as a duplicate. Receipt expiry is published and post-expiry retries fall back to the concurrency validator as the remaining safeguard.",
+      "Does the model quietly own audit semantics by keeping receipts and transition records? Receipts, reports, decisions and transitions are domain state of the register with internal digest chaining for tamper-detection; the audit-trail model owns audit-record storage, tamper-evidence, retention and query. The internal integrity guarantee is stated as independent of, and not a substitute for, that model.",
+      "Does declaring an access scope amount to making an access decision? No. Validation confirms only that the declared scope is present, registered and not broader than the scope recorded on the target. Whether the actor may act is decided by the referenced authorization model, whose decision reference is recorded rather than re-derived.",
+      "Does the model claim conformance to any cited standard? No. SKOS and OWL bindings are declared as alignments; the ISO registration standard is used only as evidence that a governed registration procedure exists, because only its catalogue record was accessible; the idempotency-key draft is cited as expired work in progress; and the accommodation of the problem-details single-problem guidance is recorded as a conflict rather than presented as conformance.",
+      "Is any structural node unsupported by a primary source? Every bundle, layer, finding, function and composition link cites at least one primary source from IETF, W3C or ISO/IEC. The one node without primary support — a normative confidence scale — is recorded as a gap in the checklist and as a known omission rather than being modelled as canonical structure."
+    ]
+  }
+}
