@@ -110,4 +110,3 @@ or semantically invalid provider output, critical conflict, local validation,
 Git, integration or deployment failure. Do not skip to another assigned model.
 Record the exact failure in the stream log without secrets. Other streams may
 continue only if they do not need the failed shared resource.
-
