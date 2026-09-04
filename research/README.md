@@ -10,6 +10,10 @@ Scope is 401 world-model records plus two separately queued Vercy assemblies
 classifiers and protocols: they receive an alignment/verification pass and are
 not forced into an artificial Bundle/Layer hierarchy.
 
+The queue is intentionally paused at sequence 90 (`WM-XCT-037`). The delivered
+baseline, exact resume point and updated remaining plan are recorded in
+[`PAUSE-CHECKPOINT-2026-09-04.md`](./PAUSE-CHECKPOINT-2026-09-04.md).
+
 ## Quality gate
 
 A model moves through these states:
@@ -47,6 +51,8 @@ placeholder structures do not pass validation.
 - `model-research.schema.json` — strict provider output contract.
 - `MODEL-RESEARCH-PROMPT.md` — shared research protocol with provider-specific
   omission-hunting roles.
+- `PAUSE-CHECKPOINT-2026-09-04.md` — current aggregate achievement snapshot,
+  exact resume point and remaining execution plan.
 - `queue.csv` — all world models in deterministic delivery order.
 - `status.csv` — regenerated checkpoint projection from per-provider manifests.
 - `assembly-queue.csv` — AISMM and PLMM migration/research track.
