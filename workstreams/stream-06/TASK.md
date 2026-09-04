@@ -16,4 +16,6 @@ hold visible. Stop on any critical conflict or validation failure.
 Change only this stream's log/state and the assigned model's research and
 publication directories. Never update `research/status.csv`, shared plans,
 tools, another stream, the site mirror or production. Push one secret-safe
-commit per model to `research/stream-06` and record its hash for stream 01.
+commit per model to `research/stream-06`. Record the model and completion state
+in `LOG.md` before committing, then report the resulting commit hash to stream
+01 in the chat response; do not create a second log-only commit for the hash.
