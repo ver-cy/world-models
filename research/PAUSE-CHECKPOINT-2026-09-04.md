@@ -41,7 +41,8 @@ The platform baseline used by the queue is also in place:
   catalogue infoblock and deployment/import tooling;
 - individual website cards, versioned AI-readable `spec.yaml` and entry-point
   `AGENTS.md` for researched models;
-- visible research status and provider hold on single-provider publications;
+- publication lifecycle separated from visible research-review status and the
+  provider hold on single-provider publications;
 - catalogue search/facets and per-card template constructor projections;
 - Git/files, Markdown, HTML, JSON, YAML, MCP/file-or-database and MongoDB
   projection contracts, always beginning with an `AGENTS.md` agent entry point;

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Project a validated research synthesis into a website-ready model package.
+"""Project a validated research synthesis into a published website package.
 
-The publisher deliberately distinguishes a public research draft from a
-canonical release.  A synthesis with publication holds may be made visible for
-review, but it cannot be labelled published or canonical.
+Publication lifecycle and research assurance are deliberately separate. A
+schema-valid synthesis without critical conflicts may be published while its
+research review state remains ``reviewable-draft`` and all holds stay visible.
+Only a hold-free independently reviewed result may be labelled canonical.
 """
 
 from __future__ import annotations
@@ -147,6 +148,23 @@ def counts(result: dict[str, Any]) -> dict[str, int]:
     }
 
 
+def normalized_provider_contract(adjudication: dict[str, Any]) -> dict[str, Any]:
+    """Backfill the explicit provider contract for legacy dual-provider runs."""
+    normalized = dict(adjudication)
+    active = list(normalized.get("active_providers") or [])
+    if not active:
+        active = list((normalized.get("input_sha256") or {}).keys())
+    waived = list(normalized.get("waived_providers") or [])
+    mode = normalized.get("provider_mode")
+    if not mode:
+        mode = "dual-provider" if len(active) >= 2 else "single-provider"
+    normalized["provider_mode"] = mode
+    normalized["active_providers"] = active
+    normalized["waived_providers"] = waived
+    normalized.setdefault("provider_policy", {})
+    return normalized
+
+
 def render_question(question: dict[str, Any]) -> str:
     answer_data = "".join(f"<li>{html.escape(str(item))}</li>" for item in question.get("answer_data", []))
     answer = f"<details class=\"answer-shape\"><summary>Expected answer</summary><ul>{answer_data}</ul></details>" if answer_data else ""
@@ -205,16 +223,16 @@ def render_page(spec: dict[str, Any], adjudication: dict[str, Any], digest: str)
     active_labels = [provider_label(item) for item in adjudication.get("active_providers", [])]
     provider_names = " + ".join(active_labels) or "Declared provider"
     if adjudication.get("provider_mode") == "single-provider-waiver":
-        draft_note = (
-            f"The {provider_names}-only synthesis is public under an explicit "
+        assurance_note = (
+            f"The {provider_names}-only synthesis is published under an explicit "
             "repository-owner provider waiver. It passed structural validation "
             "and a separate no-tools adversarial audit, but remains a reviewable "
             "draft until independent second-provider review and the holds below "
             "are closed."
         )
     else:
-        draft_note = (
-            f"The {provider_names} synthesis is public for review and use with "
+        assurance_note = (
+            f"The {provider_names} synthesis is published for use and review with "
             "caution. It passed structural validation but is not yet a canonical "
             "Vercy release because the source and coverage holds below remain open."
         )
@@ -228,10 +246,10 @@ def render_page(spec: dict[str, Any], adjudication: dict[str, Any], digest: str)
 .model{{max-width:var(--v-width);margin:auto;padding:58px 24px 100px}}.model h1{{font-size:clamp(42px,7vw,82px);line-height:1;margin:15px 0}}.draft-note{{border:1px solid #8a632d;background:#211e14;color:#ead49a;border-radius:12px;padding:18px;margin:28px 0}}.draft-note strong{{color:#ffcb85}}.stats{{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:28px 0 46px}}.stats div{{border:1px solid var(--v-line);background:var(--v-panel);border-radius:11px;padding:15px}}.stats strong{{display:block;font-size:25px}}.stats span{{font-size:12px;color:var(--v-muted)}}.facts{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}}.fact{{border:1px solid var(--v-line);background:var(--v-panel);border-radius:10px;padding:15px}}.fact span{{display:block;color:var(--v-muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}}.fact strong,.fact a{{display:block;margin-top:7px}}.bundle,.layer{{border:1px solid var(--v-line);border-radius:12px;background:var(--v-panel);margin:12px 0}}.bundle>summary,.layer>summary{{display:grid;grid-template-columns:minmax(120px,.45fr) 1.6fr auto;gap:14px;align-items:center;padding:18px;cursor:pointer}}summary code,.finding code{{color:var(--v-cyan)}}summary span{{color:var(--v-muted);font-size:12px}}.bundle-body,.layer-body{{padding:0 18px 18px}}.bundle-body>p,.layer-body>p,.finding>p{{color:var(--v-muted);line-height:1.6}}.layer{{background:#091724}}.finding{{border:1px solid var(--v-line);border-radius:10px;padding:18px;margin:12px 0;background:#08131f}}.finding-head{{display:flex;gap:12px;align-items:baseline}}.finding h4{{margin:0}}.finding h5{{margin-bottom:8px}}.question-list{{padding-left:22px}}.question-list>li{{padding:7px 0;color:var(--v-text)}}.question-list small{{display:inline-block;margin-left:8px;color:var(--v-cyan)}}.answer-shape{{margin:7px 0 0 4px;color:var(--v-muted)}}.answer-shape summary{{cursor:pointer}}.artifact-list{{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0;list-style:none}}.artifact-list li{{border:1px solid var(--v-line);border-radius:8px;padding:12px}}.artifact-list span{{display:block;color:var(--v-muted);font-size:13px;margin-top:5px}}.review-grid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:42px}}.review-grid section{{border:1px solid var(--v-line);border-radius:12px;background:var(--v-panel);padding:20px}}.review-grid li{{color:var(--v-muted);margin:8px 0;line-height:1.5}}@media(max-width:900px){{.stats{{grid-template-columns:repeat(3,1fr)}}.facts,.review-grid{{grid-template-columns:1fr}}}}@media(max-width:620px){{.stats,.artifact-list{{grid-template-columns:1fr 1fr}}.bundle>summary,.layer>summary{{grid-template-columns:1fr}}}}
 </style></head><body><main class="model">
 <nav class="v-breadcrumb"><a class="v-breadcrumb-link" href="/models/">← Catalogue</a></nav>
-<span class="v-eyebrow">World Models · public research draft</span><h1>{html.escape(meta['name'])}</h1>
+<span class="v-eyebrow">World Models · Published</span><h1>{html.escape(meta['name'])}</h1>
 <p class="v-lede">{html.escape(model['purpose'])}</p>
 <div class="v-actions"><a class="v-button v-button-primary" href="spec.yaml">AI YAML</a><a class="v-button" href="AGENTS.md">AGENTS.md</a><a class="v-button" href="{html.escape(spec['sourceUrl'])}">Research evidence</a></div>
-<div class="draft-note"><strong>Research draft.</strong> {html.escape(draft_note)}</div>
+<div class="draft-note"><strong>Published.</strong> Research assurance: {html.escape(adjudication['status'])}. {html.escape(assurance_note)}</div>
 <section class="facts"><div class="fact"><span>Catalogue ID</span><strong>{html.escape(meta['id'])}</strong></div><div class="fact"><span>Version</span><strong>{html.escape(meta['version'])}</strong></div><div class="fact"><span>Previous version</span><strong>{previous}</strong></div><div class="fact"><span>Type</span><strong>{html.escape(meta['entryKind'])}</strong></div><div class="fact"><span>Validation</span><strong>Passed</strong></div><div class="fact"><span>Synthesis digest</span><strong><code>sha256:{digest[:16]}…</code></strong></div></section>
 <section class="stats">{''.join(f'<div><strong>{metric[key]}</strong><span>{key.title()}</span></div>' for key in ('sources','bundles','layers','findings','questions','artifacts'))}</section>
 <section><span class="v-eyebrow">Format-independent logical structure</span><h2>Bundles → Layers → Findings → Questions + Artifacts</h2>{render_tree(spec)}</section>
@@ -254,12 +272,12 @@ def main() -> int:
     run_dir = args.run_root / args.model_id.casefold()
     result_path = run_dir / "synthesis.result.json"
     validation = load_json(run_dir / "synthesis.validation.json")
-    adjudication = load_json(run_dir / "adjudication.json")
+    adjudication = normalized_provider_contract(load_json(run_dir / "adjudication.json"))
     result = load_json(result_path)
     if not validation.get("valid"):
         raise SystemExit("synthesis does not pass validation")
     if adjudication.get("critical_conflicts"):
-        raise SystemExit("critical conflicts prevent even research-draft publication")
+        raise SystemExit("critical conflicts prevent publication")
 
     model = result["model"]
     if model["model_id"].casefold() != args.model_id.casefold():
@@ -288,7 +306,7 @@ def main() -> int:
     spec = {
         "vercy": "1.0-draft",
         "publication": {
-            "status": "research-draft",
+            "status": "published",
             "adjudicationStatus": adjudication["status"],
             "publishableCanonical": bool(adjudication.get("publishable")),
             "generatedAt": adjudication["generated_at"],
@@ -309,7 +327,7 @@ def main() -> int:
             "industry": catalogue["industry"],
             "domain": catalogue["domain"],
             "tags": catalogue["tags"],
-            "status": "research draft",
+            "status": "published",
         },
         "canonicalUrl": f"https://ver.cy/models/{slug}/",
         "sourceUrl": source_url,
@@ -340,7 +358,7 @@ def main() -> int:
         "name": model["name"],
         "slug": slug,
         "version": args.version,
-        "status": "draft",
+        "status": "published",
         "review_state": adjudication["status"],
         "spec_available": True,
         "canonical_publishable": bool(adjudication.get("publishable")),
@@ -358,7 +376,7 @@ def main() -> int:
 - Name: {model['name']}
 - Catalogue ID: {model['model_id']}
 - Registry ID: {model['registry_id']}
-- Type: Vercy {model['entry_kind']} (public research draft)
+- Type: Published Vercy {model['entry_kind']}
 - Version: {args.version}
 - Specification: https://ver.cy/models/{slug}/spec.yaml
 - Storage type: format-independent; select a binding in the page constructor
@@ -367,9 +385,10 @@ def main() -> int:
 - Research evidence: {source_url}
 
 Read this file first, then `spec.yaml`. Traverse Bundle → Layer → Finding →
-Questions and Artifacts. Treat the specification as a research draft: do not
-claim canonical completeness while `researchAdjudication.publicationHolds` is
-non-empty. Preserve source references, master-system identity and access rules.
+Questions and Artifacts. The specification is published, while its research
+assurance remains `{adjudication['status']}`. Do not claim canonical completeness
+while `researchAdjudication.publicationHolds` is non-empty. Preserve source
+references, master-system identity and access rules.
 """
     (target / "AGENTS.md").write_text(agents, encoding="utf-8")
     page = render_page(spec, adjudication, synthesis_digest)

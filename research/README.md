@@ -26,17 +26,19 @@ A model moves through these states:
    Single-provider mode additionally requires a separate no-tools adversarial
    audit that cannot add facts or silently substitute the waived provider.
 4. `validated` — schema and semantic completeness checks pass.
-5. `reviewable_draft` - a structurally valid synthesis may be projected into the
-   public catalogue only with an explicit research-draft badge and every hold
-   visible. It must not be described as canonical or complete.
+5. `reviewable_draft` - a structurally valid synthesis without critical
+   conflicts may have publication lifecycle `published`, provided its distinct
+   research-review state, provider waiver and every hold remain visible. It must
+   not be described as canonical or complete.
 6. `publishable_draft` - all critical conflicts and publication holds are closed;
    the result may be promoted toward a canonical release. Research output is
    never published directly.
 
 Single-provider results are always `reviewable_draft`: the provider waiver and
 independent-review hold must appear in the synthesis evidence, publication
-manifest, AI specification and human-facing page. They cannot become canonical
-or `publishable_draft` until an independent second-provider review is restored.
+manifest, AI specification and human-facing page. A published distribution is
+not a canonicality claim. They cannot become canonical or `publishable_draft`
+until an independent second-provider review is restored.
 
 The minimum subject structure is:
 
