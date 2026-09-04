@@ -10,9 +10,11 @@ Scope is 401 world-model records plus two separately queued Vercy assemblies
 classifiers and protocols: they receive an alignment/verification pass and are
 not forced into an artificial Bundle/Layer hierarchy.
 
-The queue is intentionally paused at sequence 90 (`WM-XCT-037`). The delivered
-baseline, exact resume point and updated remaining plan are recorded in
-[`PAUSE-CHECKPOINT-2026-09-04.md`](./PAUSE-CHECKPOINT-2026-09-04.md).
+The single queue was paused at sequence 90 (`WM-XCT-037`) and checkpointed in
+[`PAUSE-CHECKPOINT-2026-09-04.md`](./PAUSE-CHECKPOINT-2026-09-04.md). The owner
+subsequently replaced that execution mode with six isolated manual workstreams.
+Their authoritative ownership and coordination contract is
+[`../workstreams/README.md`](../workstreams/README.md).
 
 ## Quality gate
 

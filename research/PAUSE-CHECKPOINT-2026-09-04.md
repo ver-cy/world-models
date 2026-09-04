@@ -1,5 +1,9 @@
 # Vercy research pause checkpoint — 2026-09-04
 
+> Historical checkpoint. Later on 2026-09-04 the owner resumed the remaining
+> queue as six isolated manual workstreams. Use `../workstreams/README.md` for
+> current execution ownership. The scheduled heartbeat remains paused.
+
 This is the authoritative handoff for the paused subject-model research queue.
 Per-model truth remains in `status.csv`; this document records the aggregate
 state, the exact resume point and the remaining route to the catalogue goal.
