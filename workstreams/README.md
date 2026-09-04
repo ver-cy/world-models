@@ -1,5 +1,8 @@
 # Six-stream Vercy research protocol
 
+Copy-ready prompts for starting the six independent chats are stored in
+[`START-MESSAGES.md`](./START-MESSAGES.md).
+
 This directory defines the non-overlapping execution contract for the 312
 subject models that were still queued after sequence 89 on 2026-09-04.
 
