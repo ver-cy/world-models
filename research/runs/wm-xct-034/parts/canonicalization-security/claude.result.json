@@ -1,0 +1,2131 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Carry, on any host record, the context needed to state what a signature or proof protects, how the protected bytes were derived, who the declared signer and method are, and what verification evidence exists - without owning the cryptography, the keys or the trust decision.",
+    "scope_statement": "WM-XCT-034 is a mixin attached to a host record that carries or references a digital signature or cryptographic proof. It holds the proof reference, the declared signer and verification-method reference, the signature method and algorithm declaration, the ordered canonicalization and transform chain that produces the protected bytes, the context and purpose bindings that separate one use from another, the coverage and fidelity record for what was and was not protected, and the verification evidence reported by an external verifier. It is format-neutral: JSON, XML, CBOR, RDF, Markdown, Git objects, MCP payloads and database rows are projections of the same declarations. It does not compute, verify, enforce or store cryptographic material.",
+    "in_scope": [
+      "Proof record: reference to the proof or signature value, its serialization family and the host attachment point.",
+      "Declared signer and verification-method reference, carried as a reference into the key and identity models that own them.",
+      "Signature method and algorithm declaration, including versioned algorithm identifiers and bound parameters.",
+      "Ordered canonicalization and transform chain producing reproducible protected bytes, with implementation pins and reproducibility evidence.",
+      "Representation normalization declarations: character encoding, Unicode form, line endings, whitespace, ordering, duplicate-key disposition, numeric and date lexical forms, namespace and graph normalization.",
+      "Input resolution context: reference expression, base URI and its establishment rule, fragment interpretation and URI comparison level.",
+      "Coverage and fidelity record: selection and exclusion maps, irreversible transforms, uncovered content and the reference to the retained pre-transform representation.",
+      "Context binding: domain separation tag or structure context label, proof purpose, domain or audience, challenge or nonce, explicit type label and external additional authenticated data.",
+      "Verification evidence record: outcome, instants and evidence reference as reported by an external verifier.",
+      "Criticality declarations and declared complexity limits requiring fail-closed handling by an external evaluator."
+    ],
+    "out_of_scope": [
+      "Cryptographic computation: signing, digesting, MAC and signature verification performed by external primitives.",
+      "Key material, key lifecycle, certificate paths, trust stores and revocation status.",
+      "Identity and semantics of the payload or host subject that is signed.",
+      "Execution of parsing, canonicalization and transform algorithms, and the implementations that perform them.",
+      "Serialization and format encoding: JSON, XML, CBOR, Markdown, Git or database encoders and their syntax rules.",
+      "Security-policy evaluation and enforcement, including refusing an unrecognised critical transform or an inadmissible algorithm.",
+      "Audit-record storage, retention scheduling and destruction execution.",
+      "Timestamping authorities, long-term validation, archival re-signing and countersignature lifecycle.",
+      "Legal validity, jurisdictional equivalence and qualified or advanced signature determination."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-XCT-006 parent cryptographic and trust model",
+        "distinction": "The parent owns the signature value, key reference and trust posture. This mixin owns only what the signature is computed over and how that byte sequence was derived and bound to a context, mirroring the split between protected header plus payload and the detached signature value in JWS and COSE.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Payload / host subject model",
+        "distinction": "The payload model owns the subject's identity, semantics and the retained pre-transform representation. This mixin carries only a reference, a resolution context and a digest, and never restates payload meaning.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-017"
+        ]
+      },
+      {
+        "neighbor": "Proof verification and key-resolution model",
+        "distinction": "Verification, key resolution and the accept or reject outcome belong to the verifier. This mixin records the declarations a verifier needs and stores the outcome the verifier reports as evidence, not as its own judgement.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Canonicalization processor and runtime implementation",
+        "distinction": "Parsing and transform execution are external. This mixin pins algorithm identifiers, parameters and implementation versions so a divergence can be attributed, and never specifies processor behaviour.",
+        "source_refs": [
+          "SRC-016",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Serialization and encoding model",
+        "distinction": "Syntax rules for JSON, XML, CBOR and RDF belong to their own specifications and to the storage projection. This mixin names which rule set applies and does not restate it, because those rule sets are mutually incompatible.",
+        "source_refs": [
+          "SRC-014",
+          "SRC-015",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Security-policy enforcement and audit model",
+        "distinction": "Allow-lists, refusal of unknown critical transforms, complexity limits and audit-trail storage are declared here but evaluated, enforced and retained there. A declaration is not an enforcement point.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Signature lifecycle, timestamping and long-term validation model",
+        "distinction": "Time-stamp tokens, re-signing and archival validation extend a proof's usable life. This mixin fixes a single derivation with its effective instants and does not model renewal.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-004"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 8785: JSON Canonicalization Scheme (JCS)",
+      "organization": "RFC Editor / IETF Independent Submission",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html",
+      "version_or_date": "June 2020, Informational",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Normative rules for JSON property ordering by UTF-16 code units, ECMAScript number serialization, escaping, whitespace suppression, the I-JSON constraint forbidding duplicate names, and UTF-8 output."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Canonical XML Version 1.1",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xml-c14n11/",
+      "version_or_date": "W3C Recommendation, 2 May 2008",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:16:00Z",
+      "relevance": "UTF-8 output, line-break normalization to #xA, attribute and namespace ordering, whitespace treatment, xml: attribute inheritance and xml:base fixup, plus the explicit statement that the canonical form may lose base URI and entity information."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RDF Dataset Canonicalization (RDFC-1.0)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/rdf-canon/",
+      "version_or_date": "W3C Recommendation, 21 May 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:17:00Z",
+      "relevance": "Graph-level canonicalization with deterministic blank node labelling, canonical N-Quads output, a parameterised internal hash algorithm that must be unequivocally expressed, and the poison-dataset complexity denial-of-service consideration."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Verifiable Credential Data Integrity 1.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-integrity/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:18:00Z",
+      "relevance": "Cryptosuite transform-hash-prove pipeline, versioned cryptosuite identifiers, proofPurpose, domain, challenge, nonce and previousProof binding, and the requirement to error when a processor drops undefined terms."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 7515: JSON Web Signature (JWS)",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc7515.html",
+      "version_or_date": "May 2015, Standards Track",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:19:00Z",
+      "relevance": "JWS Signing Input construction, protected versus unprotected header regions, the crit must-understand fail-closed rule, and algorithm substitution security considerations."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 9052: CBOR Object Signing and Encryption (COSE): Structures and Process",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc9052.html",
+      "version_or_date": "August 2022, Standards Track, STD 96",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:20:00Z",
+      "relevance": "Sig_structure with context text strings for domain separation, external_aad, deterministic encoding of the protected bucket, precedence of protected over unprotected attributes, and fatal handling of crit labels."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 9421: HTTP Message Signatures",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc9421.html",
+      "version_or_date": "February 2024, Standards Track",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:21:00Z",
+      "relevance": "Signature base construction from canonicalized component values plus an @signature-params line, and security considerations on canonicalization ambiguity, message component source ambiguity, insufficient coverage, replay and signature confusion."
+    },
+    {
+      "id": "SRC-008",
+      "title": "XML Signature Syntax and Processing Version 1.1",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmldsig-core1/",
+      "version_or_date": "W3C Recommendation, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:22:00Z",
+      "relevance": "Ordered Transform chain where each transform's output feeds the next, Reference URI resolution including same-document fragments, CanonicalizationMethod and DigestMethod, and the only-what-is-signed-is-secure security model."
+    },
+    {
+      "id": "SRC-009",
+      "title": "XML Signature Best Practices",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmldsig-bestpractices/",
+      "version_or_date": "W3C Working Group Note, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:23:00Z",
+      "relevance": "Signature wrapping mitigation requiring position as well as name checks, restriction of XSLT and XPath transforms, entity expansion and external reference risks, and nonce plus timestamp replay guidance."
+    },
+    {
+      "id": "SRC-010",
+      "title": "RFC 3986: Uniform Resource Identifier (URI): Generic Syntax",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc3986.html",
+      "version_or_date": "January 2005, Standards Track, STD 66",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:24:00Z",
+      "relevance": "Four-level base URI establishment precedence, the reference resolution algorithm, media-type dependent fragment semantics, and the normalization and comparison ladder from simple string to protocol-based equivalence."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Unicode Standard Annex #15: Unicode Normalization Forms",
+      "organization": "Unicode Consortium",
+      "url": "https://www.unicode.org/reports/tr15/",
+      "version_or_date": "Version 17.0.0, 2025-07-30",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:25:00Z",
+      "relevance": "NFC, NFD, NFKC and NFKD forms, canonical versus compatibility equivalence, the irreversibility warning for compatibility forms, normalization stability with the composition version fixed at Unicode 3.1.0, and version dependence for unassigned code points."
+    },
+    {
+      "id": "SRC-012",
+      "title": "RFC 9380: Hashing to Elliptic Curves",
+      "organization": "RFC Editor / IRTF Crypto Forum Research Group",
+      "url": "https://www.rfc-editor.org/rfc/rfc9380.html",
+      "version_or_date": "August 2023, Informational (IRTF)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:26:00Z",
+      "relevance": "Domain separation tag definition and construction requirements: nonzero length, application-unique fixed string, embedded version and suite identifiers, and the cross-protocol reuse risk when domain separation is absent."
+    },
+    {
+      "id": "SRC-013",
+      "title": "RFC 8725: JSON Web Token Best Current Practices",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc8725.html",
+      "version_or_date": "February 2020, BCP 225",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:27:00Z",
+      "relevance": "Algorithm confusion and none-algorithm threats, cross-JWT confusion and substitution attacks, and the countermeasures of explicit typing, mutually exclusive validation rules per token kind, and audience validation."
+    },
+    {
+      "id": "SRC-014",
+      "title": "RFC 8259: The JavaScript Object Notation (JSON) Data Interchange Format",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc8259.html",
+      "version_or_date": "December 2017, Standards Track",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:28:00Z",
+      "relevance": "Duplicate member names are only SHOULD-unique with divergent parser behaviour, member ordering visibility varies, numeric precision is bounded by binary64 for interoperability, and interchange must use UTF-8."
+    },
+    {
+      "id": "SRC-015",
+      "title": "RFC 8949: Concise Binary Object Representation (CBOR)",
+      "organization": "RFC Editor / IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc8949.html",
+      "version_or_date": "December 2020, Standards Track, STD 94",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:29:00Z",
+      "relevance": "Core deterministic encoding requirements, shortest-form arguments, prohibition of indefinite-length items, bytewise lexicographic map key ordering over encoded keys, and duplicate map keys being well-formed but not valid with protocol-defined disposition."
+    },
+    {
+      "id": "SRC-016",
+      "title": "Canonical XML Version 2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xml-c14n2/",
+      "version_or_date": "W3C Working Group Note, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:30:00Z",
+      "relevance": "A single algorithm URI subject to named parameters (IgnoreComments, TrimTextNodes, PrefixRewrite, QNameAware) with documented defaults, plus a catalogue of defects in Canonical XML 1.x and Exclusive C14N including QName and wrapping exposure and XPath-driven cost."
+    },
+    {
+      "id": "SRC-017",
+      "title": "C2PA Content Credentials Technical Specification, Version 2.1",
+      "organization": "Coalition for Content Provenance and Authenticity (C2PA)",
+      "url": "https://spec.c2pa.org/specifications/specifications/2.1/specs/C2PA_Specification.html",
+      "version_or_date": "Version 2.1, September 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:31:00Z",
+      "relevance": "Hard binding hash assertions with explicit exclusion ranges over asset bytes, deterministic CBOR claim serialization used as the detached COSE payload, registry-sourced hash algorithm identifiers, and label-increment versioning of assertion schemas."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-c14n-bundle-protected-bytes",
+        "name": "Reproducible Protected-Bytes Derivation",
+        "description": "Everything an agent needs to reconstruct, byte for byte, the octets that a signature or proof actually protects: the ordered transform chain, the pinned and versioned algorithm identifiers with their bound parameters, and the representation-level normalization decisions that change the protected bytes without changing the perceived content.",
+        "rationale": "Primary signing specifications sign a derived byte string rather than a source document. The JWS Signing Input, the COSE Sig_structure, the HTTP signature base and the XML Signature reference-processing model all interpose an ordered transform stage between the subject and the digest. Unless that stage is recorded with identifiers, versions, parameters and media types, verification is not reproducible and the derivation, not the primitive, becomes the weak point.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-005",
+          "SRC-006",
+          "SRC-007",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "sig-c14n-layer-transform-chain",
+            "name": "Transform chain declaration and algorithm pinning",
+            "description": "The ordered chain from selected input to protected bytes: each step's position, presence semantics, governed algorithm identifier, version, bound parameters, input and output media types, the externally executed implementation that produced the result, and the digest that makes the output falsifiable.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-006",
+              "SRC-008",
+              "SRC-016",
+              "SRC-017"
+            ],
+            "findings": [
+              {
+                "id": "sig-c14n-finding-chain-record",
+                "name": "Ordered transform and canonicalization chain record",
+                "description": "The indexed sequence of transform steps applied between a selected input and the protected bytes, together with the digest of those bytes. Step presence is three-valued: a step may be absent from the declaration, declared as an explicit identity or no-op transform, or declared as a substantive transform. XML Signature reference processing shows the distinction is not cosmetic, since an octet stream with no Transforms is digested directly while a declared canonicalization step converts a node-set to octets.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-004",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-chain-order",
+                    "text": "What is the exact ordered sequence of transform steps applied between the selected input and the protected bytes?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Step index within the chain",
+                      "Step algorithm identifier",
+                      "Step input media type",
+                      "Step output media type"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-step-presence",
+                    "text": "Is each position an explicit identity or no-op transform, a substantive transform, or absent from the declaration entirely?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Step presence enumeration: absent, identity, substantive",
+                      "Justification note for a declared identity step",
+                      "Acknowledgement that no default step may be assumed for an unstated position"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-protected-digest",
+                    "text": "Which digest algorithm and value identify the protected byte sequence that the chain produced?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Digest algorithm identifier",
+                      "Digest value over the protected octets",
+                      "Protected octet length"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-chain-reproduce",
+                    "text": "Can an independent implementation reproduce the recorded protected bytes byte for byte from the declared inputs and steps?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Reproducibility determination",
+                      "Recomputed digest supplied by an external processor",
+                      "Divergence description where the digests differ"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-chain-supersession",
+                    "text": "When a chain declaration changes, which prior record does it supersede and from which instant is each version effective?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Chain record version identifier",
+                      "Superseded record reference",
+                      "Effective-from instant in RFC 3339 form with seconds and an explicit offset"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-chain-step-index",
+                    "name": "Chain step index",
+                    "description": "Ordinal position of a transform step in the chain, fixing the order in which each output feeds the next step.",
+                    "value_kind": "number",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-step-presence-kind",
+                    "name": "Step presence kind",
+                    "description": "Three-valued declaration distinguishing an absent step from an explicit identity or no-op step and from a substantive transform.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-protected-digest-alg",
+                    "name": "Protected-bytes digest algorithm",
+                    "description": "Registry-sourced identifier of the hash algorithm applied to the chain output.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-protected-digest-value",
+                    "name": "Protected-bytes digest value",
+                    "description": "Digest over the protected octet sequence, used as a content address for reproducibility comparison but never as the record identifier.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-chain-record-version",
+                    "name": "Chain record version identifier",
+                    "description": "Identifier of this version of the chain declaration, to which derivation records bind.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-017"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-c14n-artifact-chain-manifest",
+                    "name": "Canonicalization chain manifest",
+                    "description": "The versioned, ordered declaration of every transform step with its presence kind, algorithm identifier, parameters and media types, sufficient for an independent processor to re-derive the protected bytes.",
+                    "media_or_form": [
+                      "structured declaration record",
+                      "human-readable specification excerpt"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Chain manifest identifier issued by the adopting Dimension's canonicalization register as the authoritative master system; where no such register exists, a governed IRI; failing both, a UUID or ULID minted by the adopting Dimension. The version component is appended and is never a date.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-004",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-artifact-protected-bytes-record",
+                    "name": "Protected-bytes derivation record",
+                    "description": "The record of one derivation outcome: the chain manifest version applied, the protected octet length, the digest algorithm identifier and digest value, and the instants at which the derivation occurred and was recorded.",
+                    "media_or_form": [
+                      "digest record",
+                      "octet-sequence descriptor"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system derivation record identifier bound to exactly one chain manifest version identifier; the digest value is carried as a content address alongside it, never in place of it.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006",
+                      "SRC-017"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-c14n-finding-algorithm-pin",
+                "name": "Versioned algorithm identifiers, parameters and implementation pins",
+                "description": "For each declared step, the governed URI or registered name of the algorithm, the version or edition intended, the named parameter values bound versus left at specification defaults, and the external implementation, version and configuration that actually produced the bytes. Canonical XML 2.0 makes the case concrete: one algorithm URI with four mandatory parameters and documented defaults, so an identifier alone does not determine output.",
+                "source_refs": [
+                  "SRC-016",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-002",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-alg-identifier",
+                    "text": "Which governed URI or registered name identifies each transform algorithm, and which version or edition of it is intended?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Algorithm URI or registered cryptosuite name",
+                      "Algorithm version or edition label",
+                      "Reference to the defining specification and its publication status"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-alg-parameters",
+                    "text": "Which named parameter values are bound for each parameterised algorithm, and which are left at specification defaults?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Parameter name",
+                      "Bound value",
+                      "Default-applied flag",
+                      "Internal hash algorithm where the algorithm is hash-parameterised"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-impl-pin",
+                    "text": "Which external implementation, version and configuration produced the recorded protected bytes?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Implementation product identifier",
+                      "Implementation version",
+                      "Configuration or profile identifier",
+                      "Derivation event instant in RFC 3339 form with seconds and an explicit offset"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-alg-interop",
+                    "text": "Which conformance test vectors demonstrate that independent implementations of the pinned algorithm and parameter set agree?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Test vector set reference",
+                      "Input fixture identifier",
+                      "Expected canonical output digest",
+                      "Implementations that passed"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-algorithm-uri",
+                    "name": "Transform algorithm identifier",
+                    "description": "Governed URI or registered name of a transform, canonicalization or cryptosuite algorithm, taken unchanged from its defining authority.",
+                    "value_kind": "identifier",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-algorithm-parameter",
+                    "name": "Bound algorithm parameter",
+                    "description": "A named parameter and its bound value for a parameterised algorithm, such as prefix rewriting, text-node trimming or the internal hash algorithm.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-default-applied-flag",
+                    "name": "Specification default applied",
+                    "description": "Flag recording that a parameter was deliberately left at its specification default rather than omitted by oversight.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-implementation-pin",
+                    "name": "Implementation pin",
+                    "description": "Product, version and configuration of the external processor that executed the chain, recorded so a divergence can be attributed rather than argued.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-c14n-artifact-profile-reference",
+                    "name": "Referenced canonicalization profile or cryptosuite definition",
+                    "description": "The external normative document that defines a pinned algorithm or cryptosuite, referenced by its governed identifier together with the publication status and version relied upon.",
+                    "media_or_form": [
+                      "referenced normative specification",
+                      "registry entry"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Governed algorithm URI or registered cryptosuite name published by the defining authority, used verbatim and never re-minted locally; local records carry the reference, not a copy.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-016",
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-artifact-implementation-pin-record",
+                    "name": "Implementation pin and conformance vector record",
+                    "description": "The record of which processor build and configuration produced a derivation, plus the conformance vectors and their outcomes used to show that independent implementations agree.",
+                    "media_or_form": [
+                      "structured record",
+                      "test vector set"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system pin record identifier; where the processor publishes a governed build identifier that value is carried as a secondary reference.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-003",
+                      "SRC-017"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-c14n-layer-normalization-semantics",
+            "name": "Representation normalization semantics",
+            "description": "The declarations that determine which lexically different inputs are treated as the same protected bytes: character and Unicode handling, line endings and whitespace, ordering and duplicate keys, numeric and date lexical forms, namespace context and graph-level canonicalization. Stated per declaration so that no single host syntax is privileged.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-011",
+              "SRC-014",
+              "SRC-015",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "sig-c14n-finding-lexical-normalization",
+                "name": "Character encoding, Unicode, line-ending and whitespace declarations",
+                "description": "Declared treatment of input character encoding, output octet encoding, Unicode normalization form and the Unicode version under which it was computed, line-break normalization and whitespace trimming. These change the protected bytes without changing perceived content, and some are irreversible: compatibility normalization erases formatting distinctions and prevents round-trip conversion.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-011",
+                  "SRC-014",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-encoding-decl",
+                    "text": "Which character encoding is assumed for the input and which octet encoding is produced for the protected bytes?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Input character encoding label",
+                      "Output octet encoding",
+                      "Byte-order-mark handling rule"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-unicode-form",
+                    "text": "Which Unicode normalization form, if any, is applied, and under which Unicode version was it computed?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Normalization form: none, NFC, NFD, NFKC or NFKD",
+                      "Unicode version used",
+                      "Handling of unassigned code points whose normalization may change across versions"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-whitespace-rule",
+                    "text": "How are line endings and insignificant whitespace treated before the digest is taken?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Line-break normalization rule",
+                      "Whitespace trimming parameter and its default",
+                      "Handling of preserve directives such as xml:space"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-lexical-lossiness",
+                    "text": "Which of these normalizations are lossy for the host representation and therefore recorded as irreversible?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Irreversible normalization flag",
+                      "Description of the distinctions erased",
+                      "Round-trip test outcome"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-input-charset",
+                    "name": "Declared input character encoding",
+                    "description": "Character encoding assumed for the input before any transform is applied.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-output-octet-encoding",
+                    "name": "Protected-bytes octet encoding",
+                    "description": "Octet encoding of the chain output, which for the cited canonicalization schemes is UTF-8.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-unicode-normalization-form",
+                    "name": "Unicode normalization form",
+                    "description": "Normalization form applied, including the explicit value none, since neither Canonical XML nor JCS mandates normalization.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-unicode-version",
+                    "name": "Unicode version of record",
+                    "description": "Unicode version under which normalization was computed, needed because strings containing unassigned code points may normalize differently later.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-whitespace-rule",
+                    "name": "Whitespace and line-ending rule",
+                    "description": "Declared line-break normalization and whitespace trimming behaviour, including whether trimming is enabled by default.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-016",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are parameter values that qualify steps already carried in the chain manifest and have no meaning detached from the step they qualify. Materialising them as separately addressable artifacts would create a second copy of the derivation's parameters that could drift from the manifest and be mistaken for authoritative, and the normalization rules themselves are owned by their defining specifications, which are referenced rather than reproduced."
+              },
+              {
+                "id": "sig-c14n-finding-structural-normalization",
+                "name": "Ordering, duplicate keys, lexical value forms and graph normalization",
+                "description": "Declared treatment of member, attribute and namespace ordering, duplicate key disposition, numeric and date lexical forms, namespace or prefix context when a fragment is detached, and graph-level canonicalization for dataset-shaped inputs. The cited rules are mutually incompatible across syntaxes, so the declaration names which rule set applies rather than asserting a universal ordering.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-014",
+                  "SRC-015",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-key-ordering",
+                    "text": "What deterministic ordering rule applies to map keys, object members, attributes and namespace declarations?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Ordering rule identifier",
+                      "Collation basis such as UTF-16 code units of unescaped names or bytewise order of encoded keys",
+                      "Scope of ordering: recursive or top level only"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-duplicate-keys",
+                    "text": "How is a duplicate key or repeated member handled, and is a duplicate a hard failure?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Duplicate-key disposition: reject, first wins or last wins",
+                      "Validity profile reference such as I-JSON or CBOR validity",
+                      "Failure code emitted to the external evaluator"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-value-lexical-form",
+                    "text": "Which lexical forms are mandated for numbers, booleans and date or time values in the canonical output?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Number serialization rule",
+                      "Numeric range or precision limit",
+                      "Date and time lexical rule, recorded in RFC 3339 form with seconds and an explicit offset in this model's own records",
+                      "Shortest-form or preferred-serialization requirement"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-graph-normalization",
+                    "text": "For graph-shaped input, which dataset canonicalization algorithm and internal hash algorithm produce the deterministic labelling?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Dataset canonicalization algorithm identifier",
+                      "Internal hash algorithm",
+                      "Canonical serialization form",
+                      "Iteration or complexity limit guarding against poison datasets"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-namespace-context",
+                    "text": "How is namespace or prefix context handled when signed content is detached from its enclosing document?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Namespace inheritance mode",
+                      "Prefix rewrite parameter value",
+                      "Inclusive prefix list",
+                      "Declaration of whether QName values inside text or attribute content are recognised"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-key-ordering-rule",
+                    "name": "Deterministic ordering rule",
+                    "description": "Identifier of the ordering rule applied to keys, members, attributes or namespace nodes, together with its collation basis.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-duplicate-key-disposition",
+                    "name": "Duplicate key disposition",
+                    "description": "Declared handling of duplicate keys or repeated members, needed because parser behaviour is otherwise unpredictable and validity is protocol-defined.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-015",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-number-serialization-rule",
+                    "name": "Numeric and value lexical rule",
+                    "description": "Rule governing the lexical form of numbers, booleans and temporal values in canonical output, including precision limits and shortest-form requirements.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-014",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-graph-canon-algorithm",
+                    "name": "Dataset canonicalization algorithm",
+                    "description": "Identifier of the graph canonicalization algorithm and its internal hash algorithm, applicable only to dataset-shaped inputs.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-namespace-handling-mode",
+                    "name": "Namespace and prefix handling mode",
+                    "description": "Declared namespace inheritance, prefix rewriting and QName-awareness behaviour for detachable content.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Ordering, duplicate-key and lexical-form decisions are declarative parameters bound to specific chain steps and to the syntax family each step operates on. They are not independently retrievable objects and cannot be validated outside the manifest that names the algorithm they qualify, so they are held inline; the normative rules they select remain in their defining specifications, which are referenced as alignments."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-c14n-bundle-context-security",
+        "name": "Input Binding and Canonicalization Context Security",
+        "description": "What the derivation was computed over and what it is valid for: how the reference was resolved, which parts of the input were covered or excluded, which information the chain irreversibly discarded, and which context, purpose, type and criticality values keep this derivation from being reused, replayed or relocated into another setting.",
+        "rationale": "The cited security considerations put most practical attacks at this layer rather than in the primitive: only what is signed is secure, message component source ambiguity, signature wrapping, algorithm and cross-token confusion, substitution, and cross-protocol reuse where domain separation is absent. Each has a declarative counterpart - resolution context, coverage and exclusion record, purpose and domain binding, explicit typing, criticality marking and complexity limits - that must exist and be readable before any external evaluator can act on it.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-007",
+          "SRC-008",
+          "SRC-009",
+          "SRC-010",
+          "SRC-011",
+          "SRC-012",
+          "SRC-013",
+          "SRC-017"
+        ],
+        "layers": [
+          {
+            "id": "sig-c14n-layer-input-binding",
+            "name": "Input resolution, coverage and fidelity",
+            "description": "The context needed to know exactly which octets or nodes entered the chain: reference expression, base URI and how it was established, fragment interpretation, comparison level and dereferencing permission; and the record of coverage, exclusions, irreversible loss and the retained pre-transform representation.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-008",
+              "SRC-009",
+              "SRC-010",
+              "SRC-017"
+            ],
+            "findings": [
+              {
+                "id": "sig-c14n-finding-input-resolution",
+                "name": "Reference, base URI and fragment resolution context",
+                "description": "The declarations that fix what a reference resolved to at derivation time: the reference expression, the base URI and the precedence rule by which it was established, the media type governing fragment interpretation, whether resolution was same-document or external, and the rung of the URI comparison ladder at which two references count as the same input. Signer and verifier reaching different values here is a documented failure mode.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-008",
+                  "SRC-007",
+                  "SRC-002",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-base-uri-source",
+                    "text": "Which base URI applied when relative references were resolved, and by which precedence rule was it established?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Base URI value",
+                      "Establishment rule: embedded in content, encapsulating entity, retrieval URI or application default",
+                      "Handling of in-scope base overrides such as xml:base and the fixup applied"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-fragment-semantics",
+                    "text": "How is the fragment component interpreted, and which media type determines that interpretation?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Fragment expression",
+                      "Governing media type",
+                      "Same-document versus external resolution mode",
+                      "Whether comments and expanded content are included"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-uri-comparison",
+                    "text": "At which rung of the URI comparison ladder are two references treated as identifying the same input?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Comparison level: simple string, syntax-based, scheme-based or protocol-based",
+                      "Percent-encoding normalization rule",
+                      "Case normalization rule"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-source-agreement",
+                    "text": "Do the signer and the verifier obtain the referenced component from the same source, and how is that agreement established?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Component source declaration",
+                      "Intermediary or proxy rewriting note",
+                      "Agreed original value or its digest"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-external-retrieval",
+                    "text": "Is external dereferencing permitted for this reference, and which component is authorised to perform it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "External-retrieval permitted flag",
+                      "Authorised retrieving component reference",
+                      "Digest of the retrieved representation",
+                      "Entity-resolution prohibition acknowledgement"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-reference-expression",
+                    "name": "Input reference expression",
+                    "description": "The URI reference or component identifier naming the data object that entered the chain.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-base-uri",
+                    "name": "Effective base URI",
+                    "description": "The base URI in force when relative references were resolved at derivation time.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-base-uri-establishment",
+                    "name": "Base URI establishment rule",
+                    "description": "Which precedence level supplied the base URI, recorded because the same reference resolves differently under different levels.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-resolution-mode",
+                    "name": "Resolution mode",
+                    "description": "Whether the reference resolved same-document or externally, and whether retrieval was permitted.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-uri-comparison-level",
+                    "name": "URI comparison level",
+                    "description": "The equivalence rung applied when deciding that two references denote the same input.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Resolution context is pure reference data: it points at a subject owned by the payload model and records how the pointer was interpreted. The retrieved representation itself is not held here, and dereferencing is performed by an external component that is merely named. Materialising this as an artifact would imply that this model stores or serves the referenced content, which would cross the payload boundary."
+              },
+              {
+                "id": "sig-c14n-finding-selection-fidelity",
+                "name": "Coverage, exclusions and irreversible-transform record",
+                "description": "Which parts of the input the chain covers and which are deliberately excluded, expressed as a selection or exclusion map, together with the record of steps that discard information not reconstructible from the protected bytes and a reference plus digest for the retained pre-transform representation. Exclusion-list rather than inclusion-list framing is the pattern that survives adversarial review, because it prevents unbound content being added without changing the binding.",
+                "source_refs": [
+                  "SRC-017",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-002",
+                  "SRC-011",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-coverage-extent",
+                    "text": "Which byte ranges, nodes or message components does the chain cover, and which are excluded?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Selection expression or covered-component list",
+                      "Exclusion range or exclusion list",
+                      "Exclusion reason code",
+                      "Padding or placeholder handling where offsets are not yet known"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-irreversible-delta",
+                    "text": "Which declared steps discard information that cannot be reconstructed from the protected bytes?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Irreversible step index",
+                      "Description of the discarded information",
+                      "Pre-transform representation reference and digest",
+                      "Retaining model reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-uncovered-risk",
+                    "text": "What content can change without changing the protected bytes, and has that been accepted for the declared purpose?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Uncovered-content description",
+                      "Impact statement",
+                      "Acceptance reference and the accepting role",
+                      "Residual risk note"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-selection-stability",
+                    "text": "Does the selection expression still select the same content when the host document is restructured or the fragment is relocated?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Selection stability determination",
+                      "Position or ancestry constraint accompanying any name-based selector",
+                      "Re-evaluation result reference",
+                      "Empty-selection detection outcome"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-selection-expression",
+                    "name": "Coverage selection expression",
+                    "description": "Expression or list naming the covered components, nodes or ranges that enter the chain.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-exclusion-range",
+                    "name": "Exclusion entry",
+                    "description": "A declared excluded byte range, box or component, with its reason, used where a binding cannot cover the whole input.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-irreversible-step-flag",
+                    "name": "Irreversible step flag",
+                    "description": "Marks a chain step whose effect cannot be reversed from the protected bytes, such as compatibility normalization or text trimming.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-pretransform-representation-ref",
+                    "name": "Pre-transform representation reference",
+                    "description": "Reference and digest identifying the retained original host representation held by the payload model, against which coverage claims can be checked.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-c14n-artifact-selection-exclusion-map",
+                    "name": "Selection and exclusion map",
+                    "description": "The structured statement of exactly which parts of the input are covered and which are excluded, with reasons, in whichever addressing scheme the input family uses.",
+                    "media_or_form": [
+                      "structured record",
+                      "byte-range or component table",
+                      "node selection expression"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system map identifier bound to one chain manifest version; where the input family publishes a governed assertion label, that label is carried as a secondary reference.",
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-artifact-fidelity-record",
+                    "name": "Derivation fidelity record",
+                    "description": "The record of irreversible steps, discarded information, uncovered content and the reference plus digest of the retained pre-transform representation, so that a coverage claim remains falsifiable after the fact.",
+                    "media_or_form": [
+                      "structured record",
+                      "narrative note"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system fidelity record identifier bound to one chain manifest version; it carries a reference to the retained representation rather than the representation itself.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-c14n-layer-context-security",
+            "name": "Context binding and fail-closed posture",
+            "description": "The values that separate this derivation from every other use of the same key and algorithm, and the declarations that require an external evaluator to refuse rather than proceed: domain separation and purpose binding, explicit typing, external additional authenticated data, criticality marking, complexity limits and recorded divergence.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-005",
+              "SRC-006",
+              "SRC-009",
+              "SRC-012",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "sig-c14n-finding-domain-binding",
+                "name": "Domain separation and purpose or context binding",
+                "description": "The values mixed into the protected bytes so that a derivation cannot be lifted into another setting: a domain separation tag or structure context label, the declared proof purpose, the domain or audience, a challenge or nonce, an explicit type label, and externally supplied additional authenticated data. All must sit in the protected region; attributes taken from an unprotected region are never bound.",
+                "source_refs": [
+                  "SRC-012",
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-013",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-domain-tag",
+                    "text": "Which domain separation string or structure context label is incorporated into the protected bytes, and how is it made unique and versioned?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Domain separation tag or context text string",
+                      "Uniqueness construction rule including application name and version",
+                      "Suite or encoding identifier component",
+                      "Byte encoding of the tag"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-purpose-binding",
+                    "text": "For which declared purpose are these protected bytes valid, and which values bind them to an audience, domain or session?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Proof purpose value",
+                      "Domain or audience value",
+                      "Challenge or nonce value",
+                      "Prior-proof reference where proofs are chained"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-explicit-type",
+                    "text": "Which explicit type label distinguishes this protected structure from other structures the same key may protect?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Explicit type label",
+                      "Content type label",
+                      "Reference to the mutually exclusive validation rule for this type"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-external-aad",
+                    "text": "Which externally supplied additional authenticated data is bound into the derivation, and is an empty value distinguishable from an absent one?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "External additional authenticated data value or reference",
+                      "Empty-versus-absent determination",
+                      "Position of the binding within the protected structure"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-freshness-window",
+                    "text": "Which instants bound the period in which these protected bytes are acceptable?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Creation instant in RFC 3339 form with seconds and an explicit offset",
+                      "Expiry instant",
+                      "Acceptance window duration",
+                      "Conversion note where the source format uses integer epoch seconds or a schema dateTime"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-domain-separation-tag",
+                    "name": "Domain separation tag or context label",
+                    "description": "The application-unique, versioned string or structure context label incorporated into the protected bytes to prevent cross-protocol reuse.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-proof-purpose",
+                    "name": "Declared proof purpose",
+                    "description": "The purpose for which the derivation is valid, acting as a safeguard against reuse for a different purpose.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-domain-audience",
+                    "name": "Bound domain or audience",
+                    "description": "Security domain, audience or application tag to which the protected bytes are locked.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-challenge-nonce",
+                    "name": "Challenge or nonce",
+                    "description": "One-time value bound into the derivation to constrain replay within a time window.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-explicit-type-label",
+                    "name": "Explicit type label",
+                    "description": "Type declaration distinguishing this protected structure from other structures the same key protects.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-external-aad",
+                    "name": "External additional authenticated data",
+                    "description": "Externally supplied data bound into the derivation, with an explicit distinction between a zero-length value and an absent one.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-created-instant",
+                    "name": "Derivation creation instant",
+                    "description": "Instant at which the protected bytes were created, recorded separately from the instant this model observed or ingested the record.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Context-binding values must live inside the protected byte structure itself to have any effect. Extracting them into separately addressable artifacts would create a second copy outside the protected region that could drift from the bound values and be mistaken for authoritative, which is precisely the unprotected-attribute failure the cited specifications warn against. The acceptance decision these values feed is made by the referenced verification and policy models, not here."
+              },
+              {
+                "id": "sig-c14n-finding-threat-posture",
+                "name": "Criticality declarations, complexity limits and divergence evidence",
+                "description": "The per-derivation declaration of which steps and parameters are critical and must be understood or the derivation refused, which canonicalization-layer attack classes the chain claims to resist and by which declared mechanism, which input-complexity limits keep derivation bounded against poison inputs, and what evidence is recorded when two implementations diverge. This model declares and records; refusal, evaluation and enforcement are executed elsewhere.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-009",
+                  "SRC-003",
+                  "SRC-013",
+                  "SRC-016",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-c14n-q-critical-steps",
+                    "text": "Which chain steps and parameters are marked critical so that an unrecognised one must be refused rather than ignored?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Critical step or parameter label list",
+                      "Must-understand flag",
+                      "Declared failure disposition",
+                      "Requirement that every critical label also appear in the protected region"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-threat-coverage",
+                    "text": "Which canonicalization-layer attack classes does this derivation claim to resist, and by which declared mechanism?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Attack class: replay, substitution, wrapping or relocation, parser differential, confused deputy, cross-protocol reuse",
+                      "Reference to the declaration that mitigates it",
+                      "Residual risk note"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-complexity-limits",
+                    "text": "Which input complexity limits bound the derivation so that a hostile input cannot exhaust the processor?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Nesting depth limit",
+                      "Node, quad or component count limit",
+                      "Iteration or time budget",
+                      "Limit-exceeded disposition"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-transform-allowlist",
+                    "text": "Which transform algorithms are admissible for this derivation, and which are refused outright?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Admitted algorithm identifier list",
+                      "Refused algorithm identifier list, typically covering programmable transforms",
+                      "Deciding authority reference",
+                      "Decision instant"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-q-divergence-report",
+                    "text": "When two implementations derive different protected bytes from the same declared input, what evidence is recorded?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Divergence event instant in RFC 3339 form with seconds and an explicit offset",
+                      "Observation or ingestion instant recorded separately",
+                      "Diverging implementation pins",
+                      "Differing digest values and the disputed step index"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-c14n-de-critical-step-label",
+                    "name": "Critical step or parameter label",
+                    "description": "Label of a step or parameter declared must-understand, so that an evaluator encountering an unrecognised one refuses the derivation.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-threat-class-claim",
+                    "name": "Resisted attack class claim",
+                    "description": "Declared attack class the derivation claims to resist, paired with the declaration that provides the resistance.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-013",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-complexity-limit",
+                    "name": "Input complexity limit",
+                    "description": "Declared bound on depth, size, node or quad count, iterations or time budget for the derivation.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-admitted-algorithm-list",
+                    "name": "Admitted transform allow-list reference",
+                    "description": "Reference to the list of transform algorithms admissible for this derivation, maintained by the canonicalization profile owner.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-c14n-de-divergence-observation",
+                    "name": "Divergence observation",
+                    "description": "Record of a reproduction mismatch, carrying the event instant, the separate observation instant, the diverging pins and the disputed step.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding records declarations and observations, not enforcement. The evaluator that refuses an unrecognised critical step, the runtime that applies complexity limits, and the audit trail that stores the outcome are owned by referenced models. Publishing these declarations as artifacts of this model would present a second, non-authoritative enforcement surface that could be mistaken for the operative policy, so they are carried inline and consumed by the models that own evaluation and enforcement."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-c14n-fn-declare-chain",
+      "name": "Declare canonical derivation chain",
+      "description": "Record the ordered transform chain for a selected input, with each step's presence kind, governed algorithm identifier, version, bound parameters and input and output media types, producing an immutable chain manifest version.",
+      "inputs": [
+        "Selected input reference",
+        "Ordered transform step declarations",
+        "Algorithm identifiers, versions and parameter bindings",
+        "Input and output media types per step"
+      ],
+      "outputs": [
+        "Versioned canonicalization chain manifest",
+        "Explicit presence classification for every chain position"
+      ],
+      "preconditions": [
+        "The host subject reference resolves in the referenced payload model",
+        "Every algorithm identifier is a governed URI or a registered name from its defining authority",
+        "No step relies on an implicit default canonicalization"
+      ],
+      "effects": [
+        "A new chain manifest version is created and any prior version is marked superseded with an effective-from instant",
+        "An absent step and a declared identity step are recorded as distinct values and never collapsed"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-004",
+        "SRC-016",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "sig-c14n-fn-record-protected-bytes",
+      "name": "Record protected-bytes derivation result",
+      "description": "Attach the outcome of an externally executed derivation to a chain manifest version: protected octet length, digest algorithm identifier, digest value and the implementation pin that produced them.",
+      "inputs": [
+        "Chain manifest version identifier",
+        "Protected octet length",
+        "Digest algorithm identifier and digest value produced by an external processor",
+        "Implementation product, version and configuration",
+        "Derivation event instant"
+      ],
+      "outputs": [
+        "Protected-bytes derivation record",
+        "Implementation pin record"
+      ],
+      "preconditions": [
+        "The chain manifest version is complete and immutable",
+        "The external processor reports successful completion of every declared step"
+      ],
+      "effects": [
+        "The derivation record is bound to exactly one chain manifest version",
+        "Transform execution remains with the external processor and is attributed here, never performed here",
+        "Event instant and observation instant are stored separately when they differ"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-017",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "sig-c14n-fn-assemble-resolution-context",
+      "name": "Assemble input resolution context",
+      "description": "Fix and record what a reference resolved to at derivation time: the reference expression, the base URI and the precedence rule that supplied it, the media type governing fragment interpretation, the comparison level and whether external dereferencing was permitted.",
+      "inputs": [
+        "Reference expression",
+        "Candidate base URI and its establishment rule",
+        "Governing media type for fragment interpretation",
+        "External-retrieval permission and authorised retrieving component"
+      ],
+      "outputs": [
+        "Resolution context record",
+        "Normalized reference form and the comparison level applied"
+      ],
+      "preconditions": [
+        "A base URI can be established by a declared precedence rule whenever the reference is relative",
+        "The governing media type for the fragment is known"
+      ],
+      "effects": [
+        "The resolved reference used at derivation time is fixed and no longer re-derivable by implication",
+        "Dereferencing and retrieval remain with the external component named in the record"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-008",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "sig-c14n-fn-bind-context-parameters",
+      "name": "Bind domain separation and purpose parameters",
+      "description": "Place domain separation, purpose, audience, challenge, explicit type and external additional authenticated data into the protected region of the structure so that the derivation cannot be reused in another context.",
+      "inputs": [
+        "Domain separation tag or structure context label",
+        "Proof purpose",
+        "Domain or audience and challenge or nonce",
+        "Explicit type label and content type label",
+        "External additional authenticated data"
+      ],
+      "outputs": [
+        "Context-binding parameter set carried inside the protected structure",
+        "Empty-versus-absent determination for each optional binding"
+      ],
+      "preconditions": [
+        "Every parameter is placed in the protected region, not an unprotected region",
+        "The domain separation tag is application-unique, nonzero length and carries a version component"
+      ],
+      "effects": [
+        "The derivation is separated from other uses of the same key and algorithm",
+        "Acceptance of the bound values is delegated to the referenced verification and policy models"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-004",
+        "SRC-006",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "sig-c14n-fn-record-fidelity-and-criticality",
+      "name": "Record coverage, fidelity delta and critical steps",
+      "description": "Record which parts of the input are covered and excluded, which steps are irreversible, where the retained pre-transform representation lives, and which steps and parameters are declared must-understand together with the complexity limits that bound derivation.",
+      "inputs": [
+        "Selection or exclusion map",
+        "Irreversible step flags and discarded-information descriptions",
+        "Pre-transform representation reference and digest",
+        "Critical step and parameter labels",
+        "Complexity limits"
+      ],
+      "outputs": [
+        "Selection and exclusion map",
+        "Derivation fidelity record",
+        "Critical-step and complexity-limit declaration"
+      ],
+      "preconditions": [
+        "The pre-transform representation is retained by the payload model and is addressable",
+        "Coverage is expressed as an exclusion list wherever the addressing scheme allows it"
+      ],
+      "effects": [
+        "Uncovered and discarded content is explicit rather than implied",
+        "Critical steps are declared fail-closed for the external evaluator, which owns the refusal decision and its audit record"
+      ],
+      "source_refs": [
+        "SRC-017",
+        "SRC-009",
+        "SRC-005",
+        "SRC-011",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "sig-c14n-fn-compare-reproduction",
+      "name": "Compare independent reproduction against the record",
+      "description": "Take a digest recomputed by a second, independently pinned implementation and compare it with the stored derivation record, producing a reproducibility determination or a divergence observation.",
+      "inputs": [
+        "Chain manifest version identifier",
+        "Digest recomputed by an external processor",
+        "Second implementation pin",
+        "Observation instant"
+      ],
+      "outputs": [
+        "Reproducibility determination",
+        "Divergence observation record naming the disputed step where identifiable"
+      ],
+      "preconditions": [
+        "A protected-bytes derivation record exists for the chain manifest version",
+        "The second implementation applied the same declared parameters, including those left at specification defaults"
+      ],
+      "effects": [
+        "A reproducibility determination is appended to the derivation record without altering it",
+        "Recomputation is performed externally; only the comparison outcome and its two instants are stored here",
+        "A mismatch is recorded as divergent and is never silently repaired"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-007",
+        "SRC-016"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006",
+      "relation": "CHILD",
+      "purpose": "Attach the canonical-derivation and context-binding surface to the parent cryptographic and trust model, which owns the signature value, the key reference and the trust posture; this model owns only what those bytes are and how they were produced.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Signed host record types in the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "Attach this mixin's declarations to any host record that carries or references a signature or proof, without importing the host's own lifecycle, states or business semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Payload / host subject model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Carry the reference, resolution context and digest of the data object that entered the chain, and the reference to the retained pre-transform representation; identity, semantics and custody of that content stay in the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-017",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Proof verification and key-resolution model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the verification-method reference and the binding parameters a verifier consumes, and store the outcome it reports as evidence; signature computation, key resolution and the accept or reject decision remain in the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Security-policy evaluation, enforcement and audit model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Expose criticality declarations, admitted-transform references and complexity limits for evaluation; refusal of unrecognised critical steps, enforcement and audit-trail storage are executed and retained by the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-013",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "W3C Canonical XML 1.1 and Canonical XML 2.0",
+      "relation": "ALIGN",
+      "purpose": "Map declared XML canonicalization algorithm identifiers, named parameters and their documented defaults; the algorithms and their known defects remain defined by W3C.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "RFC 8785 JSON Canonicalization Scheme",
+      "relation": "ALIGN",
+      "purpose": "Map JSON-family ordering, escaping, number serialization and I-JSON validity declarations onto the normalization findings without adopting them as universal rules.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "W3C RDF Dataset Canonicalization (RDFC-1.0)",
+      "relation": "ALIGN",
+      "purpose": "Map graph-shaped canonicalization: algorithm identifier, internal hash algorithm parameter, canonical N-Quads output and the complexity limits guarding against poison datasets.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credential Data Integrity 1.0 cryptosuites",
+      "relation": "ALIGN",
+      "purpose": "Map versioned cryptosuite identifiers, the transform-hash-prove pipeline and the proofPurpose, domain, challenge and previousProof bindings; cryptosuite definitions and proof verification remain with W3C and the verifier.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "IETF JOSE and COSE signing-input structures (RFC 7515, RFC 9052)",
+      "relation": "ALIGN",
+      "purpose": "Map protected versus unprotected regions, structure context strings, external additional authenticated data and critical-header semantics onto the chain and context-binding declarations.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "RFC 9421 HTTP Message Signatures signature base",
+      "relation": "ALIGN",
+      "purpose": "Map covered-component selection, derived components and signature parameters onto the coverage and context-binding findings, including the documented component-source ambiguity risk.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Unicode Standard Annex #15 Normalization Forms",
+      "relation": "ALIGN",
+      "purpose": "Map the declared normalization form and Unicode version, and the irreversibility of compatibility normalization, onto the lexical normalization and fidelity findings.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "C2PA hard-binding hash assertions with exclusion ranges",
+      "relation": "ALIGN",
+      "purpose": "Map exclusion-list coverage over binary assets and deterministic claim serialization onto the coverage and chain findings; assertion semantics and manifest structure remain with C2PA.",
+      "required": false,
+      "source_refs": [
+        "SRC-017",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "RFC 8725 JSON Web Token Best Current Practices",
+      "relation": "ALIGN",
+      "purpose": "Map explicit typing, mutually exclusive validation rules per structure kind and audience validation onto the context-binding and threat-posture declarations; the validation logic itself belongs to the verifier.",
+      "required": false,
+      "source_refs": [
+        "SRC-013"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must name a single owner for the canonicalization profile register and for every algorithm identifier and parameter default it admits, because an identifier alone does not determine output for parameterised algorithms.",
+        "The owner package must publish the admitted transform allow-list, the refused list and the criticality marking convention before any derivation record is accepted, and must state the deprecation path for a superseded profile version.",
+        "The owner package must declare which external processor implementations are pinned, how a second independent implementation is obtained for reproduction, and where divergence observations are routed.",
+        "The owner package must name the payload model that retains pre-transform representations and confirm those representations remain addressable for as long as coverage claims are relied upon."
+      ],
+      "namespace_guidance": "Algorithm, cryptosuite, media-type and registry identifiers are carried verbatim in the namespace of their defining authority and are never re-minted locally. Locally assigned identifiers - chain manifests, derivation records, selection maps, fidelity records and pin records - live under a Dimension-controlled segment such as <dimension>/xct/sig/c14n/ and must never collide with, shadow or extend a governed external algorithm URI. A local alias for an external identifier must record the external identifier it aliases.",
+      "registry_links": [
+        "IANA JOSE and COSE header parameter and algorithm registries for algorithm, critical-header and structure context values",
+        "W3C algorithm identifier URIs for XML canonicalization, transforms and RDF dataset canonicalization",
+        "IANA media types registry for the input and output media types of each transform step",
+        "IANA URI schemes registry together with the RFC 3986 comparison ladder for reference resolution",
+        "The adopting Dimension's canonicalization profile register holding admitted transform allow-lists and parameter defaults"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Records of this model are compared on their declared field values, not on any serialized form; a JSON, YAML, Markdown, Git or database projection is never authoritative for semantics.",
+        "When a record of this model must itself be signed or digested, its own chain is declared with the same fields required of any other subject; no implicit or default canonicalization of this model's records is ever assumed.",
+        "An absent canonicalization step and a declared identity or no-op step are distinct values and must never be normalized into one another, in either direction.",
+        "Time values are compared as instants rather than as strings; the same instant expressed with a different but equivalent offset is not a difference, while a value lacking an explicit offset is invalid rather than merely different.",
+        "Externally governed identifiers are compared as opaque strings at the syntax-based rung unless the defining authority publishes a stronger equivalence rule."
+      ],
+      "patch_rules": [
+        "A chain manifest version becomes immutable as soon as any protected-bytes derivation record references it; corrections create a new version, mark the prior version superseded and record an effective-from instant.",
+        "Context-binding parameters that sit inside the protected region are never patched in place; changing them requires a new derivation and a new derivation record.",
+        "Only annotation fields - residual risk notes, divergence observations, reproducibility determinations and disposition state - may be appended in place, and every append records the event instant and the observation instant separately.",
+        "A patch that narrows an enumeration, changes a parameter default or repoints an algorithm identifier is not a patch; it is a new profile version."
+      ],
+      "compatibility_rules": [
+        "Adding a new optional declaration field is compatible; narrowing an enumeration, changing a default parameter value or altering an ordering rule is breaking and requires a new profile version.",
+        "A pinned algorithm identifier is never silently upgraded to a later version of the same algorithm family, even where the later version is presented as a defect fix.",
+        "A consumer that does not understand a record's declared profile version must reject the record rather than fall back to specification defaults, since defaults differ across versions of the same algorithm.",
+        "Alignment with an external standard is recorded as a mapping with the version relied upon; conformance is never asserted without cited evidence, and a standard published as a note rather than a recommendation is recorded as such."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the identifier issued by the system of record that holds the artifact, such as the chain manifest identifier issued by the adopting Dimension's canonicalization register.",
+        "Governed global identifier or IRI: the algorithm, cryptosuite, registry or media-type URI published by its defining authority, carried unchanged for referenced external profiles.",
+        "UUID or ULID minted by the adopting Dimension, used only when neither a master-system identifier nor a governed IRI exists.",
+        "A digest value may be carried as a content address for a byte sequence but never as the record identifier, because distinct derivations can produce identical bytes and a content address loses the supersession chain; a date, version label or algorithm name is not an identifier."
+      ],
+      "timestamp_rule": "All time values are recorded in RFC 3339 form with explicit seconds and an explicit numeric offset or Z; a local time without an offset is rejected rather than assumed to be UTC. Event time - when a derivation was performed, when a divergence occurred, when a disposition took effect - is recorded separately from observation or ingestion time, meaning when this model learned of it, and both are stored whenever they differ. Where a source format carries integer epoch seconds or a schema dateTime, both the converted RFC 3339 value and the original lexical value are retained.",
+      "serial_naming_rule": "A serial artifact is named <artifact-id>@<version>, where the version is a monotonically increasing integer or a governed profile version string. The version is never a date and never relies on timestamp ordering alone. A superseded serial is retained and marked superseded rather than renamed, deleted or reused, and its identifier is never reassigned.",
+      "integrity_rule": "Every serial artifact records a digest algorithm identifier and a digest value over its own stored octets, together with the chain manifest version it was produced under and the implementation pin that produced it. A record whose digest, recomputed by an external processor, does not match the stored value is marked divergent with both the event and observation instants; it is never silently repaired, re-derived in place, or presented as valid pending investigation."
+    },
+    "policies": [
+      "Unknown or unrecognised critical transform steps and unknown critical parameters are declared fail-closed: the record states that an evaluator must refuse rather than ignore them. This model declares the requirement and the failure disposition; the refusal itself is executed by the referenced evaluation model.",
+      "No host syntax is canonical. Every record names the syntax family and the algorithm that applies to it, because the cited ordering, escaping and duplicate-key rules are mutually incompatible across XML, JSON, CBOR and RDF. A derivation relying on an implicit default canonicalization is invalid.",
+      "Context-binding values must sit in the protected region of the structure; a value taken from an unprotected region is never treated as bound, and the presence of an unprotected copy does not satisfy a binding requirement.",
+      "Irreversible transforms and excluded content must be recorded explicitly with a reference to the retained pre-transform representation. Silent information loss is a defect, not an acceptable outcome, and an unrecorded exclusion invalidates the coverage claim.",
+      "Reproducibility is evidence, not assumption: a derivation record is marked reproducible only once a second, independently pinned implementation has produced a matching digest, and the comparison outcome is stored with both instants."
+    ],
+    "crud": {
+      "read": [
+        "Chain manifests, algorithm pins, normalization declarations and threat-posture declarations are readable by any party that must independently reproduce the protected bytes, since reproducibility depends on full disclosure of the chain.",
+        "A read never mutates a record; a reproducibility check is stored as a separate appended observation carrying its own observation instant.",
+        "Pre-transform representations are read through the payload model that retains them, never served from this model.",
+        "Reads of restricted binding values return the presence of the value together with the fact that it is withheld, never a silently omitted field."
+      ],
+      "create": [
+        "A derivation record is created only against a complete, immutable chain manifest version, and names that version explicitly.",
+        "Creation requires a digest algorithm identifier, a digest value and a protected octet length; a record lacking any of them is rejected rather than stored as incomplete.",
+        "Every created record names the external implementation pin that produced the protected bytes and the derivation event instant.",
+        "Every chain position is created with an explicit presence kind; a position may not be left unstated and inferred as absent."
+      ],
+      "update": [
+        "Chain manifests and derivation records are append-only: substantive change creates a new version with an effective-from instant and a reference to the version it supersedes.",
+        "Annotation fields - residual risk, divergence observations, reproducibility determinations and disposition state - may be appended in place with event and observation instants recorded separately.",
+        "Context-binding parameters inside the protected region are never updated in place; a change requires a new derivation.",
+        "An externally governed algorithm identifier is never rewritten in an existing record; a corrected reference is a new manifest version."
+      ],
+      "delete": [
+        "Records of this model are not hard-deleted while any proof, coverage claim or fidelity claim that references them is still relied upon. Disposition is a tombstone that retains the record identifier, the chain manifest version identifier, the digest algorithm identifier, the digest value and the supersession chain, and drops narrative, selection detail and implementation configuration.",
+        "Retention periods, legal hold and the execution of destruction are owned by the adopting Dimension's retention and disposition policy, and custody of the pre-transform representation is owned by the payload model. This model records only the disposition state, the reference to the governing policy and the instant the disposition took effect; it neither schedules nor performs destruction.",
+        "Deletion or loss of a retained pre-transform representation must be recorded here as a fidelity-record annotation, because the coverage and irreversibility claims become unverifiable once it is gone.",
+        "A tombstoned identifier is never reused for a new record, and a tombstone is never removed in order to make a derivation appear never to have existed."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Canonicalization profile owner",
+        "responsibilities": [
+          "Maintain the admitted and refused transform lists, algorithm identifiers, parameter defaults and the criticality marking convention",
+          "Version profiles and publish deprecation paths without silently upgrading pinned identifiers",
+          "Decide whether a newly published algorithm version may be admitted"
+        ]
+      },
+      {
+        "name": "Derivation recorder",
+        "responsibilities": [
+          "Record chain manifests, derivation records and implementation pins with explicit presence kinds for every position",
+          "Ensure media types, parameters and default-applied flags are complete before a record is accepted",
+          "Record derivation event instants separately from ingestion instants"
+        ]
+      },
+      {
+        "name": "Reproducibility reviewer",
+        "responsibilities": [
+          "Obtain an independent recomputation from a second pinned implementation and compare it with the stored record",
+          "Record reproducibility determinations and divergence observations, including the disputed step where identifiable",
+          "Refuse to mark a record reproducible on the strength of a single implementation"
+        ]
+      },
+      {
+        "name": "Context-binding steward",
+        "responsibilities": [
+          "Approve domain separation tags, structure context labels, proof purposes and explicit type labels so that distinct uses remain distinct and versioned",
+          "Verify that every binding value sits in the protected region and that empty values are distinguishable from absent ones",
+          "Review any reuse of a tag or label across protocols before it is admitted"
+        ]
+      },
+      {
+        "name": "Fidelity custodian liaison",
+        "responsibilities": [
+          "Coordinate with the payload model that retains pre-transform representations and confirm continued addressability",
+          "Record irreversible steps, exclusions and uncovered content, and escalate unrecorded loss as a defect",
+          "Annotate the fidelity record when a retained representation is disposed of"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Read access to canonicalization declarations - chain manifests, algorithm identifiers, parameters, normalization rules and coverage maps - is granted to every party that must independently reproduce the protected bytes, because reproducibility depends on full disclosure of the derivation and withheld parameters silently defeat verification. Write access is restricted to the canonicalization profile owner and the derivation recorder acting for the owning Dimension.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Challenge, nonce and session-scoped binding values may be withheld from general readers where disclosure would enable replay against a live counterparty; the existence of the value and its position in the protected structure are never withheld.",
+        "Selection and exclusion maps that reveal the internal structure of a sensitive payload may be restricted, in which case the payload model's own access rule governs and this model records only that the restriction applies.",
+        "Implementation pin detail may be embargoed where it discloses an exploitable, unpatched processor version; an embargo records its end instant and the pin remains available to the reproducibility reviewer.",
+        "Refused-algorithm lists may be published in full even where admitted lists are restricted, since disclosure of what is refused does not weaken the derivation."
+      ],
+      "audit_requirements": [
+        "Every read of a restricted binding value and every write to a chain manifest, derivation record or fidelity record is emitted as an audit event carrying actor, scope, event instant and observation instant in RFC 3339 form with seconds and an explicit offset.",
+        "This model emits audit events and nothing more; storage, retention, querying and destruction of the audit trail are owned by the adopting Dimension's audit model, which holds audit-record lifecycle and its own evidential guarantees.",
+        "Divergence observations and reproducibility determinations are auditable independently of the derivation record they annotate, so that a later dispute can distinguish what was recorded from when it was learned."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Canonicalization profile register URL",
+        "Admitted and refused transform list URL",
+        "Owner and escalation contact"
+      ],
+      "read_order": [
+        "AGENTS.md - identity of the model, its type and the six bootstrap URLs",
+        "Specification URL - scope, exclusions, boundary notes and the neighbouring models that own payload identity, verification, execution, encoding, enforcement and audit",
+        "Canonicalization profile register and the admitted and refused transform lists, before any derivation is declared or reproduced",
+        "Storage type URL - the projection in use, which is a rendering and is never authoritative for semantics",
+        "Interface URL - how records are read and written, including the append-only and immutability constraints",
+        "Processes URL - how derivations are declared, independently reproduced, superseded and disposed of"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "The structure derives the reproducible protected-bytes and context-binding surface of the Digital Signature / Proof mixin from primary canonicalization, signing-input and domain-separation specifications published by the IETF, W3C, the Unicode Consortium and C2PA. Every bundle, layer, finding and function is limited to declaring and recording; signature values, key material, trust decisions, payload identity, transform execution, format encoding, policy enforcement and audit-trail storage are carried by referenced models and named in the boundary notes.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Chain manifests, derivation records, selection maps, fidelity records and pin records carry master-system identifiers, with governed algorithm URIs used verbatim for external profiles. A digest is explicitly demoted to a content address, and neither a date nor a version label may serve as an identifier."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Chain manifests become immutable on first reference; change produces a new version with an effective-from instant and a supersession reference, and only annotations may be appended in place. The lifecycle of the signature itself, including renewal and re-signing, is explicitly left to the parent and lifecycle models."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Fourteen composition links separate ownership: CHILD to the parent cryptographic model, MIX-IN to host records, REFERENCE to payload, verification and enforcement models, and ALIGN to nine external specifications recorded as mappings rather than conformance."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Derivation event instants, disposition instants and divergence event instants are recorded separately from observation or ingestion instants, all in RFC 3339 form with seconds and an explicit offset. Conversion from epoch seconds or schema dateTime retains the original lexical value."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Implementation pins, base URI establishment rules, retrieval permissions and pre-transform representation references make the origin of both the input and the output attributable. The requirement to record a pin is derived from divergence risk rather than from a normative mandate, and that weakness is listed as an omission."
+      },
+      {
+        "dimension": "ownership",
+        "status": "gap",
+        "notes": "No cited primary source establishes ownership or stewardship semantics for canonicalization records; the sources address key ownership, which is external to this model. The roles and owner-package requirements stated here are derived operating practice, not standards-derived structure."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Reproducibility is treated as evidence requiring an independently pinned second implementation, duplicate-key and validity-profile dispositions are explicit, and divergence is recorded rather than repaired. Signature validity itself is not asserted here."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "The default is disclosure, because reproducibility fails silently when parameters are withheld; this follows from the requirement that a canonicalization record unequivocally express the algorithms used. The four named exceptions are operating policy rather than standards-derived, which weakens this row."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "gap",
+        "notes": "No cited canonicalization or signing specification addresses retention of derivation records. The tombstone rule, its retained minimum fields and the escalation when a pre-transform representation is destroyed are derived from the falsifiability requirement; scheduling, legal hold and execution are assigned to the adopting Dimension's retention policy and the payload model."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Conflicting ordering, escaping, duplicate-key and timestamp rules across the JSON, XML, CBOR, RDF and HTTP families are recorded as conflicts rather than reconciled, and each declaration names the rule set it selects. Conformance vectors are required as evidence of agreement."
+      },
+      {
+        "dimension": "canonicalization determinism",
+        "status": "covered",
+        "notes": "Ordered steps, three-valued presence, versioned identifiers, bound versus defaulted parameters, media types and implementation pins together make the protected bytes reproducible or demonstrably not."
+      },
+      {
+        "dimension": "domain separation and context binding",
+        "status": "covered",
+        "notes": "Domain separation tags with uniqueness and version construction, structure context labels, proof purpose, domain, challenge, explicit typing and external additional authenticated data are all declared inside the protected region, with empty distinguished from absent."
+      },
+      {
+        "dimension": "character encoding and Unicode",
+        "status": "covered",
+        "notes": "Input encoding, output octet encoding, normalization form including the explicit value none, Unicode version of record and unassigned-code-point handling are declared, with compatibility normalization flagged as irreversible."
+      },
+      {
+        "dimension": "threat and abuse coverage",
+        "status": "covered",
+        "notes": "Replay, substitution, wrapping and relocation, parser differentials, confused deputy and cross-protocol reuse are each declared with a mitigating mechanism and a residual risk note, plus complexity limits against poison inputs. Enforcement of every one of these is external by construction."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "No geospatial dimension applies to canonical byte derivation. Location-like values such as base URI, component source and byte offsets are modelled as reference and coverage data, not as geometry."
+      },
+      {
+        "dimension": "privacy",
+        "status": "gap",
+        "notes": "Selective disclosure, unlinkability and derived-proof canonicalization are reachable only indirectly through the chain-step record and the nonce binding. No dedicated privacy surface is modelled, and cryptosuites designed for derived proofs were not examined."
+      }
+    ],
+    "known_omissions": [
+      "Timestamping authorities, long-term validation, archival re-signing and countersignature chaining are not modelled; they belong to a signature lifecycle model.",
+      "Selective disclosure and derived-proof canonicalization, including BBS-style cryptosuites, are only partially reachable through the chain-step record and are not modelled as a distinct surface.",
+      "Perceptual or soft bindings, watermarking and other non-cryptographic content bindings are excluded; only byte-range, component and box exclusion patterns were examined.",
+      "CMS and S/MIME signed-attribute canonicalization, PDF byte-range digests and PKCS#7 detached-content rules were not examined; conclusions are drawn from the XML, JSON, CBOR, RDF and HTTP families only.",
+      "Post-quantum algorithm identifier registration practice and its effect on algorithm pinning and profile versioning were not reviewed.",
+      "No cited source normatively requires recording an external implementation pin; that requirement is derived from documented divergence risk rather than from a mandate, and should be treated as proposed rather than canonical.",
+      "Streaming and incremental derivation, where protected bytes are produced before the whole input is available, is not modelled.",
+      "Countersignature and multiple-signature interaction, where distinct signatures cover overlapping component sets, is acknowledged only through the signature confusion risk note."
+    ],
+    "conflicts": [
+      "Key ordering rules are mutually incompatible: RFC 8785 sorts by UTF-16 code units of unescaped property names, RFC 8949 deterministic CBOR sorts by bytewise order of the encoded keys, and Canonical XML sorts attributes by namespace URI then local name. No cross-syntax ordering rule exists and none is invented here.",
+      "Duplicate key handling diverges: RFC 8259 makes uniqueness a SHOULD with explicitly unpredictable parser behaviour, RFC 8785 requires I-JSON and forbids duplicates outright, and RFC 8949 treats a duplicate CBOR map key as well-formed but not valid, leaving disposition to the protocol.",
+      "Canonical XML 2.0 documents unresolved defects in Canonical XML 1.0 and 1.1 and in Exclusive C14N, including QName exposure relevant to wrapping, yet it was published as a Working Group Note rather than a Recommendation. The versions with documented defects therefore remain the deployed normative ones.",
+      "Unicode normalization is applied by neither Canonical XML nor RFC 8785, while wider web guidance recommends NFC. Applying any normalization inside a chain is therefore a local decision, and NFKC or NFKD are irreversible and must not be applied blindly.",
+      "Timestamp representations disagree: RFC 9421 uses integer UNIX seconds, Data Integrity uses an XMLSchema dateTime, and neither guarantees an explicit offset by construction. This model's own RFC 3339 rule therefore differs from both, and every conversion must retain the original lexical value.",
+      "RFC 7515 places unprotected headers outside integrity protection while noting that changing them causes validation failure where key selection depends on them; RFC 9052 states more strictly that an attribute must be taken from the protected bucket where present. This model adopts the stricter reading and records the divergence."
+    ],
+    "regional_assumptions": [
+      "No jurisdiction-specific electronic signature regime was used to derive structure. Regional advanced or qualified signature schemes may mandate specific canonicalization algorithms, signature policy identifiers or archival fields that are absent here.",
+      "All cited sources are English-language publications of international standards bodies and one industry consortium. National or sector profiles that mandate particular algorithms, key lengths or transform restrictions are not represented.",
+      "Retention periods, legal hold and destruction obligations are assumed to be set by the adopting Dimension's jurisdiction rather than by this model, and no default period is proposed.",
+      "Registry availability is assumed: the model relies on governed algorithm and media-type identifiers remaining resolvable, which may not hold in air-gapped or sovereign deployments."
+    ],
+    "adversarial_checks": [
+      "Attempted to make one syntax canonical for all subjects: rejected. The primary sources define mutually incompatible ordering, escaping and duplicate-key rules, so each declaration names the rule set it selects and the incompatibilities are recorded as conflicts rather than reconciled.",
+      "Attempted to model signature computation, key resolution and trust evaluation: rejected and relocated to boundary notes and composition references, because protected-bytes derivation completes before any signature is computed or checked.",
+      "Attempted to own enforcement of fail-closed handling for unknown critical transforms: rejected. The model declares criticality and the required disposition; refusal, evaluation, complexity-limit application and audit-trail storage are executed by referenced models, and every function's effects were rewritten to say so.",
+      "Attempted to use a digest value as the record identifier: rejected, because content addressing collapses distinct derivations that happen to produce identical bytes and destroys the supersession chain. The digest is retained as a secondary content address only.",
+      "Searched for a counterexample to treating an absent step as equivalent to an identity step: found one in XML Signature reference processing, where an octet stream with no Transforms is digested directly while a declared canonicalization step converts a node-set to octets. The two are therefore modelled as distinct enumerated values in both directions.",
+      "Tested whether a chain manifest alone guarantees reproducibility: it does not. Canonical XML 2.0 shows one algorithm URI governing four parameters with documented defaults, and RDFC-1.0 requires the internal hash algorithm to be expressed unequivocally, so an implementation pin and an independent recomputation are required as separate evidence.",
+      "Checked whether recording the pre-transform representation duplicates payload ownership: it would. Only a reference and digest are held here, custody stays with the payload model, and its destruction is recorded as an annotation that invalidates the coverage claim rather than as a deletion this model performs.",
+      "Checked whether an inclusion-list formulation of coverage would be simpler: rejected, because the exclusion-list pattern was adopted specifically to prevent content being added to an asset without altering the binding, and the simpler formulation reintroduces that attack.",
+      "Reviewed whether declaring a threat-posture artifact would create a shadow policy surface: it would, so the threat-posture finding is inline-only and is consumed by the models that own evaluation and enforcement."
+    ]
+  }
+}

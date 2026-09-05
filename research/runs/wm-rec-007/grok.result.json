@@ -1,0 +1,2978 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-rec-007",
+    "model_id": "WM-REC-007",
+    "name": "Form / Submission",
+    "entry_kind": "aggregate",
+    "purpose": "Govern a format-neutral structured response package: a versioned form instrument, the answers collected against it, the constraint-validation lifecycle, and the submission, receipt, amendment and capture acts that turn those answers into an authoritative record.",
+    "scope_statement": "This aggregate covers the instrument that defines permitted questions, grouping, datatypes and constraints; a specific subject's answers at a point in time; client- and server-side validation; serialization and transmission of a submission; acknowledgement, amendment, withdrawal and error-prevention; and the collection-of-information governance that authorizes an instrument. Storage encodings (HTML, XML, JSON, PDF, multipart) and access interfaces (HTTP, MCP, Git, databases) are projections of this semantics, not the model.",
+    "in_scope": [
+      "Canonical and business identity of a form instrument, including version and collection-control identifiers",
+      "Hierarchical items: groups, questions, repeats, labels, help, answer options and enablement or relevance rules",
+      "A response package of complete or partial answers bound to an instrument version",
+      "Parties to a response: subject, source (who answered), author or recorder, receiving authority and encounter or request context",
+      "Constraint types, suffering states, recalculate or revalidate cycles, and validation reports",
+      "Submission processing: destination, method, serialization, relevance pruning, receipts, replacement of instance data, and submission errors",
+      "Save-incomplete, amendment after completion, change notices, stop or abandon, and entered-in-error or void",
+      "Information-collection clearance, burden, public-protection notices and expiration of collection authority",
+      "Integrity, confidentiality pledges, access, retention of instruments versus responses, and extraction or population relative to other records",
+      "Accessibility constraints that affect instrument design and confirmation of legal, financial or irreversible submissions"
+    ],
+    "out_of_scope": [
+      "The general captured Record aggregate (parent WM-REC-001), except the act of capturing a completed submission as a record",
+      "Person, Organization, Device and Location as first-class identity models; they are referenced parties",
+      "Workflow, Task, PlanDefinition and CDS-hook orchestration of when a form is assigned",
+      "Observation, DiagnosticReport and other fact resources whose focus is meaning rather than question phrasing",
+      "Statistical survey methodology, sampling frames and disclosure-control methods beyond the instrument's burden and utility statements",
+      "Cryptographic signature, seal, certificate and trust-service primitives as a full sibling model",
+      "Generic File, Attachment, Email and Message transport models, except files carried as form-control uploads or submission parts",
+      "PDF, HTML, XML, JSON, YAML, MongoDB, Git or MCP as semantic objects",
+      "UI widget libraries, theming and device rendering except accessibility and intent-based control metadata required to operate the instrument",
+      "National tax-code, court e-filing, eCTD module, or sector notice schemas as native types; those are alignments or specializations"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-REC-001 Record",
+        "distinction": "A Record is information captured and maintained as evidence of a business transaction. A Form/Submission is the structured package (instrument plus answers plus validation and submission acts) that may be captured as a record once received; drafts that were never submitted are in this model and are not yet records.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "FHIR Questionnaire versus QuestionnaireResponse",
+        "distinction": "The Questionnaire is subject- and time-independent definition of permitted questions and constraints. The QuestionnaireResponse is one user's answers at a particular time for a particular subject. This aggregate keeps that split as instrument versus response and does not collapse them.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "FHIR Observation and other clinical fact resources",
+        "distinction": "Observation captures the meaning of a measurement or assertion, not the phrasing, order or enablement of the questions that elicited it. QuestionnaireResponse must record the questions asked. Post-processing may extract facts into Observations; that extraction is an interoperability function, not identity of this model.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "HTML form document and XForms host-language page",
+        "distinction": "HTML mixes presentation, controls and submission attributes in a document tree. XForms separates model, instance and submission from view. This model takes the XForms split as the semantic default and treats HTML forms as a projection that still contributes constraint-validation and entry-list rules.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "US Paperwork Reduction Act collection of information",
+        "distinction": "A collection of information is the authorized instrument (or family of instruments) plus its clearance, control number, burden and public-protection obligations. It is not a filled response. This model composes collection governance onto the instrument and keeps each response as a separate instance.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "EU eForms procurement notices",
+        "distinction": "eForms are legislated, machine-readable notice types for publication on TED, with change notices and subtype-specific mandatory fields. They are a specialized family of form instruments for public-procurement advertising, not a general respondent questionnaire and not this model's identity.",
+        "source_refs": [
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Task, PlanDefinition and broader workflow",
+        "distinction": "Questionnaire supports limited guided data-collection once triggered. Assignment, multi-session capture over time and interactive care-path workflow belong in workflow models.",
+        "source_refs": [
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Electronic signature and trust services",
+        "distinction": "A submission may require or carry a signature or seal. The cryptographic object, certificate, creation device and legal effect of qualified signatures belong to a signature or eIDAS-aligned sibling; this model records whether a response was signed, by whom, at what assurance, and the binding to the payload.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-008"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "XForms 1.1 W3C Recommendation",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/2009/REC-xforms-20091020/",
+      "version_or_date": "W3C Recommendation 20 October 2009",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:10:00Z",
+      "relevance": "Normative split of form model, instance data, constraints, submission element, validation on submit, serialization methods, and events for submit, revalidate, reset, done and error."
+    },
+    {
+      "id": "SRC-002",
+      "title": "HTML Living Standard — Form control infrastructure",
+      "organization": "Web Hypertext Application Technology Working Group",
+      "url": "https://html.spec.whatwg.org/multipage/form-control-infrastructure.html",
+      "version_or_date": "Living Standard, accessed 2026-08-24",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:40:00Z",
+      "relevance": "Constraint validation, disabled and barred-from-validation rules, form-submission attributes (action, method, enctype, novalidate), entry-list construction, and encodings application/x-www-form-urlencoded, multipart/form-data and text/plain."
+    },
+    {
+      "id": "SRC-003",
+      "title": "HL7 FHIR R5 Resource Questionnaire",
+      "organization": "Health Level Seven International",
+      "url": "https://www.hl7.org/fhir/questionnaire.html",
+      "version_or_date": "FHIR v5.0.0 (26 March 2023)",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:15:00Z",
+      "relevance": "Canonical instrument identity (url, identifier, version), item tree, constraints on allowed answers, boundaries versus Observation, Composition and workflow, and the rule that results are communicated as QuestionnaireResponse."
+    },
+    {
+      "id": "SRC-004",
+      "title": "HL7 FHIR R5 Resource QuestionnaireResponse",
+      "organization": "Health Level Seven International",
+      "url": "https://www.hl7.org/fhir/questionnaireresponse.html",
+      "version_or_date": "FHIR v5.0.0 (26 March 2023)",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:20:00Z",
+      "relevance": "Response identity, required questionnaire canonical, status lifecycle, subject, encounter, authored, author versus source, item answers, and validation of a response against its questionnaire."
+    },
+    {
+      "id": "SRC-005",
+      "title": "5 CFR Part 1320 Controlling Paperwork Burdens on the Public",
+      "organization": "United States Office of Management and Budget",
+      "url": "https://www.ecfr.gov/current/title-5/chapter-III/subchapter-B/part-1320",
+      "version_or_date": "eCFR current as of 2026-08-20; source 60 FR 44984 (29 August 1995)",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:45:00Z",
+      "relevance": "Legal definition of collection of information and form instruments, OMB control number and display, public protection, burden, practical utility, recordkeeping, confidentiality pledges, three-year approval limit, and prohibition on substantive modification without re-clearance."
+    },
+    {
+      "id": "SRC-006",
+      "title": "PRA approval process",
+      "organization": "U.S. General Services Administration / Office of Information and Regulatory Affairs",
+      "url": "https://digital.gov/guides/pra/pra-approval-process",
+      "version_or_date": "Guide maintained by OIRA; page accessed 2026-08-24",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-24T16:12:00Z",
+      "relevance": "Clearance lifecycle (60- and 30-day notices, ICR package, Supporting Statement, ROCIS), control-number structure, de minimis versus non-substantive versus revision, generic and emergency clearance, and burden vocabulary."
+    },
+    {
+      "id": "SRC-007",
+      "title": "TED eForms standards and eForms SDK",
+      "organization": "Publications Office of the European Union",
+      "url": "https://ted.europa.eu/en/simap/eforms",
+      "version_or_date": "Page describing Implementing Regulation (EU) 2019/1780 and later amendments; eForms mandatory from October 2023",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-24T16:50:00Z",
+      "relevance": "Legislated form-type families, mandatory and conditionally mandatory fields, change notices that publish a new consolidated version, SDK versioning so historical notices remain interpretable, and the instrument-versus-instance split for procurement notices."
+    },
+    {
+      "id": "SRC-008",
+      "title": "W3C WAI Tutorials — Validating Input",
+      "organization": "World Wide Web Consortium Web Accessibility Initiative",
+      "url": "https://www.w3.org/WAI/tutorials/forms/validation/",
+      "version_or_date": "WAI forms tutorial combining WCAG 2.2 SC 3.3.1 and 3.3.4; accessed 2026-08-24",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-24T17:20:00Z",
+      "relevance": "Required-field identification, client- versus server-side validation, accessible error identification, user review before submit, confirmation of irreversible acts, and stated windows in which a request may be amended or cancelled."
+    },
+    {
+      "id": "SRC-009",
+      "title": "FHIR ValueSet Questionnaire Response Status",
+      "organization": "Health Level Seven International",
+      "url": "https://www.hl7.org/fhir/valueset-questionnaire-answers-status.html",
+      "version_or_date": "FHIR v5.0.0, expansion 26 March 2023",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T17:22:00Z",
+      "relevance": "Normative response lifecycle codes: in-progress, completed, amended, entered-in-error, stopped, with definitions for partial fill, definitive content, post-completion change, void and abandoned-with-no-further-change."
+    },
+    {
+      "id": "SRC-010",
+      "title": "HL7 FHIR Structured Data Capture — Form Data Extraction",
+      "organization": "Health Level Seven International",
+      "url": "https://hl7.org/fhir/uv/sdc/extraction.html",
+      "version_or_date": "SDC STU 4.0.0 based on FHIR R4",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T17:30:00Z",
+      "relevance": "Populate of a QuestionnaireResponse from existing data and extract of submitted answers into other resources; filler remains responsible for validity after human review."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "identity-and-instrument",
+        "name": "Instrument identity and definition",
+        "description": "The versioned form instrument that defines questions, grouping, permitted answers and collection authority, independent of any one respondent.",
+        "rationale": "XForms and FHIR both treat the definition (model or Questionnaire) as a separately identifiable artefact from instance data. PRA and eForms further require the instrument itself to carry control numbers, expiration and field-obligation rules.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-005",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "instrument-identity",
+            "name": "Canonical identity, version and collection control",
+            "description": "How an instrument is named, versioned and tied to an authorizing collection or notice family.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-005",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "instrument-canonical-identity",
+                "name": "Instrument canonical and business identifiers",
+                "description": "A form instrument needs a stable canonical IRI or URL that does not change when copies are stored, plus business identifiers and an author-managed version. A date is not an identifier. eForms additionally version the SDK so historical notices remain interpretable after the regulation changes.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-instrument-master-id",
+                    "text": "What is the authoritative master-system identifier of this instrument, and which issuing system owns it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "master_system_id",
+                      "issuing_system_iri",
+                      "identifier_type"
+                    ]
+                  },
+                  {
+                    "id": "q-instrument-canonical-url",
+                    "text": "What globally unique canonical IRI or URL identifies this questionnaire or notice definition across servers?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "canonical_url",
+                      "namespace_uri"
+                    ]
+                  },
+                  {
+                    "id": "q-instrument-version",
+                    "text": "What business version string and version-comparison algorithm apply, and is this version still the current authorized instrument?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "version",
+                      "version_algorithm",
+                      "is_current",
+                      "supersedes_version"
+                    ]
+                  },
+                  {
+                    "id": "q-instrument-title-language",
+                    "text": "What human titles, computer-friendly name and language of authoring apply to this instrument?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "name",
+                      "title",
+                      "language_code",
+                      "alternate_titles"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "instrument-id",
+                    "name": "Instrument identifier",
+                    "description": "Business identifier for the questionnaire or form definition when represented in other formats.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "instrument-canonical-url",
+                    "name": "Canonical URL",
+                    "description": "Absolute URI identifying the questionnaire when referenced; SHOULD remain the same when stored on different servers.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "instrument-version",
+                    "name": "Instrument version",
+                    "description": "Author-managed version of the questionnaire; not expected to be globally unique.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "instrument-version-algorithm",
+                    "name": "Version algorithm",
+                    "description": "Mechanism used to compare versions to determine which is more current.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sdk-or-spec-release",
+                    "name": "Specification or SDK release",
+                    "description": "Machine-readable specification release used to encode the instrument, required so historical instances remain interpretable after rules change.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "instrument-definition-artifact",
+                    "name": "Form instrument definition",
+                    "description": "The authored definition of questions, grouping, constraints and submission parameters, independent of any filled response.",
+                    "media_or_form": [
+                      "FHIR Questionnaire",
+                      "XForms model",
+                      "eForms notice subtype definition",
+                      "HTML form template"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Prefer canonical URL plus version; else master-system identifier; else Dimension-assigned UUID or ULID. Do not use publication date as the identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "collection-control-and-display",
+                "name": "Collection control number, expiration and public-protection display",
+                "description": "Where an instrument is a US federal collection of information, it must display a currently valid OMB control number, inform respondents that response is not required unless that number is displayed, and usually show an expiration date. Approval is not granted for longer than three years. Display placement differs for paper versus electronic first screens.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-omb-control-number",
+                    "text": "Does this instrument display a currently valid OMB control number, and what is that number and its expiration?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "omb_control_number",
+                      "expiration_date",
+                      "display_location",
+                      "is_currently_valid"
+                    ]
+                  },
+                  {
+                    "id": "q-public-protection-notice",
+                    "text": "Is the respondent informed that they are not required to respond unless a currently valid control number is displayed?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "public_protection_statement",
+                      "statement_placement",
+                      "voluntary_required_or_mandatory",
+                      "authority_citation"
+                    ]
+                  },
+                  {
+                    "id": "q-clearance-status",
+                    "text": "What is the clearance type and status of this collection (standard, generic, emergency, extension, revision, reinstatement)?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "clearance_type",
+                      "clearance_status",
+                      "icr_id",
+                      "approval_period_end"
+                    ]
+                  },
+                  {
+                    "id": "q-control-number-structure",
+                    "text": "If a control number is present, which agency-bureau prefix and collection suffix does it encode?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "agency_bureau_code",
+                      "collection_suffix",
+                      "sponsoring_agency"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "omb-control-number",
+                    "name": "OMB control number",
+                    "description": "Two four-digit groups separated by a hyphen: agency/bureau then collection.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "collection-expiration",
+                    "name": "Collection expiration date",
+                    "description": "Date after which the displayed approval is no longer current; OMB shall not approve longer than three years.",
+                    "value_kind": "date",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "public-protection-flag",
+                    "name": "Public-protection notice present",
+                    "description": "Whether the instrument informs potential respondents they need not respond unless a valid control number is displayed.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "response-obligation",
+                    "name": "Response obligation",
+                    "description": "Whether responses are voluntary, required to obtain or retain a benefit, or mandatory, with cited authority.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "burden-and-control-notice",
+                    "name": "Control-number and burden notice",
+                    "description": "The first-screen or front-page notice carrying control number, expiration, burden estimate, purpose, use, confidentiality and public-protection statement.",
+                    "media_or_form": [
+                      "paper front page",
+                      "electronic first screen",
+                      "instruction block"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identify by the instrument canonical plus the clearance version that authorized the displayed number.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "instrument-structure",
+            "name": "Items, constraints and enablement",
+            "description": "The hierarchical definition of groups and questions, allowed answer types, and rules that make items required, relevant, read-only or repeating.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "item-tree-and-link-ids",
+                "name": "Item tree, link identifiers and grouping",
+                "description": "Instruments organize groups and questions in a hierarchy. FHIR requires link ids unique within a questionnaire. XForms binds controls to instance nodes and supports group, switch, case and repeat. Labels are associated with controls for accessibility. Individual questions are not separately identifiable resources; they exist only as items of the instrument.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-item-link-id",
+                    "text": "What unique link identifier within the instrument identifies this group or question, and is uniqueness enforced?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "link_id",
+                      "uniqueness_scope",
+                      "definition_uri"
+                    ]
+                  },
+                  {
+                    "id": "q-item-hierarchy",
+                    "text": "How is this item nested, ordered and typed (group, question, display), and may it repeat?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "parent_link_id",
+                      "item_type",
+                      "repeats",
+                      "min_occurs",
+                      "max_occurs",
+                      "order"
+                    ]
+                  },
+                  {
+                    "id": "q-item-text-and-label",
+                    "text": "What prompt, label, help, hint and instructional text are shown, and in which language?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "item_text",
+                      "label",
+                      "help",
+                      "hint",
+                      "language_code",
+                      "prefix"
+                    ]
+                  },
+                  {
+                    "id": "q-item-definition-binding",
+                    "text": "Does this item bind to an external data-element definition or structure so answers can later be extracted?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "definition_canonical",
+                      "data_element_path",
+                      "extract_target_type"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "link-id",
+                    "name": "Item link identifier",
+                    "description": "Identifier unique within the questionnaire for a group or question.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "item-type",
+                    "name": "Item type",
+                    "description": "Whether the item is a group, display or a question of a given answer datatype.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "repeats-flag",
+                    "name": "Repeats",
+                    "description": "Whether multiple answers or repeating groups are permitted.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "item-label",
+                    "name": "Label",
+                    "description": "Accessible label associated with the control; XForms requires labels on core form controls.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "instrument-item-map",
+                    "name": "Item inventory and link-id map",
+                    "description": "Ordered inventory of groups and questions with link ids, types, repeat rules and external definition bindings.",
+                    "media_or_form": [
+                      "structured item list",
+                      "Questionnaire.item tree",
+                      "XForms bind and control map"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Composite of instrument canonical, instrument version and link-id.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "answer-constraints-and-enablement",
+                "name": "Answer constraints, relevance and mutability",
+                "description": "Items declare datatype, requiredness, patterns, min and max, and choice lists. XForms model item properties add readonly, required, relevant, calculate and constraint. HTML adds maxlength, minlength, pattern, min, max, step, disabled and readonly. Disabled or non-relevant controls are barred from constraint validation and typically omitted from submission. Enablement may depend on other answers.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-item-datatype-and-required",
+                    "text": "What datatype, requiredness and cardinality apply to answers for this item?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "answer_type",
+                      "required",
+                      "min_occurs",
+                      "max_occurs",
+                      "empty-allowed"
+                    ]
+                  },
+                  {
+                    "id": "q-item-value-domain",
+                    "text": "What pattern, range, step, length limits or answer-option value set constrain the permitted values?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "pattern",
+                      "min_value",
+                      "max_value",
+                      "step",
+                      "max_length",
+                      "min_length",
+                      "answer_options",
+                      "value_set_canonical"
+                    ]
+                  },
+                  {
+                    "id": "q-item-relevance-enablewhen",
+                    "text": "Under what expressions or prior answers is this item relevant or enabled, and is it read-only or disabled?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "relevant_expression",
+                      "enable_when",
+                      "readonly",
+                      "disabled",
+                      "calculate_expression"
+                    ]
+                  },
+                  {
+                    "id": "q-choice-list-source",
+                    "text": "If the item is a selection, are options static, bound to a value set, or generated from instance data?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "choice_source_kind",
+                      "value_set",
+                      "itemset_nodeset",
+                      "allows_open_choice"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "required-mip",
+                    "name": "Required property",
+                    "description": "Whether a value must be provided when the item is relevant. XForms required is independent of datatype empty-string permission.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "relevant-mip",
+                    "name": "Relevant or enabled property",
+                    "description": "Whether the item participates in validation and submission. Non-relevant XForms data may be pruned on submit unless relevance pruning is disabled.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "readonly-mip",
+                    "name": "Readonly property",
+                    "description": "Whether the item is inviolate from user and, in XForms, from actions and DOM writes.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "constraint-expression",
+                    "name": "Constraint expression",
+                    "description": "Additional boolean constraint over the value or related nodes, beyond datatype.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "calculate-expression",
+                    "name": "Calculate expression",
+                    "description": "Declarative formula that computes the item value from other instance data.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "constraint-catalogue",
+                    "name": "Instrument constraint catalogue",
+                    "description": "Declared datatypes, required, relevant, readonly, calculate and constraint rules keyed by link-id or bind.",
+                    "media_or_form": [
+                      "XForms bind set",
+                      "Questionnaire item constraints",
+                      "HTML constraint attributes"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Instrument canonical plus version plus bind or link-id.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "response-package",
+        "name": "Response package and parties",
+        "description": "A complete or partial set of answers to a specific instrument for a specific subject at a time, including who answered, who recorded, status and attachments.",
+        "rationale": "FHIR treats each completion for a different subject or time as a distinct QuestionnaireResponse. XForms keeps evolving instance data until submit or reset. Status codes distinguish in-progress, completed, amended, stopped and entered-in-error.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-004",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "response-identity-lifecycle",
+            "name": "Response identity, status and time",
+            "description": "Business identifiers, lifecycle status, and the distinction between authored time, event time and ingestion time.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "response-identifiers-and-status",
+                "name": "Response identifiers and lifecycle status",
+                "description": "A response has business identifiers that remain constant as it is updated, a required reference to the instrument canonical, and a status. in-progress means answers are still expected; completed means content is regarded as definitive; amended means completed then changed; entered-in-error voids the package; stopped means abandoned with no subsequent changes.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-response-master-id",
+                    "text": "What master-system identifier and additional business identifiers uniquely identify this response package?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "response_id",
+                      "business_identifiers",
+                      "assigning_system"
+                    ]
+                  },
+                  {
+                    "id": "q-response-instrument-ref",
+                    "text": "Which exact instrument canonical and version was this response answered against?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "questionnaire_canonical",
+                      "instrument_version",
+                      "instrument_derived_hash"
+                    ]
+                  },
+                  {
+                    "id": "q-response-status",
+                    "text": "What is the current lifecycle status, who set it, and at what time?",
+                    "kind": "state",
+                    "answer_data": [
+                      "status",
+                      "status_set_at",
+                      "status_set_by",
+                      "prior_status"
+                    ]
+                  },
+                  {
+                    "id": "q-response-completeness",
+                    "text": "Is this a complete or partial list of answers, and are further changes still expected?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "completeness",
+                      "changes_expected",
+                      "required_items_unanswered"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "response-id",
+                    "name": "Response identifier",
+                    "description": "Business identifiers assigned by the performer or other systems; remain constant as the resource is updated.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "questionnaire-canonical-ref",
+                    "name": "Questionnaire canonical",
+                    "description": "Canonical URL of the Questionnaire being answered; required on QuestionnaireResponse in FHIR R5.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "response-status",
+                    "name": "Response status",
+                    "description": "in-progress, completed, amended, entered-in-error or stopped.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dimension-uuid",
+                    "name": "Dimension-assigned UUID or ULID",
+                    "description": "Identifier assigned by the adopting Dimension when no master-system identifier yet exists.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "response-package-artifact",
+                    "name": "Structured response package",
+                    "description": "The answer set bound to an instrument version, including status and identifiers.",
+                    "media_or_form": [
+                      "FHIR QuestionnaireResponse",
+                      "XForms instance document",
+                      "name-value entry list"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Prefer master-system identifier; else governed IRI; else Dimension UUID or ULID. Status is not an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "response-temporal-authorship",
+                "name": "Authored time versus event and ingestion time",
+                "description": "authored is the date and time the response was last modified by the user. Submission, receipt and records-capture are later events and must not reuse authored as their identity or as their only timestamp. Record event time and observation or ingestion time separately when both are needed.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-authored-time",
+                    "text": "When was this response last modified by the user, with seconds and an explicit offset or Z?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "authored_at",
+                      "time_zone_offset"
+                    ]
+                  },
+                  {
+                    "id": "q-event-versus-ingestion",
+                    "text": "What is the business event time of the answers versus the observation or ingestion time into the receiving system?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "event_time",
+                      "ingestion_time",
+                      "clock_source"
+                    ]
+                  },
+                  {
+                    "id": "q-encounter-or-window",
+                    "text": "During which encounter, session or filing window was this response created, and is it tightly associated with that context?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "encounter_ref",
+                      "session_id",
+                      "filing_window_start",
+                      "filing_window_end"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "authored-at",
+                    "name": "Authored timestamp",
+                    "description": "Date and time the questionnaire response was last modified by the user, RFC 3339 with seconds and offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "event-time",
+                    "name": "Business event time",
+                    "description": "Time the answers claim to describe, when different from authored or ingestion time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "ingestion-time",
+                    "name": "Ingestion time",
+                    "description": "Time the receiving system observed or ingested the package.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "encounter-ref",
+                    "name": "Encounter reference",
+                    "description": "Encounter during which the response was created or to which creation is tightly associated.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Authored, event and ingestion instants are inline metadata on the response package; they are not separately serialized artefacts."
+              }
+            ]
+          },
+          {
+            "id": "parties-and-answers",
+            "name": "Parties, answers and attachments",
+            "description": "Who the answers are about, who answered, who recorded them, the item-answer tree, uploads and repeating groups.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "subject-author-source",
+                "name": "Subject, source, author and based-on context",
+                "description": "Subject is who or what the answers apply to and is not necessarily the source of information. Source is who or what answered. Author is who or what received the answers and recorded them. basedOn links a fulfilling request; partOf links an enclosing procedure or observation.",
+                "source_refs": [
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-response-subject",
+                    "text": "Who or what is the subject of these answers, and is that party different from the source who answered?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "subject_ref",
+                      "subject_type",
+                      "same_as_source"
+                    ]
+                  },
+                  {
+                    "id": "q-response-source",
+                    "text": "Which individual, organization or device answered the questions about the subject?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "source_ref",
+                      "source_type",
+                      "source_capacity"
+                    ]
+                  },
+                  {
+                    "id": "q-response-author",
+                    "text": "Which individual, organization or device received the answers and recorded them in the system?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "author_ref",
+                      "author_type",
+                      "recording_system"
+                    ]
+                  },
+                  {
+                    "id": "q-based-on-part-of",
+                    "text": "What request, care plan, procedure or observation does this response fulfill or form part of?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "based_on_refs",
+                      "part_of_refs"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "subject-ref",
+                    "name": "Subject",
+                    "description": "Who or what the answers apply to; not necessarily the source.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "source-ref",
+                    "name": "Source",
+                    "description": "Individual or device that answered the questions about the subject.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "author-ref",
+                    "name": "Author or recorder",
+                    "description": "Individual or device that received the answers and recorded them.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "based-on-ref",
+                    "name": "Based on",
+                    "description": "Plan, proposal or order fulfilled in whole or in part by this response.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Party references are identifiers pointing at sibling Person, Organization or Device records; they are not artefacts of this model."
+              },
+              {
+                "id": "item-answers-repeats-uploads",
+                "name": "Item answers, repeats and file uploads",
+                "description": "Answers are grouped to match the instrument. Each answer is keyed by link-id. Repeats produce multiple items. HTML and XForms upload controls contribute filename, media type and binary payload into the entry list or instance. Disabled or non-successful controls are omitted.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-answer-values",
+                    "text": "What answer values were recorded for each link-id, including datatype, coding and empty-but-relevant omissions?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "link_id",
+                      "answer_values",
+                      "answer_type",
+                      "omitted_relevant"
+                    ]
+                  },
+                  {
+                    "id": "q-repeat-indexes",
+                    "text": "For repeating groups, what instance indexes exist and how do nested answers attach to each repeat?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "repeat_index",
+                      "parent_item_id",
+                      "nested_answers"
+                    ]
+                  },
+                  {
+                    "id": "q-uploads",
+                    "text": "Which file uploads are part of this package, with filename, media type, size and integrity hash?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "filename",
+                      "media_type",
+                      "byte_length",
+                      "digest",
+                      "control_name"
+                    ]
+                  },
+                  {
+                    "id": "q-directionality-or-hidden",
+                    "text": "Were hidden, calculated or directionality fields included in the submitted entry list?",
+                    "kind": "other",
+                    "answer_data": [
+                      "hidden_fields",
+                      "dirname_values",
+                      "calculated_values"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "answer-value",
+                    "name": "Answer value",
+                    "description": "One typed value for a question item; cardinality follows the instrument.",
+                    "value_kind": "other",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "upload-filename",
+                    "name": "Upload filename",
+                    "description": "Original filename associated with an upload control.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "upload-mediatype",
+                    "name": "Upload media type",
+                    "description": "Media type of an uploaded payload.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "upload-payload",
+                    "name": "Upload payload",
+                    "description": "Binary content of a file upload carried in multipart submission or instance.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "upload-part",
+                    "name": "Uploaded file part",
+                    "description": "A file submitted with the response via an upload control.",
+                    "media_or_form": [
+                      "multipart/form-data part",
+                      "XForms upload instance node"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus control name plus filename plus content digest.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "validation-lifecycle",
+        "name": "Validation lifecycle and error prevention",
+        "description": "Declarative and procedural checking of answers against the instrument, the split between client and server, accessible error reporting, and confirmation before irreversible submit.",
+        "rationale": "XForms revalidate is a first-class processing step; HTML defines constraint validation and suffering states; WAI requires server-side validation and accessible identification of errors; incomplete save is an explicit exception via novalidate or validate=false.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "constraint-evaluation",
+            "name": "Constraint evaluation and validity states",
+            "description": "How validity is computed for each item and for the package, including bars from validation and save-incomplete.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ],
+            "findings": [
+              {
+                "id": "constraint-suffering-states",
+                "name": "Constraint kinds and suffering states",
+                "description": "HTML names suffering states such as being too long, too short, missing required value, type mismatch, pattern mismatch and range overflow or underflow. Disabled controls are barred from constraint validation. XForms combines schema type, required, constraint MIP and relevance. FHIR responses can be validated against cardinality, datatype and required groups of their Questionnaire.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-item-validity",
+                    "text": "For each relevant item, is it valid, and which suffering states or failed constraints apply?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "link_id",
+                      "is_valid",
+                      "suffering_states",
+                      "failed_constraint_ids"
+                    ]
+                  },
+                  {
+                    "id": "q-package-validity",
+                    "text": "Is the selected instance or response package valid for submission under the current validate flag?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "package_valid",
+                      "validate_flag",
+                      "barred_items",
+                      "pruned_irrelevant_items"
+                    ]
+                  },
+                  {
+                    "id": "q-calculated-freshness",
+                    "text": "Have calculate, rebuild and revalidate been run since the last user or action mutation?",
+                    "kind": "process",
+                    "answer_data": [
+                      "rebuild_needed",
+                      "recalculate_needed",
+                      "revalidate_needed",
+                      "last_revalidate_at"
+                    ]
+                  },
+                  {
+                    "id": "q-schema-versus-mip",
+                    "text": "Which failures come from schema or datatype versus XForms or questionnaire model-item properties versus custom business rules?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "schema_failures",
+                      "mip_failures",
+                      "business_rule_failures"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "is-valid",
+                    "name": "Valid flag",
+                    "description": "Whether the item or package currently satisfies applicable constraints.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "suffering-state",
+                    "name": "Suffering state",
+                    "description": "Named constraint-validation failure such as too-long, too-short, value-missing, type-mismatch, pattern-mismatch or range error.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "validate-on-submit",
+                    "name": "Validate on submit",
+                    "description": "Whether submission processing will refuse invalid data. XForms submission/@validate and HTML novalidate or formnovalidate invert this for save-incomplete.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "barred-from-validation",
+                    "name": "Barred from constraint validation",
+                    "description": "True when the control is disabled or otherwise excluded from interactive constraint validation.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "validation-report",
+                    "name": "Validation report",
+                    "description": "Item- and package-level validity, suffering states, barred items and whether validate-on-submit was in force.",
+                    "media_or_form": [
+                      "structured validation report",
+                      "xforms-invalid notifications",
+                      "Constraint Validation API result"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus revalidate timestamp plus engine identity.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "client-server-and-save-incomplete",
+                "name": "Client versus server validation and save-incomplete",
+                "description": "Client-side validation improves experience and reduces round-trips but can be bypassed; server-side validation is required for security. Authors may turn off instance validity checking to save unfinished data. HTML formnovalidate on a save button is the corresponding pattern. A submission with no resource can be used in XForms solely to test validity.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-validation-locus",
+                    "text": "Which constraints were evaluated client-side, which server-side, and were they equivalent?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "client_constraints",
+                      "server_constraints",
+                      "divergence_notes"
+                    ]
+                  },
+                  {
+                    "id": "q-save-incomplete-allowed",
+                    "text": "Is save-incomplete permitted, which submitter control used novalidate, and where is the unfinished package stored?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "save_incomplete_allowed",
+                      "novalidate_used",
+                      "draft_storage_ref",
+                      "resume_token"
+                    ]
+                  },
+                  {
+                    "id": "q-validity-test-only",
+                    "text": "Was a submit attempted only to test validity without transmitting a resource?",
+                    "kind": "process",
+                    "answer_data": [
+                      "validity_test_only",
+                      "resource_specified",
+                      "xforms_submit_error_reason"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "client-validated",
+                    "name": "Client-validated",
+                    "description": "Whether interactive or script constraint validation ran before transmission.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "server-validated",
+                    "name": "Server-validated",
+                    "description": "Whether the receiving system re-checked constraints; required for security.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "save-incomplete",
+                    "name": "Save incomplete",
+                    "description": "Whether this persistence skipped validity checking to preserve unfinished answers.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "draft-response-artifact",
+                    "name": "Unfinished draft response",
+                    "description": "Instance data saved with validation disabled so the respondent can resume.",
+                    "media_or_form": [
+                      "draft QuestionnaireResponse in-progress",
+                      "XForms instance snapshot"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Same response identifier as the eventual submission; status in-progress; not a captured record until submitted under validate=true.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "error-prevention-and-quality",
+            "name": "Accessible errors, review and confirmation",
+            "description": "How failures are identified to people, how answers can be reviewed, and how irreversible submissions are confirmed or undone.",
+            "source_refs": [
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "accessible-error-identification",
+                "name": "Accessible error identification and notifications",
+                "description": "Required fields must be identified in labels as well as programmatically. Validation errors must be described in text. Custom validation must notify users accessibly. Browser-generated dialogs should respect user language and preferences. Being liberal with input formats (telephone, postal code) is recommended.",
+                "source_refs": [
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-required-identified",
+                    "text": "Are required items identified both in visible labels and programmatically (required and aria-required)?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "label_marks_required",
+                      "required_attribute",
+                      "aria_required"
+                    ]
+                  },
+                  {
+                    "id": "q-error-text",
+                    "text": "What text descriptions identify missing required fields and values outside required format, and in which language?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "error_messages",
+                      "linked_control_ids",
+                      "language_code"
+                    ]
+                  },
+                  {
+                    "id": "q-forgiving-formats",
+                    "text": "Which value domains accept multiple notations rather than a single rigid pattern?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "forgiving_fields",
+                      "accepted_notations",
+                      "normalization_rules"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "error-message",
+                    "name": "Error message",
+                    "description": "Text description identifying a failed field or format, associated with a control.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "aria-required",
+                    "name": "ARIA required",
+                    "description": "Programmatic required announcement for assistive technology, redundant with HTML required where needed.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "error-language",
+                    "name": "Error language",
+                    "description": "Language of user-facing validation messages.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "error-notification-set",
+                    "name": "User-facing error notification set",
+                    "description": "The messages and programmatic associations presented after a failed validation pass.",
+                    "media_or_form": [
+                      "accessible error list",
+                      "alert text",
+                      "browser validation dialog transcript"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Validation-report identifier plus language.",
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "review-confirm-undo",
+                "name": "Review, confirmation and undo windows",
+                "description": "WCAG error-prevention for legal, financial or data-critical forms expects users to review and correct answers, confirm irreversible actions, and where possible to amend or cancel within a stated time after submit. XForms reset restores instance data to initial values.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-review-before-submit",
+                    "text": "Was the respondent given a review step to inspect and correct answers before the definitive submit?",
+                    "kind": "process",
+                    "answer_data": [
+                      "review_step_present",
+                      "reviewed_at",
+                      "corrections_made"
+                    ]
+                  },
+                  {
+                    "id": "q-irreversible-confirm",
+                    "text": "What confirmation mechanism was required for irreversible or legal, financial or data-destroying actions?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "confirmation_kind",
+                      "confirmation_recorded",
+                      "action_kind"
+                    ]
+                  },
+                  {
+                    "id": "q-amend-or-cancel-window",
+                    "text": "After submit, within what stated duration may the respondent amend or cancel, and has that window closed?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "cooling_off_duration",
+                      "window_end",
+                      "amend_allowed",
+                      "cancel_allowed"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "review-completed",
+                    "name": "Review completed",
+                    "description": "Whether a review-and-correct step occurred before definitive submit.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "confirmation-recorded",
+                    "name": "Confirmation recorded",
+                    "description": "Evidence that the user confirmed an irreversible action.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "cooling-off-end",
+                    "name": "Amendment or cancel window end",
+                    "description": "RFC 3339 instant after which the stated post-submit amendment or cancel right expires.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "confirmation-receipt-to-user",
+                    "name": "User confirmation or policy receipt",
+                    "description": "Summary of submitted answers and any stated amendment or cancel policy given to the user after submit.",
+                    "media_or_form": [
+                      "review summary",
+                      "email receipt",
+                      "on-screen policy notice"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus issued-at timestamp.",
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "submission-act-and-governance",
+        "name": "Submission act, authenticity and governance",
+        "description": "The act of serializing and transmitting a package, receiving and acknowledging it, amending or voiding it, signing or sealing it, extracting it, and governing the collection under clearance, access and retention rules.",
+        "rationale": "XForms and HTML define submission as an algorithm with events, methods and encodings. eForms add change notices. PRA governs whether the instrument may be used at all. SDC populate and extract connect answers to other records.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-005",
+          "SRC-007",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "submit-serialize-receive",
+            "name": "Submit, serialize, receive and replace",
+            "description": "Submission parameters, payload construction, destination, receipts and replacement of instance data with the server response.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ],
+            "findings": [
+              {
+                "id": "submission-act-and-payload",
+                "name": "Submission act, method, serialization and receipt",
+                "description": "A submission names a resource or action URL, an HTTP or XForms method (get, post, put, delete, multipart, urlencoded, SOAP), headers, and a serialization of selected instance data or the HTML entry list. Successful submit yields submit-done context including response headers; failure yields submit-error with a reason. replace and targetref may overwrite instance nodes with the server result.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "q-submission-destination",
+                    "text": "What destination resource, method, headers and mediation (HTTP, SOAP, file, dialog-close) were used for this submit?",
+                    "kind": "process",
+                    "answer_data": [
+                      "resource_uri",
+                      "method",
+                      "headers",
+                      "mediatype",
+                      "soap_binding"
+                    ]
+                  },
+                  {
+                    "id": "q-serialization",
+                    "text": "How was the payload serialized, which nodes or named controls were included, and was relevance pruning applied?",
+                    "kind": "process",
+                    "answer_data": [
+                      "serialization",
+                      "encoding",
+                      "included_nodes",
+                      "relevant_pruning",
+                      "custom_serialization"
+                    ]
+                  },
+                  {
+                    "id": "q-submit-outcome",
+                    "text": "Did submission succeed or fail, at what event times, and what receipt, status code, response headers or error reason were returned?",
+                    "kind": "event",
+                    "answer_data": [
+                      "outcome",
+                      "submitted_at",
+                      "received_at",
+                      "http_status",
+                      "receipt_id",
+                      "error_reason",
+                      "response_headers"
+                    ]
+                  },
+                  {
+                    "id": "q-replace-instance",
+                    "text": "Did the submission replace all or part of instance data with the server response, and which target node was replaced?",
+                    "kind": "process",
+                    "answer_data": [
+                      "replace_mode",
+                      "targetref",
+                      "replaced_at"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "submission-resource",
+                    "name": "Submission resource",
+                    "description": "URI of the submission destination; may be instance-controlled in XForms.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "submission-method",
+                    "name": "Submission method",
+                    "description": "get, post, put, delete, multipart-post, form-data-post, urlencoded-post, dialog or other method.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "serialization-format",
+                    "name": "Serialization format",
+                    "description": "application/xml, multipart/related, multipart/form-data, application/x-www-form-urlencoded, text/plain, none or custom.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "submission-outcome",
+                    "name": "Submission outcome",
+                    "description": "done or error, with reason code when failed.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "receipt-id",
+                    "name": "Receipt identifier",
+                    "description": "Identifier assigned by the receiving system to acknowledge the submission.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "submission-payload",
+                    "name": "Serialized submission payload",
+                    "description": "The exact bytes or structured document transmitted.",
+                    "media_or_form": [
+                      "application/xml",
+                      "multipart/form-data",
+                      "application/x-www-form-urlencoded",
+                      "application/fhir+json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus submitted-at RFC 3339 instant plus payload digest.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "submission-receipt",
+                    "name": "Submission receipt",
+                    "description": "Receiving-system acknowledgement with identifiers, timestamps and outcome.",
+                    "media_or_form": [
+                      "HTTP response",
+                      "xforms-submit-done context",
+                      "TED publication identifier"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Receiving-system receipt identifier; record received-at separately from submitted-at.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "amendment-change-void",
+                "name": "Amendment, change notice, stop and void",
+                "description": "After completion, a response may be amended (FHIR amended). eForms publish a new consolidated notice version describing the change, but cannot use a change notice for significant structural changes such as adding or removing lots. stopped means abandoned with no further changes. entered-in-error voids the package. PRA treats material instrument change as requiring new OMB approval.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-amendment-history",
+                    "text": "Has this package been amended after completion, and what prior versions and change descriptions exist?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "is_amended",
+                      "prior_version_refs",
+                      "change_description",
+                      "amended_at"
+                    ]
+                  },
+                  {
+                    "id": "q-change-notice-limits",
+                    "text": "If this is a published notice, is the update a change notice, and does it stay within permitted non-significant changes?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "is_change_notice",
+                      "significant_change",
+                      "forbidden_changes"
+                    ]
+                  },
+                  {
+                    "id": "q-stop-or-void",
+                    "text": "Was the response stopped without completion or entered in error and voided, and who authorized that terminal state?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "terminal_status",
+                      "authorized_by",
+                      "reason",
+                      "effective_at"
+                    ]
+                  },
+                  {
+                    "id": "q-instrument-material-change",
+                    "text": "If the instrument changed, was the change de minimis, non-substantive, or a revision requiring re-clearance?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "change_class",
+                      "reapproval_required",
+                      "approval_ref"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "prior-version-ref",
+                    "name": "Prior version reference",
+                    "description": "Identifier of the completed package this amendment or change notice replaces.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "change-description",
+                    "name": "Change description",
+                    "description": "Human description of what changed, as required on eForms change notices.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "instrument-change-class",
+                    "name": "Instrument change class",
+                    "description": "de minimis, non-substantive, revision, extension or reinstatement under PRA practice.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "change-notice-artifact",
+                    "name": "Change or amendment notice",
+                    "description": "A new consolidated version describing permitted changes to a previously published or completed package.",
+                    "media_or_form": [
+                      "eForms change notice",
+                      "amended QuestionnaireResponse",
+                      "revision ICR"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "New version identifier linked to prior version identifier; change description is not an identifier.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "authenticity-access-interop",
+            "name": "Authenticity, access, retention and extraction",
+            "description": "How a submission becomes trustworthy evidence, who may see it, how long it is kept, and how answers are populated from or extracted to other records.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "integrity-signature-and-capture",
+                "name": "Integrity, signature evidence and record capture",
+                "description": "XForms provides digest and hmac functions but not a full signature standard. WAI treats legal and financial submits as needing confirmation. Once received, a completed package is eligible to be captured as a Record (parent model). Confidentiality pledges in PRA must be supported by statute or regulation and by consistent security policy. This model records signature presence and assurance as alignment, not eIDAS conformance.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-payload-integrity",
+                    "text": "What digest or integrity value binds the received payload, and was it verified?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "digest_algorithm",
+                      "digest_value",
+                      "verified",
+                      "verified_at"
+                    ]
+                  },
+                  {
+                    "id": "q-signature-evidence",
+                    "text": "Was the package signed or sealed, at what assurance, by which signer, and is the signature object stored elsewhere?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "signed",
+                      "assurance_level",
+                      "signer_ref",
+                      "signature_object_ref",
+                      "signed_at"
+                    ]
+                  },
+                  {
+                    "id": "q-captured-as-record",
+                    "text": "Has this completed submission been captured as a record, with which record identifier and capture time?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "captured",
+                      "record_id",
+                      "captured_at",
+                      "custody_system"
+                    ]
+                  },
+                  {
+                    "id": "q-confidentiality-pledge",
+                    "text": "What confidentiality pledge was made to respondents, under what authority, and which security policy supports it?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "pledge_text",
+                      "legal_authority",
+                      "security_policy_ref",
+                      "sharing_limits"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "payload-digest",
+                    "name": "Payload digest",
+                    "description": "Integrity hash of the received submission payload.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "signed-flag",
+                    "name": "Signed",
+                    "description": "Whether a signature or seal is bound to the package.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "record-ref",
+                    "name": "Captured record reference",
+                    "description": "Identifier of the parent-model Record created on capture.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "confidentiality-authority",
+                    "name": "Confidentiality authority",
+                    "description": "Statute or regulation supporting any confidentiality pledge.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "integrity-manifest",
+                    "name": "Integrity and signature binding manifest",
+                    "description": "Digest, optional pointer to an external signature object, capture record identifier and confidentiality pledge citation.",
+                    "media_or_form": [
+                      "manifest object",
+                      "detached signature pointer"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus payload digest. The signature bytes live in a sibling signature model when present.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "access-privacy-retention",
+                "name": "Access, privacy, retention and deletion",
+                "description": "PRA treats PII and confidentiality as collection-design issues. Recordkeeping requirements must state how long persons retain specified records; OMB will not ordinarily approve non-health, contract, grant or tax recordkeeping beyond three years unless justified. FHIR QuestionnaireResponse is in patient, practitioner, related-person, encounter and device compartments. Entered-in-error is a void, not a physical delete. Drafts and captured records may have different retention.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-access-scope",
+                    "text": "Who may read this instrument, this response, its uploads and its validation report, and under which compartment or role?",
+                    "kind": "access",
+                    "answer_data": [
+                      "read_roles",
+                      "compartments",
+                      "public_or_restricted"
+                    ]
+                  },
+                  {
+                    "id": "q-pii-and-exceptions",
+                    "text": "What PII or confidential classes are present, and which legal exceptions (criminal investigation, audit of a named party, intelligence) take the collection outside PRA?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "pii_classes",
+                      "pra_exception",
+                      "audit_case_file_ref"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-schedule",
+                    "text": "What retention applies to the instrument, to drafts, to submitted responses and to uploads, and when is deletion or destruction authorized?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "instrument_retention",
+                      "draft_retention",
+                      "response_retention",
+                      "upload_retention",
+                      "disposal_due_at",
+                      "legal_hold"
+                    ]
+                  },
+                  {
+                    "id": "q-respondent-erasure",
+                    "text": "May the source request erasure or correction, and does a cooling-off or records schedule override that request?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "erasure_allowed",
+                      "correction_path",
+                      "overriding_schedule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "access-class",
+                    "name": "Access class",
+                    "description": "Public, restricted, patient-compartment or other access classification of the response.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "pii-present",
+                    "name": "PII present",
+                    "description": "Whether the package contains personally identifiable information.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "recordkeeping-period",
+                    "name": "Recordkeeping period",
+                    "description": "Stated period persons must maintain specified records when the instrument imposes recordkeeping.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "disposal-due-at",
+                    "name": "Disposal due at",
+                    "description": "Earliest RFC 3339 instant at which destruction of this response is authorized absent legal hold.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "retention-and-access-record",
+                    "name": "Access and retention decision record",
+                    "description": "Documented access class, PII flags, recordkeeping period and disposal due date for a response or instrument.",
+                    "media_or_form": [
+                      "policy decision object",
+                      "records schedule citation"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Target artefact identifier plus policy version.",
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "populate-extract-align",
+                "name": "Populate, extract and standard alignments",
+                "description": "SDC populate builds an initial QuestionnaireResponse from existing data; after human review the filler must ensure validity. Extraction uses submitted answers to create or update other resources. Alignments to HTML, XForms, FHIR, PRA and eForms are not claims of joint conformance. Conflicts (R5 required questionnaire canonical versus older optional; XFA deprecated in PDF 2.0; eForms as notices not respondent forms) must be recorded.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-010",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-populated-from",
+                    "text": "Was this response pre-populated, from which sources, and which answers were then edited by a human?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "populated",
+                      "source_resource_refs",
+                      "edited_link_ids",
+                      "filler_validated_after_edit"
+                    ]
+                  },
+                  {
+                    "id": "q-extracted-to",
+                    "text": "Into which target records or resources were answers extracted after submit, and with what mapping?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "extract_targets",
+                      "mapping_ids",
+                      "extract_status"
+                    ]
+                  },
+                  {
+                    "id": "q-alignment-conflicts",
+                    "text": "Which external standards is this instance aligned to, and which known conflicts or non-conformances apply?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "aligned_standards",
+                      "conflict_ids",
+                      "conformance_claimed"
+                    ]
+                  },
+                  {
+                    "id": "q-notice-family",
+                    "text": "If this instrument is an eForms notice, what form type and subtype govern mandatory and conditionally mandatory fields?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "form_type",
+                      "notice_subtype",
+                      "sdk_version",
+                      "field_obligation_profile"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "populated-flag",
+                    "name": "Populated",
+                    "description": "Whether initial answers were generated from existing data before human review.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "extract-target",
+                    "name": "Extract target",
+                    "description": "Reference to a record or resource created or updated from this response.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "alignment-code",
+                    "name": "Alignment",
+                    "description": "Named external standard this instance is aligned to, without implying certified conformance.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "eforms-subtype",
+                    "name": "eForms notice subtype",
+                    "description": "Notice subtype from the eForms annex that determines field obligation.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "mapping-and-extract-log",
+                    "name": "Populate and extract log",
+                    "description": "Trace of pre-population sources, human edits, filler validation and downstream extract targets.",
+                    "media_or_form": [
+                      "SDC extract bundle",
+                      "mapping trace"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Response identifier plus extract-run timestamp.",
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "author-instrument",
+      "name": "Author or revise instrument",
+      "description": "Create or version a form instrument with unique link ids, constraints, labels and submission parameters.",
+      "inputs": [
+        "draft item tree",
+        "constraint catalogue",
+        "canonical URL policy",
+        "prior version if any"
+      ],
+      "outputs": [
+        "instrument definition artefact",
+        "item inventory",
+        "constraint catalogue"
+      ],
+      "preconditions": [
+        "Author is the instrument steward",
+        "Link ids will be unique within the instrument"
+      ],
+      "effects": [
+        "A new instrument version exists",
+        "Prior version may be marked superseded"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "clear-collection",
+      "name": "Clear an information collection",
+      "description": "Obtain or extend authority to use an instrument as a collection of information, including burden, notices and control number.",
+      "inputs": [
+        "instrument",
+        "supporting statement",
+        "burden estimate",
+        "statutory authority"
+      ],
+      "outputs": [
+        "control number",
+        "expiration date",
+        "public-protection notice text",
+        "clearance status"
+      ],
+      "preconditions": [
+        "Collection is in PRA coverage or an analogous regime",
+        "Agency Senior Official or equivalent certifies necessity and practical utility"
+      ],
+      "effects": [
+        "Instrument may be displayed to ten or more persons",
+        "Public-protection and display obligations attach"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "populate-response",
+      "name": "Populate a response",
+      "description": "Create an initial response package from an instrument and available source data, then present it for human review.",
+      "inputs": [
+        "instrument canonical and version",
+        "subject",
+        "source records"
+      ],
+      "outputs": [
+        "in-progress response",
+        "populate trace"
+      ],
+      "preconditions": [
+        "Instrument is identified",
+        "Filler will require human review before treating answers as definitive"
+      ],
+      "effects": [
+        "Response exists in in-progress status",
+        "Some answers may be pre-filled"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "revalidate-package",
+      "name": "Revalidate package",
+      "description": "Rebuild calculated values and re-evaluate schema, required, constraint, relevance and HTML suffering states.",
+      "inputs": [
+        "instance or response",
+        "instrument constraints",
+        "validate flag"
+      ],
+      "outputs": [
+        "validation report",
+        "valid and invalid events"
+      ],
+      "preconditions": [
+        "Instance data exists"
+      ],
+      "effects": [
+        "Item and package validity flags updated",
+        "User-facing errors may be emitted"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "function-save-incomplete",
+      "name": "Save incomplete",
+      "description": "Persist unfinished answers without requiring package validity.",
+      "inputs": [
+        "in-progress response",
+        "novalidate or validate=false"
+      ],
+      "outputs": [
+        "draft response artefact",
+        "resume token"
+      ],
+      "preconditions": [
+        "Instrument or host allows save-incomplete",
+        "Status remains in-progress"
+      ],
+      "effects": [
+        "Draft stored",
+        "Package is not yet a captured record"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "submit-package",
+      "name": "Submit package",
+      "description": "Optionally interactively validate, construct the entry list or instance serialization, transmit to the resource, and record done or error.",
+      "inputs": [
+        "response or instance",
+        "submission parameters",
+        "validate flag",
+        "credentials or signature if required"
+      ],
+      "outputs": [
+        "submission payload",
+        "outcome",
+        "receipt or error reason"
+      ],
+      "preconditions": [
+        "If validate is true, package is valid",
+        "Destination resource is specified unless this is a validity-only test",
+        "Collection control number is valid when PRA public-protection applies"
+      ],
+      "effects": [
+        "Payload transmitted or validity-only test recorded",
+        "Status may become completed",
+        "Receipt identifiers and timestamps recorded"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "acknowledge-and-replace",
+      "name": "Acknowledge and optionally replace",
+      "description": "Receiving system assigns a receipt, may replace instance data with the response body, and may capture a Record.",
+      "inputs": [
+        "submission payload",
+        "replace mode",
+        "targetref"
+      ],
+      "outputs": [
+        "receipt",
+        "optional replaced instance",
+        "optional record reference"
+      ],
+      "preconditions": [
+        "Payload was received"
+      ],
+      "effects": [
+        "received-at recorded separately from submitted-at",
+        "Instance nodes may be replaced",
+        "Completed package may be captured as WM-REC-001"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "amend-or-void",
+      "name": "Amend, stop or void",
+      "description": "Mark a completed package amended with a change description, stop an abandoned in-progress package, or void as entered-in-error.",
+      "inputs": [
+        "existing response",
+        "target status",
+        "change description or reason",
+        "authorizing party"
+      ],
+      "outputs": [
+        "new status",
+        "prior-version link",
+        "change notice if publication rules require one"
+      ],
+      "preconditions": [
+        "stopped forbids subsequent changes",
+        "entered-in-error is a void not a silent delete",
+        "eForms change notices cannot perform significant structural changes"
+      ],
+      "effects": [
+        "Lifecycle status updated",
+        "Prior version remains inspectable"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "extract-to-records",
+      "name": "Extract to other records",
+      "description": "After a valid completed response, map answers into other resources or records using item definition bindings.",
+      "inputs": [
+        "completed response",
+        "mapping definitions"
+      ],
+      "outputs": [
+        "extract targets",
+        "extract log"
+      ],
+      "preconditions": [
+        "Human review and filler validation completed if the package was populated",
+        "Response is not entered-in-error"
+      ],
+      "effects": [
+        "Other records created or updated",
+        "Traceability from answers to targets retained"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-003"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-REC-001 Record",
+      "relation": "CHILD",
+      "purpose": "A completed, received submission is captured as a record; this aggregate is the specialized structured-response package that precedes and informs that capture.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Person / Agent",
+      "relation": "REFERENCE",
+      "purpose": "Subject, source (respondent), author or recorder, signer and PRA respondent are parties, not attributes of the form.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "Organization",
+      "relation": "REFERENCE",
+      "purpose": "Receiving authority, sponsoring agency, eSender and qualified trust-service provider are organizational parties.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "File / Attachment",
+      "relation": "COMPOSE",
+      "purpose": "Upload controls contribute file parts to the response package without making generic file management native to this model.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Electronic signature",
+      "relation": "REFERENCE",
+      "purpose": "Signature or seal evidence binds to a payload; cryptographic objects remain a sibling model. Alignment only; eIDAS full text was not retrieved in this run.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "HL7 FHIR Questionnaire",
+      "relation": "ALIGN",
+      "purpose": "Align instrument identity, item tree, constraints and canonical URL without claiming FHIR conformance for every adopting Dimension.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "HL7 FHIR QuestionnaireResponse",
+      "relation": "ALIGN",
+      "purpose": "Align response identity, status lifecycle, parties and item answers.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "W3C XForms 1.1 Model/Instance/Submission",
+      "relation": "ALIGN",
+      "purpose": "Align the model-instance-submission split, MIPs, revalidate and submission events.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "WHATWG HTML form constraint validation and submission",
+      "relation": "ALIGN",
+      "purpose": "Align suffering states, novalidate, entry-list construction and encodings as a web projection.",
+      "required": false,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "5 CFR 1320 collection of information",
+      "relation": "ALIGN",
+      "purpose": "Align collection-control, burden, public protection and instrument-change classes for US federal instruments.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "EU eForms notice family",
+      "relation": "ALIGN",
+      "purpose": "Align legislated notice types, change notices and SDK versioning as a specialized instrument family, not as the generic respondent questionnaire.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "HL7 SDC populate and extract",
+      "relation": "EXTEND",
+      "purpose": "Optional operations that pre-fill responses from existing data and project completed answers into other records.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Designate a record owner or records-management authority as package owner, with a named instrument steward for each canonical instrument.",
+        "Record the authorizing collection or notice family (control number, eForms subtype, or equivalent) before exposing an instrument to respondents.",
+        "Keep instrument versions, response identifiers and submission receipts in the owner package so drafts, completed packages and captured records remain distinguishable.",
+        "Declare whether save-incomplete is permitted and where unfinished packages are stored."
+      ],
+      "namespace_guidance": "Use a Dimension namespace under NAV.INF.REC.FRM, for example ver.cy/wm/rec/frm/{instrument-canonical}/{response-id}, and never treat a date or status code as an identifier.",
+      "registry_links": [
+        "vr.wm-rec-007",
+        "WM-REC-007",
+        "parent WM-REC-001",
+        "NAV.INF.REC.FRM"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonical instrument identity is the instrument canonical URL plus version, else the master-system identifier.",
+        "A response canonicalizes to its master-system identifier plus the instrument canonical it was answered against.",
+        "Timestamps canonicalize to RFC 3339 with seconds and explicit offset or Z.",
+        "Link ids are unique within an instrument version; answers key to those link ids.",
+        "Payload identity includes a digest of the exact submitted serialization."
+      ],
+      "patch_rules": [
+        "in-progress responses may be patched in place; completed responses are amended by a new version with prior-version link rather than silent overwrite.",
+        "Instrument patches that are de minimis (look and feel) may proceed without re-clearance; non-substantive and revision patches follow the applicable clearance path.",
+        "eForms-style change notices must not encode significant structural changes that the notice family forbids.",
+        "entered-in-error and stopped are terminal patches that forbid further answer mutation."
+      ],
+      "compatibility_rules": [
+        "A response is interpretable only against the instrument version and, where used, the eForms SDK or XForms version that encoded it.",
+        "Do not claim joint conformance to FHIR, XForms, HTML, PRA and eForms; record alignments and conflicts per instance.",
+        "Older FHIR QuestionnaireResponse instances may lack a required questionnaire canonical; treat that as an interoperability conflict, not silent equivalence.",
+        "Client-side validity is never sufficient compatibility for a server of record."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier (receiving-system response id, OMB control number for a collection, TED publication id for an eForms notice)",
+        "Governed global identifier or IRI (Questionnaire.url, instrument canonical, namespace URI)",
+        "UUID or ULID assigned by the adopting Dimension"
+      ],
+      "timestamp_rule": "Time values use RFC 3339 with seconds and an explicit offset or Z; record authored time, submission event time and observation or ingestion time as separate fields and never use a date as an identifier.",
+      "serial_naming_rule": "Serial artefacts use {instrument-canonical-or-id}--{response-id-or-ulid}--{artefact-role}--{utc-instant}, with artefact-role in {instrument, response, payload, receipt, validation, change-notice, extract-log}.",
+      "integrity_rule": "Every serialized payload, upload part and instrument version stores a digest; receipts bind to that digest; signature objects, when present, are referenced rather than duplicated."
+    },
+    "policies": [
+      "Do not conduct a PRA-covered collection that lacks a currently valid displayed control number and public-protection notice.",
+      "Always re-validate on the server even when the client reported valid.",
+      "Do not treat a draft saved with novalidate as a captured record.",
+      "Retain prior versions of amended or change-noticed packages; void via entered-in-error rather than silent delete while the schedule still applies.",
+      "Identify required fields and errors in accessible text, and require review or confirmation before legal, financial or irreversible submits."
+    ],
+    "crud": {
+      "read": [
+        "Inspect instrument definition, item map and constraint catalogue",
+        "Inspect response package, status, parties, answers, uploads and validation report",
+        "Inspect submission payload, receipt and extract log",
+        "Inspect clearance, control number, burden and retention decision"
+      ],
+      "create": [
+        "Author a new instrument version",
+        "Populate or open an in-progress response",
+        "Save-incomplete a draft",
+        "Submit a validated package and create a receipt",
+        "Capture a completed package as a Record when policy requires"
+      ],
+      "update": [
+        "Patch in-progress answers",
+        "Amend a completed package with prior-version link",
+        "Record populate edits and filler validation",
+        "Apply de minimis or approved non-substantive instrument changes",
+        "Update access class, legal hold or confidentiality flags"
+      ],
+      "delete": [
+        "Mark entered-in-error (logical void)",
+        "Mark stopped with no subsequent changes",
+        "Destroy drafts per draft-retention policy",
+        "Dispose of responses and uploads after schedule and legal-hold clearance"
+      ]
+    },
+    "roles": [
+      {
+        "name": "Instrument steward",
+        "responsibilities": [
+          "Author and version the instrument",
+          "Keep link ids unique",
+          "Declare constraints, labels and submission parameters"
+        ]
+      },
+      {
+        "name": "Collection authorizing official",
+        "responsibilities": [
+          "Certify practical utility and burden",
+          "Obtain and display control numbers or equivalent authority",
+          "Classify instrument changes as de minimis, non-substantive or revision"
+        ]
+      },
+      {
+        "name": "Respondent or source",
+        "responsibilities": [
+          "Answer questions about the subject",
+          "Review and correct answers",
+          "Confirm irreversible submits when required"
+        ]
+      },
+      {
+        "name": "Recorder or author",
+        "responsibilities": [
+          "Receive answers and record them in the system",
+          "Distinguish self-entry from proxy entry"
+        ]
+      },
+      {
+        "name": "Receiving authority",
+        "responsibilities": [
+          "Validate server-side",
+          "Issue receipts",
+          "Capture records and apply retention"
+        ]
+      },
+      {
+        "name": "Validator",
+        "responsibilities": [
+          "Run revalidate",
+          "Produce validation reports",
+          "Enforce validate-versus-save-incomplete policy"
+        ]
+      },
+      {
+        "name": "Accessibility reviewer",
+        "responsibilities": [
+          "Check required-field identification, error text, review and confirmation paths"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny read and update of response packages, uploads and validation reports except to the source, the recorder, the receiving authority and roles in the applicable FHIR-style compartment or equivalent ACL; instruments may be read more widely when they are published definitions.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "PRA criminal, named-party administrative, or intelligence collections that the statute takes outside ordinary clearance still require access logging when stored in this Dimension.",
+        "Public eForms notices are readable once published; unpublished drafts are not.",
+        "entered-in-error packages remain readable to custodians for audit but are excluded from extract and analytics."
+      ],
+      "audit_requirements": [
+        "Log populate, save-incomplete, validate, submit, amend, void, extract, access grants and disposal with actor, artefact id and RFC 3339 event time.",
+        "Retain audit records at least as long as the response they describe."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "instrument definition and constraint catalogue",
+        "in-progress or completed response package",
+        "validation report and submission receipt",
+        "retention, access and clearance notices"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This research defines a defensible, format-neutral Form/Submission aggregate covering instrument identity, item constraints, response lifecycle, validation, submission, collection governance, access and extraction alignments to W3C XForms, WHATWG HTML, HL7 FHIR R5 and SDC, US 5 CFR 1320 and EU eForms. It does not claim universal completeness or certified conformance to those standards.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Instrument canonical URL, business identifiers, version, OMB control number, response identifiers and Dimension UUID or ULID; dates excluded as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "FHIR in-progress, completed, amended, entered-in-error, stopped; save-incomplete; eForms change notices; PRA clearance types."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Instrument to response, subject/source/author, basedOn and partOf, encounter, extract targets, parent Record."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Authored, event and ingestion times as separate RFC 3339 instants; filing windows; cooling-off ends; collection expiration."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Source versus recorder, populate trace, payload digest, submission receipts."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Record owner or records-management authority, instrument steward, sponsoring agency, receiving authority."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "XForms MIPs and revalidate, HTML suffering states, FHIR validation against Questionnaire, client versus server, save-incomplete exception."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default deny on responses, compartments, public notices versus drafts, audit logging."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Instrument versus draft versus submitted retention, PRA recordkeeping period, logical void versus destruction, legal hold."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to FHIR, XForms, HTML, PRA, eForms and SDC populate or extract; conflicts recorded rather than conformance claimed."
+      },
+      {
+        "dimension": "accessibility",
+        "status": "covered",
+        "notes": "WAI required identification, error text, review, confirmation and undo windows bound to WCAG 3.3.1 and 3.3.4."
+      },
+      {
+        "dimension": "burden and clearance",
+        "status": "covered",
+        "notes": "PRA burden, practical utility, control-number display and public protection as instrument-governance, not response identity."
+      },
+      {
+        "dimension": "spatial",
+        "status": "gap",
+        "notes": "Place-of-performance codes appear in eForms but geospatial answers as a general item datatype were not given a native finding."
+      }
+    ],
+    "known_omissions": [
+      "ISO 15489 authenticity, reliability, integrity and usability principles were not retrieved as full text; record-capture therefore leans on PRA recordkeeping and the parent Record model.",
+      "Regulation (EU) No 910/2014 eIDAS full text was not retrieved; qualified versus advanced signatures are an evidence gap and an alignment, not a native profile.",
+      "ISO 32000 PDF AcroForm and deprecated XFA were discovered in secondary discussion and not fetched as primary text.",
+      "ICH eCTD, national tax-return, court e-filing, ODK/XLSForm, JSON Forms and NIEM IEPD specializations were not modelled.",
+      "GDPR erasure interaction with records schedules is only asked, not specified.",
+      "Concurrent editing, autosave intervals, CAPTCHA and rate-limiting are operational controls not specified here.",
+      "Multi-signer sequential routing and power-of-attorney to submit are likely omissions.",
+      "Statistical Part B methods, sampling and statistical-disclosure control are out of scope and unmodelled."
+    ],
+    "conflicts": [
+      "FHIR R5 QuestionnaireResponse.questionnaire is 1..1; earlier FHIR releases allowed responses without a formal Questionnaire, leaving link-id correctness undefined.",
+      "HTML mixes presentation with submission semantics; XForms forbids that mix. Adopting both as alignments is intentional and must not be read as a single serialization.",
+      "eForms are publication notices, not general respondent questionnaires; reusing their subtype codes for clinical or PRA forms would be a category error.",
+      "XForms allows turning validation off to save unfinished data; FHIR completed means content is regarded as definitive. Save-incomplete must remain status in-progress.",
+      "Client constraint validation can be bypassed; WAI requires server-side validation. Claiming a package valid because the browser checked it conflicts with the security rule.",
+      "OMB will not ordinarily approve non-exempt recordkeeping beyond three years; many sector records schedules are longer. That conflict is resolved in the parent Record model, not here.",
+      "XFA forms are incompatible with AcroForms and were deprecated in PDF 2.0; PDF is only a projection and XFA must not be treated as the ISO form model."
+    ],
+    "regional_assumptions": [
+      "OMB control numbers, public-protection statements and ICR processes apply to US federal collections, not to all jurisdictions.",
+      "eForms obligation matrices and TED publication apply to EU public-procurement notices above threshold (mandatory from October 2023) and to listed voluntary subtypes.",
+      "WCAG-based error-prevention is treated as the default accessibility floor for interactive web instruments; other modalities must still associate labels with controls as XForms requires.",
+      "FHIR party compartments are healthcare-centric; other sectors map them to equivalent respondent, subject and recorder roles.",
+      "Qualified electronic signature legal effect is EU-specific and unverified in this run."
+    ],
+    "adversarial_checks": [
+      "Could instrument and response be two models? They could, and FHIR splits them; this aggregate keeps the split internally so validation and submission, which bind both, remain operable as one package.",
+      "Could eForms swallow the generic model? No: change-notice and subtype rules are an alignment family, not identity.",
+      "Does save-incomplete undermine validation? Only if status is allowed to become completed without a validate=true submit; the model forbids that.",
+      "Is a date used as an identifier anywhere? Control-number expiration and authored timestamps are attributes; identity priority excludes them.",
+      "Would claiming PRA plus eForms plus FHIR conformance be false? Yes; coverage records alignments and conflicts instead.",
+      "Are drafts records? No; capture into WM-REC-001 happens after successful receive of a completed package unless a local records policy says otherwise, which would be a documented extension."
+    ]
+  }
+}

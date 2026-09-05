@@ -1,0 +1,2745 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-009",
+    "model_id": "WM-XCT-009",
+    "name": "Time / Calendar",
+    "entry_kind": "mixin",
+    "purpose": "Governed reference data and embeddable value shapes for time scales, civil time zones, calendar systems, recurrence, public holidays and cultural observances, so other models can resolve instants, intervals, schedules and deadlines against authority-managed temporal machinery.",
+    "scope_statement": "This mixin covers humanity's shared civil-time reference: named time scales and their leap or continuity policy; IANA civil timezones with offset and daylight-saving transition history; calendar systems, eras and intercalation; recurrence rules; jurisdictional public holidays; and cultural or religious observances. It is a mixin because nearly every sibling model embeds intervals, schedules and deadlines that must resolve against this reference, while the reference itself changes by decree (zone redefinitions, leap-second bulletins, proclaimed holidays, calendar reforms). Storage formats, APIs and databases are projections, not semantics.",
+    "in_scope": [
+      "Named time scales used for civil and metrological timestamps, including UTC, TAI and UT1, with epoch, leap policy and announced discontinuities",
+      "Civil timezone identity, naming, UTC offset, daylight-saving and other offset transitions, and tzdb release provenance",
+      "Calendar systems and eras used for civil, religious and cultural dating, including Gregorian and registered non-Gregorian systems",
+      "Instants, intervals, durations, precision, floating time and timezone-qualified local time as embeddable value objects",
+      "Recurrence rules, exception dates, recurrence dates and non-Gregorian recurrence scale",
+      "Jurisdictional public holidays, day-off status, substitution and in-lieu rules, and their relationship to observances",
+      "Cultural and religious observances, movable-feast computation methods and the calendar in which they are computed",
+      "Reference-data lifecycle events: leap-second announcements, tz rule changes, calendar reforms, holiday proclamation and rescission",
+      "Version pinning, redistribution and audit of the reference feeds used to interpret a timestamp"
+    ],
+    "out_of_scope": [
+      "Physical clock hardware, NTP, PTP or other time-transfer protocols",
+      "Individual calendar events, attendees, free/busy, alarms and scheduling workflows (iCalendar VEVENT/VTODO/VJOURNAL as application objects)",
+      "Employment contracts, paid-leave entitlements and payroll calculations, except as consumers of holiday and weekend facts",
+      "Geologic, cosmological or paleoclimate timescales beyond recording that a temporal reference system other than civil time exists",
+      "Place geometry, borders and toponyms; this model only holds jurisdiction or territory references",
+      "Identifier-scheme governance as such; zone and calendar identifiers are values in already registered schemes",
+      "Opening hours of venues, trading-session calendars of named exchanges, and industry business-day conventions except as alignments or gaps"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Place / jurisdiction",
+        "distinction": "Territories, countries and local governments are place entities. This model only records the jurisdiction or representative location to which a timezone, weekend rule or holiday proclamation applies, and must not duplicate borders, capitals or legal personality.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Identifier and naming schemes",
+        "distinction": "IANA tzids, CLDR BCP 47 calendar types and timescale names are values in existing registered schemes. Scheme registration, syntax and stewardship live in an identifier model; this mixin stores the values and their temporal meaning.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-006",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Calendar event and scheduling objects",
+        "distinction": "RFC 5545 VEVENT, VTODO, ATTENDEE, METHOD and free/busy describe application occurrences and collaboration. This mixin keeps RRULE/RDATE/EXDATE, CALSCALE/RSCALE, VTIMEZONE-as-ruleset and date-time value types as temporal reference, not the event payload.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Time synchronisation and clock operations",
+        "distinction": "How a host obtains UTC (NTP, radio, GNSS) is an operations concern. This mixin records the timescale definition, leap-second table and civil mapping those protocols assume, not the transfer protocol.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Labour, leave and payroll",
+        "distinction": "ILO C132 treats public and customary holidays as distinct from annual paid leave. Holiday dates and day-off status belong here; entitlement length, accrual and pay rates do not.",
+        "source_refs": [
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Official statistics, reports and records",
+        "distinction": "Reference periods, retention clocks and reporting as-of instants consume this mixin. They do not own timezone rules or holiday calendars.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Geologic and ordinal timescales",
+        "distinction": "OWL-Time allows Unix-time, geologic time and ordinal TRS. This mixin may name such a TRS when a sibling needs it, but does not curate stratigraphic charts or Julian Day Numbers as master data.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "IANA Time Zone Database",
+      "organization": "Internet Assigned Numbers Authority",
+      "url": "https://www.iana.org/time-zones",
+      "version_or_date": "2026-07-08 (tzdb 2026c)",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Master register of civil timezone identifiers, offsets, transition history and versioned releases used by the timezone bundle."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Theory and pragmatics of the tz code and data",
+      "organization": "Internet Assigned Numbers Authority",
+      "url": "https://www.iana.org/time-zones/theory",
+      "version_or_date": "tzdb community theory (current with 2026c)",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Defines timezone naming policy, link and backward compatibility, zone table scope, and the limits of pre-1970 historical data."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "2002-07",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Profile for Internet timestamps: required offset or Z, four-digit years, the Gregorian leap-year rule, and the -00:00 unknown-offset convention."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 9557: Date and Time on the Internet: Timestamps with Additional Information",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc9557.html",
+      "version_or_date": "2024-04",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "IXDTF suffix extension carrying IANA timezone names, the updated meaning of Z, and detection of tzdb version or political inconsistency."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 5545: Internet Calendaring and Scheduling Core Object Specification (iCalendar)",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc5545.html",
+      "version_or_date": "2009-09",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Date-time value types, VTIMEZONE snapshots, DURATION and PERIOD, and the RECUR grammar (RRULE, RDATE, EXDATE) used as recurrence reference."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 6557 / BCP 175: Procedures for Maintaining the Time Zone Database",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc6557.html",
+      "version_or_date": "2012-02",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Stewardship procedures for tzdb: TZ Coordinator role, mailing list and appeals, release signing, and public-domain status."
+    },
+    {
+      "id": "SRC-007",
+      "title": "Leap second and UT1-UTC information",
+      "organization": "National Institute of Standards and Technology",
+      "url": "https://www.nist.gov/pml/time-and-frequency-division/time-realization/leap-seconds",
+      "version_or_date": "2026-02-25",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Inserted leap-second dates with MJD, the current TAI-UTC value of 37 seconds, and UT1-UTC and DUT1 series."
+    },
+    {
+      "id": "SRC-008",
+      "title": "THE LEAP SECOND",
+      "organization": "IERS Earth Orientation Center, Paris Observatory",
+      "url": "https://hpiers.obspm.fr/eop-pc/earthor/utc/leapsecond.html",
+      "version_or_date": "current IERS Earth Orientation Center page; last leap second 2017-01-01T00:00:00Z",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Authority and Bulletin C process for announcing leap seconds, and the requirement to keep UTC within 0.9 second of UT1."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Time Ontology in OWL",
+      "organization": "W3C and Open Geospatial Consortium",
+      "url": "https://www.w3.org/TR/owl-time/",
+      "version_or_date": "2022-11-15 (Candidate Recommendation Draft)",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Instant, interval, duration and Allen relation vocabulary, and generalised temporal reference systems beyond the Gregorian calendar."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Resolution 4 of the 27th CGPM (2022)",
+      "organization": "Bureau International des Poids et Mesures / CGPM",
+      "url": "https://www.bipm.org/en/cgpm-2022/resolution-4",
+      "version_or_date": "2022-11",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Decision to increase the maximum UT1-UTC difference in or before 2035 and to keep UTC continuous for at least a century."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Unicode Locale Data Markup Language (LDML) Part 4: Dates",
+      "organization": "Unicode Consortium",
+      "url": "https://unicode-org.github.io/cldr/ldml/tr35-dates.html",
+      "version_or_date": "UTS #35 living LDML (CLDR calendar types current on access date)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "BCP 47 calendar type inventory, era, month and week data, and locale display names for calendars and timezones."
+    },
+    {
+      "id": "SRC-012",
+      "title": "RFC 7529: Non-Gregorian Recurrence Rules in iCalendar",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://datatracker.ietf.org/doc/rfc7529/",
+      "version_or_date": "2015-05",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "RSCALE extension enabling recurrence evaluated on non-Gregorian calendars, and the record that CALSCALE was never used in practice."
+    },
+    {
+      "id": "SRC-013",
+      "title": "C132 - Holidays with Pay Convention (Revised), 1970 (No. 132)",
+      "organization": "International Labour Organization",
+      "url": "https://www.ilo.org/resource/c132-holidays-pay-convention-revised-1970",
+      "version_or_date": "1970-06-24",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Distinguishes public and customary holidays from annual paid leave; the only retrieved primary instrument bearing on holiday semantics."
+    },
+    {
+      "id": "SRC-014",
+      "title": "How to Read the tz Database Source Files",
+      "organization": "Internet Assigned Numbers Authority",
+      "url": "https://data.iana.org/time-zones/tz-how-to.html",
+      "version_or_date": "current with tzdb distribution",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-22T00:00:00Z",
+      "relevance": "Field-level semantics of Zone and Rule lines: STDOFF, RULES, FORMAT, UNTIL, SAVE, LETTER and the AT clock suffixes."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "time-base",
+        "name": "Time base",
+        "description": "Physical and civil time: named timescales, epochs, leap and continuity policy, IANA timezones, offsets and transition history.",
+        "rationale": "Timescale definition, leap policy and civil offset rules belong together because an instant cannot be resolved without both the scale it sits on and the zone rules that map it to local time.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-007",
+          "SRC-008",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "time-scale-and-epoch",
+            "name": "Time scale and epoch",
+            "description": "Identify timescales, their epochs, the relationship among TAI, UTC and UT1, leap-second announcements, and the planned change to UTC continuity.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-007",
+              "SRC-008",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "named-time-scale",
+                "name": "Named time scale",
+                "description": "A time scale is a named reference for instants. RFC 3339 and RFC 9557 treat Coordinated Universal Time as maintained by the BIPM with leap seconds announced by the IERS; UTC is obtained from TAI by an integer second offset. UT1 is Earth-rotation time. NIST records TAI ahead of UTC by 37 seconds after the last inserted leap second. OWL-Time generalises this to a Temporal Reference System that may also be Unix-time or another calendar-clock. Unix/POSIX civil mapping uses the POSIX Epoch 1970-01-01T00:00:00Z. GPS and other GNSS scales are widely used but were not retrieved from a primary source in this pass and must not be treated as canonical here.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "time-scale-master-id",
+                    "text": "What is the authoritative name and, if any, IRI of this time scale, and which master system assigns it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "time-scale-id",
+                      "master-system",
+                      "iri-if-any",
+                      "short-name"
+                    ]
+                  },
+                  {
+                    "id": "time-scale-epoch",
+                    "text": "What epoch origin does this scale use, in RFC 3339 if expressible, and is that origin an instant on another scale?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "epoch-instant",
+                      "epoch-label",
+                      "defined-against-scale"
+                    ]
+                  },
+                  {
+                    "id": "time-scale-classification",
+                    "text": "Is this scale atomic, Earth-rotation, POSIX/Unix civil, GNSS-derived, or a named realisation such as UTC(NIST)?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "scale-class",
+                      "realisation-id",
+                      "maintainer"
+                    ]
+                  },
+                  {
+                    "id": "time-scale-relationship",
+                    "text": "What integer or continuous offset relates this scale to TAI or UTC, and as of which observation time?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "offset-seconds",
+                      "relation-target",
+                      "valid-from",
+                      "observation-time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "time-scale-id",
+                    "name": "Time scale identifier",
+                    "description": "Coded name of the time scale, such as UTC, TAI, UT1 or a POSIX/Unix civil mapping.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "epoch-instant",
+                    "name": "Epoch instant",
+                    "description": "Origin instant of the scale, for example the POSIX Epoch 1970-01-01T00:00:00Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "leap-policy",
+                    "name": "Leap or continuity policy",
+                    "description": "Whether and how the scale admits leap seconds or other announced discontinuities.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "tai-utc-offset",
+                    "name": "TAI minus UTC integer seconds",
+                    "description": "Integer seconds by which TAI leads UTC, recorded by NIST as 37 seconds after the last inserted leap second.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "scale-class",
+                    "name": "Scale class",
+                    "description": "Class of the scale: atomic, Earth-rotation, POSIX/Unix civil, GNSS-derived, or a named realisation such as UTC(NIST).",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "nist-leap-second-table",
+                    "name": "NIST leap second and UT1-UTC tables",
+                    "description": "Authoritative inserted-leap-second dates with MJD, current TAI-UTC of 37 seconds, weekly UT1-UTC and DUT1 broadcast values.",
+                    "media_or_form": [
+                      "published data table",
+                      "web page"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the publishing laboratory and table name, together with the publication date of the current revision.",
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "leap-second-and-utc-continuity",
+                "name": "Leap second and UTC continuity",
+                "description": "UTC is kept within 0.9 second of UT1 by leap seconds decided by the IERS Earth Orientation Center and announced in Bulletin C, with first preference for the end of December or June. Positive leap seconds insert 23:59:60 before 00:00:00. All listed historical leaps have been positive; the last was introduced at 2017-01-01T00:00:00Z. RFC 5545 allows second 60 for a positive leap second and says implementations that do not support leap seconds SHOULD treat 60 as 59; durations MUST NOT consider leap seconds. OWL-Time notes that XSD lexical forms ignore leap seconds even though ISO 8601 mandates them. CGPM Resolution 4 (2022) decides that the maximum UT1-UTC difference will be increased in or before 2035 to keep UTC continuous for at least a century; the present plus-or-minus 0.9 second rule remains in force until that plan is implemented. Leap smearing is an operator practice, not a BIPM/IERS rule.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "leap-second-announcement",
+                    "text": "Has IERS Bulletin C announced a leap second at a given month-end, and is it positive, negative or none?",
+                    "kind": "event",
+                    "answer_data": [
+                      "bulletin-id",
+                      "effective-at",
+                      "leap-sign",
+                      "announced-at",
+                      "source-url"
+                    ]
+                  },
+                  {
+                    "id": "leap-second-representation",
+                    "text": "How is the leap second encoded in timestamps and iCalendar DATE-TIME values, and what does a non-supporting consumer do with second 60?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "timestamp-form",
+                      "second-60-policy",
+                      "duration-excludes-leap"
+                    ]
+                  },
+                  {
+                    "id": "utc-continuity-horizon",
+                    "text": "What maximum UT1-UTC difference and implementation deadline currently apply, and has the 28th CGPM yet adopted a successor resolution?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "max-ut1-utc",
+                      "implementation-deadline",
+                      "successor-resolution-id",
+                      "status"
+                    ]
+                  },
+                  {
+                    "id": "event-versus-observation-time",
+                    "text": "For a leap-second record, what is the event instant on UTC and what is the ingestion or observation time of the bulletin?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "event-time",
+                      "observation-time",
+                      "bulletin-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "bulletin-id",
+                    "name": "IERS Bulletin C identifier",
+                    "description": "Identifier of the Bulletin C announcement that did or did not schedule a leap second.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "leap-effective-at",
+                    "name": "Leap effective instant",
+                    "description": "Instant at which an announced leap second takes effect, for example 2017-01-01T00:00:00Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "leap-sign",
+                    "name": "Leap sign",
+                    "description": "Whether the announced leap is positive, negative or none; all issued leaps have been positive.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "max-ut1-utc",
+                    "name": "Maximum permitted UT1-UTC difference",
+                    "description": "Bound on the difference between UT1 and UTC, currently plus-or-minus 0.9 second until the CGPM continuity change.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "continuity-deadline",
+                    "name": "UTC continuity implementation deadline",
+                    "description": "Deadline by which the maximum UT1-UTC difference is to be increased, in or before 2035 per CGPM Resolution 4 (2022).",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "iers-bulletin-c",
+                    "name": "IERS Bulletin C",
+                    "description": "The announcement artefact that does or does not schedule a leap second at the next June or December opportunity.",
+                    "media_or_form": [
+                      "bulletin"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by Bulletin C issue number and the June or December opportunity it addresses.",
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "cgpm-resolution-4-2022",
+                    "name": "CGPM Resolution 4 (2022)",
+                    "description": "Normative decision to increase the maximum UT1-UTC difference in or before 2035 and to prepare a century-scale continuity plan.",
+                    "media_or_form": [
+                      "resolution text"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by CGPM meeting and resolution number, here Resolution 4 of the 27th CGPM (2022).",
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "timezone-and-offset",
+            "name": "Timezone and offset",
+            "description": "IANA civil timezones, naming rules, UTC offsets, daylight-saving and other transitions, ambiguous and nonexistent local times, and tzdb stewardship.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-004",
+              "SRC-006",
+              "SRC-014"
+            ],
+            "findings": [
+              {
+                "id": "iana-timezone-identity",
+                "name": "IANA timezone identity",
+                "description": "The tz database partitions the world into timezones whose clocks agree about timestamps after the POSIX Epoch. A timezone is a function from timestamps to UTC offsets, typically named AREA/LOCATION such as America/New_York, not a country. Names are chosen to be politically robust, POSIX-filename safe, and stable; old spellings remain as links in the backward file (Asia/Calcutta to Asia/Kolkata). CLDR supplies locale display names and uses Etc/Unknown for an invalid timezone. RFC 9557 distinguishes IANA named timezones from offset timezones and strongly discourages copying a timestamp offset into a fake zone such as +01:00. The TZ Coordinator does not set policy; updates must reflect consensus on the ground. Uninhabited regions have no local time. Pre-1970 history is recorded when useful but is not designed to be globally complete.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "timezone-master-id",
+                    "text": "What is the current IANA tzid, and which obsolete names or links still resolve to it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "tzid",
+                      "link-names",
+                      "canonical-flag",
+                      "tzdb-version"
+                    ]
+                  },
+                  {
+                    "id": "timezone-location-scope",
+                    "text": "Which representative location and, if tabulated, ISO country codes and coordinates describe this timezone, and is it a location zone or a fixed-offset zone?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "representative-location",
+                      "country-codes",
+                      "latitude",
+                      "longitude",
+                      "zone-kind",
+                      "tab-file"
+                    ]
+                  },
+                  {
+                    "id": "timezone-owner-authority",
+                    "text": "Which political bodies currently determine this zone's offset and DST rules, and which TZ Coordinator release recorded that consensus?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "declaring-authority",
+                      "jurisdiction-ref",
+                      "tz-coordinator-release",
+                      "evidence-url"
+                    ]
+                  },
+                  {
+                    "id": "timezone-display-name",
+                    "text": "What CLDR or other locale-dependent labels should an agent show instead of the tzid, and is the zone Etc/Unknown?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "locale",
+                      "display-name",
+                      "metazone-id",
+                      "unknown-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "tzid",
+                    "name": "IANA timezone identifier",
+                    "description": "Identifier of the zone as published in the tz database, normally AREA/LOCATION such as America/New_York.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "link-target",
+                    "name": "Canonical tzid for a link name",
+                    "description": "Canonical zone to which a backward link name resolves, such as Asia/Kolkata for Asia/Calcutta.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "country-code",
+                    "name": "ISO 3166-1 country code from zone tables",
+                    "description": "Country code as tabulated in zone1970.tab, zone.tab or zonenow.tab for the zone.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "zone-kind",
+                    "name": "Location zone versus fixed-offset zone",
+                    "description": "Whether the zone is a location zone or a fixed-offset zone, a distinction drawn by RFC 9557.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "tzdb-version",
+                    "name": "tzdb release identifier",
+                    "description": "Release identifier of the tz database in which the zone record appears, for example 2026c.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "tzdb-release",
+                    "name": "IANA tzdb release tarball and zone tables",
+                    "description": "Versioned source (for example 2026c, released 2026-07-08) plus zone1970.tab, zone.tab, zonenow.tab and backward links.",
+                    "media_or_form": [
+                      "source tarball",
+                      "zone table text files"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by tzdb release version such as 2026c together with its publication date and cryptographic signature.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "offset-transition-history",
+                "name": "Offset transition history",
+                "description": "Each Zone line is a steady state with STDOFF, RULES and FORMAT until an UNTIL instant; Rule lines combine transition and steady SAVE/LETTER state. AT may be wall, standard or UTC (suffixes w, s, u/g/z). SAVE is not always one hour. Transitions can skip or repeat local times. Historical LMT is an invented local mean time for the namesake location and is usually wrong elsewhere. Date-line moves can shift local dates by 24 hours, as in America/Juneau in 1867. RFC 9557 defines a timezone as the mapping used to derive later local times, which a frozen numeric offset cannot do. iCalendar VTIMEZONE is a snapshot of STANDARD/DAYLIGHT components for one object, not a living tzdb.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "transition-effective-at",
+                    "text": "At what instant does this transition occur, in which clock (wall, standard or UTC), and what are offset-before and offset-after?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "effective-at",
+                      "at-clock-kind",
+                      "offset-before",
+                      "offset-after",
+                      "save",
+                      "letter"
+                    ]
+                  },
+                  {
+                    "id": "transition-reason",
+                    "text": "Is this transition recurring DST, a one-off wartime or political offset change, a base-offset change, or a rename with no clock change?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "transition-kind",
+                      "reason",
+                      "rule-name",
+                      "jurisdiction-instrument"
+                    ]
+                  },
+                  {
+                    "id": "gap-and-fold",
+                    "text": "Does this transition create a nonexistent local-time gap or an ambiguous fold, and how should an agent resolve a civil time that falls in it?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "gap-or-fold",
+                      "local-start",
+                      "local-end",
+                      "resolution-policy"
+                    ]
+                  },
+                  {
+                    "id": "vtimezone-versus-tzdb",
+                    "text": "Is the operating ruleset a pinned VTIMEZONE snapshot or a named IANA zone interpreted with a stated tzdb version?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "ruleset-kind",
+                      "tzid",
+                      "tzdb-version",
+                      "vtimezone-tzid"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "stdoff",
+                    "name": "Standard offset from UT",
+                    "description": "Standard offset from UT that a Zone line steady state applies.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "save",
+                    "name": "Daylight or other extra offset",
+                    "description": "Additional offset applied by a Rule, which is not always one hour.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "until-instant",
+                    "name": "Zone line UNTIL instant",
+                    "description": "Instant at which a Zone line steady state ends and the next line takes effect.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "at-clock-kind",
+                    "name": "AT clock kind",
+                    "description": "Clock in which the AT field is expressed: wall, standard or UTC, written with the suffixes w, s and u/g/z.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "offset-before",
+                    "name": "Offset before transition",
+                    "description": "UTC offset in force immediately before the transition.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "offset-after",
+                    "name": "Offset after transition",
+                    "description": "UTC offset in force immediately after the transition.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "zone-and-rule-source",
+                    "name": "tz Zone and Rule source lines",
+                    "description": "Machine-readable Rule and Zone records, for example America/Chicago and US/Chicago rules, including LMT and UNTIL columns.",
+                    "media_or_form": [
+                      "text source lines"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by zone or rule name within a stated tzdb release, for example America/Chicago as of 2026c.",
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "tzdb-stewardship-and-versioning",
+                "name": "tzdb stewardship and versioning",
+                "description": "IANA hosts tzdb under BCP 175. Updates are made by the TZ Coordinator as designated expert in consultation with tz@iana.org. Releases SHOULD be cryptographically signed and published at https://www.iana.org/time-zones. New names are created only when a region's scope is no longer accurate, or to correct post-1970 historical consensus. The database is public domain and is not an IETF contribution. Political changes can be frequent: release 2026c records Alberta moving to permanent offset -06 on 2026-06-18 and Morocco moving to permanent +00 on 2026-09-20. Producers and consumers can apply different tzdb versions, which RFC 9557 treats as a source of timestamp inconsistency.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "tzdb-release-pin",
+                    "text": "Which tzdb version, publication instant and signature verified the rules used for a conversion?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "tzdb-version",
+                      "published-at",
+                      "signature-ok",
+                      "source-url"
+                    ]
+                  },
+                  {
+                    "id": "tz-update-lifecycle",
+                    "text": "Is a proposed zone change still on the mailing list, in a release candidate, published, or later corrected?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "change-id",
+                      "status",
+                      "effective-at",
+                      "superseded-by"
+                    ]
+                  },
+                  {
+                    "id": "redistribution-terms",
+                    "text": "Under what terms may a product redistribute tzdb, and must signatures and public-domain notices be preserved?",
+                    "kind": "access",
+                    "answer_data": [
+                      "licence",
+                      "signature-required",
+                      "attribution",
+                      "allowed-derivatives"
+                    ]
+                  },
+                  {
+                    "id": "pre-1970-quality",
+                    "text": "Does a requested historical conversion fall after 1970-01-01T00:00:00Z, in recorded pre-1970 transitions, or in backzone/guesswork?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "quality-class",
+                      "evidence-note",
+                      "backzone-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "tz-coordinator",
+                    "name": "TZ Coordinator role holder",
+                    "description": "IANA designated expert who releases tzdb and consults tz@iana.org under BCP 175.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "release-signature",
+                    "name": "Cryptographic signature status",
+                    "description": "Status of the signature that releases SHOULD carry when published by IANA.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "change-status",
+                    "name": "Update lifecycle status",
+                    "description": "Stage of a proposed change: mailing-list discussion, release candidate, published, or later corrected.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "history-quality",
+                    "name": "Historical completeness class",
+                    "description": "Quality class of a historical conversion: post-1970 recorded, recorded pre-1970 transition, or backzone guesswork.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "bcp-175",
+                    "name": "BCP 175 / RFC 6557 procedures",
+                    "description": "Normative procedures for TZ Coordinator, mailing list, appeals to IESG, ownership and public-domain status.",
+                    "media_or_form": [
+                      "RFC document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by BCP number together with the RFC that currently occupies it, here BCP 175 / RFC 6557.",
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "calendar",
+        "name": "Calendar",
+        "description": "Calendar systems, eras, intercalation and reform; instants, intervals and durations as embeddable values; recurrence including non-Gregorian RSCALE.",
+        "rationale": "Calendar systems, embeddable temporal values and recurrence sit in one bundle because recurrence is evaluated in a named calendar and materialises into the instants, dates and intervals that siblings embed.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-005",
+          "SRC-009",
+          "SRC-011",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "calendar-system-and-era",
+            "name": "Calendar system and era",
+            "description": "Identify calendar algorithms, eras, leap or intercalation rules, week numbering and jurisdictional calendar reforms.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-009",
+              "SRC-011",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "calendar-system-identity",
+                "name": "Calendar system identity",
+                "description": "A calendar system structures days into years, months and related cycles. CLDR/LDML registers BCP 47 calendar types including gregory (alias gregorian), buddhist, chinese, coptic, dangi, ethiopic, ethioaa, hebrew, indian, islamic and variants islamic-umalqura and islamic-tbla, iso8601, japanese, persian and roc. RFC 5545 defines CALSCALE but only Gregorian has been used in practice; RFC 7529 therefore adds RSCALE for non-Gregorian recurrence. OWL-Time relaxed the Gregorian-only limitation and treats a calendar as a Temporal Reference System alongside clocks. Japanese calendar years restart per imperial era. Islamic data has several algorithmic variants; sighting-based practice is not a single CLDR type. The iso8601 calendar type is Gregorian using ISO week-year conventions.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "calendar-master-id",
+                    "text": "What CLDR BCP 47 calendar type, iCalendar CALSCALE/RSCALE token, or other master identifier names this calendar?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "cldr-type",
+                      "ical-scale",
+                      "iri",
+                      "display-name"
+                    ]
+                  },
+                  {
+                    "id": "calendar-algorithm-class",
+                    "text": "Is the calendar solar, lunar, lunisolar, imperial-era overlay, ISO-week overlay, or tabular versus sighting?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "algorithm-class",
+                      "variant",
+                      "sighting-flag"
+                    ]
+                  },
+                  {
+                    "id": "calendar-default-jurisdiction",
+                    "text": "Which jurisdictions or communities use this calendar for civil law, religious law, or display only?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "jurisdiction-ref",
+                      "use-kind",
+                      "valid-from",
+                      "valid-to"
+                    ]
+                  },
+                  {
+                    "id": "calendar-field-set",
+                    "text": "Which fields (era, year, month, week, day, day-period) does this calendar require, and which inherit Gregorian names from CLDR?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "fields",
+                      "inherits-from",
+                      "cyclic-names-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "cldr-calendar-type",
+                    "name": "CLDR BCP 47 calendar type",
+                    "description": "Registered calendar type such as gregory, hebrew, islamic-umalqura, japanese or iso8601.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "calscale",
+                    "name": "iCalendar CALSCALE or RSCALE token",
+                    "description": "Token naming the calendar of interpretation in an iCalendar object or recurrence rule.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "algorithm-class",
+                    "name": "Calendar algorithm class",
+                    "description": "Whether the calendar is solar, lunar, lunisolar, an imperial-era or ISO-week overlay, tabular or sighting-based.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "trs-iri",
+                    "name": "Temporal reference system IRI",
+                    "description": "IRI of the temporal reference system when the calendar is expressed as an OWL-Time TRS.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "cldr-calendar-xml",
+                    "name": "CLDR BCP 47 calendar.xml",
+                    "description": "Normative type inventory for calendar algorithms, including aliases such as gregorian for gregory and Hijri variants.",
+                    "media_or_form": [
+                      "XML data file"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by CLDR release version together with the BCP 47 calendar.xml path within that release.",
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "era-intercalation-reform",
+                "name": "Era, intercalation and reform",
+                "description": "Eras are named epochs inside a calendar: Japanese imperial eras, Buddhist era years, ROC/Minguo, Ethiopic Amete Mihret versus Amete Alem. Gregorian leap years are those divisible by 4 except centennials not divisible by 400, as restated in RFC 3339. Hebrew and Chinese calendars intercalate months; Islamic tabular variants intercalate specified years. Calendar reform is a jurisdictional or communal event (Gregorian adoption, Japanese era change) that can repeat civil dates or skip days. OWL-Time notes the Julian calendar remains in some Orthodox computations. RFC 3339 restricts Internet timestamps to years 0000-9999 in the current era and does not cover intervals.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "era-identity",
+                    "text": "What is the era name, its calendar, its epoch date on a stated scale, and whether it is still open-ended?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "era-id",
+                      "era-name",
+                      "calendar-ref",
+                      "epoch-date",
+                      "open-ended",
+                      "end-date"
+                    ]
+                  },
+                  {
+                    "id": "intercalation-rule",
+                    "text": "What leap-day or leap-month rule applies, and who is authorised to declare an intercalation that is not purely algorithmic?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "rule-expression",
+                      "authority",
+                      "algorithmic-flag"
+                    ]
+                  },
+                  {
+                    "id": "calendar-reform-event",
+                    "text": "When did a jurisdiction adopt, skip or repeat civil dates, and in which calendars must both the old and new labels be stored?",
+                    "kind": "event",
+                    "answer_data": [
+                      "reform-id",
+                      "jurisdiction-ref",
+                      "effective-at",
+                      "skipped-or-repeated-dates",
+                      "source-instrument"
+                    ]
+                  },
+                  {
+                    "id": "week-numbering",
+                    "text": "Does this context use ISO week-date (WKST Monday, week 1 containing the first Thursday), iCalendar WKST, or a locale first-day-of-week?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "week-system",
+                      "wkst",
+                      "first-week-rule",
+                      "cldr-week-data"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "era-id",
+                    "name": "Era identifier",
+                    "description": "Identifier of a named era within a calendar, such as a Japanese imperial era or Ethiopic Amete Alem.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "epoch-date",
+                    "name": "Era epoch date",
+                    "description": "Date on which the era begins, stated on a named calendar or scale.",
+                    "value_kind": "date",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "leap-year-rule",
+                    "name": "Leap or intercalation rule",
+                    "description": "Leap-day or leap-month rule, such as the Gregorian rule restated in RFC 3339 or a lunisolar intercalation.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "week-start",
+                    "name": "Week start day",
+                    "description": "First day of the week (WKST) used for week numbering in this context.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "reform-effective-at",
+                    "name": "Calendar reform effective instant or date",
+                    "description": "Instant or date on which a jurisdiction adopted, skipped or repeated civil dates.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "era-table",
+                    "name": "Calendar era table",
+                    "description": "Named eras with epoch dates for Japanese, Buddhist, ROC, Ethiopic and other CLDR calendars.",
+                    "media_or_form": [
+                      "reference table"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by calendar type together with the CLDR release from which the era entries were taken.",
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "recurrence-and-temporal-values",
+            "name": "Recurrence and temporal values",
+            "description": "Embeddable instant, interval and duration shapes; RFC 5545/8984 recurrence; RFC 7529 non-Gregorian RSCALE.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-005",
+              "SRC-009",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "instant-interval-duration",
+                "name": "Instant, interval and duration",
+                "description": "An instant is an unambiguous point on a timescale. RFC 3339 profiles ISO 8601 for Internet timestamps with a required offset or Z, four-digit years, and no coverage of periods. RFC 9557 extends RFC 3339 with an optional suffix for timezone name and other information (IXDTF) and updates the meaning of Z so it no longer implies that UTC is the preferred reference point. Offset -00:00 remains the convention for known UTC with unknown local offset. RFC 9557 does not represent floating time, future local time whose zone rules may yet change, or non-UTC timescales. RFC 5545 adds DATE, DATE-TIME (UTC, local with TZID, or floating), DURATION, PERIOD, and says the duration of a day or week depends on DST discontinuities. OWL-Time supplies Instant, Interval, ProperInterval, Duration, Allen interval relations, hasBeginning/hasEnd, and explicit TRS. Event time and observation time must be stored separately when both are needed. Time values in this model use RFC 3339 with seconds and an explicit offset or Z.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "instant-identity",
+                    "text": "Is this value an instant, a calendar date, a floating local time, a timezone-qualified civil time, or a duration, and on which TRS?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "value-kind",
+                      "trs",
+                      "tzid",
+                      "offset",
+                      "floating-flag"
+                    ]
+                  },
+                  {
+                    "id": "interval-bounds",
+                    "text": "What are the beginning and end, are they inclusive, and which Allen relation holds against another interval?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "has-beginning",
+                      "has-end",
+                      "bound-inclusivity",
+                      "allen-relation"
+                    ]
+                  },
+                  {
+                    "id": "ixdtf-suffix",
+                    "text": "Does the timestamp carry an RFC 9557 suffix naming an IANA timezone or other tags, and is that suffix consistent with the numeric offset?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "ixdtf-string",
+                      "tz-suffix",
+                      "offset",
+                      "consistency-status"
+                    ]
+                  },
+                  {
+                    "id": "precision-and-unknown-offset",
+                    "text": "What is the stated precision, and is the local offset unknown (-00:00) versus UTC-preferred (Z or +00:00)?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "precision",
+                      "offset-token",
+                      "unknown-offset-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "instant",
+                    "name": "Instant",
+                    "description": "Point on a named timescale, serialised as RFC 3339 with seconds and an explicit offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "offset",
+                    "name": "UTC offset",
+                    "description": "Offset of a civil time from UTC, where -00:00 means known UTC with unknown local offset.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "data-ixdtf-suffix",
+                    "name": "RFC 9557 suffix",
+                    "description": "Optional suffix carrying an IANA timezone name or other information alongside the timestamp.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "interval-start",
+                    "name": "Interval beginning",
+                    "description": "Beginning bound of an interval.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "interval-end",
+                    "name": "Interval end",
+                    "description": "Ending bound of an interval.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "duration",
+                    "name": "Duration",
+                    "description": "Length of time, which for days and weeks depends on DST discontinuities and never counts leap seconds.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "event-time",
+                    "name": "Event time",
+                    "description": "Instant at which the recorded event occurred.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "observation-time",
+                    "name": "Observation or ingestion time",
+                    "description": "Instant at which the record was observed or ingested, stored separately from event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "ixdtf-profile",
+                    "name": "IXDTF / RFC 3339 profile note",
+                    "description": "The operative timestamp profile (RFC 3339, RFC 9557, or ISO 8601-1 as cited by those RFCs) used by the Dimension, including treatment of Z and -00:00.",
+                    "media_or_form": [
+                      "profile note"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the adopting Dimension together with the RFC profile it names.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "recurrence-rule",
+                "name": "Recurrence rule",
+                "description": "RFC 5545 RECUR / RRULE generates occurrence sets. FREQ is required and must be first for backward compatibility. UNTIL and COUNT are mutually exclusive; absent both, the rule repeats forever. UNTIL in STANDARD/DAYLIGHT and in UTC form must be UTC. DTSTART always counts as the first occurrence. BYDAY allows nth weekday in MONTHLY or YEARLY. RDATE adds occurrences; EXDATE excepts them. RFC 5545 recurrence is Gregorian unless RFC 7529 RSCALE is used. OWL-Time does not itself define RRULE but aligns with iCalendar for scheduling examples. Recurrence expansion is a function, not a stored infinite table.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-009",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "rrule-expression",
+                    "text": "What is the FREQ, INTERVAL, UNTIL or COUNT, BY* parts and WKST of this rule, and what DTSTART anchors it?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "rrule",
+                      "freq",
+                      "interval",
+                      "until",
+                      "count",
+                      "wkst",
+                      "dtstart",
+                      "tzid"
+                    ]
+                  },
+                  {
+                    "id": "exception-and-rdate",
+                    "text": "Which additional RDATE instants and EXDATE exceptions apply, and are they DATE or DATE-TIME of a single type?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "rdates",
+                      "exdates",
+                      "value-type"
+                    ]
+                  },
+                  {
+                    "id": "expansion-window",
+                    "text": "Over what query window should occurrences be materialised, and is the rule bounded or forever?",
+                    "kind": "process",
+                    "answer_data": [
+                      "window-start",
+                      "window-end",
+                      "bounded-flag",
+                      "occurrence-count"
+                    ]
+                  },
+                  {
+                    "id": "timezone-of-expansion",
+                    "text": "In which timezone and tzdb version are wall-clock recurrences expanded, especially across DST gaps and folds?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "tzid",
+                      "tzdb-version",
+                      "gap-policy",
+                      "fold-policy"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "rrule",
+                    "name": "RRULE expression",
+                    "description": "RFC 5545 RECUR expression in which FREQ appears first.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "freq",
+                    "name": "Frequency",
+                    "description": "Recurrence frequency, required and first in the RECUR value.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "until",
+                    "name": "Until instant or date",
+                    "description": "Bound of the rule, mutually exclusive with COUNT and expressed in UTC where RFC 5545 requires it.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "count",
+                    "name": "Occurrence count limit",
+                    "description": "Maximum number of occurrences, mutually exclusive with UNTIL.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "exdate",
+                    "name": "Exception date-time",
+                    "description": "Occurrence excepted from the generated set.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "rdate",
+                    "name": "Additional recurrence date-time",
+                    "description": "Occurrence added to the generated set.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "rrule-string",
+                    "name": "iCalendar RRULE / RDATE / EXDATE set",
+                    "description": "The portable recurrence artefact defined by RFC 5545 sections 3.3.10 and 3.8.5.",
+                    "media_or_form": [
+                      "text property value in an iCalendar object"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by its normalised RECUR expression together with DTSTART and timezone, not by a date.",
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "non-gregorian-recurrence",
+                "name": "Non-Gregorian recurrence",
+                "description": "RFC 7529 extends RFC 5545 recurrence for non-Gregorian calendars because CALSCALE was never practically used and iCalendar dates remain Gregorian for interchange. RSCALE names the calendar in which FREQ and BY* parts are interpreted, covering at least lunar and other non-Gregorian patterns needed for religious recurrences. CLDR calendar types are the practical identifier inventory for the scale name. Without RSCALE, a yearly Islamic observance cannot be expressed as an iCalendar RRULE on the Hijri year. Implementation of RFC 7529 remains uneven; that is an interoperability constraint, not a reason to omit the finding.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "rscale-token",
+                    "text": "Which RSCALE calendar is used, and does it match a CLDR type such as hebrew, chinese or islamic-umalqura?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "rscale",
+                      "cldr-type",
+                      "supported-flag"
+                    ]
+                  },
+                  {
+                    "id": "conversion-to-gregorian",
+                    "text": "How is each non-Gregorian occurrence projected to a Gregorian DATE for civil systems that only store Gregorian?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "projection-rule",
+                      "gregorian-date",
+                      "ambiguous-projection"
+                    ]
+                  },
+                  {
+                    "id": "unsupported-rscale",
+                    "text": "If a consumer does not implement RFC 7529, what fallback (materialised RDATE list, skip, or error) is required?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "fallback-policy",
+                      "materialised-rdates",
+                      "error-code"
+                    ]
+                  },
+                  {
+                    "id": "leap-month-occurrence",
+                    "text": "What happens when a BYMONTH or named month is absent in a given lunisolar year?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "skip-or-shift-policy",
+                      "leap-month-code"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "rscale",
+                    "name": "RSCALE calendar token",
+                    "description": "Token naming the calendar in which FREQ and BY* parts of the rule are interpreted.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "projection-policy",
+                    "name": "Projection to Gregorian policy",
+                    "description": "Policy for projecting a non-Gregorian occurrence to a Gregorian civil date.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "unsupported-fallback",
+                    "name": "Non-implementing consumer fallback",
+                    "description": "Behaviour required of a consumer that does not implement RFC 7529: materialised RDATE list, skip, or error.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "rfc-7529-rscale-rule",
+                    "name": "RSCALE recurrence rule",
+                    "description": "An RFC 7529-extended RRULE whose FREQ/BY* parts are evaluated on a named non-Gregorian calendar.",
+                    "media_or_form": [
+                      "text property value in an iCalendar object"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by its normalised RECUR expression including the RSCALE token, together with DTSTART.",
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "observance",
+        "name": "Observance",
+        "description": "Jurisdictional public holidays, working-day and in-lieu rules, and cultural or religious observances including movable feasts.",
+        "rationale": "Public holidays and observances are grouped because holidays are jurisdictional declarations that often derive from observances computed in another calendar, and neither has a global master register.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-011",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "public-holiday-and-working-day",
+            "name": "Public holiday and working day",
+            "description": "Proclaimed holidays, day-off status, substitution, weekend conventions and working-day classification. There is no global holiday register.",
+            "source_refs": [
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "jurisdictional-public-holiday",
+                "name": "Jurisdictional public holiday",
+                "description": "A public holiday is a date established by a competent government instrument (statute, gazette, proclamation) for a jurisdiction. ILO C132 Article 6 distinguishes public and customary holidays from annual paid leave: those holidays shall not be counted as part of the minimum holiday with pay. There is no ILO, IANA, IETF or ISO global register of holiday dates; the master system is the declaring jurisdiction. Recurrence may be a fixed Gregorian date, an nth weekday, or a date computed in another calendar then projected. A holiday may or may not be a day off, may apply only to public servants, and may exist for a single year. This finding does not own leave entitlements.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "holiday-identity",
+                    "text": "What official name, jurisdiction, local identifier if any, and first-observed year identify this holiday?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "official-name",
+                      "local-id",
+                      "jurisdiction-ref",
+                      "first-observed-year",
+                      "language"
+                    ]
+                  },
+                  {
+                    "id": "day-off-status",
+                    "text": "Is this holiday a statutory day off for the general public, for public servants only, a bank holiday, or a commemorative day that is still a working day?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "day-off-status",
+                      "affected-population",
+                      "legal-instrument"
+                    ]
+                  },
+                  {
+                    "id": "holiday-schedule-rule",
+                    "text": "Is the date fixed, an nth weekday, computed from an observance, or a one-off proclamation, and which recurrence rule generates it?",
+                    "kind": "process",
+                    "answer_data": [
+                      "schedule-kind",
+                      "rrule",
+                      "source-observance",
+                      "valid-from-year",
+                      "valid-to-year"
+                    ]
+                  },
+                  {
+                    "id": "holiday-lifecycle",
+                    "text": "Has this holiday been proclaimed, amended, substituted, or rescinded, and where is the instrument published?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "status",
+                      "effective-from",
+                      "effective-to",
+                      "instrument-uri",
+                      "supersedes"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "holiday-id",
+                    "name": "Holiday identifier",
+                    "description": "Identifier of a holiday within its declaring jurisdiction.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "jurisdiction-ref",
+                    "name": "Declaring jurisdiction reference",
+                    "description": "Reference to the jurisdiction whose instrument declares the holiday.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "official-name",
+                    "name": "Official name",
+                    "description": "Official name of the holiday as published by the declaring authority.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "data-day-off-status",
+                    "name": "Day-off status",
+                    "description": "Whether the day is a statutory day off, a public-service or bank holiday, or a commemorative working day.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "first-observed-year",
+                    "name": "First observed year",
+                    "description": "Year in which the holiday was first observed.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "legal-instrument",
+                    "name": "Legal instrument locator",
+                    "description": "Locator of the statute, gazette or proclamation establishing the holiday.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "holiday-gazette",
+                    "name": "Jurisdictional gazette or statutory holiday instrument",
+                    "description": "The primary artefact is the declaring authority's instrument or official annual holiday calendar, not a third-party scraped list.",
+                    "media_or_form": [
+                      "official gazette",
+                      "statutory instrument",
+                      "official annual holiday calendar"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by declaring jurisdiction, instrument citation and publication date.",
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "working-day-weekend-in-lieu",
+                "name": "Working day, weekend and in-lieu",
+                "description": "Working-day classification combines weekend convention, public holidays and substitution rules. Weekend days are not globally Saturday-Sunday; tzdb and RFC 5545 do not define workweeks. ILO C132 assumes public and customary holidays exist as distinct from working days but does not enumerate them. Some jurisdictions move a holiday that falls on a weekend to an adjacent weekday (in-lieu). Half-days, regional holidays and employer-specific closures are common and often unpublished in statutes. No primary global working-day code list was found; financial business-day conventions (TARGET, exchange calendars) are industry siblings and must not be silently reused as civil law.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "weekend-days",
+                    "text": "Which days of the week are non-working weekend days for this jurisdiction or population, and from when?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "weekend-days",
+                      "jurisdiction-ref",
+                      "population",
+                      "valid-from",
+                      "valid-to"
+                    ]
+                  },
+                  {
+                    "id": "in-lieu-rule",
+                    "text": "If a holiday falls on a weekend or other non-workday, is it observed on the preceding or following workday, or not moved?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "in-lieu-policy",
+                      "applies-to-sunday",
+                      "applies-to-saturday",
+                      "authority"
+                    ]
+                  },
+                  {
+                    "id": "working-day-query",
+                    "text": "Given a Gregorian date, timezone and population, is the civil day a working day, and what evidence supports that classification?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "date",
+                      "working-day-flag",
+                      "reason-codes",
+                      "evidence-uris"
+                    ]
+                  },
+                  {
+                    "id": "coverage-gap",
+                    "text": "Is the holiday and weekend dataset complete for the requested year and sub-national unit, or is completeness unknown?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "completeness",
+                      "year",
+                      "subdivision",
+                      "unknown-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "data-weekend-days",
+                    "name": "Weekend day list",
+                    "description": "Days of the week treated as non-working for a jurisdiction or population.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "in-lieu-policy",
+                    "name": "In-lieu substitution policy",
+                    "description": "Whether a holiday falling on a non-workday moves to the preceding or following workday, or is not moved.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "working-day-flag",
+                    "name": "Working day classification",
+                    "description": "Whether a civil day is classified as a working day.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "completeness",
+                    "name": "Calendar completeness",
+                    "description": "Stated completeness of the holiday and weekend dataset for the year and subdivision, including unknown.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "working-day-calendar",
+                    "name": "Year working-day calendar",
+                    "description": "Derived artefact combining weekend convention and proclaimed holidays for one jurisdiction and year; completeness must be stated.",
+                    "media_or_form": [
+                      "derived calendar table"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by jurisdiction and year together with the weekend rule and holiday instrument versions used.",
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "cultural-observance",
+            "name": "Cultural observance",
+            "description": "Religious and cultural observances, seasons and movable feasts computed in their own calendars, which public holidays may formalise.",
+            "source_refs": [
+              "SRC-011",
+              "SRC-012",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "observance-and-movable-feast",
+                "name": "Observance and movable feast",
+                "description": "An observance is a culturally or religiously recognised day, night or season that may recur on a non-Gregorian calendar and may not be a public holiday. ILO C132's 'customary holidays' recognises custom alongside public holidays without defining a register. Computation methods include fixed civil dates, nth weekdays, astronomical new moon, tabular Hijri, Hebrew postponement and lunisolar leap months. RFC 7529 exists so those recurrences can be expressed. A public holiday may derive from an observance without sharing identity. Seasons (for example liturgical seasons) are intervals, not instants. No single primary global observance register was found; tradition-specific authorities remain the masters.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "observance-identity",
+                    "text": "What name, tradition or community, and local identifier distinguish this observance from a public holiday of similar name?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "name",
+                      "tradition",
+                      "community-ref",
+                      "local-id",
+                      "language"
+                    ]
+                  },
+                  {
+                    "id": "computation-method",
+                    "text": "In which calendar is the date computed, is it movable, and what algorithm or authority supplies the year-by-year date?",
+                    "kind": "process",
+                    "answer_data": [
+                      "calendar-ref",
+                      "movable-flag",
+                      "computation-method",
+                      "authority",
+                      "rrule-or-rscale"
+                    ]
+                  },
+                  {
+                    "id": "observance-to-holiday",
+                    "text": "Which jurisdictions have formalised this observance as a public holiday, and with what day-off status?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "derived-holiday-ids",
+                      "jurisdiction-refs",
+                      "day-off-status"
+                    ]
+                  },
+                  {
+                    "id": "occurrence-interval",
+                    "text": "Does this observance occupy a civil date, a sunset-to-sunset interval, or a multi-day season, and in which timezone is dusk evaluated?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "extent-kind",
+                      "start",
+                      "end",
+                      "tzid",
+                      "calendar-date"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "observance-id",
+                    "name": "Observance identifier",
+                    "description": "Identifier of a culturally or religiously recognised day, night or season.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "tradition",
+                    "name": "Tradition or community",
+                    "description": "Tradition or community that recognises the observance.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "movable-flag",
+                    "name": "Movable feast flag",
+                    "description": "Whether the observance moves against the Gregorian calendar.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "data-computation-method",
+                    "name": "Computation method",
+                    "description": "Method used to determine the date: fixed civil date, nth weekday, astronomical new moon, tabular Hijri, Hebrew postponement or lunisolar rule.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "derived-holiday-id",
+                    "name": "Derived public holiday",
+                    "description": "Public holiday derived from this observance in a given jurisdiction.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "observance-computation-note",
+                    "name": "Computation method note",
+                    "description": "Tradition-specific rule sheet or algorithmic description (tabular Hijri, Umm al-Qura, Hebrew postponements, astronomical new moon) used to produce civil dates.",
+                    "media_or_form": [
+                      "rule sheet",
+                      "algorithm description"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by tradition and computation method, citing the tradition-specific authority that supplies it.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "convert-instant-between-scales",
+      "name": "Convert instant between time scales",
+      "description": "Convert a timestamp from one named scale to another using the pinned TAI-UTC leap table and stated realisations, recording event time and conversion time separately.",
+      "inputs": [
+        "source-instant",
+        "source-scale",
+        "target-scale",
+        "leap-table-version"
+      ],
+      "outputs": [
+        "target-instant",
+        "tai-utc-applied",
+        "conversion-time"
+      ],
+      "preconditions": [
+        "The leap-second table version, including the governing IERS Bulletin C, is pinned.",
+        "Source and target scales are named and their realisations stated."
+      ],
+      "effects": [
+        "Records the applied TAI-UTC offset, the leap table version and the conversion time separately from the event time."
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "resolve-local-civil-time",
+      "name": "Resolve local civil time",
+      "description": "Map a timezone-qualified local date-time to a UTC instant, or the reverse, using a pinned tzdb version and an explicit gap/fold policy.",
+      "inputs": [
+        "local-date-time",
+        "tzid",
+        "tzdb-version",
+        "gap-policy",
+        "fold-policy"
+      ],
+      "outputs": [
+        "utc-instant",
+        "offset",
+        "ambiguous-flag",
+        "nonexistent-flag"
+      ],
+      "preconditions": [
+        "A tzdb version is pinned for interpretation.",
+        "A gap and fold resolution policy is stated."
+      ],
+      "effects": [
+        "Returns the resolved instant with its offset and flags ambiguous folds and nonexistent gaps rather than silently choosing one."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-004",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "detect-timestamp-inconsistency",
+      "name": "Detect timestamp inconsistency",
+      "description": "Compare RFC 9557 numeric offset, IANA suffix and current tzdb rules to flag political or version-skew inconsistency without silently 'fixing' the instant.",
+      "inputs": [
+        "ixdtf-timestamp",
+        "tzdb-version"
+      ],
+      "outputs": [
+        "consistency-status",
+        "offset",
+        "tz-suffix",
+        "out-of-band-needed"
+      ],
+      "preconditions": [
+        "The timestamp carries both a numeric offset and an RFC 9557 suffix.",
+        "A tzdb version is pinned for comparison."
+      ],
+      "effects": [
+        "Reports consistency status and signals that out-of-band resolution is needed, without rewriting the instant."
+      ],
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "expand-recurrence",
+      "name": "Expand recurrence rule",
+      "description": "Materialise occurrences of an RRULE/RDATE/EXDATE set, optionally with RSCALE, inside a bounded window, applying WKST and DST gap policy.",
+      "inputs": [
+        "dtstart",
+        "rrule",
+        "rdates",
+        "exdates",
+        "rscale",
+        "window-start",
+        "window-end",
+        "tzid",
+        "tzdb-version"
+      ],
+      "outputs": [
+        "occurrence-instants-or-dates",
+        "bounded-flag"
+      ],
+      "preconditions": [
+        "DTSTART and, where applicable, RSCALE and timezone are stated.",
+        "An expansion window is supplied when the rule has neither UNTIL nor COUNT."
+      ],
+      "effects": [
+        "Materialises occurrences within the window, applying RDATE additions and EXDATE exceptions, and reports whether the rule is bounded."
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "compute-observance-date",
+      "name": "Compute observance date",
+      "description": "Evaluate a movable observance in its calendar and project the occurrence to a Gregorian civil date or interval for a given year.",
+      "inputs": [
+        "observance-id",
+        "year",
+        "calendar-ref",
+        "computation-method",
+        "tzid"
+      ],
+      "outputs": [
+        "calendar-date",
+        "gregorian-date",
+        "interval",
+        "method-used"
+      ],
+      "preconditions": [
+        "The calendar and computation method for the observance are stated."
+      ],
+      "effects": [
+        "Returns the occurrence in its own calendar and its projection to a Gregorian date or interval, recording the method used."
+      ],
+      "source_refs": [
+        "SRC-011",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "classify-working-day",
+      "name": "Classify working day",
+      "description": "Return whether a civil date is a working day for a jurisdiction and population, with reason codes and completeness. Never invent missing holidays.",
+      "inputs": [
+        "date",
+        "jurisdiction-ref",
+        "population",
+        "weekend-rule-id",
+        "holiday-calendar-version"
+      ],
+      "outputs": [
+        "working-day-flag",
+        "reason-codes",
+        "completeness",
+        "evidence-uris"
+      ],
+      "preconditions": [
+        "A weekend rule and a holiday calendar version exist for the jurisdiction and population."
+      ],
+      "effects": [
+        "Returns the classification with reason codes, evidence locators and completeness, reporting unknown rather than inventing missing holidays."
+      ],
+      "source_refs": [
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "ingest-reference-release",
+      "name": "Ingest reference release",
+      "description": "Accept a signed tzdb release, IERS Bulletin C, CLDR calendar update or jurisdictional holiday instrument, verify provenance, and append versioned records without rewriting history.",
+      "inputs": [
+        "artefact",
+        "expected-kind",
+        "signature",
+        "publisher"
+      ],
+      "outputs": [
+        "version-id",
+        "records-appended",
+        "rejected-reason"
+      ],
+      "preconditions": [
+        "The artefact originates from the relevant authority and its provenance can be verified."
+      ],
+      "effects": [
+        "Appends versioned records without rewriting observed history, or rejects the artefact with a recorded reason."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-006",
+        "SRC-008",
+        "SRC-011",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "audit-reference-pin",
+      "name": "Audit reference pin",
+      "description": "Report which tzdb version, leap-second bulletin, calendar type inventory and holiday calendar version were used to interpret a stored timestamp or deadline.",
+      "inputs": [
+        "record-id"
+      ],
+      "outputs": [
+        "tzdb-version",
+        "bulletin-id",
+        "calendar-inventory-version",
+        "holiday-calendar-version",
+        "converted-at"
+      ],
+      "preconditions": [
+        "The stored record carries the pins recorded at interpretation time."
+      ],
+      "effects": [
+        "Reports the reference versions used for the record together with the conversion time, for audit."
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-006",
+        "SRC-007"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "sibling-value-object:temporal-interval",
+      "relation": "MIX-IN",
+      "purpose": "Offered by this mixin: instant, interval, duration, TRS, timezone and precision are value-object shapes other models embed wherever a period, as-of time or deadline occurs.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "sibling-value-object:recurrence-rule",
+      "relation": "MIX-IN",
+      "purpose": "Offered by this mixin: RRULE/RDATE/EXDATE and optional RSCALE are embeddable scheduling primitives, not calendar-event documents.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "world.place",
+      "relation": "REFERENCE",
+      "purpose": "Timezone representative locations, holiday jurisdictions and weekend territories are place entities; this mixin stores only the reference.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "world.identifier-naming",
+      "relation": "REFERENCE",
+      "purpose": "IANA tzids, CLDR calendar types and timescale names are values in registered identifier schemes governed elsewhere.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-006",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "ISO 8601-1:2019 as profiled by RFC 3339 and RFC 9557",
+      "relation": "ALIGN",
+      "purpose": "Internet timestamps in this mixin follow RFC 3339/9557, themselves profiles or extensions of ISO 8601. Conformance to the full ISO text is not claimed; ISO 8601 remains paywalled and was not independently retrieved.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "IANA Time Zone Database",
+      "relation": "REFERENCE",
+      "purpose": "The timezone layer mirrors tzdb identity, links, offsets and releases rather than inventing a parallel zone list.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "RFC 5545 and RFC 7529",
+      "relation": "ALIGN",
+      "purpose": "Recurrence semantics align with iCalendar RECUR and RSCALE. VEVENT collaboration objects are out of scope.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "W3C Time Ontology in OWL",
+      "relation": "ALIGN",
+      "purpose": "Instant/interval topology, TRS, timezone and duration vocabulary align with OWL-Time classes and Allen relations without requiring RDF storage.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Unicode CLDR / UTS #35 Dates",
+      "relation": "ALIGN",
+      "purpose": "Calendar system identifiers and era/month/week display fields align with CLDR BCP 47 calendar types.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "official statistics, report statements and document records",
+      "relation": "REFERENCE",
+      "purpose": "Inbound: reference periods, as-of instants, retention clocks and deadline calendars resolve against this mixin.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "calendar event / scheduling application objects",
+      "relation": "REFERENCE",
+      "purpose": "Boundary exclusion: attendees, methods, alarms and event descriptions belong in a sibling event model that may embed this mixin's recurrence and timezone values.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The owning package MUST name a reference-data steward who creates records only by ingesting a cited authority artefact: a tzdb release, IERS Bulletin C, CLDR inventory or jurisdictional gazette.",
+        "The owning package MUST pin and expose the tzdb release, leap-second bulletin, calendar type inventory and holiday calendar version used to interpret any stored timestamp or deadline.",
+        "The owning package MUST preserve tzdb public-domain status, cryptographic signatures and version stamps when redistributing, as required by BCP 175.",
+        "The owning package MUST publish derived working-day calendars with their completeness flag and cited holiday instruments, never as master or global data."
+      ],
+      "namespace_guidance": "Values stay in their authority's namespace: IANA tzids as AREA/LOCATION strings with backward links resolved to the canonical zone, CLDR BCP 47 calendar types, BIPM/IERS timescale names, and jurisdiction-scoped holiday identifiers. Dimension-assigned UUID or ULID identifiers are created only where no master identifier exists and must point back to the authority fact.",
+      "registry_links": [
+        "https://www.iana.org/time-zones — tzdb releases, zone tables and backward links",
+        "https://www.rfc-editor.org/rfc/rfc6557.html — BCP 175 stewardship procedures for the tz database",
+        "https://unicode-org.github.io/cldr/ldml/tr35-dates.html — CLDR BCP 47 calendar type inventory",
+        "https://hpiers.obspm.fr/eop-pc/earthor/utc/leapsecond.html — IERS leap-second announcements through Bulletin C"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Resolve tzdb link and backward names to the canonical zone before comparison; Asia/Calcutta canonicalises to Asia/Kolkata and does not mint a second zone.",
+        "Normalise instants to RFC 3339 with seconds and an explicit offset or Z, keeping -00:00 for known UTC with unknown local offset.",
+        "Normalise recurrence to its RFC 5545 RECUR expression with FREQ first, anchored by DTSTART and, where applicable, the RSCALE token.",
+        "Record the calendar type in CLDR BCP 47 form, using the registered alias target where one exists (gregorian to gregory)."
+      ],
+      "patch_rules": [
+        "Corrections are new versioned records with provenance; observed history is never edited in place.",
+        "Holiday status changes require a new instrument reference and an effective time.",
+        "Erroneous ingestions are tombstoned with provenance and remain auditable rather than being deleted.",
+        "Name retirement is expressed as supersession and a link to the canonical name."
+      ],
+      "compatibility_rules": [
+        "tzdb backward link names remain resolvable so that pinned historical records continue to interpret.",
+        "Consumers that do not implement RFC 7529 must declare a fallback: a materialised RDATE list, skip, or error.",
+        "Consumers that cannot represent second 60 treat it as 59 per RFC 5545, and durations never count leap seconds.",
+        "Timestamps interpreted under different tzdb releases are reported as RFC 9557 inconsistency rather than silently corrected.",
+        "Software written against the plus-or-minus 0.9 second UT1-UTC rule must version that policy object ahead of the CGPM continuity change."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Prefer the authoritative master-system identifier: IANA tzid for timezones, BIPM/IERS name for timescales, CLDR BCP 47 calendar type for calendars, and the declaring jurisdiction's official holiday identifier when one exists.",
+        "Else a governed global IRI.",
+        "Else a UUID or ULID assigned by the adopting Dimension.",
+        "A date is not an identifier.",
+        "tzdb links and historical aliases do not mint a second timezone.",
+        "Holiday identity is jurisdiction plus official name plus first-observed year unless the jurisdiction publishes a durable identifier.",
+        "Observance identity is tradition plus name plus computation method.",
+        "Recurrence rules are value objects identified by their normalised expression and DTSTART, not by a date."
+      ],
+      "timestamp_rule": "Instants use RFC 3339 with seconds and an explicit offset or Z. Record event time and observation or ingestion time separately when both are needed.",
+      "serial_naming_rule": "Serially issued reference artefacts are named by authority plus series designation and issue: tzdb release version (for example 2026c) with its publication date, IERS Bulletin C by issue and the June or December opportunity it addresses, and derived working-day calendars by jurisdiction and year.",
+      "integrity_rule": "Leap-second announcements, timezone offset transitions, calendar-era tables and proclaimed holiday years are append-only. Corrections are new versioned records with provenance. Consumers MUST pin tzdb release and IERS Bulletin C used for a conversion. Historical pre-1970 civil time MUST be flagged as best-effort when sourced from tzdb."
+    },
+    "policies": [
+      "Time-scale names, tzdb identifiers and CLDR calendar types are open reference data by default, granted through the catalogue access model rather than informal scraping.",
+      "Agents MUST NOT invent leap seconds, zone transitions or holidays; they may only ingest artefacts from the relevant authority and must mark completeness unknown when the artefact is missing.",
+      "Redistribution of tzdb MUST preserve public-domain status, cryptographic signatures where present, and version stamps as required by BCP 175.",
+      "Derived working-day calendars are not master data; they MUST cite the holiday instruments and weekend rule used and MUST NOT be presented as a global standard."
+    ],
+    "crud": {
+      "read": [
+        "Any authenticated catalogue consumer may read current and historical time-scale, tzdb, calendar-type and published holiday records.",
+        "Anonymous public read is allowed for IANA, BIPM/IERS and CLDR-derived identifiers that are already public.",
+        "Derived working-day views are readable with the completeness flag visible."
+      ],
+      "create": [
+        "Only a reference-data steward may create records, and only by ingesting a cited authority artefact (tzdb release, Bulletin C, CLDR inventory, gazette).",
+        "Dimension UUIDs may be created solely when no master identifier exists, with a pointer to the authority fact.",
+        "Consumers MUST NOT create timezone names or leap seconds."
+      ],
+      "update": [
+        "Updates are new versions or append-only transitions, not in-place silent edits of observed history.",
+        "Alias and link updates follow tzdb backward compatibility.",
+        "Holiday status changes require a new instrument reference and effective time."
+      ],
+      "delete": [
+        "Hard delete of historical transitions, leap seconds or proclaimed years is forbidden.",
+        "Supersession and link-to-canonical are the only retirements for names.",
+        "Erroneous ingestions may be tombstoned with provenance; the tombstone remains auditable."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Time-scale authority",
+        "responsibilities": [
+          "BIPM maintains TAI and UTC; IERS announces leap seconds in Bulletin C; national laboratories publish UTC(k) realisations.",
+          "This role is observed, not impersonated, by the catalogue."
+        ]
+      },
+      {
+        "name": "TZ Coordinator",
+        "responsibilities": [
+          "IANA designated expert who releases tzdb, manages tz@iana.org, and encodes on-the-ground consensus without setting civil-time policy.",
+          "Signs and publishes releases."
+        ]
+      },
+      {
+        "name": "Jurisdictional holiday authority",
+        "responsibilities": [
+          "Declares, amends and rescinds public holidays and weekend or in-lieu rules for a territory.",
+          "Publishes gazettes or official annual calendars that this mixin records but does not author."
+        ]
+      },
+      {
+        "name": "Reference data steward",
+        "responsibilities": [
+          "Ingests signed releases, pins versions, maintains aliases, records completeness, and operates the catalogue copy of this mixin.",
+          "Refuses unsourced holiday lists as master data."
+        ]
+      },
+      {
+        "name": "Consuming agent",
+        "responsibilities": [
+          "Resolves embedded intervals and deadlines against pinned versions.",
+          "Treats gap, fold, unknown offset and unknown holiday completeness as first-class outcomes."
+        ]
+      },
+      {
+        "name": "Redistributor",
+        "responsibilities": [
+          "Republishes reference data inside other products only with version stamps, signatures and licence notices intact.",
+          "Audited through the catalogue redistribution path."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Open read for public reference identifiers and historical transitions; write restricted to the reference-data steward ingesting cited artefacts.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Unpublished draft tz patches and embargoed forthcoming proclamations are write-once steward-only until the authority publishes them.",
+        "Commercial or scraped holiday feeds are not substitutes for gazettes and MUST NOT be loaded as master holiday records.",
+        "High-resolution UT1-UTC series used for scientific work may be licensed separately from the civil leap-second table."
+      ],
+      "audit_requirements": [
+        "Every conversion or working-day answer MUST record tzdb version, leap-second bulletin identifier, calendar type and holiday-calendar version used, plus conversion time in RFC 3339.",
+        "Redistribution events MUST be attributable to a redistributor role.",
+        "Tombstones and supersessions remain visible to auditors."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "Specification URL",
+        "Processes URL",
+        "Interface URL",
+        "Storage type URL"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "The mixin is defensible for civil timestamps (RFC 3339/9557), IANA timezones and tzdb stewardship, CLDR calendar types, iCalendar recurrence including RFC 7529 RSCALE, leap seconds under the current IERS/BIPM regime, and the 2022 CGPM decision to change UTC continuity by 2035. Public holidays and observances are in scope as jurisdictional facts, but there is no global primary holiday register; working-day arithmetic is therefore completeness-flagged rather than claimed as a universal code list.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "IANA tzid, BIPM/IERS scale names, CLDR calendar types, and jurisdiction-plus-name holiday identity with UUID fallback; dates are not identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Leap-second announcements, tz releases, calendar reforms, holiday proclamation/rescission, alias/link retirement, and CGPM 2035 continuity horizon."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Timezone defined against a scale; transitions amend a zone; eras belong to calendars; holidays scheduled by recurrence and optionally derived from observances; place and identifier schemes referenced, not owned."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Instants, intervals, durations, event versus observation time, RFC 3339/IXDTF, DST gap/fold, leap second 23:59:60, floating time excluded from IXDTF."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "tzdb version pins, Bulletin C, gazette instruments, CLDR inventory, BCP 175 public-domain notices and signatures."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Class-level steward versus declaring authorities (BIPM/IERS, TZ Coordinator as encoder not policy-setter, jurisdictions)."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Offset/suffix consistency, RRULE UNTIL/COUNT mutual exclusion, single RDATE value type, completeness flags, unknown-offset convention."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Open read for public reference data; steward-only ingest; exceptions for drafts and non-gazette holiday feeds."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Append-only history, tombstones instead of hard delete, pre-1970 quality flags; document retention clocks consume this mixin but live in a records model."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to RFC 3339/9557, RFC 5545/7529, tzdb, CLDR, OWL-Time; recorded conflicts with ISO leap seconds versus XSD, Z meaning, VTIMEZONE snapshots versus living tzdb."
+      },
+      {
+        "dimension": "leap-second-policy",
+        "status": "covered",
+        "notes": "Current plus-or-minus 0.9 second UT1-UTC rule, 37-second TAI-UTC, last leap 2017-01-01T00:00:00Z, CGPM Resolution 4 continuity change in or before 2035."
+      },
+      {
+        "dimension": "calendar-scale",
+        "status": "covered",
+        "notes": "CLDR type inventory including Hijri variants, Japanese eras, ISO week overlay; CALSCALE unused in practice, RSCALE required for non-Gregorian RRULE."
+      },
+      {
+        "dimension": "daylight-saving",
+        "status": "covered",
+        "notes": "Rule/Zone model, AT suffixes, SAVE versus LETTER, political permanent-offset changes in tz 2026c."
+      },
+      {
+        "dimension": "working-day-convention",
+        "status": "gap",
+        "notes": "No primary global weekend or in-lieu register; classification is specified as a function over jurisdictional artefacts with completeness unknown as a valid result."
+      },
+      {
+        "dimension": "recurrence-expansion",
+        "status": "covered",
+        "notes": "FREQ/UNTIL/COUNT/BY*/WKST, RDATE/EXDATE, RSCALE, DST gap policy, bounded expansion windows."
+      }
+    ],
+    "known_omissions": [
+      "ISO 8601-1:2019 and ISO 8601-2:2019 full texts were not retrieved (paywalled); alignment is via RFC 3339 and RFC 9557 citations only.",
+      "ISO 19108:2002 temporal schema was cited by OWL-Time but not independently read.",
+      "RFC 9636 TZif, RFC 7808 TZDIST, RFC 8984 JSCalendar and RFC 5905 NTP were identified as related and not fully retrieved.",
+      "GNSS timescales (GPS, GLONASS, Galileo, BeiDou) and operator leap smearing lack a primary source in this pass.",
+      "No global primary holiday, weekend or financial business-day register was found; national gazettes remain masters.",
+      "Windows timezone IDs and CLDR windowsZones mapping were not fetched as a first-party artefact.",
+      "Astronomical new-moon algorithms, Hebrew postponement tables and Umm al-Qura internals are tradition-specific authorities not copied here.",
+      "Negative leap seconds are allowed by the IERS framework but have never been issued; encoding remains a rare lifecycle case."
+    ],
+    "conflicts": [
+      "RFC 3339 treats Z and +00:00 as implying UTC is the preferred reference point; RFC 9557 updates Z so that implication no longer holds. Both keep -00:00 for unknown local offset.",
+      "ISO 8601 mandates leap seconds in lexical forms; OWL-Time notes XML Schema/XSD lexical forms ignore them. RFC 5545 allows second 60 but says non-supporting implementations SHOULD treat it as 59, and durations MUST NOT consider leap seconds. POSIX/Unix time also omits leap seconds.",
+      "RFC 9557 IANA timezone names mean rules current at interpretation time; RFC 5545 VTIMEZONE is a snapshot embedded in one object. Offset timezones such as +01:00 are legal in IXDTF but strongly discouraged.",
+      "RFC 5545 CALSCALE exists but RFC 7529 states it has never been used; non-Gregorian recurrence requires RSCALE.",
+      "tzdb is complete by design only for post-1970 civil clocks of recorded locations; using it as a universal historical atlas overclaims.",
+      "CGPM Resolution 4 will change the UT1-UTC bound in or before 2035; current IERS plus-or-minus 0.9 second practice remains in force until then. Do not claim the leap second has already ended.",
+      "ILO C132 is about paid annual leave, not a holiday calendar standard; using it as a date register would be a category error."
+    ],
+    "regional_assumptions": [
+      "Internet civil timestamps default to the Gregorian calendar as profiled by RFC 3339, not as a claim that all jurisdictions use Gregorian for domestic law.",
+      "Saturday-Sunday weekends are a common but non-universal default and must not be inferred from tzid alone.",
+      "English AREA/LOCATION tzids are the interchange identifiers; localised labels come from CLDR.",
+      "Holiday and in-lieu law is sub-national in several federations; a country-level calendar can be incomplete.",
+      "DST remains politically unstable, as illustrated by tzdb 2026c (Alberta permanent -06 from 2026-06-18; Morocco permanent +00 from 2026-09-20)."
+    ],
+    "adversarial_checks": [
+      "Local 02:30 on a spring-forward day may be nonexistent; local 01:30 on a fall-back day may be ambiguous. Resolution policy must be explicit or the convert function must fail closed.",
+      "A timestamp of 2016-12-31T23:59:60Z is a valid positive leap second; rejecting it or treating it as 2017-01-01T00:00:00Z without a stated policy is an interoperability defect.",
+      "2020-01-01T00:00:00+01:00[Europe/Paris] and 2020-01-01T00:00:00+01:00[+01:00] are not equivalent for 'six months later' arithmetic.",
+      "UNTIL on an RRULE in UTC combined with DTSTART in America/New_York can drop or duplicate the last occurrence if the consumer ignores RFC 5545 UTC UNTIL rules.",
+      "A yearly Islamic holiday expanded on Gregorian anniversary, or with the wrong islamic-* CLDR variant, will be the wrong civil date.",
+      "Asia/Calcutta must resolve as a link to Asia/Kolkata, not as a second zone.",
+      "A missing sub-national holiday must yield completeness=unknown, not working-day=true.",
+      "tzdb 2026c Morocco +00 from 2026-09-20 will disagree with a converter pinned to an earlier release; version skew must be detected as RFC 9557 inconsistency, not silently corrected.",
+      "Second instance of a civil day under a date-line move (America/Juneau 1867) must not collapse to a single Gregorian date without recording both labels.",
+      "Claiming conformance to ISO 8601-1:2019 without the ISO text, or claiming leap seconds have already been abolished before the CGPM implementation, is a false completeness claim."
+    ]
+  }
+}

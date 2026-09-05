@@ -1,0 +1,3427 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-sft-012",
+    "model_id": "WM-SFT-012",
+    "name": "SBOM / Supply-chain Manifest",
+    "entry_kind": "aggregate",
+    "purpose": "Model the software bill of materials as a governed, versioned, signable manifest record: its own identity and specification binding, the component inventory and identifier sets it carries, the asserted relationship graph, declared licensing and completeness, authenticity bindings by reference, and the manifest's publication, access and retention lifecycle.",
+    "scope_statement": "Scope is the SBOM manifest instance as an aggregate record: what it is, what it declares, how it is identified, revised, bound to a subject artifact, published, restricted and retired. The manifest is a declaration made by a named author at a stated time about a described subject. This model owns the manifest's own semantics only. It does not own the described release, the build that produced it, the vulnerabilities correlated against it, the licences it cites, the keys that sign it, or any runtime evaluation of its contents. Storage and interface (JSON-LD, tag-value, XML, protobuf, Git, OCI, MongoDB, MCP) are projections of this model, not part of it.",
+    "in_scope": [
+      "Manifest identity, revision series, namespace and immutability of published revisions",
+      "Specification and serialization binding (SPDX, CycloneDX, SWID) including declared spec version, profiles and media type",
+      "Primary (root) subject binding to a released artifact by identifier and digest, held as a reference",
+      "Generation context: SBOM type (design, source, build, analyzed, deployed, runtime), generating tool reference and stated interpretation limits",
+      "Component inventory entries: name, version, entry-local reference, type, scope, modification flag",
+      "Component identifier sets (purl, CPE, SWID tag id, OmniBOR gitoid, SWHID, ecosystem coordinates) and their normalization for comparison",
+      "Component integrity digests with named algorithms and stated coverage",
+      "Producer, supplier, author and publisher attribution carried as references to party master data",
+      "Asserted relationships (contains, dependsOn, describes) with direction, optionality and per-relationship completeness",
+      "Declared dependency depth, aggregate completeness and explicit known unknowns",
+      "Cross-manifest links and version-pinned external references to non-SBOM evidence",
+      "Declared and concluded licence expressions, licence list version, and the manifest's own data licence",
+      "Manifest digest over a defined canonical byte form, and bindings to external signature or attestation envelopes",
+      "Baseline element conformance claims and the gap report produced against them",
+      "Amendment, errata and supersession of published revisions",
+      "Publication locators, discovery mechanisms, access classification and redaction tiers",
+      "Manifest lifecycle states, generation cadence and staleness, retention and disposition state"
+    ],
+    "out_of_scope": [
+      "Software package and release identity, versioning and release lifecycle (owned by WM-SFT-007)",
+      "Build execution, build platform trust, build parameters and the provenance predicate lifecycle (owned by WM-SFT-008)",
+      "Vulnerability records, severity scoring and exploitability determination, including VEX and CSAF authoring semantics",
+      "Licence obligation analysis, compatibility determination and compliance decisions",
+      "Cryptographic key lifecycle, trust roots, certificate issuance, signature verification execution and transparency-log operation",
+      "Policy evaluation, admission gating or enforcement based on manifest content",
+      "Consumer-side audit trails and enforcement records produced when a manifest is evaluated at runtime",
+      "Live deployed-asset inventory, configuration management database and runtime telemetry",
+      "Party and organization master data authoring",
+      "Storage-format, transport and query-interface specifics"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-SFT-007 Software Package / Release",
+        "distinction": "WM-SFT-012 is the registered child of WM-SFT-007 and describes a release; the release's identity, version scheme, support window and lifecycle states remain owned by WM-SFT-007. This model carries only a subject reference (release key plus artifact digest) and never re-declares release lifecycle transitions.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "WM-SFT-008 Build / Release pipeline execution",
+        "distinction": "WM-SFT-008 owns build execution and build provenance, including the in-toto statement, buildDefinition and runDetails. This model records only the SBOM type and a reference to the producing run; it must not reproduce build parameters, resolved dependencies of the build platform, or provenance predicate lifecycle.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-012",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Vulnerability and VEX/CSAF disclosure model",
+        "distinction": "The manifest supplies correlation keys (purl, CPE, digests) and may carry a pinned reference to an exploitability statement, but it never asserts affectedness, severity, exploitability status or remediation. Those semantics stay with the vulnerability model.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Signing, key management and transparency-log models",
+        "distinction": "This model binds an external signature or attestation envelope to a manifest revision by digest and records the asserted signer identity. Key trust, envelope verification, revocation and transparency-log inclusion proof evaluation are performed and recorded elsewhere; a reference here grants no ownership of verification or audit semantics.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Licence and compliance model",
+        "distinction": "The manifest carries declared and concluded licence expressions and the licence list version used. Obligation analysis, licence compatibility and compliance conclusions are out of scope and belong to the licensing model.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Deployed-asset inventory / CMDB",
+        "distinction": "A deployed or runtime SBOM is still a point-in-time manifest declaration, not a live system of record for installed assets. Continuous asset state, drift detection and reconciliation belong to the inventory model.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Policy decision and enforcement model",
+        "distinction": "Conformance claims and completeness reports produced here are descriptive records about this model's own data. Admission control, gating and the audit trail of enforcement decisions are owned by the policy model.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-013"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "SPDX Specification, Version 3.0.1",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/",
+      "version_or_date": "3.0.1 (published 2024-12)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines the core BOM model (Element, Artifact, Relationship, SpdxDocument, CreationInfo, Agent, IntegrityMethod/Hash, ExternalIdentifier, ExternalRef, NamespaceMap, Bundle) and the Software, Build, Security, Licensing, Dataset and AI profiles that ground manifest structure."
+    },
+    {
+      "id": "SRC-002",
+      "title": "SPDX 3.0.1 Core Model - Element class",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Element/",
+      "version_or_date": "3.0.1",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Establishes that every element carries a required unique spdxId IRI plus creationInfo, verifiedUsing integrity methods, externalIdentifier and externalRef - the basis for identity, integrity and external-reference findings."
+    },
+    {
+      "id": "SRC-003",
+      "title": "SPDX 3.0.1 Core Model - Relationship class",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Relationship/",
+      "version_or_date": "3.0.1",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines from/to/relationshipType with an optional completeness value and start/end times, and the use of NoneElement versus NoAssertionElement - the basis for relationship assertion and completeness findings."
+    },
+    {
+      "id": "SRC-004",
+      "title": "SPDX 3.0.1 Software Profile - SbomType vocabulary",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Software/Vocabularies/SbomType/",
+      "version_or_date": "3.0.1",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Normative definitions of design, source, build, analyzed, deployed and runtime SBOM types, used for the generation-context classification finding."
+    },
+    {
+      "id": "SRC-005",
+      "title": "CycloneDX Specification Overview (v1.7, ECMA-424)",
+      "organization": "OWASP Foundation / Ecma International",
+      "url": "https://cyclonedx.org/specification/overview/",
+      "version_or_date": "CycloneDX 1.7 released 2025-10-21; ECMA-424 published 2025-12-10",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines BOM metadata, components, services, dependencies, compositions with aggregate completeness values, vulnerabilities, formulation, annotations, declarations and definitions, plus JSON/XML/protobuf serializations and registered media types."
+    },
+    {
+      "id": "SRC-006",
+      "title": "CycloneDX BOM-Link",
+      "organization": "OWASP Foundation",
+      "url": "https://cyclonedx.org/capabilities/bomlink/",
+      "version_or_date": "Capability page for CycloneDX 1.7, accessed 2026-09-03",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines the IANA-registered urn:cdx:serialNumber/version#bom-ref URN, establishing that BOM identity is serialNumber plus revision version and that cross-manifest links are version-pinned."
+    },
+    {
+      "id": "SRC-007",
+      "title": "2026 Minimum Elements for a Software Bill of Materials (SBOM)",
+      "organization": "Cybersecurity and Infrastructure Security Agency, with NSA, FBI and international partners",
+      "url": "https://www.cisa.gov/resources-tools/resources/2026-minimum-elements-software-bill-materials-sbom",
+      "version_or_date": "Published 2026-07-29; replaces the NTIA 2021 minimum elements",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Current baseline element profile: SBOM metadata and component data fields including author, author signature, timestamp, data format name and version, generation context, tool name and version, component producer, identifiers, hash value and algorithm, licence and dependency relationship, plus practices for frequency, depth, known unknowns, distribution, access control and accommodation of mistakes."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Types of Software Bill of Material (SBOM) Documents",
+      "organization": "CISA-facilitated community working group on SBOM Tooling and Implementation",
+      "url": "https://www.cisa.gov/resources-tools/resources/types-software-bill-materials-sbom",
+      "version_or_date": "2023-04-21",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Community definition of the six SBOM types and the data typically present in each, corroborating the SPDX SbomType vocabulary and supporting interpretation limits per type."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Regulation (EU) 2024/2847 (Cyber Resilience Act)",
+      "organization": "European Union (EUR-Lex)",
+      "url": "https://eur-lex.europa.eu/eli/reg/2024/2847/oj/eng",
+      "version_or_date": "OJ L, 2024/2847; in force 2024-12-10; main obligations apply from 2027-12-11",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Annex I Part II point 1 requires manufacturers to draw up an SBOM in a commonly used and machine-readable format covering at least top-level dependencies; recital 77 confirms no obligation to publish, and market surveillance authorities may request it - grounding depth floor, access classification and disclosure exceptions."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Package-URL (purl) Specification",
+      "organization": "package-url project / Ecma International (ECMA-427)",
+      "url": "https://www.packageurl.org/docs/purl/specification",
+      "version_or_date": "purl 1.0.0; ECMA-427 approved 2025-12-10, released 2025-12-18",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Governed global identifier scheme for components (type, namespace, name, version, qualifiers, subpath) with normalization rules and a registered type list, used for component identifier sets and comparison."
+    },
+    {
+      "id": "SRC-011",
+      "title": "in-toto Attestation Framework - Statement layer, spec v1",
+      "organization": "in-toto project (CNCF)",
+      "url": "https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md",
+      "version_or_date": "Statement v1 (https://in-toto.io/Statement/v1)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines the _type/subject/predicateType/predicate structure, ResourceDescriptor (name, digest, downloadLocation, mediaType, annotations) and the DSSE envelope layer, grounding authenticity binding by subject digest without importing verification semantics."
+    },
+    {
+      "id": "SRC-012",
+      "title": "SLSA Provenance predicate, version 1.1",
+      "organization": "OpenSSF / SLSA",
+      "url": "https://slsa.dev/spec/v1.1/provenance",
+      "version_or_date": "v1.1 (retired; superseded by v1.2)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Shows that buildDefinition and runDetails, including resolvedDependencies, are owned by the build-provenance model - used here only to fix the boundary against WM-SFT-008 and to type the producing-run reference."
+    },
+    {
+      "id": "SRC-013",
+      "title": "NIST SP 800-218, Secure Software Development Framework (SSDF) Version 1.1",
+      "organization": "National Institute of Standards and Technology",
+      "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "version_or_date": "February 2022",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Framework requiring producers to archive and protect software release data and to maintain provenance and component information for well-secured software, grounding generation cadence, retention and steward accountability."
+    },
+    {
+      "id": "SRC-014",
+      "title": "Mapping CISA's 2026 SBOM Minimum Elements to CycloneDX and SPDX",
+      "organization": "RunSafe Security",
+      "url": "https://runsafesecurity.com/blog/sbom-minimum-elements-cyclonedx-spdx/",
+      "version_or_date": "2026",
+      "source_type": "secondary",
+      "primary_source": false,
+      "authority_tier": 4,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Secondary field-by-field mapping of the 2026 minimum elements onto CycloneDX 1.6 and SPDX 2.3/3.0, used only to surface interoperability gaps (for example the absence of a normative in-document signature class in SPDX) and to flag naming uncertainty."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "manifest-identity-and-binding",
+        "name": "Manifest Identity, Specification Binding and Subject Scope",
+        "description": "What this manifest instance is, how it is identified and revised, which specification and serialization express it, which released artifact it describes, and how it was generated.",
+        "rationale": "Both SPDX and CycloneDX treat the BOM document as a first-class identified object distinct from what it describes: SPDX requires a unique spdxId IRI per element and a document namespace, CycloneDX identifies a BOM by serialNumber plus revision version. The 2026 minimum elements likewise separate SBOM metadata fields from component data fields. Subject binding must be a reference because release identity is owned by WM-SFT-007.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-005",
+          "SRC-006",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "layer-manifest-identity",
+            "name": "Manifest identity and revision series",
+            "description": "The manifest's own identifier, namespace, revision counter and immutability rules.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-005",
+              "SRC-006"
+            ],
+            "findings": [
+              {
+                "id": "find-manifest-identity",
+                "name": "Manifest identifier, namespace and revision series",
+                "description": "How a single SBOM instance is named, how its internal element identifiers are scoped, and when a change yields a new revision of the same identity rather than a new manifest identity.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-mid-authoritative-id",
+                    "text": "Which identifier authoritatively designates this SBOM instance, and which system mints it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Manifest identifier value",
+                      "Minting system or registry name",
+                      "Identifier scheme (SPDX document IRI, CycloneDX serialNumber URN, Dimension-assigned UUID or ULID)"
+                    ]
+                  },
+                  {
+                    "id": "q-mid-revision-boundary",
+                    "text": "When does a change produce a new revision of the same manifest identity rather than a new manifest identity?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Revision-triggering change classes",
+                      "Identity-splitting change classes (change of described subject or of specification family)",
+                      "Current revision number"
+                    ]
+                  },
+                  {
+                    "id": "q-mid-namespace-scope",
+                    "text": "Which namespace or document IRI scopes the entry-local identifiers used inside this manifest?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Document namespace IRI or URN",
+                      "Namespace allocation authority",
+                      "Collision-avoidance rule"
+                    ]
+                  },
+                  {
+                    "id": "q-mid-immutability",
+                    "text": "Is a published manifest revision immutable once distributed, and what constraint records that?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Immutability flag for published revisions",
+                      "Constraint statement",
+                      "Permitted post-publication annotation fields"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-manifest-id",
+                    "name": "Manifest identifier",
+                    "description": "Authoritative identifier of this SBOM instance, independent of any revision.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-manifest-serial",
+                    "name": "Manifest serial number",
+                    "description": "Governed global serial such as a CycloneDX serialNumber URN or an SPDX document IRI.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-manifest-revision",
+                    "name": "Manifest revision number",
+                    "description": "Monotonically increasing revision counter within one manifest identity.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-manifest-namespace",
+                    "name": "Manifest namespace IRI",
+                    "description": "Namespace scoping entry-local identifiers so that they are globally resolvable.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Manifest identity is a set of scalar reference values carried on the manifest record itself; it produces no separate deliverable. The serialized document that bears these values is declared once as an artifact under the specification-binding finding, and duplicating it here would create two owners of the same file."
+              },
+              {
+                "id": "find-spec-and-serialization-binding",
+                "name": "Specification, profile and serialization binding",
+                "description": "Which SBOM specification family and version the manifest declares, which profiles or extensions it uses, and which serialization and registered media type carry the instance.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "q-spec-family-version",
+                    "text": "Which SBOM specification family and specification version does this manifest declare?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Specification family code (SPDX, CycloneDX, SWID)",
+                      "Declared specification version",
+                      "Declared format-name field value"
+                    ]
+                  },
+                  {
+                    "id": "q-spec-media-type",
+                    "text": "Which serialization and registered media type carry this manifest instance?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Serialization form (JSON-LD, tag-value, JSON, XML, Protocol Buffers)",
+                      "IANA media type",
+                      "File-name convention used"
+                    ]
+                  },
+                  {
+                    "id": "q-spec-profiles",
+                    "text": "Which optional profiles or extensions of the declared specification are in use?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Profile identifiers in use",
+                      "Extension namespaces present",
+                      "Consumer capability required to read them"
+                    ]
+                  },
+                  {
+                    "id": "q-spec-cross-serialization",
+                    "text": "How is one logical manifest expressed in two serializations recognised as a single manifest?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Shared manifest identifier across serializations",
+                      "Equivalence rule between serializations",
+                      "Per-serialization digests"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-spec-name",
+                    "name": "Specification family name",
+                    "description": "Declared specification family that governs the manifest structure.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-spec-version",
+                    "name": "Specification version",
+                    "description": "Declared version of the specification family.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-serialization-media-type",
+                    "name": "Serialization media type",
+                    "description": "Registered media type of the serialized manifest instance.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-profile-set",
+                    "name": "Declared profile set",
+                    "description": "Optional specification profiles or extensions the manifest relies on.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-sbom-document",
+                    "name": "Serialized SBOM manifest document",
+                    "description": "The distributable manifest file that carries the declared inventory, relationships and metadata in one specification family and serialization. Each published revision is a distinct immutable instance.",
+                    "media_or_form": [
+                      "SPDX 3.x JSON-LD serialization",
+                      "SPDX 2.3 tag-value, JSON, YAML or RDF serialization",
+                      "CycloneDX JSON, XML or Protocol Buffers serialization",
+                      "SWID tag XML document"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Manifest identifier plus revision number, materialized as the specification's own governed identifier (SPDX document IRI or CycloneDX serialNumber URN with version) and pinned by a digest over the exact distributed byte stream.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "layer-subject-scope",
+            "name": "Subject binding and generation context",
+            "description": "Which released artifact the manifest describes and under what generation conditions the inventory was produced.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "find-primary-component-binding",
+                "name": "Primary component and subject binding",
+                "description": "Identification of the root subject the manifest describes and its resolvable binding to an external release record and to an exact artifact digest.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-sub-primary-component",
+                    "text": "Which described subject is the primary or root component of this manifest?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Primary component entry reference",
+                      "Primary component name and version",
+                      "Rule distinguishing the primary component from contained components"
+                    ]
+                  },
+                  {
+                    "id": "q-sub-release-resolution",
+                    "text": "Which external package or release record does the primary component resolve to, and by which key?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "External release record identifier",
+                      "Resolution key type",
+                      "Owning model reference (WM-SFT-007)"
+                    ]
+                  },
+                  {
+                    "id": "q-sub-artifact-digest",
+                    "text": "Which digest binds this manifest to an exact released artifact rather than to a product line?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Subject artifact digest algorithm and value",
+                      "Digest coverage description",
+                      "Statement when no digest is available"
+                    ]
+                  },
+                  {
+                    "id": "q-sub-multi-subject",
+                    "text": "May a single manifest describe more than one primary subject, and how is that expressed?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Multi-subject permitted flag",
+                      "Expression mechanism for multiple subjects",
+                      "Consumer disambiguation rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-primary-component-ref",
+                    "name": "Primary component reference",
+                    "description": "Entry-local reference to the root subject described by the manifest.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-subject-artifact-digest",
+                    "name": "Subject artifact digest",
+                    "description": "Digest values binding the manifest to the exact artifact bytes it describes.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-subject-release-key",
+                    "name": "Subject release key",
+                    "description": "Reference to the release record owned by the package or release model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Subject binding is purely reference data pointing at a record owned by WM-SFT-007. Emitting an artifact here would materialize release information this model does not own and would create a second, drifting copy of release identity."
+              },
+              {
+                "id": "find-generation-context",
+                "name": "SBOM type, generating tool and interpretation limits",
+                "description": "The declared lifecycle phase and method by which the inventory was produced, the tool that produced it, the producing run held as a reference, and the limits this places on how the inventory may be read.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-gen-sbom-type",
+                    "text": "Which SBOM type classifies how this manifest was produced?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "SBOM type code (design, source, build, analyzed, deployed, runtime)",
+                      "Declared lifecycle phase value",
+                      "Vocabulary source for the type"
+                    ]
+                  },
+                  {
+                    "id": "q-gen-tool-identity",
+                    "text": "Which tool identity and version generated this manifest, and was generation automated or manual?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Generating tool name and version",
+                      "Automated or manual indicator",
+                      "Tool configuration reference"
+                    ]
+                  },
+                  {
+                    "id": "q-gen-producing-run",
+                    "text": "Which build or analysis run does this manifest cite as its producing event, without restating that run's own record?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Producing run reference identifier",
+                      "Owning model reference (WM-SFT-008)",
+                      "Producing event time"
+                    ]
+                  },
+                  {
+                    "id": "q-gen-interpretation-limit",
+                    "text": "What limits does the declared generation context place on how this inventory may be interpreted?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Known coverage characteristic of the declared type",
+                      "Components that this type structurally cannot observe",
+                      "Statement of intended use"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-sbom-type",
+                    "name": "SBOM type",
+                    "description": "Declared generation-context classification of the manifest.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-generating-tool-ref",
+                    "name": "Generating tool reference",
+                    "description": "Reference to the tool identity and version that produced the manifest.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-producing-run-ref",
+                    "name": "Producing run reference",
+                    "description": "Reference to the build or analysis run that emitted the manifest; the run record itself is owned externally.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Generation context is a small set of declared codes and outbound references recorded on the manifest record. The build run and its provenance predicate are artifacts of WM-SFT-008; declaring one here would duplicate that model's operational output."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "component-inventory",
+        "name": "Component Inventory and Identification",
+        "description": "The component entries the manifest carries: their core attributes, identifier sets, classification, integrity digests and producer attribution.",
+        "rationale": "Component data fields form the second half of the 2026 minimum elements and are the substance of both SPDX Package/File/Snippet and CycloneDX components. purl and companion schemes provide the governed identifiers required for downstream correlation, and hash value plus algorithm is now a baseline element.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-007",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "layer-component-entry",
+            "name": "Component entry attributes and identifiers",
+            "description": "What each inventory entry must state to be usable, and how it is identified and classified.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "find-component-entry-core",
+                "name": "Core component entry attributes",
+                "description": "The minimum attribute set of an inventory entry, its entry-local reference used as a relationship endpoint, and how versionless or duplicate entries are handled.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cec-minimum-set",
+                    "text": "What is the minimum attribute set that makes a component entry usable by a downstream consumer?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Required attribute list",
+                      "Baseline profile that imposes it",
+                      "Handling of entries below the minimum"
+                    ]
+                  },
+                  {
+                    "id": "q-cec-local-ref",
+                    "text": "Which entry-local reference identifies a component inside this manifest so that relationships can target it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Entry-local reference value",
+                      "Uniqueness scope of the reference",
+                      "Stability of the reference across revisions"
+                    ]
+                  },
+                  {
+                    "id": "q-cec-no-version",
+                    "text": "How is a component version recorded when the upstream project publishes no formal version string?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Substitute version representation (commit identifier, build identifier)",
+                      "Explicit unknown marker",
+                      "Note explaining the substitution"
+                    ]
+                  },
+                  {
+                    "id": "q-cec-duplicate-entries",
+                    "text": "How are two entries recognised as describing the same component within one manifest?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Deduplication key",
+                      "Comparison rule applied",
+                      "Action taken on detected duplicates"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-component-name",
+                    "name": "Component name",
+                    "description": "Name of the inventoried component as published by its producer.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-component-version",
+                    "name": "Component version",
+                    "description": "Version or build designation of the component.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-entry-local-ref",
+                    "name": "Entry-local reference",
+                    "description": "Identifier unique within the manifest used as a relationship endpoint.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Component entries are structured records inside the already-declared manifest document; they have no independent distributable form. Declaring a separate inventory artifact would fragment integrity, since a digest over an extracted subset would no longer match the signed manifest."
+              },
+              {
+                "id": "find-component-identifier-set",
+                "name": "Component identifier set and normalization",
+                "description": "The governed identifier schemes recorded per component, their precedence, the normalization applied before comparison, and the fallback when no registry coordinate exists.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cis-schemes-precedence",
+                    "text": "Which identifier schemes are recorded for a component and in what precedence order?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Identifier scheme list (purl, CPE, SWID tag id, OmniBOR gitoid, SWHID)",
+                      "Precedence ordering",
+                      "Scheme-specific values"
+                    ]
+                  },
+                  {
+                    "id": "q-cis-normalization",
+                    "text": "Which normalization rules apply before two package URLs are treated as equal?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Normalization form applied",
+                      "Case and encoding rules",
+                      "Qualifier handling rule"
+                    ]
+                  },
+                  {
+                    "id": "q-cis-no-coordinate",
+                    "text": "How is a component identified when no registry coordinate exists for it?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Fallback identifier strategy",
+                      "Content digest used as identity",
+                      "Explicit unknown marker"
+                    ]
+                  },
+                  {
+                    "id": "q-cis-correlation-key",
+                    "text": "Which recorded identifier is used to correlate a component entry with externally owned vulnerability data?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Designated correlation identifier",
+                      "Known correlation failure modes",
+                      "Owning model for the correlated data"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-component-purl",
+                    "name": "Component package URL",
+                    "description": "Governed purl coordinate for the component.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-component-alt-identifiers",
+                    "name": "Alternate component identifiers",
+                    "description": "Additional identifier scheme values recorded for the component.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-identifier-normalization-form",
+                    "name": "Identifier normalization form",
+                    "description": "Normalization profile applied before identifier comparison.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Identifier sets are inline scalar values on component entries and pointers into external registries such as the purl type list and the CPE dictionary. Those registries are separately owned, so this model records values and normalization form only."
+              },
+              {
+                "id": "find-component-classification-scope",
+                "name": "Component type, scope and modification state",
+                "description": "Classification of each entry by component type, whether it is required, optional or excluded in the described subject, and whether it deviates from its upstream distribution.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ccs-type-vocabulary",
+                    "text": "Which component type vocabulary classifies each inventory entry?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Component type code",
+                      "Vocabulary source",
+                      "Handling of types absent from the vocabulary"
+                    ]
+                  },
+                  {
+                    "id": "q-ccs-scope-state",
+                    "text": "Is the component required, optional or excluded within the described subject?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Scope value",
+                      "Basis for the scope determination",
+                      "Effect on downstream risk interpretation"
+                    ]
+                  },
+                  {
+                    "id": "q-ccs-modified-flag",
+                    "text": "How is a component that was modified from its upstream distribution flagged?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Modification indicator",
+                      "Description of the deviation",
+                      "Pedigree or patch reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-component-type",
+                    "name": "Component type",
+                    "description": "Classification of the component such as application, library, framework, container, operating system, firmware, file, machine-learning model or data.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-component-scope",
+                    "name": "Component scope",
+                    "description": "Whether the component is required, optional or excluded in the described subject.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-component-modified-flag",
+                    "name": "Component modification indicator",
+                    "description": "Whether the component deviates from its upstream distribution.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Classification values are controlled codes attached to inventory entries. The vocabularies themselves are maintained by the specification bodies and are referenced rather than reproduced, so no artifact is produced by this finding."
+              }
+            ]
+          },
+          {
+            "id": "layer-component-attribution",
+            "name": "Component integrity and attribution",
+            "description": "Cryptographic digests over component bytes and the parties credited with producing or supplying each component.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "find-component-integrity-digests",
+                "name": "Component integrity digests",
+                "description": "Hash algorithms and values recorded per component, what byte stream each digest covers, and what is recorded when a component cannot be hashed.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cid-algorithms",
+                    "text": "Which cryptographic hash algorithms and values are recorded for each component?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Algorithm identifiers",
+                      "Digest values",
+                      "Rule for recording multiple algorithms"
+                    ]
+                  },
+                  {
+                    "id": "q-cid-coverage",
+                    "text": "Which exact byte stream does a recorded component digest cover?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Digest coverage description (distributed archive, unpacked tree, single file)",
+                      "Packaging state at time of hashing",
+                      "Reproducibility note"
+                    ]
+                  },
+                  {
+                    "id": "q-cid-unhashable",
+                    "text": "What is recorded when a component cannot be hashed at all?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Explicit unknown marker",
+                      "Reason code for absence",
+                      "Alternative evidence recorded"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-component-hash-algorithm",
+                    "name": "Component hash algorithm",
+                    "description": "Named algorithm for each recorded component digest.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-component-hash-value",
+                    "name": "Component hash value",
+                    "description": "Digest value produced by the corresponding algorithm.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-hash-coverage-note",
+                    "name": "Digest coverage note",
+                    "description": "Statement of which bytes the digest covers.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Digests are inline verification values on component entries, expressed through the specification's own integrity-method structures. Verification of these digests is performed by consuming systems and is explicitly outside this model, so no verification artifact is emitted here."
+              },
+              {
+                "id": "find-component-supplier-attribution",
+                "name": "Producer, supplier and author attribution",
+                "description": "Which party is credited for each component, how producer differs from distributor, publisher and author, and how attribution resolves to durable party records.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-csa-producer-role",
+                    "text": "Which party is recorded as the producer of a component, and how does that differ from its distributor?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Producer name",
+                      "Attribution role code",
+                      "Distinction rule between roles"
+                    ]
+                  },
+                  {
+                    "id": "q-csa-party-resolution",
+                    "text": "Which external party register resolves a supplier name to a durable organization identifier?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Party register reference",
+                      "Resolution key",
+                      "Owning model for party master data"
+                    ]
+                  },
+                  {
+                    "id": "q-csa-unattributable",
+                    "text": "What is recorded when the producer of an open-source component cannot be attributed?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Explicit unknown marker",
+                      "Best-available attribution evidence",
+                      "Reason the attribution failed"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-component-producer-name",
+                    "name": "Component producer name",
+                    "description": "Name of the organization or person credited with producing the component.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-component-producer-ref",
+                    "name": "Component producer reference",
+                    "description": "Reference resolving the producer to an externally owned party record.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-attribution-role",
+                    "name": "Attribution role",
+                    "description": "Role in which a party is credited, such as producer, supplier, author or publisher.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Attribution is a name plus a role code plus an outbound reference into party master data owned by another model. Producing a party artifact here would shadow that model and create a competing source of organization identity."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "relationship-graph",
+        "name": "Relationship Graph and Cross-Manifest Linkage",
+        "description": "The asserted dependency and containment structure, its declared depth and completeness, and links to other manifests and to externally owned evidence.",
+        "rationale": "Dependency relationship is a baseline minimum element; SPDX models relationships as first-class elements with an explicit completeness value and a distinction between no relationship and no assertion, while CycloneDX carries a dependency graph plus compositions aggregates. The CRA sets a legal floor of at least top-level dependencies, making declared depth a governed value.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-005",
+          "SRC-007",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "layer-dependency-graph",
+            "name": "Dependency assertions and declared depth",
+            "description": "How relationships are asserted between entries and how far the manifest claims to reach.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-005",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "find-relationship-assertions",
+                "name": "Relationship assertions and direction",
+                "description": "Permitted relationship types between entries, the direction convention, how optional or phase-specific dependencies are distinguished, and how an asserted absence differs from silence.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-rel-permitted-types",
+                    "text": "Which relationship types are permitted between components in this manifest?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Permitted relationship type codes",
+                      "Vocabulary source",
+                      "Semantics of contains versus dependsOn versus describes"
+                    ]
+                  },
+                  {
+                    "id": "q-rel-direction",
+                    "text": "Which direction convention applies to a dependency assertion in this manifest?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "From endpoint definition",
+                      "To endpoint definition",
+                      "Rule for inverting a relationship when converting formats"
+                    ]
+                  },
+                  {
+                    "id": "q-rel-absence-vs-silence",
+                    "text": "How is an asserted absence of dependencies distinguished from an unasserted dependency?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Explicit none marker",
+                      "Explicit no-assertion marker",
+                      "Default interpretation when neither is present"
+                    ]
+                  },
+                  {
+                    "id": "q-rel-phase-scope",
+                    "text": "How are build-only, runtime-only and optional dependencies distinguished from one another?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Phase or scope qualifier per relationship",
+                      "Vocabulary used",
+                      "Consumer interpretation rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-relationship-type",
+                    "name": "Relationship type",
+                    "description": "Code naming the asserted relationship between endpoints.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-relationship-from",
+                    "name": "Relationship source endpoint",
+                    "description": "Entry-local reference to the element the relationship originates from.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-relationship-to",
+                    "name": "Relationship target endpoints",
+                    "description": "One or more entry-local or external references the relationship points to, including explicit none or no-assertion markers.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Relationship assertions are edges within the manifest document and are only meaningful relative to its entry-local references. Exporting a standalone graph artifact would detach the edges from the signed document whose digest gives them evidentiary weight."
+              },
+              {
+                "id": "find-depth-and-completeness",
+                "name": "Declared dependency depth and completeness",
+                "description": "How far into transitive dependencies the manifest claims coverage, the aggregate and per-relationship completeness assertions, and the regulatory floor that applies to the described product.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-dep-declared-depth",
+                    "text": "To what dependency depth does this manifest claim coverage?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Declared depth value (top-level only, direct plus transitive, full closure)",
+                      "Measured maximum observed depth",
+                      "Basis for the claim"
+                    ]
+                  },
+                  {
+                    "id": "q-dep-completeness-assertion",
+                    "text": "Which completeness assertion applies to the manifest as a whole and to individual assemblies?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Aggregate completeness value",
+                      "Per-assembly completeness values",
+                      "Party asserting completeness"
+                    ]
+                  },
+                  {
+                    "id": "q-dep-regulatory-floor",
+                    "text": "Which regulatory floor for dependency depth applies to the described product?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Applicable regulation and provision",
+                      "Minimum required depth",
+                      "Jurisdiction in which the floor applies"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-declared-depth",
+                    "name": "Declared dependency depth",
+                    "description": "Depth of dependency coverage the manifest claims.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-aggregate-completeness",
+                    "name": "Aggregate completeness",
+                    "description": "Manifest-level completeness value such as complete, incomplete, incomplete first-party only, incomplete third-party only or unknown.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-relationship-completeness",
+                    "name": "Relationship completeness",
+                    "description": "Per-relationship completeness qualifier.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Depth and completeness are declared qualifiers carried on the manifest and its relationships. Any report measuring them is produced by the baseline-conformance finding, which already owns that artifact, so emitting a second report here would create competing completeness statements."
+              }
+            ]
+          },
+          {
+            "id": "layer-cross-manifest-linkage",
+            "name": "Cross-manifest and external evidence links",
+            "description": "Version-pinned links to other manifests and to evidence owned by other models.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "find-external-sbom-links",
+                "name": "Links to other manifests and assemblies",
+                "description": "How a manifest references another manifest describing a contained subassembly, the link syntax that makes such a reference resolvable and version-pinned, and the effect of supersession on an assembled view.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-lnk-subassembly",
+                    "text": "How does this manifest reference another manifest that describes a contained subassembly?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Linked manifest reference",
+                      "Role of the linked manifest in the assembly",
+                      "Component entry the link hangs from"
+                    ]
+                  },
+                  {
+                    "id": "q-lnk-pinning-syntax",
+                    "text": "Which link syntax makes an external manifest reference resolvable and version-pinned?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Link syntax used (BOM-Link URN, external document reference with digest)",
+                      "Pinning mechanism",
+                      "Resolution endpoint"
+                    ]
+                  },
+                  {
+                    "id": "q-lnk-supersession-effect",
+                    "text": "What happens to an assembled view when a linked manifest is superseded?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Behaviour of the pinned link after supersession",
+                      "Re-linking obligation and its owner",
+                      "Staleness signal exposed to consumers"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-linked-manifest-ref",
+                    "name": "Linked manifest reference",
+                    "description": "Version-pinned reference to another manifest.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-link-syntax",
+                    "name": "Link syntax code",
+                    "description": "Syntax used to express the external manifest reference.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-assembly-role",
+                    "name": "Assembly role",
+                    "description": "Role the linked manifest plays in the composed assembly.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Links are pinned reference values. The linked manifests are themselves instances of this model held under their own identities, so materializing a merged assembly artifact would invent a document that no producer signed and that no specification defines."
+              },
+              {
+                "id": "find-external-evidence-references",
+                "name": "External references to non-manifest evidence",
+                "description": "Categories of outbound reference a manifest or entry may carry to advisories, exploitability statements, provenance attestations, documentation and download locations, and how each is pinned.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-002",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ext-categories",
+                    "text": "Which categories of external reference may a component entry carry?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Reference category codes",
+                      "Category vocabulary source",
+                      "Categories disallowed by local policy"
+                    ]
+                  },
+                  {
+                    "id": "q-ext-exploitability-link",
+                    "text": "Which reference binds an entry to exploitability statements without asserting them in this manifest?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Exploitability statement locator",
+                      "Owning model for the statement",
+                      "Explicit non-assertion note"
+                    ]
+                  },
+                  {
+                    "id": "q-ext-pinning",
+                    "text": "How is an external reference pinned so that its meaning cannot change silently?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Digest over the referenced resource",
+                      "Media type of the referenced resource",
+                      "Retrieval time recorded with the reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-external-reference-category",
+                    "name": "External reference category",
+                    "description": "Category classifying an outbound reference.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-external-reference-locator",
+                    "name": "External reference locator",
+                    "description": "Resolvable locator for the referenced resource.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-external-reference-digest",
+                    "name": "External reference digest",
+                    "description": "Digest pinning the referenced resource content.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are pointers into resources owned by vulnerability, provenance and documentation models. Carrying a copy would duplicate another model's operational output and would place this model in the position of asserting claims it has no authority to make."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "licensing-declarations",
+        "name": "Declared Licensing and Rights Metadata",
+        "description": "Licence expressions carried for components and the rights and terms governing the manifest content itself.",
+        "rationale": "Component licence became a baseline minimum element in 2026, and both SPDX and CycloneDX carry declared and concluded licence expressions bound to a versioned licence list. Separately, the manifest document has its own data licence and confidentiality position, which the CRA treats as distinct from publication obligations.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-007",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "layer-license-declarations",
+            "name": "Licence expressions and manifest rights",
+            "description": "Per-component licence declarations and the terms attached to the manifest data.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-005",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "find-component-license-declaration",
+                "name": "Declared and concluded component licences",
+                "description": "Which licence expression syntax and licence list version govern recorded values, how a declared licence differs from a concluded one, what supports a conclusion, and what is recorded when licensing is undetermined.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-lic-expression-syntax",
+                    "text": "Which licence expression syntax and licence list version govern the recorded licence values?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Expression syntax identifier",
+                      "Licence list version",
+                      "Handling of licences absent from the list"
+                    ]
+                  },
+                  {
+                    "id": "q-lic-declared-vs-concluded",
+                    "text": "How is a declared licence distinguished from a concluded licence for the same component?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Declared licence expression",
+                      "Concluded licence expression",
+                      "Party responsible for each value"
+                    ]
+                  },
+                  {
+                    "id": "q-lic-evidence",
+                    "text": "Which evidence supports a concluded licence value?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Evidence type (file notice, scan result, upstream statement)",
+                      "Evidence locator",
+                      "Confidence qualifier"
+                    ]
+                  },
+                  {
+                    "id": "q-lic-undetermined",
+                    "text": "What value is recorded when licensing could not be determined for a component?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Explicit no-assertion marker",
+                      "Reason for non-determination",
+                      "Escalation path for resolution"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-declared-license-expression",
+                    "name": "Declared licence expression",
+                    "description": "Licence expression as stated by the component's own distribution.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-concluded-license-expression",
+                    "name": "Concluded licence expression",
+                    "description": "Licence expression concluded by the manifest author after review.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-license-list-version",
+                    "name": "Licence list version",
+                    "description": "Version of the licence identifier list against which expressions resolve.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-copyright-text",
+                    "name": "Copyright text",
+                    "description": "Copyright statement recorded for the component.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Licence values are inline expressions resolving against an externally governed licence list. Obligation analysis and compliance conclusions belong to the licensing model, so this finding deliberately produces no compliance artifact."
+              },
+              {
+                "id": "find-manifest-data-license",
+                "name": "Manifest data licence and confidentiality position",
+                "description": "The terms under which the manifest content itself may be redistributed, who holds rights over it, and which confidentiality marking constrains onward sharing.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-mdl-redistribution-terms",
+                    "text": "Under which terms may the manifest data itself be redistributed?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Data licence identifier",
+                      "Redistribution permissions and conditions",
+                      "Attribution requirement"
+                    ]
+                  },
+                  {
+                    "id": "q-mdl-rights-holder",
+                    "text": "Who holds rights over the manifest content as distinct from the described software?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Rights-holder reference",
+                      "Basis of the claim",
+                      "Contractual terms that modify it"
+                    ]
+                  },
+                  {
+                    "id": "q-mdl-confidentiality-marking",
+                    "text": "Which confidentiality marking constrains onward sharing of this manifest?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Confidentiality marking value",
+                      "Marking scheme used",
+                      "Recipients permitted under the marking"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-manifest-data-license",
+                    "name": "Manifest data licence",
+                    "description": "Licence or terms governing reuse of the manifest content.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-manifest-rights-holder",
+                    "name": "Manifest rights holder",
+                    "description": "Reference to the party holding rights over the manifest content.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-confidentiality-marking",
+                    "name": "Confidentiality marking",
+                    "description": "Handling marking constraining onward distribution of the manifest.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are declarative terms recorded on the manifest record. The contracts and handling schemes they reference are owned by legal and information-classification models, so no licence or agreement document is produced here."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "authenticity-and-quality",
+        "name": "Authenticity Bindings and Declared Quality",
+        "description": "Integrity of the manifest itself, its binding to external signatures and attestations, and its declared completeness, known unknowns, conformance claims and corrections.",
+        "rationale": "The 2026 baseline adds an author signature element and requires unpopulated fields to be explicitly marked unknown, while the practices sections cover known unknowns and accommodation of mistakes. in-toto binds statements to subjects by digest, which supplies a verification-neutral binding pattern this model can carry without owning verification.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-007",
+          "SRC-011",
+          "SRC-014"
+        ],
+        "layers": [
+          {
+            "id": "layer-authenticity-binding",
+            "name": "Manifest integrity and authenticity references",
+            "description": "The digest over the manifest and the external envelopes bound to it.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-007",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "find-manifest-integrity-digest",
+                "name": "Manifest digest and canonical byte form",
+                "description": "Which canonical byte form of the manifest is hashed, which algorithms are recorded, how algorithm agility is handled, and how re-serialization affects the recorded digest.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-005",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-mig-canonical-form",
+                    "text": "Which canonical byte form of the manifest is hashed for integrity purposes?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Canonical form identifier",
+                      "Encoding and normalization applied",
+                      "Whether whitespace and ordering are significant"
+                    ]
+                  },
+                  {
+                    "id": "q-mig-algorithm-agility",
+                    "text": "Which digest algorithms are recorded, and how is algorithm agility handled over time?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Algorithm identifiers recorded",
+                      "Minimum acceptable algorithm strength",
+                      "Procedure when an algorithm is deprecated"
+                    ]
+                  },
+                  {
+                    "id": "q-mig-reserialization",
+                    "text": "How does re-serializing the same logical manifest affect its recorded digest?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Digest stability rule under re-serialization",
+                      "Whether a re-serialized instance is a new artifact",
+                      "Effect on bound signatures"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-manifest-digest-algorithm",
+                    "name": "Manifest digest algorithm",
+                    "description": "Named algorithm for each recorded manifest digest.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-manifest-digest-value",
+                    "name": "Manifest digest value",
+                    "description": "Digest value over the canonical manifest byte form.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-canonical-form-id",
+                    "name": "Canonical form identifier",
+                    "description": "Identifier of the canonicalization profile used before hashing.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The digest is metadata about an artifact declared elsewhere in this model, not an artifact in its own right. Emitting a separate checksum file would create a second integrity source that could disagree with the value recorded on the manifest record."
+              },
+              {
+                "id": "find-signature-attestation-binding",
+                "name": "Signature and attestation envelope binding",
+                "description": "How an external signature or attestation envelope is bound to a manifest revision by subject digest, which signer identity is asserted, and where verification outcomes and transparency-log inclusion are recorded by the owning models.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-011",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "q-sig-envelope-binding",
+                    "text": "Which signature or attestation envelope is bound to this manifest revision, and by which digest?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Envelope reference",
+                      "Subject digest used for the binding",
+                      "Predicate type or signature scheme"
+                    ]
+                  },
+                  {
+                    "id": "q-sig-asserted-signer",
+                    "text": "Which signer identity is asserted for this manifest, and where is that claim resolved?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Asserted signer identity string",
+                      "Identity system that resolves it",
+                      "Note that resolution occurs outside this model"
+                    ]
+                  },
+                  {
+                    "id": "q-sig-verification-record",
+                    "text": "Where is the outcome of envelope verification recorded, given that verification is performed outside this model?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Owning model or system for verification records",
+                      "Reference to the verification record",
+                      "Explicit statement that this model performs no verification"
+                    ]
+                  },
+                  {
+                    "id": "q-sig-log-inclusion",
+                    "text": "How is a transparency-log inclusion reference recorded without importing log semantics?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Log entry reference",
+                      "Log operator identity",
+                      "Boundary note limiting interpretation to a pointer"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-attestation-envelope-ref",
+                    "name": "Attestation envelope reference",
+                    "description": "Reference to a signature or attestation envelope bound to this manifest revision.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-asserted-signer-identity",
+                    "name": "Asserted signer identity",
+                    "description": "Signer identity claimed by the bound envelope, carried without evaluation.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-transparency-log-entry-ref",
+                    "name": "Transparency log entry reference",
+                    "description": "Pointer to a transparency-log entry associated with the envelope.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-detached-attestation-envelope",
+                    "name": "Detached signature or attestation envelope",
+                    "description": "Companion file distributed alongside a manifest revision that carries a signature over, or an attestation whose subject is, that revision's digest. This model stores and distributes the envelope as an opaque companion and records its binding only; envelope verification, key trust and revocation are owned by the signing and key-management models.",
+                    "media_or_form": [
+                      "DSSE envelope carrying an in-toto Statement v1 (JSON)",
+                      "Detached signature file over the serialized manifest",
+                      "JSON Signature Format signature embedded by the producing specification"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Envelope digest paired with the subject digest of the manifest revision it binds to; where the envelope is registered in an external attestation store, that store's identifier takes precedence.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "layer-quality-conformance",
+            "name": "Declared quality, conformance and corrections",
+            "description": "Explicit unknowns, coverage exclusions, baseline conformance claims and the correction of published errors.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "find-completeness-known-unknowns",
+                "name": "Known unknowns and coverage exclusions",
+                "description": "How fields that could not be populated are explicitly marked unknown, which parts of the subject are declared outside coverage, and which tooling limitations shaped the result.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ku-unknown-marking",
+                    "text": "How is a field that could not be populated explicitly labelled as unknown?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Unknown marker token used",
+                      "Specification-defined equivalent",
+                      "Prohibition on leaving required fields empty"
+                    ]
+                  },
+                  {
+                    "id": "q-ku-coverage-exclusion",
+                    "text": "Which parts of the described subject are declared to be outside this manifest's coverage?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Excluded subject areas",
+                      "Reason for each exclusion",
+                      "Party that approved the exclusion"
+                    ]
+                  },
+                  {
+                    "id": "q-ku-tool-limitation",
+                    "text": "Which known limitation of the generating tool affects this inventory?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Tool limitation description",
+                      "Component classes likely missed",
+                      "Compensating evidence if any"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-unknown-marker-token",
+                    "name": "Unknown marker token",
+                    "description": "Token used to state explicitly that a value is unknown rather than absent.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-coverage-exclusion",
+                    "name": "Coverage exclusion",
+                    "description": "Declared area of the subject that the manifest does not cover.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-tool-limitation-note",
+                    "name": "Tool limitation note",
+                    "description": "Statement of a generating-tool limitation affecting the inventory.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Known unknowns are declarative markers and notes carried inside the manifest so that a consumer reading only the document sees them. Splitting them into a separate artifact would let the caveats travel apart from the claims they qualify."
+              },
+              {
+                "id": "find-baseline-conformance-claim",
+                "name": "Baseline element conformance claim and gap report",
+                "description": "Which baseline element profiles the manifest claims to satisfy, which required elements are missing or unknown against that claim, which authority publishes the profile, and who is accountable for the claim.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-013",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "q-conf-claimed-profiles",
+                    "text": "Which baseline element profiles does this manifest claim to satisfy?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Claimed profile identifiers and versions",
+                      "Sector or contractual profiles additionally claimed",
+                      "Date the claim was evaluated"
+                    ]
+                  },
+                  {
+                    "id": "q-conf-gaps",
+                    "text": "Which required elements are missing or unknown for the claimed profile?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Gap list by element name",
+                      "Severity or blocking status per gap",
+                      "Remediation note per gap"
+                    ]
+                  },
+                  {
+                    "id": "q-conf-authority",
+                    "text": "Which authority publishes the claimed baseline, and in which version?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Publishing authority",
+                      "Profile document version and date",
+                      "Jurisdiction or contractual scope of applicability"
+                    ]
+                  },
+                  {
+                    "id": "q-conf-accountability",
+                    "text": "Who is accountable for the accuracy of a conformance claim recorded here?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Accountable role reference",
+                      "Basis of accountability",
+                      "Escalation path for disputed claims"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-claimed-baseline-profile",
+                    "name": "Claimed baseline profile",
+                    "description": "Identifier and version of a baseline element profile the manifest claims to satisfy.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-conformance-gap-list",
+                    "name": "Conformance gap list",
+                    "description": "Elements required by a claimed profile that are missing or marked unknown.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "de-conformance-claim-owner",
+                    "name": "Conformance claim owner",
+                    "description": "Reference to the role accountable for the claim.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-baseline-conformance-report",
+                    "name": "Baseline element conformance report",
+                    "description": "Descriptive report produced by comparing one manifest revision against a named baseline element profile, listing satisfied elements, gaps and explicit unknowns. It is a statement about this model's own record and confers no admission or gating decision.",
+                    "media_or_form": [
+                      "Structured conformance report record",
+                      "Human-readable conformance summary"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Manifest identifier plus revision number plus claimed profile identifier and profile version; the report inherits the manifest revision's identity and never acquires an independent subject.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "find-amendment-and-errata",
+                "name": "Amendment, errata and supersession of published content",
+                "description": "How a factual error in a published manifest is corrected, which prior revisions a correction supersedes or withdraws, and how downstream consumers are notified.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-006",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-amd-correction-path",
+                    "text": "How is a factual error in an already published manifest corrected?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Correction procedure steps",
+                      "Reason code vocabulary for corrections",
+                      "Role authorised to issue a correction"
+                    ]
+                  },
+                  {
+                    "id": "q-amd-supersession-set",
+                    "text": "Which prior revisions does a correction supersede, and are they withdrawn or merely superseded?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Superseded revision references",
+                      "Withdrawal indicator per revision",
+                      "Effective time of the change"
+                    ]
+                  },
+                  {
+                    "id": "q-amd-notification",
+                    "text": "How are downstream consumers of an erroneous manifest notified of the correction?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Notification channel",
+                      "Known-recipient list or subscription reference",
+                      "Notification issue time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-amendment-reason-code",
+                    "name": "Amendment reason code",
+                    "description": "Coded reason for issuing a correction or amendment.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-superseded-revision-ref",
+                    "name": "Superseded revision reference",
+                    "description": "Reference to a prior revision superseded or withdrawn by this correction.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-consumer-notification-channel",
+                    "name": "Consumer notification channel",
+                    "description": "Channel through which affected consumers are informed of the correction.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-manifest-amendment-notice",
+                    "name": "Manifest amendment notice",
+                    "description": "Notice issued when a published manifest revision is corrected or withdrawn, naming the affected revisions, the reason code and the replacement revision. It supports the accommodation-of-mistakes practice without asserting any remediation obligation on consumers.",
+                    "media_or_form": [
+                      "Structured amendment notice record",
+                      "Human-readable erratum notice"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Manifest identifier plus the revision number introduced by the amendment; the notice is named for the replacement revision and cites superseded revisions by reference.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "distribution-and-lifecycle",
+        "name": "Distribution, Access and Manifest Lifecycle",
+        "description": "Where the manifest is published and discovered, who may see it and at what granularity, and how it moves through its states from issue to disposal.",
+        "rationale": "The minimum-element practices explicitly cover distribution and delivery, access control, frequency and accommodation of mistakes, and the CRA both withholds a publication obligation and permits supervisory-authority requests. SSDF requires release data to be archived and protected, which grounds retention.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "layer-distribution-discovery",
+            "name": "Publication, discovery and access",
+            "description": "How consumers obtain a manifest and what they are entitled to see.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "find-publication-and-discovery",
+                "name": "Publication locators and discovery mechanism",
+                "description": "Where a manifest revision is published, how a consumer discovers it starting from the artifact alone, and which delivery method applies when it is not openly retrievable.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-pub-locator",
+                    "text": "Where is this manifest revision published, and by which retrieval address?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "Publication locator",
+                      "Hosting party",
+                      "Availability window"
+                    ]
+                  },
+                  {
+                    "id": "q-pub-discovery",
+                    "text": "Which discovery mechanism lets a consumer find the manifest starting from the artifact alone?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Discovery mechanism (registry referrer, well-known endpoint, in-package embedding, catalogue link)",
+                      "Key used for discovery",
+                      "Fallback when discovery fails"
+                    ]
+                  },
+                  {
+                    "id": "q-pub-restricted-delivery",
+                    "text": "Which delivery method applies when the manifest is not publicly retrievable?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Delivery method (on-request, contractual portal, direct transfer)",
+                      "Requester eligibility rule",
+                      "Delivery record reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-publication-locator",
+                    "name": "Publication locator",
+                    "description": "Address at which a manifest revision can be retrieved.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-discovery-mechanism",
+                    "name": "Discovery mechanism",
+                    "description": "Mechanism by which the manifest is discoverable from its subject artifact.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-delivery-method",
+                    "name": "Delivery method",
+                    "description": "Method used to deliver the manifest when it is not openly published.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-publication-descriptor",
+                    "name": "Manifest publication descriptor",
+                    "description": "Discovery record that binds a subject artifact to the locator, media type and digest of a published manifest revision, enabling retrieval without prior knowledge of the manifest identifier.",
+                    "media_or_form": [
+                      "Registry referrer or attachment descriptor",
+                      "Well-known discovery index entry",
+                      "Catalogue or transparency-exchange index record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Subject artifact digest plus manifest identifier and revision number; where a hosting registry assigns its own descriptor identifier, that registry identifier is authoritative for retrieval.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "find-access-classification-redaction",
+                "name": "Access classification and redaction tiers",
+                "description": "The classification applied to a manifest and to individual entries, the redaction or summarization applied per audience tier, the lawful requests that compel disclosure, and how a redacted manifest is distinguished from an incomplete one.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-acc-classification",
+                    "text": "Which access classification applies to this manifest and to individual entries within it?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Manifest-level classification value",
+                      "Entry-level overrides",
+                      "Classification scheme reference"
+                    ]
+                  },
+                  {
+                    "id": "q-acc-redaction-tier",
+                    "text": "Which entries are redacted or summarized for a given audience tier?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Audience tier definitions",
+                      "Redaction rules per tier",
+                      "Fields removed or generalized"
+                    ]
+                  },
+                  {
+                    "id": "q-acc-lawful-request",
+                    "text": "Which lawful request obliges disclosure of this manifest to a supervisory authority?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Legal basis and provision",
+                      "Requesting authority",
+                      "Scope and format of the required disclosure"
+                    ]
+                  },
+                  {
+                    "id": "q-acc-redacted-vs-incomplete",
+                    "text": "How is a deliberately redacted manifest distinguished from an incomplete one?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Redaction indicator distinct from completeness value",
+                      "Statement of what was withheld and why",
+                      "Contact for obtaining the unredacted form"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-access-classification",
+                    "name": "Access classification",
+                    "description": "Classification governing who may retrieve the manifest.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-redaction-scope",
+                    "name": "Redaction scope",
+                    "description": "Entries or fields withheld or generalized for a given audience.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-audience-tier",
+                    "name": "Audience tier",
+                    "description": "Named recipient tier to which a disclosure variant applies.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Classification and redaction rules are governing metadata on the manifest record; the redacted outputs they produce are further instances of the manifest artifact already declared, distinguished by their own identity and digest rather than by a new artifact kind."
+              }
+            ]
+          },
+          {
+            "id": "layer-manifest-lifecycle",
+            "name": "Manifest lifecycle, cadence and disposition",
+            "description": "States a manifest revision occupies, the events that trigger regeneration, and the retention and disposal of revisions.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-009",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "find-lifecycle-states-supersession",
+                "name": "Lifecycle states and authoritative revision",
+                "description": "The states a manifest revision may occupy, the events that transition it, and how a consumer determines which revision is authoritative for a given released artifact at a given time.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-lif-states",
+                    "text": "Which lifecycle states may a manifest revision occupy?",
+                    "kind": "state",
+                    "answer_data": [
+                      "State vocabulary (draft, published, superseded, withdrawn, disposed)",
+                      "Permitted transitions",
+                      "State currently held"
+                    ]
+                  },
+                  {
+                    "id": "q-lif-transition-events",
+                    "text": "Which event transitions a manifest revision to superseded or withdrawn?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Transition event type",
+                      "Event time and actor",
+                      "Reason code"
+                    ]
+                  },
+                  {
+                    "id": "q-lif-authoritative-at-time",
+                    "text": "Which manifest revision is authoritative for a given released artifact at a given point in time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Authoritative-from event time",
+                      "Authoritative-until event time",
+                      "Selection rule when revisions overlap"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-lifecycle-state",
+                    "name": "Manifest lifecycle state",
+                    "description": "Current state of the manifest revision.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-state-transition-event",
+                    "name": "State transition event",
+                    "description": "Coded event that moved the revision into its current state.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-authoritative-from-time",
+                    "name": "Authoritative-from time",
+                    "description": "Event time from which the revision is the authoritative description of its subject.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Lifecycle state is a governed field with recorded transition events on the manifest record. Where a transition needs an outward-facing document, the amendment notice artifact already covers it, so no additional artifact is warranted."
+              },
+              {
+                "id": "find-generation-cadence",
+                "name": "Generation cadence, triggers and staleness",
+                "description": "Which events oblige a new manifest, the maximum permitted gap between the subject changing and the manifest being reissued, and how cadence is declared to consumers.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-013",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cad-triggers",
+                    "text": "Which events require a new manifest to be generated for the subject?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Trigger event list (new build, component change, correction, contractual request)",
+                      "Trigger owner",
+                      "Exemptions from triggering"
+                    ]
+                  },
+                  {
+                    "id": "q-cad-staleness",
+                    "text": "What is the maximum permitted staleness of a manifest relative to its subject?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Maximum staleness duration",
+                      "Measurement basis (subject build time versus manifest creation time)",
+                      "Action taken when exceeded"
+                    ]
+                  },
+                  {
+                    "id": "q-cad-declaration",
+                    "text": "How is the manifest generation cadence declared to consumers?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Declared cadence statement",
+                      "Publication location of the declaration",
+                      "Contractual commitment level"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-generation-trigger",
+                    "name": "Generation trigger",
+                    "description": "Coded event obliging generation of a new manifest.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-max-staleness",
+                    "name": "Maximum permitted staleness",
+                    "description": "Longest acceptable interval between subject change and manifest reissue.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-declared-cadence",
+                    "name": "Declared cadence",
+                    "description": "Cadence commitment published to consumers.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Cadence is a policy declaration held as reference data on the manifest series. The pipeline that acts on these triggers is owned by WM-SFT-008, so this model records the rule and never the execution record."
+              },
+              {
+                "id": "find-retention-disposition",
+                "name": "Retention, legal hold and disposition",
+                "description": "How long a manifest revision must be kept after the subject reaches end of support, what survives disposal, which holds suspend it, and who executes disposal given that records-management enforcement sits outside this model.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-013",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ret-period",
+                    "text": "How long must a manifest revision be retained after its subject reaches end of support?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retention duration",
+                      "Statutory or contractual basis",
+                      "Start event for the retention clock"
+                    ]
+                  },
+                  {
+                    "id": "q-ret-tombstone",
+                    "text": "Which tombstone record survives disposal of a manifest revision?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Tombstone field set",
+                      "Tombstone retention duration",
+                      "Discoverability of the tombstone"
+                    ]
+                  },
+                  {
+                    "id": "q-ret-execution-owner",
+                    "text": "Who executes disposal, given that records-management enforcement sits outside this model?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Executing policy or model reference",
+                      "Role accountable for execution",
+                      "Confirmation record reference"
+                    ]
+                  },
+                  {
+                    "id": "q-ret-legal-hold",
+                    "text": "Which legal hold suspends scheduled disposal of a manifest revision?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Hold identifier and issuing authority",
+                      "Scope of the hold",
+                      "Release condition"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-retention-period",
+                    "name": "Retention period",
+                    "description": "Duration for which a manifest revision must be retained.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-disposition-state",
+                    "name": "Disposition state",
+                    "description": "Whether the revision is retained, disposal-eligible, held or disposed.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-legal-hold-flag",
+                    "name": "Legal hold indicator",
+                    "description": "Whether a hold currently suspends disposal.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-tombstone-ref",
+                    "name": "Tombstone reference",
+                    "description": "Reference to the tombstone record left after disposal.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding records disposition state and eligibility only. Execution of deletion, legal hold and destruction certification belongs to the adopting Dimension's records-management policy, so producing a disposal certificate here would claim an execution capability this model does not own."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "fn-mint-manifest-identity",
+      "name": "Mint manifest identity and open a revision series",
+      "description": "Assign the authoritative manifest identifier, governed serial and namespace, and open revision one of the series.",
+      "inputs": [
+        "Subject release reference",
+        "Identifier minting namespace",
+        "Producing organization reference"
+      ],
+      "outputs": [
+        "Manifest identifier",
+        "Governed serial or document IRI",
+        "Revision number one"
+      ],
+      "preconditions": [
+        "Subject release reference resolves in the owning package or release model",
+        "Minting system and namespace are declared by the adopting Dimension"
+      ],
+      "effects": [
+        "Creates a manifest identity record",
+        "Reserves the namespace scope for entry-local identifiers"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "fn-bind-subject-and-context",
+      "name": "Bind subject and declare generation context",
+      "description": "Attach the primary component, subject artifact digest, SBOM type, generating tool reference and producing run reference to a manifest revision.",
+      "inputs": [
+        "Primary component entry",
+        "Subject artifact digest",
+        "SBOM type code",
+        "Generating tool reference",
+        "Producing run reference"
+      ],
+      "outputs": [
+        "Subject binding record",
+        "Generation context record"
+      ],
+      "preconditions": [
+        "Manifest identity exists",
+        "SBOM type is drawn from the declared vocabulary"
+      ],
+      "effects": [
+        "Fixes what the manifest describes and under which method",
+        "Records outbound references without copying the referenced records"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-007",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "fn-register-component-entry",
+      "name": "Register and normalize a component entry",
+      "description": "Add an inventory entry with its core attributes, normalized identifier set, type, scope and integrity digests, and detect duplicates.",
+      "inputs": [
+        "Component name and version",
+        "Identifier scheme values",
+        "Component type and scope",
+        "Digest algorithm and value"
+      ],
+      "outputs": [
+        "Component entry with entry-local reference",
+        "Normalized identifier set",
+        "Duplicate detection result"
+      ],
+      "preconditions": [
+        "Manifest revision is in draft state",
+        "Identifier normalization profile is declared"
+      ],
+      "effects": [
+        "Adds or merges an inventory entry",
+        "Records explicit unknown markers where values are unavailable"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "fn-assert-relationship",
+      "name": "Assert a relationship between entries",
+      "description": "Record a typed, directed relationship between manifest entries with optional scope qualifier and completeness value, including explicit none and no-assertion cases.",
+      "inputs": [
+        "Source endpoint reference",
+        "Target endpoint references",
+        "Relationship type",
+        "Completeness qualifier"
+      ],
+      "outputs": [
+        "Relationship assertion record"
+      ],
+      "preconditions": [
+        "Both endpoints resolve within the manifest or to a pinned external reference",
+        "Relationship type is permitted by the declared specification"
+      ],
+      "effects": [
+        "Extends the dependency graph",
+        "Distinguishes asserted absence from silence"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "fn-declare-coverage",
+      "name": "Declare depth, completeness and known unknowns",
+      "description": "Record the claimed dependency depth, aggregate and per-assembly completeness values, coverage exclusions and tool limitations.",
+      "inputs": [
+        "Declared depth value",
+        "Completeness values",
+        "Coverage exclusions",
+        "Tool limitation notes"
+      ],
+      "outputs": [
+        "Coverage declaration record"
+      ],
+      "preconditions": [
+        "Inventory and relationship registration for the revision is complete",
+        "Applicable regulatory depth floor is known"
+      ],
+      "effects": [
+        "Makes coverage limits explicit to consumers",
+        "Provides the input against which conformance is later compared"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-005",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-check-minimum-element-completeness",
+      "name": "Check a revision against a baseline element profile",
+      "description": "Compare one manifest revision against a named baseline element profile and emit a descriptive gap report over this model's own record.",
+      "inputs": [
+        "Manifest revision reference",
+        "Baseline profile identifier and version"
+      ],
+      "outputs": [
+        "Baseline conformance report",
+        "Gap list with explicit unknowns"
+      ],
+      "preconditions": [
+        "Baseline profile version is resolvable from its publishing authority",
+        "Revision content is frozen for the check"
+      ],
+      "effects": [
+        "Records a conformance claim and its gaps",
+        "Produces no admission, gating or enforcement decision of any kind"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "fn-bind-authenticity-reference",
+      "name": "Bind integrity digest and authenticity envelope reference",
+      "description": "Compute the manifest digest over the declared canonical byte form and attach references to external signature or attestation envelopes and any transparency-log entry.",
+      "inputs": [
+        "Serialized manifest revision",
+        "Canonical form identifier",
+        "Envelope reference",
+        "Asserted signer identity"
+      ],
+      "outputs": [
+        "Manifest digest values",
+        "Envelope binding record"
+      ],
+      "preconditions": [
+        "Revision serialization is final",
+        "Canonicalization profile is declared"
+      ],
+      "effects": [
+        "Pins the revision by digest",
+        "Records envelope and log references only; performs no verification and asserts no trust in the signer"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-011",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "fn-publish-manifest-revision",
+      "name": "Publish a revision and record its discovery descriptor",
+      "description": "Move a revision to published state, record publication locators, discovery descriptor, access classification and any redaction variants.",
+      "inputs": [
+        "Manifest revision reference",
+        "Publication locator",
+        "Discovery mechanism",
+        "Access classification and audience tiers"
+      ],
+      "outputs": [
+        "Publication descriptor",
+        "Published-state record"
+      ],
+      "preconditions": [
+        "Digest and any required envelope binding are recorded",
+        "Access classification has been assigned"
+      ],
+      "effects": [
+        "Makes the revision retrievable to the entitled audience",
+        "Freezes the revision as immutable"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-supersede-or-withdraw-revision",
+      "name": "Supersede or withdraw a published revision",
+      "description": "Issue a corrected revision, mark the affected prior revisions superseded or withdrawn with a reason code, and emit the amendment notice.",
+      "inputs": [
+        "Affected revision references",
+        "Reason code",
+        "Replacement revision reference",
+        "Notification channel"
+      ],
+      "outputs": [
+        "Amendment notice",
+        "Updated lifecycle states"
+      ],
+      "preconditions": [
+        "Affected revisions are in published state",
+        "Correction is authorised by the accountable role"
+      ],
+      "effects": [
+        "Changes which revision is authoritative from the recorded event time",
+        "Notifies known recipients without asserting any obligation on them"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "fn-apply-retention-schedule",
+      "name": "Apply retention schedule and record disposition",
+      "description": "Evaluate a revision against the declared retention period and any legal hold, set its disposition state, and record the tombstone reference when disposal is executed elsewhere.",
+      "inputs": [
+        "Manifest revision reference",
+        "Retention period",
+        "Legal hold status",
+        "Subject end-of-support event time"
+      ],
+      "outputs": [
+        "Disposition state",
+        "Tombstone reference"
+      ],
+      "preconditions": [
+        "Retention schedule is declared by the adopting Dimension",
+        "Subject support status is resolvable from the owning release model"
+      ],
+      "effects": [
+        "Marks revisions retained, disposal-eligible, held or disposed",
+        "Records disposition state only; execution of deletion is performed by the adopting Dimension's records-management policy"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-009"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-SFT-007 Software Package / Release",
+      "relation": "CHILD",
+      "purpose": "WM-SFT-012 is the registered child of WM-SFT-007 at nav path NAV.INF.SFT.SBOM. The parent owns package and release identity, version scheme, support window and release lifecycle; this model contributes only the manifest that describes a release.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "WM-SFT-007 Software Package / Release",
+      "relation": "REFERENCE",
+      "purpose": "Instance-level subject binding: the manifest carries a release key and subject artifact digest so a consumer can resolve which release it describes. The manifest never restates release lifecycle states or version semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "WM-SFT-008 Build / Release pipeline execution",
+      "relation": "REFERENCE",
+      "purpose": "Records the producing build or analysis run as a pinned reference for the generation-context finding. Build parameters, resolved build dependencies, builder trust and the provenance predicate lifecycle remain owned by WM-SFT-008.",
+      "required": false,
+      "source_refs": [
+        "SRC-012",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "SPDX Specification 3.0.1 (Linux Foundation)",
+      "relation": "ALIGN",
+      "purpose": "Alignment for element identity by IRI, creation information, integrity methods, relationship semantics with completeness, and the SbomType vocabulary. Alignment is asserted, not conformance.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "CycloneDX 1.7 / ECMA-424 (OWASP, Ecma International)",
+      "relation": "ALIGN",
+      "purpose": "Alignment for BOM metadata, component and dependency structures, compositions aggregates, lifecycle phases and serialization or media-type binding. Alignment is asserted, not conformance.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Package-URL (purl) 1.0 / ECMA-427",
+      "relation": "ALIGN",
+      "purpose": "Supplies the governed global identifier scheme and normalization rules used for component identifier sets and for comparison. The purl type registry is maintained externally and is referenced, not reproduced.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "CISA Minimum Elements for a Software Bill of Materials (2026 edition)",
+      "relation": "ALIGN",
+      "purpose": "Baseline element profile against which conformance claims and gap reports are recorded, plus the practices for frequency, depth, known unknowns, distribution, access control and accommodation of mistakes.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Regulation (EU) 2024/2847 Cyber Resilience Act, Annex I Part II point 1",
+      "relation": "ALIGN",
+      "purpose": "Regulatory floor for machine-readable format and at-least-top-level dependency depth in the EU, and basis for the supervisory-authority disclosure exception. Applicability determination is made by the adopting Dimension.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "in-toto Attestation Framework v1 and DSSE envelope model",
+      "relation": "REFERENCE",
+      "purpose": "Provides the subject-digest binding pattern used to attach an attestation or signature envelope to a manifest revision. Envelope verification, key trust, revocation and transparency-log operation are owned by the signing and key-management models.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Vulnerability and VEX / CSAF disclosure model",
+      "relation": "REFERENCE",
+      "purpose": "Correlation only: the manifest supplies identifier and digest keys and may carry a pinned reference to an exploitability statement. Affectedness, severity, exploitability status and remediation remain owned by the vulnerability model.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Party / Organization master-data model",
+      "relation": "REFERENCE",
+      "purpose": "Resolves supplier, producer, author and rights-holder names to durable organization identifiers so that attribution is not maintained locally.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "SPDX License List and licence expression grammar",
+      "relation": "REFERENCE",
+      "purpose": "Supplies the versioned licence identifier vocabulary and expression syntax for declared and concluded licence values. Obligation analysis and compliance conclusions stay with the licensing model.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Verifiable artifact integrity mix-in (canonical byte form plus named-algorithm digest)",
+      "relation": "MIX-IN",
+      "purpose": "Reusable pattern for digesting an artifact over a declared canonical form with algorithm agility, applied to the manifest document, its companion envelope and its subject artifact.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-011"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name one accountable owner for manifest records - normally the software product or service owner - and record that owner reference on every manifest identity, including for manifests generated automatically.",
+        "Declare, before any manifest record is created, the master system that mints manifest identifiers, the namespace it allocates, and the fallback rule when no master-system identifier exists.",
+        "Publish the Dimension's baseline element profile set (which minimum-element, regulatory and contractual profiles apply to which product classes) and its manifest retention schedule, including legal-hold handling.",
+        "Declare which neighbouring models supply release identity, build provenance, party master data, licence vocabulary and vulnerability data, and prohibit local shadow copies of those records.",
+        "Declare the canonicalization profile and digest algorithm set used for manifest integrity, and the review cadence for algorithm deprecation."
+      ],
+      "namespace_guidance": "Allocate one document namespace per producing organization and product line, expressed as an HTTPS IRI under a domain the organization controls or as a UUID-based URN. Entry-local references are unique only within a manifest revision and must never be treated as global identifiers. Namespaces are never reused across product lines and never recycled after a product is retired, so that historical manifests stay unambiguously resolvable. Component identifiers use externally governed namespaces (purl types, CPE, SWID) and must not be minted locally; where no governed coordinate exists, use a content digest and mark the identifier scheme explicitly as local.",
+      "registry_links": [
+        "SPDX License List for licence identifiers and expression operators",
+        "purl type registry for governed component coordinate types",
+        "CPE dictionary for vulnerability correlation identifiers",
+        "IANA media type registry and IANA URN namespace registry for serialization and BOM-Link resolution",
+        "Publishing authority's baseline element profile register (for example the CISA minimum-elements editions)"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Serialize in UTF-8 with Unicode NFC normalization for all text values before hashing or comparison.",
+        "Order component entries deterministically by primary identifier, then name, then version; order relationship assertions by source endpoint, then relationship type, then target endpoint.",
+        "Express all time values as RFC 3339 date-times with whole seconds and an explicit offset or Z, normalized to UTC for comparison while preserving the originally recorded offset.",
+        "Normalize component identifiers using the scheme's own rules (for example purl case, encoding and qualifier ordering) before any equality test; store both the as-received and the normalized value.",
+        "Represent absent values with the specification's explicit unknown or no-assertion token rather than an empty string, a null or an omitted key.",
+        "Declare a named canonical form identifier for every digest so that a consumer can reproduce the exact byte stream that was hashed."
+      ],
+      "patch_rules": [
+        "A published revision is immutable; any content change produces a new revision under the same manifest identity with an incremented revision number.",
+        "Express a change as a revision delta that cites entry-local references and relationship endpoints, plus a reason code, the acting role and the event time.",
+        "A change of described subject or of specification family creates a new manifest identity, not a new revision.",
+        "Corrections to published content additionally require an amendment notice naming the superseded revisions and their withdrawal status.",
+        "Record-plane annotations (indexing keys, classification review outcome, disposition state) may be updated in place because they are not part of the signed manifest content; each in-place update records actor, reason and observation time."
+      ],
+      "compatibility_rules": [
+        "Consumers must tolerate unknown fields and unknown vocabulary members and must not treat their presence as invalid.",
+        "Adding an identifier scheme, reference category or profile claim is an additive change and does not break compatibility.",
+        "Removing a previously required element, or narrowing a vocabulary, requires a major profile version increment and an explicit migration note.",
+        "Downgrade conversions between specification versions or families are lossy and must be recorded as derived manifests with their own identity, their own digest and a reference to the source manifest; a converted manifest never inherits the source manifest's signature binding.",
+        "A baseline conformance claim is valid only against the exact profile version cited; a new profile edition requires re-evaluation rather than automatic carry-over."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the manifest identifier assigned by the producing organization's system of record for SBOM manifests (release registry, artifact repository or SBOM catalogue) that owns the record.",
+        "Governed global identifier or IRI: the specification's own governed identity, namely the SPDX document IRI or spdxId, the CycloneDX serialNumber URN with revision version and its BOM-Link form, or a package URL for a component subject.",
+        "UUID or ULID minted by the adopting Dimension, used only when neither a master-system identifier nor a governed global identifier exists, and recorded together with the reason the higher-priority options were unavailable.",
+        "A timestamp, creation date, filename, version string or content digest alone is never an identifier; a digest may pin an artifact instance but does not name the manifest."
+      ],
+      "timestamp_rule": "All time values are RFC 3339 date-times carrying whole seconds (fractional seconds permitted) and an explicit numeric offset or the Z designator; local times without an offset are rejected on ingest. Event time (manifest creation, publication, supersession, withdrawal, subject build completion, disposal) is recorded separately from observation or ingestion time (when the record plane received, indexed or re-verified the record); when the two differ, both are stored and neither is derived from the other. A date value is never used as an identifier or as a version key.",
+      "serial_naming_rule": "Serial artifacts are named <manifest-identifier>.r<revision-number>.<artifact-kind>[.<profile-or-format-qualifier>].<extension>, where revision-number is the integer revision within the manifest identity. The series key contains no date, timestamp or calendar component; ordering is established solely by the revision number, and the associated event time is carried as a field rather than encoded in the name.",
+      "integrity_rule": "Every artifact instance carries at least one digest with an explicitly named algorithm computed over the exact distributed byte stream under a declared canonical form identifier; algorithm and value are always stored together. Companion envelopes bind to a manifest revision by that revision's subject digest, and a companion is treated as bound only when the digests match on comparison. Digest recording is an integrity statement about this model's own artifacts; evaluating whether a signature over that digest is trustworthy is performed by the signing and key-management models and is never inferred here."
+    },
+    "policies": [
+      "No-shadowing policy: this model records references to release, build, party, licence and vulnerability records but never maintains local authoritative copies of them; any field that would duplicate a neighbour model's state is replaced by a reference plus, at most, a pinned digest.",
+      "Declared-not-derived policy: manifest content is a declaration made by a named author at a stated time. The record plane does not silently infer, enrich or correct manifest content; every change is an explicit revision with a reason code and an acting role.",
+      "Explicit-unknown policy: a required element is never left empty. Values that could not be determined carry the specification's unknown or no-assertion token together with a reason, so that a gap is visible rather than indistinguishable from an omission.",
+      "Non-enforcement policy: conformance reports, completeness declarations and envelope bindings recorded here are descriptive. This model performs no verification, gating, admission control or enforcement, and holds no audit trail of decisions made by systems that consume its records.",
+      "Redaction-transparency policy: a redacted disclosure variant is marked as redacted and is distinguishable from an incomplete manifest, and it states which audience tier it serves without revealing the withheld content."
+    ],
+    "crud": {
+      "read": [
+        "Read a manifest revision by manifest identifier plus revision number, or resolve the authoritative revision for a subject artifact at a given event time.",
+        "Resolve a manifest from a subject artifact digest via the publication descriptor, returning only the disclosure variant permitted for the requester's audience tier.",
+        "Reads are filtered by the manifest's access classification and any entry-level overrides; a restricted manifest is never returned in an unclassified bulk export.",
+        "Reads of restricted or redacted manifests are logged in the record plane with requester, audience tier, event time and ingestion time."
+      ],
+      "create": [
+        "Create a manifest identity only with a resolvable subject binding, a named author, a creation event time, a declared specification and version, and a declared SBOM type.",
+        "Mint the identifier following identity_priority in order, recording which priority level was used and why higher levels were unavailable.",
+        "Record creation event time and record-plane ingestion time separately on the created record.",
+        "Assign an access classification at creation; creation without a classification is rejected."
+      ],
+      "update": [
+        "Published revisions are immutable: content changes are rejected and must be issued as a new revision under the same manifest identity.",
+        "Only record-plane annotations (indexing keys, classification review outcome, disposition state, discovery descriptors) may be updated in place, each with acting role, reason code and observation time.",
+        "Correcting published content additionally requires an amendment notice and the supersession or withdrawal of the affected revisions.",
+        "Updates never alter a recorded digest or envelope binding; a changed canonical form yields a new artifact instance with its own digest."
+      ],
+      "delete": [
+        "Published manifest revisions are not hard-deleted while the described release remains supported. Withdrawal is a lifecycle state change, not a deletion, and a withdrawn revision stays retrievable to entitled parties.",
+        "Retain each revision for the Dimension's declared retention period, which must be at least the subject's support period plus any applicable statutory period, including technical-documentation retention obligations arising under the Cyber Resilience Act where that regulation applies.",
+        "On disposal, replace content with a tombstone carrying the manifest identifier, revision number, subject reference, disposal reason code, and both the disposal event time and its ingestion time. The tombstone is itself never deleted, so that references from other models continue to resolve.",
+        "Execution of deletion, destruction certification, legal-hold placement and release, and the records-management schedule are owned by the adopting Dimension's retention policy; where a manifest is embedded in or bound to a release record, WM-SFT-007 owns the coordinated disposal of that release's evidence set. This model records only disposition state, eligibility and the tombstone reference.",
+        "Erasure of personal data appearing in author, producer or contact fields is executed under the adopting Dimension's privacy policy; this model records the redaction marker and the reason, not the erasure decision."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Manifest Producer / Author",
+        "responsibilities": [
+          "Generate manifest content and declare the SBOM type, generating tool and coverage limits",
+          "Populate baseline elements or mark them explicitly unknown with a reason",
+          "Issue corrections and amendment notices for content the producer authored"
+        ]
+      },
+      {
+        "name": "Manifest Steward (record plane)",
+        "responsibilities": [
+          "Maintain manifest identity, namespace allocation and revision series integrity",
+          "Enforce immutability of published revisions and record all in-place annotation changes",
+          "Operate canonicalization, digest recording and the no-shadowing policy against neighbour models"
+        ]
+      },
+      {
+        "name": "Access Approver",
+        "responsibilities": [
+          "Assign and review access classification and audience tiers for manifests and entries",
+          "Approve redaction scopes and disclosure variants",
+          "Authorise disclosures made under lawful requests or contractual entitlement"
+        ]
+      },
+      {
+        "name": "Consumer / Verifier",
+        "responsibilities": [
+          "Retrieve manifests through published discovery mechanisms and check digests against the declared canonical form",
+          "Perform envelope verification and any policy evaluation in their own systems, holding those outcomes in their own records",
+          "Report suspected errors back to the manifest producer for correction"
+        ]
+      },
+      {
+        "name": "Records Manager",
+        "responsibilities": [
+          "Own the retention schedule, legal-hold placement and disposal execution for manifest records",
+          "Confirm tombstone creation and the continued resolvability of disposed references",
+          "Coordinate disposal with the owning release model when evidence sets are retired together"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "A manifest record inherits the access classification declared on it. Where no classification is present the record defaults to restricted: readable by the producing organization and named recipients only. Wider publication is an explicit, recorded act by the Access Approver, never a default state, reflecting that regulatory SBOM obligations generally require production and provision on request rather than public disclosure.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Disclosure to a market surveillance or supervisory authority on lawful request, in the scope and format that authority specifies.",
+        "Disclosure to a customer or downstream integrator holding a contractual entitlement, limited to their entitled audience tier and disclosure variant.",
+        "Disclosure to incident responders and coordinating bodies during an active security incident affecting the described subject.",
+        "Open publication where the producing organization has decided to publish, typically for open-source releases, in which case the manifest and its data licence are public.",
+        "Disclosure of a redacted variant where full content is withheld for confidentiality, marked as redacted with the withholding reason stated."
+      ],
+      "audit_requirements": [
+        "Record who changed access classification or redaction scope, when (event time and ingestion time), and under which authority.",
+        "Record every publication, supersession, withdrawal and disposition transition with acting role and reason code.",
+        "Record reads of restricted or redacted manifests, including requester identity and the audience tier applied.",
+        "Retain these record-plane change logs for at least the manifest retention period; they cover changes to this model's own records only and are not an audit trail of any consuming system's verification, policy or enforcement decisions, which remain owned by those systems."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner or maintainer",
+        "Default access classification",
+        "Baseline element profile and version in force"
+      ],
+      "read_order": [
+        "AGENTS.md - identify the model, its type, and the specification, storage, interface and processes endpoints before any other action",
+        "Specification URL - load the model definition: scope, boundaries, bundles, layers, findings and data elements",
+        "Storage type URL - learn the projection in use (document store, Git repository, registry attachment, database) and its canonicalization profile",
+        "Interface URL - learn the read and write operations available, their access scopes and their filtering behaviour",
+        "Processes URL - learn the create, publish, amend, supersede and disposition procedures and which roles may invoke them",
+        "Composition links - resolve neighbour models for release identity, build provenance, party data, licences and vulnerabilities before reading or writing any field that references them"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model covers the SBOM manifest as a governed aggregate record - identity, specification and subject binding, component inventory and identifiers, relationship graph with declared depth and completeness, licensing declarations, integrity and authenticity bindings by reference, baseline conformance claims, publication and access, and lifecycle through to disposition - grounded in SPDX 3.0.1, CycloneDX 1.7 / ECMA-424, the 2026 CISA minimum elements, purl / ECMA-427, in-toto Statement v1, Regulation (EU) 2024/2847 and NIST SP 800-218. It deliberately excludes release lifecycle, build provenance, vulnerability assessment, licence obligation analysis, signature verification, policy enforcement and consumer-side audit trails, which are owned by neighbouring models.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Manifest identifier, governed serial or document IRI, namespace scoping and entry-local references are modelled, with a three-level identity priority that puts the authoritative master-system identifier first and explicitly rules out dates and digests as names."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Draft, published, superseded, withdrawn and disposed states with transition events, plus generation cadence, staleness limits and immutability of published revisions. The subject release's own lifecycle is left to WM-SFT-007."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Typed directed relationship assertions with direction convention, phase or scope qualifiers, explicit none versus no-assertion, per-relationship and aggregate completeness, plus version-pinned cross-manifest links."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 with seconds and explicit offset, separation of event time from observation or ingestion time, authoritative-from and authoritative-until selection, maximum staleness and retention clock start events."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Author, generating tool and version, SBOM type as generation method, producing run held as a reference, and the declared-versus-concluded distinction for licence values. Build provenance itself is referenced, not modelled."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Accountable owner on every manifest, producer and supplier attribution resolved to external party records, manifest rights holder distinct from software rights, and named accountability for conformance claims and disposal execution."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Identifier normalization before comparison, duplicate detection, explicit-unknown enforcement, baseline element gap reporting and digest matching for companion binding. Envelope verification is explicitly outside this model."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Classification defaulting to restricted, audience tiers, redaction variants distinguishable from incompleteness, five named exception classes including supervisory-authority requests, and scoped read filtering at bundle, layer, finding and artifact level."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention tied to subject support plus statutory periods, legal hold, withdrawal as a state rather than deletion, non-deletable tombstones, and explicit assignment of deletion execution to the adopting Dimension's records-management policy and to WM-SFT-007 for coordinated release-evidence disposal."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Specification family and version binding, registered media types, cross-serialization identity, governed identifier schemes, BOM-Link pinning, lossy downgrade conversion recorded as a derived manifest, and tolerance of unknown fields."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "SBOM type vocabulary, component type and scope, reference categories and baseline profile claims all drawn from externally governed vocabularies rather than minted locally."
+      },
+      {
+        "dimension": "integrity and authenticity",
+        "status": "covered",
+        "notes": "Canonical byte form, named-algorithm digests with agility handling, and envelope plus transparency-log references carried strictly as pointers with no trust evaluation."
+      },
+      {
+        "dimension": "completeness and known unknowns",
+        "status": "covered",
+        "notes": "Declared depth against a regulatory floor, aggregate and per-assembly completeness, coverage exclusions, tool limitation notes and mandatory explicit unknown markers."
+      },
+      {
+        "dimension": "measurement",
+        "status": "gap",
+        "notes": "Quantitative SBOM quality scoring (for example field-density or accuracy metrics beyond baseline element presence) has no authoritative normative source that was verified here, so no scoring structure is proposed. Only presence-and-gap reporting against a published profile is modelled."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Geographic location is not intrinsic to a manifest. Jurisdiction enters only indirectly through the applicable regulatory profile and disclosure obligations, which are handled under authority and access rather than as a spatial dimension."
+      }
+    ],
+    "known_omissions": [
+      "Exact field names of the 2026 CISA minimum elements could not be extracted verbatim from the primary PDF; the model deliberately expresses baseline conformance as a versioned profile reference plus a gap list rather than hard-coding a field list that may be misnamed.",
+      "Neighbour models for vulnerability and VEX, party master data and licence compliance are named descriptively because no registry model identifiers were supplied for them; their composition links should be re-pointed to real model IDs at boundary review.",
+      "SBOM quality and accuracy scoring frameworks are excluded for lack of verified normative grounding.",
+      "AI-specific and SaaS-specific manifest descriptors (model cards, data cards, service inventories) are acknowledged as an open area in current guidance and are not modelled; SPDX AI and Dataset profiles and CycloneDX ML-BOM would be the alignment targets if adopted.",
+      "Transparency Exchange API and similar emerging distribution protocols are treated only abstractly under discovery mechanism, since their specifications were not verified as stable primary sources here.",
+      "Hardware, cryptography and operations bills of materials are out of scope for this entry even though CycloneDX supports them; they would be sibling models sharing this model's identity and integrity patterns."
+    ],
+    "conflicts": [
+      "Two readings of the 2026 CISA element list were encountered: one grouping nine SBOM metadata and eight component data fields (author, author signature, format name and version, generation context, timestamp, tool name and version, SBOM version; producer, name, version, identifiers, hash value, hash algorithm, licence, dependency relationship), and another naming fields such as primary component and coordinates. The two are broadly reconcilable in substance but not in wording, so no verbatim field list is asserted in this model.",
+      "SPDX has no normative in-document signature class, while CycloneDX supports an embedded signature. This model therefore binds authenticity by external envelope and subject digest, which works for both families but is not the native idiom of either.",
+      "The Cyber Resilience Act sets a floor of at least top-level dependencies, whereas the CISA practices push toward full transitive depth. The model records declared depth and the applicable floor separately rather than asserting a single correct depth.",
+      "SPDX distinguishes declared from concluded licences and offers explicit none versus no-assertion markers; CycloneDX expresses licensing and completeness differently, so round-tripping between the two is lossy and is recorded as a derived manifest rather than an equivalent one.",
+      "SLSA Provenance v1.1 is marked retired in favour of v1.2. It is cited here only to fix the boundary with WM-SFT-008, and the reference should be refreshed when that neighbour model is specified."
+    ],
+    "regional_assumptions": [
+      "EU: Regulation (EU) 2024/2847 applies from 11 December 2027; manufacturers must produce an SBOM in a machine-readable format covering at least top-level dependencies, are not obliged to publish it, and must furnish it to market surveillance authorities on request. Delegated acts may later specify format and elements, which would change the baseline profile.",
+      "United States: the 2026 CISA minimum elements replace the 2021 NTIA minimum elements as the reference baseline; contractual flow-down rather than the guidance itself is usually what makes them binding for a given supplier.",
+      "Sector regimes (medical devices, automotive, telecommunications, critical infrastructure) impose additional element and retention requirements that are not modelled; the adopting Dimension must declare which sector profiles apply.",
+      "Jurisdictions with data-localisation or export-control constraints may restrict where manifests can be stored or to whom they can be disclosed; these constraints are handled through access classification and are not enumerated here.",
+      "No assumption is made that a single global baseline profile exists; conformance is always claimed against a named profile version and jurisdiction."
+    ],
+    "adversarial_checks": [
+      "Boundary check against WM-SFT-008: every bundle, layer, finding and function was compared with the build-provenance rationale. Generation context carries only an SBOM type code, a tool reference and a producing-run reference; no buildDefinition, externalParameters, resolvedDependencies, builder trust or provenance predicate lifecycle appears anywhere in this model.",
+      "Boundary check against WM-SFT-007: subject binding carries a release key and artifact digest only. No release version scheme, support window, release-state machine or release-approval process is modelled, and coordinated evidence disposal is explicitly assigned to the parent.",
+      "Enforcement and audit check: the authenticity finding, the conformance function and the access layer were each re-read for smuggled ownership. The conformance function's effects state that it produces no gating decision; the envelope binding states that verification and trust evaluation occur elsewhere; the access audit requirements are scoped to changes to this model's own records and explicitly disclaim consuming systems' decision trails.",
+      "Attractive-but-unsupported structure rejected: an SBOM quality score, a merged assembly artifact, a component-inventory export artifact, a standalone checksum artifact and a disposal certificate were all considered and rejected because they either lack normative grounding or would fragment the integrity of the signed manifest.",
+      "Counterexample search on identity: a date-stamped filename, a content digest and a release version were each tested as candidate identifiers and rejected. Digests pin an instance but do not name the manifest, versions belong to the subject, and dates are explicitly barred from identifiers and from serial naming.",
+      "Duplication sweep: licence values, party attribution, exploitability statements and transparency-log entries were each checked to confirm they are carried as references or declarations only, with obligation analysis, party mastering, affectedness determination and log operation left to their owning models.",
+      "Falsifiability check: the strongest way to break this model would be publication of a delegated act or profile that mandates a fixed element list with exact field names, which would immediately date the deliberately profile-indirect conformance structure. That indirection is a considered trade-off and is recorded here as the model's main planned failure mode."
+    ]
+  }
+}

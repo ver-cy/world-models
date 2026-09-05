@@ -1,0 +1,116 @@
+{
+  "base_provider": "claude",
+  "confidence": "medium",
+  "coverage_claim": "Merged model covers the commercial billing document as a governed aggregate: identity, typing and specification claim; issuance authority and legally distinct dates; parties, priced lines, allowances and charges; tax breakdown, currency and constrained totals; payment instruction; commercial and correction references; attachments and renditions; lifecycle, buyer response, authenticity and clearance; regulatory conformance evidence; and exchange, retention, access and provenance. Evidence is strongest for EU/EN 16931/Peppol/UBL semantics and EU VAT law, with UN/CEFACT CII process material added for self-billing, prepayment and special billing variants. Coverage is jurisdiction-qualified and explicitly not universal: customs valuation invoices, national CTC profiles, receivables financing and non-EU mandatory-particulars overlays are outside the accepted boundary or recorded as gaps.",
+  "boundary_decision": {
+    "entry_kind": "aggregate",
+    "status": "accepted",
+    "rationale": "Accept the base boundary and its aggregate entry kind. The invoice is a composite consistency boundary — lines, allowances, tax breakdown groups and totals have no identity outside the document, and the family (invoice, credit note, debit note, self-billed, corrective) shares one governed structure — so 'aggregate' fits better than grok's 'entity'. The base boundary is also the cleaner one: it delegates generic recordkeeping to the record model, settlement to WM-ECO-009, fulfilment events to WM-ECO-024, and tax reporting to the return/DRR surface, and it excludes customs valuation invoices. Grok simultaneously placed the 19 CFR 141.86 customs commercial invoice in scope and asserted in its own adversarial check that it is a different legal act with different mandatory content; that internal tension is resolved by keeping customs valuation out and deferring it to a sibling trade-document entry rather than splitting this model."
+  },
+  "add_findings": [
+    {
+      "provider": "grok",
+      "source_finding_id": "self-billing-and-special-processes",
+      "target_finding_id": "fnd-self-billing-prepayment-and-special-processes",
+      "target_layer_id": "lyr-lifecycle-and-response",
+      "rationale": "Materially missing from the base and non-duplicative. The base covers the self-billing mandate, marking and revocation as an authority question (fnd-issuing-authority-and-self-billing) but never models the process flow — customer raises the self-billed invoice, supplier reconciles, raises a dispute notice on discrepancy, corrected by a self-billing credit note — nor the prepayment-invoice (386) to final-invoice absorption relationship, nor the consolidated, consignment, factored and freight-billing variants as processes with their own rules. Grok grounds these in SRC-008 (UN/CEFACT CII BRS v2.0.5), SRC-001 (UBL SelfBilledInvoice), SRC-005 (Article 226(10a) 'Self-billing' mention) and SRC-002. It fits lyr-lifecycle-and-response because it is process and state material that complements the base lifecycle and buyer-response findings, and it partially closes the base's own declared factoring gap at the document-marking level without importing financing semantics."
+    }
+  ],
+  "add_functions": [
+    {
+      "provider": "grok",
+      "source_function_id": "fn-issue-self-billed-invoice",
+      "rationale": "The base has a generic fn-issue-commercial-document but no operation for the inverted issuer case, where the customer issues in the supplier's name under an agreement, carries the mandatory 'Self-billing' mention, and the supplier must accept or dispute. This is the executable counterpart of the accepted self-billing process finding and is grounded in grok SRC-001, SRC-008 and SRC-005."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "fn-present-payment-claim",
+      "rationale": "The base states emphatically that settlement state must never be written back onto the issued document and must be derived by reference, but provides no function that performs that handoff. Exposing payable amount, due date or terms, means and payee to the settlement model operationalises the WM-ECO-009 boundary the base already asserts, rather than duplicating fn-project-role-scoped-view, which is a disclosure projection, not a claim handoff."
+    }
+  ],
+  "merge_service_layers": true,
+  "decisions": [
+    {
+      "concept": "Base provider selection",
+      "disposition": "claude as base",
+      "rationale": "Not chosen on size. The base states eleven explicit out-of-scope items and seven neighbour boundary notes with distinctions and source refs, and each governance surface (retention, access, provenance, authenticity, clearance, exchange) has a named home. Grok's boundary is internally inconsistent on customs invoices, which is the decisive difference."
+    },
+    {
+      "concept": "Entry kind aggregate versus entity",
+      "disposition": "aggregate accepted",
+      "rationale": "Lines, allowances, tax breakdown groups and totals have no independent identity or lifecycle outside the document, and the model governs a document family under one consistency boundary; entity would understate the composition and invite line-level records to be governed separately."
+    },
+    {
+      "concept": "Customs commercial invoice contents (19 CFR 141.86)",
+      "disposition": "deferred to sibling trade-document entry",
+      "rationale": "Evidence-backed in grok but does not fit any base layer: it is valuation for duties, not a VAT payment claim, with a different mandatory-content profile, in-transit resale documents and a named responsible exporter employee. Folding it into a billing aggregate would collapse two legal acts the sources keep apart."
+    },
+    {
+      "concept": "Self-billing, prepayment and special billing processes",
+      "disposition": "accepted into lyr-lifecycle-and-response",
+      "rationale": "The only grok-only finding that is both materially missing and squarely inside the base boundary; it adds the self-billing process flow with supplier dispute, prepayment absorption into a final invoice, and the consolidated/consignment/factored/freight variants the base does not name."
+    },
+    {
+      "concept": "Grok party, identifier and VAT-endpoint findings",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base party finding already asks about role set, scheme-qualified identifiers, establishment and address effects on tax treatment, and routing address versus legal identity; adding seller-buyer-and-role-set and party-tax-and-electronic-ids would split one governed concern across two findings for BT-level detail only."
+    },
+    {
+      "concept": "Grok monetary totals and currency finding",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base separates fnd-currency-and-conversion from fnd-totals-rounding-and-arithmetic-consistency and already requires every calculated value to be materialised and reconciled; grok's BR-CO-16 formula and two-decimal rule are instances of that constraint, not new structure."
+    },
+    {
+      "concept": "Positive price with negative quantity when crediting",
+      "disposition": "rejected as a finding; retained as an encoding conflict",
+      "rationale": "A real Peppol rule with no home at finding granularity in the base. It belongs as a question under the existing correction-chain finding, so it is recorded as an unresolved encoding alternative rather than added as duplicate structure."
+    },
+    {
+      "concept": "Grok billing-lifecycle-and-corrections finding",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base already splits this into lifecycle states and immutability point, buyer response and dispute, and the preceding-document correction chain, each with its own artefact. The 381 versus negative-380 versus 384 choice is carried instead as a recorded conflict on mechanism selection."
+    },
+    {
+      "concept": "Grok compliance-validation-and-syntax finding",
+      "disposition": "rejected as duplicative",
+      "rationale": "Covered across the base specification-claim, validation-evidence and syntax-binding findings, which already warn that core conformance does not imply network conformance. The CIUS asymmetry — a CIUS-only receiver may reject a CORE instance that a CORE receiver must accept — is retained as a conflict note, not new structure."
+    },
+    {
+      "concept": "EN 16931 delivery information group (BG-13)",
+      "disposition": "rejected as distributed coverage",
+      "rationale": "Deliver-to party sits in the base party finding, actual delivery date and invoicing period in the issuance-dates finding, and despatch/receipt references in the commercial references finding. Adding grok's delivery block would duplicate three findings to gain a grouping label."
+    },
+    {
+      "concept": "Claude-only governance layers (retention, access, provenance, exchange)",
+      "disposition": "retained",
+      "rationale": "Grok delegates all of these to N1 Document & Record. The base retains only invoice-specific obligations — storage period fixed by national law, legibility for the whole period, authority access, delivery evidence versus business acceptance — and its scope statement already delegates generic recordkeeping machinery, so the delegation boundary is preserved."
+    },
+    {
+      "concept": "Date-only business terms versus RFC 3339 instants",
+      "disposition": "accepted as agreed modelling rule",
+      "rationale": "Both providers independently reached the same resolution: issue date, tax point and due date stay calendar dates with a governing jurisdiction, while system-observed instants use RFC 3339 with offset. Concordance across independent research raises this from open conflict to a stated rule."
+    },
+    {
+      "concept": "National continuous transaction control regimes",
+      "disposition": "generic clearance retained, national profiles deferred",
+      "rationale": "The base models clearance as an optional inserted lifecycle state with an authority-assigned identifier that outranks the issuer number, which is the transferable structure; SdI, IRN, NF-e, CFDI and PDP specifics were not researched by either provider and must not be invented."
+    }
+  ],
+  "critical_conflicts": [],
+  "publication_holds": [
+    "Source and live-version verification is unmet: the two providers share zero common source URLs even where they cite the same standards, so every accepted base URL and the borrowed grok UN/CEFACT sources must be fetched and re-pinned before publication (Peppol BIS Billing 3.0 May 2026 release, EN 16931 supporting artefacts v1.3.16, EAS v16.0, VATEX v8.0, UBL 2.1/2.4 canonical paths, Factur-X 1.09.2 / ZUGFeRD 2.5.2).",
+    "Grok grounds Article 226 content on a legislation.gov.uk retained-EU-law mirror rather than the EUR-Lex consolidated Directive 2006/112/EC; any article-level mandatory-particulars claim carried into the merged model must be re-grounded on the EU consolidated text, since a retained-law mirror can diverge from current EU law.",
+    "Neither provider read the normative EN 16931-1 text (paywalled catalogue), so all BT/BG term-level semantics are second-hand via usage specifications and the Commission registry. The draft must be labelled as alignment with the semantic model, never as conformance, and every conformance verdict must carry rule-set identity and artefact version.",
+    "The imported UN/CEFACT BRS Cross Industry Invoice v2.0.5 was TBG-approved in 2008; confirm it is still the current published process baseline (and check it against the CII maximum dataset and any later BRS revision) before the accepted self-billing and prepayment process finding is published as canonical.",
+    "Multi-profile domain validation is unmet: the normative spine is EU law plus a European CIUS. Validate against at least one non-EU profile — a no-mandate voluntary market, an Asia-Pacific four-corner adoption, and one clearance regime — before any cross-jurisdiction usability claim.",
+    "Registry metadata is unreconciled: the two providers assert different registry_ids for the same model_id, the entry still carries a legacy Document & Record alias and specification reference, and the parent identifier is empty while a validation flag suggests a parent link. Resolve registry_id, alias and parent before registry publication."
+  ],
+  "deferred_research": [
+    "Customs and import valuation commercial invoice as a sibling trade-document entry (19 CFR 141.86 and the Union Customs Code equivalents), including assists, itemised charges, origin, in-transit resale documents and the named responsible person — deliberately excluded from this boundary.",
+    "Receivables financing, factoring, assignment of the claim, dunning and collections: the base records this as an outright gap after an ISO 20022 trade-services fetch failed, and the accepted addition only reaches document-level marking of a factored invoice, not the financing process or assignment notice effects.",
+    "National continuous transaction control profiles (Italy SdI, India GST IRN/QR, Brazil NF-e, Mexico CFDI folio, France PDP, Peppol PINT) as jurisdiction-scoped profiles over the generic clearance finding, including identifier formats, signed codes and deadlines.",
+    "EN 16931-1:2026 semantic additions arising from the ViDA package; both providers rely on secondary reporting for these fields, so they remain a gap until the CEN text or an authoritative registry artefact is retrieved.",
+    "Records-management and digital preservation standards (ISO 15489, PREMIS, and long-term signature preservation) to firm up the delegation to the record model and the maintenance of authenticity, integrity and legibility across a multi-year storage period.",
+    "Invoice Response / business response semantics as an adjacent governed transaction, to confirm the base buyer-response finding matches the transaction actually specified rather than a generalisation of it."
+  ]
+}

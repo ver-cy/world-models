@@ -1,0 +1,2442 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Provide a format-neutral mixin describing a digital signature or cryptographic proof: what is covered, which signer or key it references, which signature method and declared purpose apply, which verification evidence travels with it, how it is bound to its payload and host artifact, and how it projects onto concrete signature bindings without silent loss.",
+    "scope_statement": "WM-XCT-034 models the logical proof as a mixin that can be applied to any signable record of the adopting Dimension. It owns the description of the proof instance (subject coverage, signer/key reference, method, declared purpose, carried verification evidence), the binding form and attachment topology relative to payload and host artifact, the declarations needed to reconstruct a signing input, the placement and criticality of protected and unprotected parameters, and the projection profiles, templates, recorded losses and conformance/loss reports that govern expression in CMS/CAdES, XMLDSig/XAdES, JWS/JAdES, COSE, PDF/PAdES and W3C Data Integrity. It is deliberately format-neutral: no concrete binding is canonical and no binding may supply a model-wide default. All cryptographic and parsing execution, PKI trust determination, and legal-effect classification are referenced, never owned.",
+    "in_scope": [
+      "Logical proof instance: covered subject, signer or key reference, signature method, declared proof purpose or commitment, and carried verification evidence references.",
+      "Binding form and attachment topology: enveloped, enveloping and detached placement of a proof relative to its payload and its host artifact, including multi-level cases.",
+      "Payload discovery and detached reference descriptors: locators, digests, transform chains, byte ranges and multi-object concatenation order.",
+      "Signing-input declarations: transformation and canonicalization method identifiers, context strings, externally supplied authenticated data and payload-encoding flags.",
+      "Protected versus unprotected parameter placement, signed and unsigned properties, and critical-parameter declarations.",
+      "Signer and key identification mechanisms and the certificate, timestamp and revocation evidence carried or referenced by a binding.",
+      "Projection profiles and encoding templates for CMS/CAdES, XMLDSig/XAdES, JWS/JAdES, COSE, PDF/PAdES and W3C Data Integrity.",
+      "Recorded projection losses, conversion blocking conditions, media-type ambiguity, evidence conflicts, and conformance and loss report structures.",
+      "Version distinction between binding profile version, logical proof version and host artifact version."
+    ],
+    "out_of_scope": [
+      "Execution of cryptographic and encoding operations: canonicalization, digest and signature computation, encoding, parsing and signature verification are performed by referenced external encoders, parsers and validators.",
+      "Key generation, custody, hardware security modules and key-management lifecycle.",
+      "Trust anchor governance, trusted-list management and certificate path validation decisions.",
+      "Revocation status determination from CRL or OCSP data and any enforcement based on it.",
+      "Issuance and operation of time-stamp authorities and the internal semantics of time-stamp tokens.",
+      "Legal effect, qualification status and regulatory classification of a signature.",
+      "Audit-trail semantics, audit-record structure and retention execution for host systems.",
+      "Content semantics of the signed payload, host document authoring and host revision history.",
+      "Identity proofing, signer enrolment and authentication protocol design.",
+      "Selective-disclosure and unlinkability mechanics of derived-proof schemes."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "X.509 certificate, trust-status and revocation-evidence model",
+        "distinction": "This model records only which key-identification mechanism a binding uses and which certificate, chain, thumbprint or revocation item the binding carries or points to. Certificate issuance, path building, trust anchor selection and revocation determination stay in the PKI model even though RFC 9360 and RFC 5652 define the carriage parameters here.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Time-stamp token model",
+        "distinction": "This model records where a timestamp attaches (signed attribute, unsigned attribute, unprotected header, document timestamp revision) and what its message imprint is computed over. Token issuance, TSA policy and the token's own trust evaluation are owned by the time-stamp model.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "External signature encoder, parser and validator runtime",
+        "distinction": "Core validation, reference validation, canonicalization and signature computation are runtime operations. This model holds declarations and stores externally produced results by reference; it never executes, re-runs or adjudicates them.",
+        "source_refs": [
+          "SRC-010",
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "Host artifact or document model",
+        "distinction": "Host structure, its own identity, revisions and incremental-update history belong to the host model. This model owns only the attachment point, the covered byte or node region, and the reference into the host, which is why a PDF signature can be CMS-detached while being document-enveloped.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "Selective-disclosure credential model",
+        "distinction": "SD-JWT and similar schemes are recorded here only as target bindings with their registered media types and their loss profile. Disclosure construction, holder binding and unlinkability analysis are owned by the selective-disclosure model.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Signature policy and commitment model",
+        "distinction": "This model carries the signature-policy identifier and commitment-type indication as signed properties and records whether a target projection can express them. Policy authoring, policy semantics and commitment interpretation are owned elsewhere.",
+        "source_refs": [
+          "SRC-013",
+          "SRC-011"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 7515: JSON Web Signature (JWS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7515.html",
+      "version_or_date": "RFC 7515, May 2015 (Proposed Standard)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:05:00Z",
+      "relevance": "Defines Compact vs General vs Flattened JSON Serialization, the JWS Protected/Unprotected Header split (members MUST be disjoint), the crit parameter, key-identification headers (kid, jwk, jku, x5c, x5u, x5t), signing-input construction, detached content (Appendix F), and the statement that Compact Serialization supports only one signature and no unprotected header."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 7797: JSON Web Signature (JWS) Unencoded Payload Option",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7797.html",
+      "version_or_date": "RFC 7797, February 2016",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:07:00Z",
+      "relevance": "Defines the b64 header parameter (default true), requires it to be protected and listed in crit, changes the signing-input formula when false, forbids '.' in unencoded compact payloads, and forbids b64=false in JWTs — a concrete inexpressibility and fallback hazard."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 9052: CBOR Object Signing and Encryption (COSE): Structures and Process",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9052.html",
+      "version_or_date": "RFC 9052, August 2022 (STD 96)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:06:00Z",
+      "relevance": "Defines COSE_Sign (tag 98) and COSE_Sign1 (tag 18), the protected/unprotected buckets, the Sig_structure signing input with its context string, detached payload as a nil CBOR object, external_aad, crit processing as a fatal error, non-unique kid values, and the explicit statement that the two structures cannot be converted into each other."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 9338: CBOR Object Signing and Encryption (COSE): Countersignatures",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9338.html",
+      "version_or_date": "RFC 9338, December 2022 (updates RFC 9052)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:12:00Z",
+      "relevance": "Defines countersignature header parameters (labels 11 and 12), the Countersign_structure that includes the target's cryptographic material, the restriction to signature algorithms with appendix, and the reason countersignatures were removed from RFC 9052 — grounding countersignature topology and non-equivalence across versions."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 9360: CBOR Object Signing and Encryption (COSE): Header Parameters for Carrying and Referencing X.509 Certificates",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9360.html",
+      "version_or_date": "RFC 9360, February 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:13:00Z",
+      "relevance": "Defines x5bag (32), x5chain (33), x5t (34) and x5u (35), their permitted protected/unprotected placement, the requirement that end-entity certificate identification be integrity protected, and the boundary statement that certificate validation remains a separate obligation."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 9053: CBOR Object Signing and Encryption (COSE): Initial Algorithms",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9053.html",
+      "version_or_date": "RFC 9053, August 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:20:00Z",
+      "relevance": "Shows COSE algorithm identifiers as negative/positive integers from the IANA COSE Algorithms registry (ES256 = -7, EdDSA = -8) and requires curve/key-type consistency — the evidence base for algorithm identifier-space divergence between projections."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 5652: Cryptographic Message Syntax (CMS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc5652.html",
+      "version_or_date": "RFC 5652, September 2009 (STD 70)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:06:00Z",
+      "relevance": "Defines SignedData, external (detached) signatures via omitted eContent, SignerIdentifier as issuerAndSerialNumber or subjectKeyIdentifier, mandatory content-type and message-digest signed attributes, the DER-encoding rule for SignedAttrs, unsignedAttrs including countersignature, certificates/crls carriage, and multiple SignerInfos."
+    },
+    {
+      "id": "SRC-008",
+      "title": "RFC 3161: Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3161.html",
+      "version_or_date": "RFC 3161, August 2001",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:18:00Z",
+      "relevance": "Defines the TimeStampToken as CMS SignedData over TSTInfo (genTime, messageImprint, serialNumber, accuracy) and the id-aa-timeStampToken unsigned attribute whose imprint covers the SignerInfo signature value — grounding timestamp attachment points and their coverage declarations."
+    },
+    {
+      "id": "SRC-009",
+      "title": "RFC 8118: The application/pdf Media Type",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8118.html",
+      "version_or_date": "RFC 8118, March 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:22:00Z",
+      "relevance": "Registers application/pdf and states that the single media type is used for all PDF versions, with the version only in the %PDF- header — direct evidence for media-type ambiguity, and confirms that PDF supports digital signatures and that ISO 32000-2 is PDF 2.0."
+    },
+    {
+      "id": "SRC-010",
+      "title": "XML Signature Syntax and Processing Version 1.1",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmldsig-core1/",
+      "version_or_date": "W3C Recommendation, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:08:00Z",
+      "relevance": "Defines enveloped, enveloping and detached forms, the Reference element and URI dereferencing (at most one Reference may omit the URI), same-document references, Transforms and CanonicalizationMethod, the enveloped-signature transform, SignedInfo/SignatureValue/KeyInfo/Object/Manifest, SignatureProperties, and algorithm identification by URI."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Verifiable Credential Data Integrity 1.0: Securing the Integrity of Verifiable Credential Data",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-integrity/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:09:00Z",
+      "relevance": "Defines DataIntegrityProof (type, cryptosuite, created, expires, verificationMethod, proofPurpose, proofValue, domain, challenge, nonce, previousProof), proof sets versus proof chains, proof graphs, the transform/hash/serialize pipeline with RDF Dataset Canonicalization or JCS, the error requirement when a JSON-LD processor drops data, and date-based cryptosuite versioning."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Securing Verifiable Credentials using JOSE and COSE",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-jose-cose/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:10:00Z",
+      "relevance": "Defines the enveloping-proof approach and registers application/vc+jwt, application/vp+jwt, application/vc+sd-jwt, application/vp+sd-jwt, application/vc+cose and application/vp+cose; states that the unsecured credential is the JWS payload or the COSE_Sign1 payload, and makes no statement about conversion between securing mechanisms."
+    },
+    {
+      "id": "SRC-013",
+      "title": "XML Advanced Electronic Signatures (XAdES)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/XAdES/",
+      "version_or_date": "W3C Note, 20 February 2003",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:16:00Z",
+      "relevance": "Freely readable enumeration of signed qualifying properties (SigningTime, SigningCertificate, SignaturePolicyIdentifier, SignatureProductionPlace, SignerRole, DataObjectFormat/MimeType, CommitmentTypeIndication, data-object timestamps) and unsigned properties (CounterSignature, SignatureTimeStamp, CompleteCertificateRefs, CompleteRevocationRefs, CertificateValues, RevocationValues, ArchiveTimeStamp), plus QualifyingProperties attachment via Target and a typed SignedProperties reference. Superseded for normative use by ETSI EN 319 132-1."
+    },
+    {
+      "id": "SRC-014",
+      "title": "ETSI EN 319 142-1: Electronic Signatures and Infrastructures (ESI); PAdES digital signatures; Part 1: Building blocks and PAdES baseline signatures",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31914201/01.02.01_60/en_31914201v010201p.pdf",
+      "version_or_date": "V1.2.1, January 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:14:00Z",
+      "relevance": "Normative source for PAdES baseline levels B-B/B-T/B-LT/B-LTA, the SubFilter value ETSI.CAdES.detached, ByteRange coverage of the whole file except the signature octets, and Document Security Store certificate/revocation carriage. Publisher listing and version confirmed; the PDF body was not machine-retrievable in this pass, so clause-level attribute tables are recorded as unverified."
+    },
+    {
+      "id": "SRC-015",
+      "title": "ETSI TS 119 182-1: Electronic Signatures and Infrastructures (ESI); JAdES digital signatures; Part 1: Building blocks and JAdES baseline signatures",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_ts/119100_119199/11918201/01.02.01_60/ts_11918201v010201p.pdf",
+      "version_or_date": "V1.2.1, July 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:24:00Z",
+      "relevance": "Defines the sigD header parameter identifying one or more detached data objects that are processed and concatenated to form the detached JWS payload (with HttpHeaders, ObjectIdByURI and ObjectIdByURIHash mechanisms) and the single etsiU unprotected header array. Publisher listing and version confirmed; clause-level text not machine-retrievable in this pass."
+    },
+    {
+      "id": "SRC-016",
+      "title": "DSS Documentation (Digital Signature Service, eSignature building block)",
+      "organization": "European Commission, DG DIGIT",
+      "url": "https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html",
+      "version_or_date": "DSS version 6.4, 2024-07-24",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:15:00Z",
+      "relevance": "Publicly available implementation documentation from an EU public authority giving the packaging matrix per format: XAdES enveloped/enveloping/detached/internally-detached, CAdES enveloping/detached, PAdES enveloped only, JAdES compact or JSON serialization with detached payload via sigD; and the B/T/LT/LTA level material. Used as descriptive evidence of packaging vocabulary, not as a normative source."
+    },
+    {
+      "id": "SRC-017",
+      "title": "JSON Object Signing and Encryption (JOSE) IANA registries",
+      "organization": "Internet Assigned Numbers Authority (IANA)",
+      "url": "https://www.iana.org/assignments/jose/jose.xhtml",
+      "version_or_date": "Registry, last updated 2026-05-22",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:19:00Z",
+      "relevance": "Normative registry for JWS/JWE header parameters and algorithms under a Specification Required policy with designated experts — the governed identifier space for JOSE parameter names and the reference point for registry-snapshot pinning."
+    },
+    {
+      "id": "SRC-018",
+      "title": "ETSI EN 319 122-1: Electronic Signatures and Infrastructures (ESI); CAdES digital signatures; Part 1: Building blocks and CAdES baseline signatures",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31912201/01.03.01_60/en_31912201v010301p.pdf",
+      "version_or_date": "V1.3.1, June 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:04:00Z",
+      "relevance": "Normative CAdES building blocks and baseline levels layered on RFC 5652 signed/unsigned attributes. Publisher listing and version confirmed; the PDF body returned HTTP 403 to automated retrieval, so attribute-level requirements are marked unverified and CMS-level facts are cited from RFC 5652 instead."
+    },
+    {
+      "id": "SRC-019",
+      "title": "ETSI EN 319 132-1: Electronic Signatures and Infrastructures (ESI); XAdES digital signatures; Part 1: Building blocks and XAdES baseline signatures",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31913201/01.03.01_60/en_31913201v010301p.pdf",
+      "version_or_date": "V1.3.1, July 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:25:00Z",
+      "relevance": "Current normative XAdES specification superseding the 2003 W3C Note for qualifying-property definitions and baseline levels. Publisher listing and version confirmed; clause-level text not machine-retrievable in this pass, so XML qualifying-property naming is cited from the W3C Note and property placement from XML Signature 1.1."
+    },
+    {
+      "id": "SRC-020",
+      "title": "ISO 32000-2:2020 Document management — Portable document format — Part 2: PDF 2.0",
+      "organization": "International Organization for Standardization (ISO)",
+      "url": "https://www.iso.org/standard/75839.html",
+      "version_or_date": "Edition 2, December 2020 (reviewed and confirmed 2026)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:26:00Z",
+      "relevance": "Defines the PDF signature dictionary with its Filter and SubFilter pair, ByteRange, incremental updates and document timestamps that PAdES profiles. Purchase-only from ISO (a no-cost sponsored copy is distributed by the PDF Association); clause-level content is paywalled and was not machine-retrievable, so PDF signature structure is treated as an unverified alignment target rather than a quoted requirement."
+    },
+    {
+      "id": "SRC-021",
+      "title": "PAdES — PDF Advanced Electronic Signature",
+      "organization": "PDF Tools AG",
+      "url": "https://www.pdf-tools.com/pdf-knowledge/pades-pdf-advanced-electronic-signature/",
+      "version_or_date": "Published 2023-02-21, updated 2025-02-06",
+      "source_type": "secondary",
+      "primary_source": false,
+      "authority_tier": 4,
+      "accessed_at": "2026-09-04T09:21:00Z",
+      "relevance": "Vendor knowledge-base article used only to discover omissions: PAdES B-B to B-LTA level content, VRI/DSS long-term validation data, document timestamps, the ETSI TS 103 172 legacy profile still referenced by eIDAS, and ISO 14533-3 long-term PAdES profiles. Every claim taken from it is flagged as secondary and unconfirmed against the ETSI clause text."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-proj-binding-forms",
+        "name": "Proof Binding Forms and Attachment Topology",
+        "description": "The concern of where a proof physically sits relative to the octets it covers and relative to its host artifact, how a consumer discovers and reconstructs those octets, and which declared parameters are inside or outside the integrity boundary.",
+        "rationale": "Every signature specification examined defines its own vocabulary for the same three underlying arrangements — proof inside the data, data inside the proof, and proof separate from the data — and each defines a different mechanism for locating detached content and for marking parameters as protected. Because RFC 9052 states outright that structures including a context string in the signing input cannot be converted, and RFC 7515 states that Compact Serialization can carry neither an unprotected header nor multiple signatures, binding form and parameter placement must be modelled explicitly before any interoperability claim can be made.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-007",
+          "SRC-010",
+          "SRC-011",
+          "SRC-016"
+        ],
+        "layers": [
+          {
+            "id": "sig-proj-attachment-topology",
+            "name": "Attachment Topology and Multi-Proof Structure",
+            "description": "Classification of the binding form for a proof instance and the structural arrangement when more than one proof covers the same subject, including peer signatures, countersignatures and ordered chains.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004",
+              "SRC-007",
+              "SRC-010",
+              "SRC-011",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "sig-proj-form-classification",
+                "name": "Binding form classification and per-projection availability",
+                "description": "Records which binding form a proof instance uses — enveloped (proof inside the covered data), enveloping (covered data inside the proof), detached (proof and data separate), or internally detached (both in one container without nesting) — at which level the classification applies, and whether the chosen target projection can express it at all. Form availability is projection-specific and asymmetric: XML Signature defines all three classical forms, CMS supports enveloping and detached via omitted eContent, PAdES packaging is enveloped at document level while the embedded CMS is detached over a byte range, and Data Integrity attaches the proof as a property of the secured document.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-014",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-form-kind",
+                    "text": "Which binding form does this proof instance use, and at which level (payload level or host-artifact level) is that classification asserted?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Binding form code from a closed local vocabulary (enveloped, enveloping, detached, internally-detached)",
+                      "Level at which the form is asserted (payload, host artifact, container)",
+                      "Free-text note where the two levels disagree"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-form-containment",
+                    "text": "What does the host artifact actually contain — the proof only, the covered data only, or both — and where inside it does the proof node or dictionary sit?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Containment indicator for proof and for covered data",
+                      "Attachment point expressed in the host's own addressing scheme (element path, dictionary key, object index, JSON member)",
+                      "Reference to the host artifact record"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-form-prohibited",
+                    "text": "Which binding forms are unavailable for the declared target projection, and which specification statement establishes that unavailability?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "List of unsupported form codes for the projection",
+                      "Citation with specification identifier, version and clause where retrievable",
+                      "Verification status of the citation (verified or unverified)"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-form-choice",
+                    "text": "On what recorded criteria was this binding form chosen over the alternatives that the projection does support?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Selection rationale text",
+                      "Constraint drivers considered (payload size, host immutability, consumer capability, archival requirement)",
+                      "Identifier of the principal or role that made the selection"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-binding-form-code",
+                    "name": "Binding form code",
+                    "description": "Closed-vocabulary code for the arrangement of proof and covered data.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-target-projection-code",
+                    "name": "Target projection code",
+                    "description": "Identifier of the concrete signature binding family the record refers to (CMS/CAdES, XMLDSig/XAdES, JWS/JAdES, COSE, PDF/PAdES, Data Integrity).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-form-support-flag",
+                    "name": "Form supported by projection",
+                    "description": "Whether the declared binding form is expressible in the declared target projection.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-form-selection-note",
+                    "name": "Form selection rationale",
+                    "description": "Recorded reason for choosing this binding form, including the constraints that excluded the alternatives.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Binding form classification is a small set of coded assertions about an existing proof instance and its host. It produces no document of its own: the concrete encoding lives in the projection templates, and the host artifact is owned by the host model. Materialising a separate artifact here would duplicate the projection template and invite a stored classification to drift from the instance it describes."
+              },
+              {
+                "id": "sig-proj-multisig-topology",
+                "name": "Multi-proof topology, ordering and countersignature targets",
+                "description": "Records how many proofs cover the same subject and how they relate: unordered peers, ordered chains where each proof references its predecessor, and countersignatures that cover another proof's cryptographic value rather than the payload. The distinction is load-bearing because CMS carries multiple SignerInfos and a countersignature unsigned attribute, COSE separates COSE_Sign from COSE_Sign1 and moved countersignatures into a separate specification with changed coverage, JWS General JSON Serialization carries a signatures array that Compact Serialization cannot represent, and Data Integrity distinguishes proof sets from proof chains linked by previousProof.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-multi-count",
+                    "text": "How many proofs cover this subject, and which of them are peers versus proofs taken over another proof's signature value?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Count of proofs bound to the subject",
+                      "Per-proof role code (peer, countersignature, archive timestamp, document timestamp)",
+                      "Reference from each countersignature to its target proof"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-multi-order",
+                    "text": "Is the multi-proof arrangement unordered or ordered, and which element carries the ordering?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Topology kind (set or chain)",
+                      "Ordering mechanism identifier (previousProof reference, nesting depth, attribute position)",
+                      "Sequence index per proof where an order exists"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-multi-capacity",
+                    "text": "Does the declared serialization variant physically permit the recorded number of proofs, or would expressing them force a structural change to the instance?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Maximum proofs expressible by the declared variant",
+                      "Structural change required if exceeded",
+                      "Blocking indicator when the change would alter the signing input"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-multi-coverage-evidence",
+                    "text": "What evidence records that a countersignature covers the target proof's cryptographic value and not merely the same payload?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Countersignature coverage descriptor (target signature value, target protected attributes, payload)",
+                      "Specification citation for the countersignature construction used",
+                      "Version marker distinguishing countersignature constructions with different coverage"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-proof-count",
+                    "name": "Bound proof count",
+                    "description": "Number of distinct proofs bound to the same covered subject in this instance.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-topology-kind",
+                    "name": "Multi-proof topology kind",
+                    "description": "Whether the proofs form an unordered set, an ordered chain, or a nested countersignature structure.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-countersign-target-ref",
+                    "name": "Countersignature target reference",
+                    "description": "Reference from a countersigning proof to the proof whose cryptographic value it covers.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-proof-order-index",
+                    "name": "Proof order index",
+                    "description": "Position of a proof within an ordered chain, present only when the topology is a chain.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Multi-proof topology is a relationship graph over proof records that already exist in the adopting Dimension. It is expressed as references and ordering indices, not as a separate document, and each proof's own bytes belong to its projection instance. Emitting a topology artifact would create a second, unsigned copy of a structure whose authority derives entirely from the signed instances themselves."
+              }
+            ]
+          },
+          {
+            "id": "sig-proj-payload-binding",
+            "name": "Payload Discovery and Signing-Input Declarations",
+            "description": "How a consumer locates the exact octets a proof covers, and which declared transformation, context and encoding facts are needed to reconstruct the signing input without executing it here.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-007",
+              "SRC-010",
+              "SRC-011",
+              "SRC-014",
+              "SRC-015"
+            ],
+            "findings": [
+              {
+                "id": "sig-proj-payload-discovery",
+                "name": "Detached payload discovery and reference descriptors",
+                "description": "Records the descriptors a consumer needs to find and confirm detached content: URI or locator, digest algorithm and value, transform chain, byte range, HTTP header set, and the concatenation order when several objects form one payload. XML Signature dereferences Reference URIs with same-document and fragment rules and allows at most one Reference to omit the URI; JAdES sigD identifies one or more detached objects that are processed and concatenated into the payload; COSE places a nil object and makes unchanged transport an application responsibility; CMS omits eContent entirely; and PAdES binds by a ByteRange over the host file. Resolution itself is performed by the referenced runtime.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-014",
+                  "SRC-015",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-payload-identity",
+                    "text": "Which identifier or locator designates each detached payload object, and does it come from a master system, a governed IRI scheme or a Dimension-assigned identifier?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Locator value with its scheme",
+                      "Identifier class (master-system, governed IRI, Dimension ULID)",
+                      "Identifier stability statement"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-payload-inputs",
+                    "text": "Which resolution inputs must a consumer be given to reconstruct the exact signed octets from the locator?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Ordered transform or processing chain identifiers",
+                      "Byte range or fragment expression",
+                      "HTTP header names and order where a header-based mechanism is used",
+                      "Concatenation order for multi-object payloads"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-payload-unresolvable",
+                    "text": "What is recorded when a detached reference cannot be dereferenced or resolves to octets whose digest does not match the declared value?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Resolution state code (resolved, unresolvable, digest-mismatch, ambiguous)",
+                      "Observation time of the resolution attempt",
+                      "Identifier of the external resolver that reported the outcome"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-payload-mediation",
+                    "text": "Is the payload bound through a declared digest or directly over transmitted octets, and what substitution risk does that choice carry?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Binding mediation code (digest-mediated, octet-direct)",
+                      "Digest algorithm identifier in its native identifier space",
+                      "Recorded risk note on payload substitution or transport mutation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-payload-locator",
+                    "name": "Payload locator",
+                    "description": "URI, fragment, byte range or other locator identifying a detached payload object.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-015",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-payload-digest-value",
+                    "name": "Payload digest value",
+                    "description": "Declared digest of the payload object as carried by the binding; integrity metadata only, never an identifier.",
+                    "value_kind": "binary",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-payload-digest-method",
+                    "name": "Payload digest method identifier",
+                    "description": "Digest algorithm identifier recorded verbatim in the identifier space of the source projection (OID, URI, string token or integer label).",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-payload-object-order",
+                    "name": "Payload object concatenation order",
+                    "description": "Ordered list establishing how multiple detached objects are combined into a single payload.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-resolution-failure-state",
+                    "name": "Reference resolution state",
+                    "description": "Externally reported state of the most recent attempt to resolve a detached reference, with its observation time.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are reference descriptors that point at octets held by the host or payload model. The model must not copy the payload, because a copy would be a second candidate for the signing input and could silently diverge from the signed octets. Keeping the descriptors inline, with resolution delegated to the external resolver, preserves a single authoritative source for the covered bytes."
+              },
+              {
+                "id": "sig-proj-signing-input",
+                "name": "Transformation, canonicalization and signing-input declarations",
+                "description": "Records the declared method by which covered data becomes the octets actually signed: the canonicalization or transformation algorithm and the structure it operates over, any context string or externally supplied authenticated data folded into the input, and payload-encoding flags. The projections diverge sharply — Canonical XML over an XPath node-set with an enveloped-signature transform, DER-encoded SignedAttrs in CMS, a CBOR Sig_structure whose first element is a context string plus external_aad, a base64url concatenation in JWS that changes shape when b64 is false, and RDF Dataset Canonicalization or JCS for Data Integrity with a mandatory error when a JSON-LD processor drops data. All computation is external.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-transform-method",
+                    "text": "Which transformation or canonicalization algorithm is declared, and over which node-set, octet range or dataset does it operate?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Transformation method identifier in its native identifier space",
+                      "Structure the method consumes (node-set, octet stream, RDF dataset, CBOR item)",
+                      "Ordered position of the method within a transform chain"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-signing-context",
+                    "text": "Which context string or externally supplied authenticated data is folded into the signing input without being transmitted inside the proof?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Context string value where the projection defines one",
+                      "Reference to the external authenticated data and its construction rule",
+                      "Statement of how sender and recipient agree on that construction"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-transform-determinism",
+                    "text": "Under which recorded conditions does the declared transformation become lossy or non-deterministic, and how is that condition captured rather than silently accepted?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Enumerated non-determinism conditions (dropped terms, comment handling, whitespace, encoding variance)",
+                      "Required error behaviour cited from the defining specification",
+                      "Condition state as reported by the external processor"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-transform-portability",
+                    "text": "Can the declared transformation chain be expressed in the target projection, and if not, what blocking reason is recorded?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Target-projection equivalent method identifier or an unmapped marker",
+                      "Blocking reason code",
+                      "Reference to the loss ledger entry raised by the mismatch"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-transform-method-id",
+                    "name": "Transformation method identifier",
+                    "description": "Identifier of a declared transformation or canonicalization step, recorded verbatim from its defining specification.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-011",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-signing-input-context",
+                    "name": "Signing-input context string",
+                    "description": "Projection-defined context value that participates in the signing input and distinguishes structure variants.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-external-aad-ref",
+                    "name": "External authenticated data reference",
+                    "description": "Reference to data that is authenticated by the proof but transmitted outside it, together with its agreed construction rule.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-encoding-flag",
+                    "name": "Payload encoding flag",
+                    "description": "Declared payload-encoding behaviour that alters signing-input construction, such as the JWS b64 parameter.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The signing input is an emergent byte string produced by an external processor; storing it here would create an unsigned duplicate that could be mistaken for the authoritative input. Only the declarations needed to reconstruct it are held, as inline coded values and references, so that reconstruction remains the runtime's responsibility."
+              }
+            ]
+          },
+          {
+            "id": "sig-proj-protected-parameters",
+            "name": "Parameter Protection, Criticality and Key Carriage",
+            "description": "Which declared parameters sit inside the integrity boundary, which must be understood by a consumer, and how the signer, key and accompanying evidence are referenced by the binding.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-005",
+              "SRC-007",
+              "SRC-010",
+              "SRC-011",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "sig-proj-parameter-protection",
+                "name": "Protected versus unprotected placement and critical-parameter declaration",
+                "description": "Records, per declared parameter, whether it is integrity protected, whether it is marked as must-understand, and whether it may be added or replaced after signing. The projections implement one pattern with different mechanics: JWS keeps protected and unprotected header members disjoint and requires crit to appear only in the protected header; COSE treats a crit label absent from the protected bucket as a fatal error and reserves core algorithm labels from omission rules; CMS separates DER-encoded signedAttrs from unsignedAttrs; XAdES splits signed from unsigned qualifying properties and XML Signature only protects SignatureProperties that a SignedInfo Reference actually covers; JAdES confines all unprotected content to a single etsiU array.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-013",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-param-placement",
+                    "text": "For each declared parameter, is it inside the integrity boundary or in an unprotected or unsigned container?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Parameter name in its native identifier space",
+                      "Protection class (protected, unprotected, signed-property, unsigned-property, unreferenced)",
+                      "Container identifier within the instance"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-param-must-understand",
+                    "text": "Which parameters must a consumer understand in order to process the proof, and are they listed in the projection's critical-parameter mechanism?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "List of must-understand parameter names",
+                      "Presence in the projection's criticality list",
+                      "Specification rule that mandates listing"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-param-unsupported",
+                    "text": "What must a consumer do on meeting a critical parameter it does not implement, and where is that outcome recorded?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Required consumer behaviour cited from the defining specification",
+                      "Outcome code recorded by the external processor",
+                      "Reference to the conformance report entry"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-param-post-signing",
+                    "text": "Which parameters may be added or replaced after signing without invalidating the proof, and which are immutable?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Post-signing mutability class per parameter",
+                      "Permitted augmentation categories (timestamps, validation data, certificate values)",
+                      "Immutability assertion for parameters inside the signing input"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-param-trust-use",
+                    "text": "Which parameters feed a trust decision and therefore must not be accepted from an unprotected container?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Parameters flagged as trust-relevant",
+                      "Protection status of each flagged parameter",
+                      "Risk note where a trust-relevant parameter is unprotected"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-parameter-name",
+                    "name": "Declared parameter name",
+                    "description": "Name or label of a parameter carried by the binding, recorded verbatim in its native identifier space.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-parameter-protection-class",
+                    "name": "Parameter protection class",
+                    "description": "Whether the parameter is integrity protected, unprotected, a signed property, an unsigned property or present but unreferenced.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-critical-flag",
+                    "name": "Critical parameter flag",
+                    "description": "Whether the parameter is declared as must-understand through the projection's criticality mechanism.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-post-signing-mutability",
+                    "name": "Post-signing mutability class",
+                    "description": "Whether the parameter may be added, replaced or must remain unchanged after the proof is produced.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-015"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Parameter placement and criticality are per-parameter assertions about an instance that already exists in a concrete encoding. The authoritative copy of each parameter is inside the signed structure; recording it here as inline coded values keeps this model descriptive. A separate artifact would be an unsigned restatement of protected content and would create a forgeable second source."
+              },
+              {
+                "id": "sig-proj-key-identity-carriage",
+                "name": "Signer and key identification mechanisms and carried evidence references",
+                "description": "Records how a binding points at the verification key or signing certificate and what supporting evidence it carries. The mechanisms are not interchangeable: JWS offers kid, jwk, jku, x5c, x5u and thumbprint headers; COSE defines x5bag, x5chain, x5t and x5u with the end-entity identification required to be integrity protected, and warns that kid values are not unique; CMS identifies the signer by issuerAndSerialNumber or subjectKeyIdentifier with certificates and CRLs in the SignedData; XML Signature uses KeyInfo, KeyValue and KeyInfoReference; Data Integrity uses a verificationMethod URL checked against a controller. Carried certificate, revocation and timestamp material is recorded as evidence references only.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-key-mechanism",
+                    "text": "By which mechanism does this binding identify the verification key or signing certificate, and is that mechanism resolvable without out-of-band data?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Key reference mechanism code",
+                      "Mechanism value as carried",
+                      "Self-contained or out-of-band resolution indicator"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-key-provenance",
+                    "text": "Where did the carried certificate, chain or key material originate, and is it held as a copy, a reference or a digest?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Carriage mode (embedded copy, URI reference, thumbprint)",
+                      "Source system or issuer reference for the carried material",
+                      "Ingestion time at which this model recorded the carriage fact"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-key-equivalence",
+                    "text": "Does the target projection offer an equivalent key-identification parameter, and what is lost if it does not?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Target-projection equivalent parameter or unmapped marker",
+                      "Description of the degraded identification (for example chain reduced to a thumbprint)",
+                      "Loss ledger entry reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-key-protection",
+                    "text": "Is the key-identification parameter integrity protected in this binding, and if not, what risk note is recorded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Protection status of the key-identification parameter",
+                      "Specification requirement about protecting it",
+                      "Recorded risk note and its owning role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-key-reference-mechanism",
+                    "name": "Key reference mechanism",
+                    "description": "Code for the mechanism a binding uses to point at the verification key or signing certificate.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-key-reference-value",
+                    "name": "Key reference value",
+                    "description": "The carried identifier value, recorded verbatim without normalisation, such as a kid, subject key identifier, thumbprint or verification method URL.",
+                    "value_kind": "identifier",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-carried-cert-evidence-ref",
+                    "name": "Carried certificate or revocation evidence reference",
+                    "description": "Reference to certificate, chain, revocation or timestamp material carried by the binding, held as a pointer into the PKI or time-stamp model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-key-param-protected-flag",
+                    "name": "Key parameter protected flag",
+                    "description": "Whether the key-identification parameter is inside the integrity boundary of this binding.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Only pointers and carriage facts belong here. Certificates, chains, revocation responses and timestamp tokens are authoritative artifacts of the PKI and time-stamp models; duplicating their bytes into this model would create a competing copy whose freshness and trust status this model has no mandate to determine. Inline references keep ownership where the relation contract places it."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-proj-projection-interop",
+        "name": "Proof Projections, Loss and Conformance Reporting",
+        "description": "The concern of expressing one logical proof in a concrete binding, of recording exactly what each expression loses, and of deciding whether movement between bindings is permitted, blocked, or permitted only under recorded loss acceptance.",
+        "rationale": "The examined bindings are alternative projections of overlapping but non-identical concepts, and none is canonical. RFC 9052 states that COSE_Sign and COSE_Sign1 cannot be converted because the structure identity is part of the signing input; RFC 7515 gives Compact Serialization no syntax for an unprotected header; RFC 7797 forbids b64=false in JWTs and forbids '.' in unencoded compact payloads; RFC 8118 uses one media type for every PDF version; and W3C VC-JOSE-COSE registers alternative securing mechanisms while saying nothing about converting between them. Losses and blocking conditions must therefore be recorded per source-target pair as first-class content.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-009",
+          "SRC-011",
+          "SRC-012",
+          "SRC-017"
+        ],
+        "layers": [
+          {
+            "id": "sig-proj-projection-matrix",
+            "name": "Projection Profiles, Templates and the Loss Ledger",
+            "description": "Per-projection encoding profiles with their template requirements, and the ledger of what each source-to-target projection pair loses.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-007",
+              "SRC-010",
+              "SRC-011",
+              "SRC-014",
+              "SRC-015",
+              "SRC-017",
+              "SRC-018",
+              "SRC-019",
+              "SRC-020"
+            ],
+            "findings": [
+              {
+                "id": "sig-proj-projection-profile",
+                "name": "Projection profile and encoding template requirements",
+                "description": "Declares, for each target binding, a versioned profile fixing the serialization variant, required and forbidden parameters, the identifier space used for methods, the media type and content-type parameter, and the governing specification edition. The profile is a declaration, not an encoder: the referenced runtime performs the encoding. The identifier space differs by projection — ASN.1 OIDs in CMS, algorithm URIs in XML Signature, registered string tokens from the IANA JOSE registries in JWS, integer labels from the COSE registry, and cryptosuite string tokens in Data Integrity — so no profile may be treated as a model-wide default.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-014",
+                  "SRC-015",
+                  "SRC-017",
+                  "SRC-018",
+                  "SRC-019",
+                  "SRC-020"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-profile-identity",
+                    "text": "Which identifier names this projection profile, and which registry or specification governs that identifier?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Profile identifier following the model identity priority",
+                      "Governing registry or specification with its edition",
+                      "Owner package that published the profile"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-profile-variant",
+                    "text": "Which serialization variant, structural tag or container placement does the profile fix?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Variant code (compact, flattened JSON, general JSON, single-signer tag, multi-signer tag, incremental-update revision, proof property)",
+                      "Container placement rule",
+                      "Constraint on the number of proofs the variant admits"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-profile-parameters",
+                    "text": "Which parameters does the profile require, which does it forbid, and which does it leave to the adopting Dimension?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Required parameter list with protection class",
+                      "Forbidden parameter list with reason",
+                      "Open parameter list delegated to the adopter"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-profile-identifier-space",
+                    "text": "In which identifier space does this profile express algorithms and methods, and how are their parameters carried?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Identifier space code (OID, URI, registered string token, integer label, cryptosuite token)",
+                      "Whether parameters are folded into the identifier or carried separately",
+                      "Registry snapshot reference for the identifier space"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-profile-media-type",
+                    "text": "Which media type and content-type parameter must accompany an instance produced under this profile?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Registered media type string",
+                      "Content-type or type parameter value carried inside the proof",
+                      "Statement of whether the media type distinguishes the serialization variant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-profile-id",
+                    "name": "Projection profile identifier",
+                    "description": "Stable identifier of a versioned projection profile, assigned under the model identity priority and never derived from a date.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-serialization-variant",
+                    "name": "Serialization variant code",
+                    "description": "The concrete structural variant the profile fixes within its binding family.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-method-identifier-space",
+                    "name": "Method identifier space",
+                    "description": "The identifier space in which the profile expresses algorithm and method identifiers.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007",
+                      "SRC-010",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-profile-media-type",
+                    "name": "Profile media type",
+                    "description": "Registered media type, and any internal content-type parameter, associated with instances of this profile.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-profile-spec-citation",
+                    "name": "Governing specification citation",
+                    "description": "Specification identifier, edition or version, and clause reference where retrievable, plus a verification status flag for paywalled or non-retrievable clauses.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-018",
+                      "SRC-019",
+                      "SRC-020"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-proj-cms-cades-template",
+                    "name": "CMS/CAdES encoding template",
+                    "description": "Template declaring the SignedData shape for a profile: encapsulated or omitted eContent, mandatory content-type and message-digest signed attributes, DER-encoded SignedAttrs, signer identification form, certificate and CRL carriage, unsigned attributes for countersignatures and timestamps, and the baseline level targeted. Clause-level CAdES attribute tables are marked unverified where the ETSI text was not machine-retrievable.",
+                    "media_or_form": [
+                      "ASN.1 SignedData structure (DER or BER encoding)",
+                      "application/pkcs7-signature or application/pkcs7-mime instance",
+                      "Attribute profile table with baseline level"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the profile in the issuing signing service where one exists; otherwise the governed IRI minted by the owner package under its controlled namespace; otherwise a Dimension-assigned ULID. Never a date, version label or digest.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-018"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-xmldsig-xades-template",
+                    "name": "XMLDSig/XAdES encoding template",
+                    "description": "Template declaring the ds:Signature shape: CanonicalizationMethod and SignatureMethod URIs, Reference set with transform chains and URI usage, enveloped-signature transform where applicable, ds:Object and Manifest placement, KeyInfo form, and QualifyingProperties attachment with the typed SignedProperties reference and the signed/unsigned property split.",
+                    "media_or_form": [
+                      "XML ds:Signature element",
+                      "XAdES QualifyingProperties within ds:Object",
+                      "Transform and canonicalization URI list"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier where the signing service holds one; otherwise a governed IRI in the owner's namespace reusing W3C and ETSI identifiers verbatim for standard components; otherwise a Dimension-assigned ULID. Never a date.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-013",
+                      "SRC-019"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-jws-jades-template",
+                    "name": "JWS/JAdES encoding template",
+                    "description": "Template declaring the JWS shape: serialization variant, protected and unprotected header membership with the disjointness rule, crit list, b64 usage and its restrictions, key-identification headers, detached payload handling, and for JAdES the sigD detached-object mechanism and the single etsiU unprotected array.",
+                    "media_or_form": [
+                      "JWS Compact Serialization string",
+                      "JWS General or Flattened JSON Serialization object",
+                      "application/jose or application/jose+json instance",
+                      "Header parameter profile table"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system profile identifier where available; otherwise a governed IRI, with header parameter names taken verbatim from the IANA JOSE registry snapshot; otherwise a Dimension-assigned ULID. Never a date.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-015",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-cose-template",
+                    "name": "COSE encoding template",
+                    "description": "Template declaring the COSE shape: single-signer or multi-signer structure with its CBOR tag, protected and unprotected bucket membership, integer algorithm labels, crit label constraints, detached payload as a nil object, external authenticated data construction, X.509 carriage parameters and countersignature form with its coverage semantics.",
+                    "media_or_form": [
+                      "COSE_Sign or COSE_Sign1 CBOR structure",
+                      "Tagged CBOR item (tag 98 or tag 18)",
+                      "application/cose instance",
+                      "Header label profile table"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system profile identifier where available; otherwise a governed IRI, with header labels and algorithm values taken verbatim from the IANA COSE registry snapshot; otherwise a Dimension-assigned ULID. Never a date.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-pades-template",
+                    "name": "PDF/PAdES encoding template",
+                    "description": "Template declaring the PDF signature shape: signature dictionary with its Filter and SubFilter pair, the ByteRange covering the file except the signature octets, placement in an incremental update revision, document timestamp revisions, and Document Security Store carriage of validation material for the targeted baseline level. ISO clause content is paywalled and ETSI clause text was not machine-retrievable, so structural requirements are recorded as an unverified alignment target.",
+                    "media_or_form": [
+                      "PDF signature dictionary within an incremental update",
+                      "Detached CMS object referenced by SubFilter",
+                      "application/pdf host instance",
+                      "Document Security Store entry set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier from the signing or archiving service where one exists; otherwise a governed IRI naming the PAdES baseline level and profile; otherwise a Dimension-assigned ULID. Never a date and never the PDF revision number.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-014",
+                      "SRC-020",
+                      "SRC-021"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-data-integrity-template",
+                    "name": "W3C Data Integrity encoding template",
+                    "description": "Template declaring the proof property shape: proof type and cryptosuite token, verification method reference, proof purpose, optional created, expires, domain, challenge and nonce, proofValue encoding, proof-set versus proof-chain arrangement with previousProof linkage, and the required transformation with its mandatory error on dropped data.",
+                    "media_or_form": [
+                      "JSON or JSON-LD secured document with a proof property",
+                      "DataIntegrityProof object or array",
+                      "Cryptosuite and context reference list"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the issuing service where available; otherwise the governed IRI of the cryptosuite and profile, with the cryptosuite token treated as an opaque governed string even when it embeds a year; otherwise a Dimension-assigned ULID. Never a date as identifier.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-proj-loss-ledger",
+                "name": "Projection loss ledger and loss reporting",
+                "description": "Records, per source-to-target projection pair, which of the enumerated loss classes are triggered and with what severity. The enumerated classes are: proof purpose or commitment, signer and key identity, signed properties, canonicalization and transformation, detached references, countersignatures, timestamps, certificate and revocation evidence, multi-signature topology, and long-term validation material. Losses are structural facts about the pair, not judgements about a particular instance, and their acceptance is an owner decision recorded against the ledger entry.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-013",
+                  "SRC-014",
+                  "SRC-021"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-loss-classes",
+                    "text": "Which enumerated loss classes does this source-to-target pair trigger, and at what severity is each recorded?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Triggered loss class codes",
+                      "Severity per class (none, degraded, dropped, inexpressible)",
+                      "Aggregate blocking indicator derived from severities"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-loss-element",
+                    "text": "Which concrete parameter, property or structure is dropped, downgraded or re-encoded for each triggered class?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Source element name in its native identifier space",
+                      "Target element name or an explicit absence marker",
+                      "Description of the downgrade where the target expresses a weaker form"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-loss-cause",
+                    "text": "Is a given loss caused by the target projection's own structure or only by the options selected in the chosen profile?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Cause class (structural or profile-option)",
+                      "Reference to the profile option that could remove a profile-caused loss",
+                      "Specification citation supporting the structural cause"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-loss-assessment-time",
+                    "text": "When was this loss assessment made, against which profile and specification versions, and when was it last re-checked?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Assessment event time in RFC 3339 with seconds and offset",
+                      "Ingestion time at which the assessment was recorded",
+                      "Source and target profile versions in force at assessment",
+                      "Most recent re-check time"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-loss-acceptance",
+                    "text": "Who owns the decision to accept a recorded loss, and where is that acceptance captured?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Accepting role or principal identifier",
+                      "Acceptance scope (this pair, this profile version, this instance class)",
+                      "Reference to the acceptance record and its expiry"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-loss-class-code",
+                    "name": "Loss class code",
+                    "description": "Code from the closed enumeration of projection loss classes covering purpose, identity, signed properties, canonicalization, detached references, countersignatures, timestamps, certificate and revocation evidence, multi-signature topology and long-term validation material.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-004",
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-loss-severity",
+                    "name": "Loss severity",
+                    "description": "Graded severity of a triggered loss class for the pair under assessment.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-lost-element-ref",
+                    "name": "Lost or downgraded element reference",
+                    "description": "Reference to the specific source element affected and to its target counterpart or absence marker.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-loss-assessment-event-time",
+                    "name": "Loss assessment event time",
+                    "description": "Time at which the assessment was performed, recorded separately from the time it was ingested into this model.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-loss-acceptance-owner",
+                    "name": "Loss acceptance owner",
+                    "description": "Role or principal that accepted a recorded loss, with the scope and expiry of that acceptance.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-proj-loss-report",
+                    "name": "Projection loss report",
+                    "description": "Issued report for one source-to-target projection pair listing every triggered loss class with severity, the affected elements, the structural or profile-option cause, the profile and specification versions assessed, the assessment and ingestion times, and any recorded acceptance. Reports are append-only and superseded by reference; they describe expressive capability and do not assert that any instance was validated.",
+                    "media_or_form": [
+                      "Structured loss record set keyed by source-target pair",
+                      "Human-readable loss summary rendering",
+                      "Machine-readable loss class enumeration with severities"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system report identifier from the issuing system where one exists; otherwise a governed IRI under the owner namespace combining the source and target profile identifiers with a monotonic sequence value; otherwise a Dimension-assigned ULID. Sequence values are integers or ULIDs and never dates.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-011",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-proj-conformance-fallback",
+            "name": "Conversion Safety, Conflicts and Version Distinction",
+            "description": "Whether movement between bindings is permitted at all, how ambiguity and conflicting embedded evidence are handled, and how the three independent version axes are kept apart.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-009",
+              "SRC-011",
+              "SRC-012",
+              "SRC-014"
+            ],
+            "findings": [
+              {
+                "id": "sig-proj-conversion-safety",
+                "name": "Round-trip impossibility, unsafe fallback, media-type ambiguity and evidence conflicts",
+                "description": "Records the verdict for a proposed movement between bindings and the conditions that block it. Grounded blocking conditions include: COSE single-signer and multi-signer structures cannot be converted because the structure identity is part of the signing input; JWS Compact Serialization has no syntax for an unprotected header and admits only one signature; an unencoded JWS payload may not contain '.' in compact form and may not appear in a JWT at all; a PDF instance carries the same media type for every version so the binding cannot be inferred from the type alone. It also records conflicts when embedded evidence duplicates or contradicts itself, and the fallback paths that are forbidden because they would silently weaken the proof.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-conversion-verdict",
+                    "text": "Is movement from the source binding to the target binding permitted, blocked, or permitted only under a recorded loss acceptance?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Verdict code (permitted, conditional, blocked)",
+                      "Referenced loss report identifier",
+                      "Condition text and the role that may satisfy it"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-roundtrip-block",
+                    "text": "Which specific structural or cryptographic facts make a byte-identical round trip impossible for this pair?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Blocking condition codes",
+                      "Specification citation for each condition",
+                      "Statement of whether re-signing rather than re-encoding would be required"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-forbidden-fallback",
+                    "text": "Which fallback paths are explicitly forbidden because they would silently weaken or reinterpret the proof?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Forbidden fallback path descriptors",
+                      "Weakening mechanism described (dropped criticality, unprotected trust parameter, downgraded topology)",
+                      "Enforcement expectation delegated to the referenced runtime"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-media-ambiguity",
+                    "text": "How is the concrete binding of an instance determined when its media type does not identify the serialization variant or profile?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Disambiguation inputs (magic bytes, structural tag, internal type parameter, out-of-band profile reference)",
+                      "Ambiguity flag with residual risk note",
+                      "Required explicit profile declaration for the exchange"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-evidence-conflict",
+                    "text": "When embedded evidence duplicates or contradicts itself, which item governs and how is the conflict captured?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Conflict type (duplicate timestamp, differing certificate copy, contradictory revocation data, repeated parameter)",
+                      "Governing item selection rule declared by the profile",
+                      "Conflict record with the identifier of the external component that reported it"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-conversion-verdict",
+                    "name": "Conversion verdict",
+                    "description": "Recorded verdict for a proposed movement between two bindings.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-blocking-condition-code",
+                    "name": "Blocking condition code",
+                    "description": "Coded reason why a byte-identical or semantically faithful conversion is impossible for the pair.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-media-type-ambiguity-flag",
+                    "name": "Media type ambiguity flag",
+                    "description": "Whether the instance's media type is insufficient to determine its serialization variant or profile.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-evidence-conflict-record",
+                    "name": "Embedded evidence conflict record",
+                    "description": "Record of duplicated or contradictory evidence found in an instance, with the governing-item rule applied and the reporting component.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-forbidden-fallback-path",
+                    "name": "Forbidden fallback path",
+                    "description": "Descriptor of a conversion or degradation path that must never be taken automatically.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-proj-conformance-report",
+                    "name": "Binding conformance report",
+                    "description": "Issued report aggregating externally produced encoder, parser and validator results for a profile or an instance class, together with the conversion verdict, blocking conditions, ambiguity flags and evidence conflicts. It records results by reference with their producing component and its own provenance; it neither executes nor re-runs validation, and it asserts alignment findings rather than a claim of conformance.",
+                    "media_or_form": [
+                      "Structured conformance record set with external result references",
+                      "Human-readable conformance summary rendering",
+                      "Verdict and blocking-condition enumeration"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system report identifier from the issuing conformance system where one exists; otherwise a governed IRI under the owner namespace bound to the profile identifier plus a monotonic sequence; otherwise a Dimension-assigned ULID. Never a date and never a digest.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-001",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-proj-version-distinction",
+                "name": "Binding profile version, logical proof version and host artifact version",
+                "description": "Keeps three independent version axes apart. The binding profile version tracks the projection profile and the specification edition it was authored against, such as an ETSI deliverable version or a W3C cryptosuite token that may embed a year but is treated as an opaque governed string. The logical proof version tracks the model-level description of the proof itself. The host artifact version tracks the containing document, which for PDF is signalled only by the file header because the media type is identical for every version. Confusing the axes produces false compatibility claims.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-014",
+                  "SRC-015",
+                  "SRC-017",
+                  "SRC-019",
+                  "SRC-020"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-proj-q-version-axes",
+                    "text": "Which three version values apply to this record, and where is each of them recorded?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Binding profile version value and location",
+                      "Logical proof version value and location",
+                      "Host artifact version value and location"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-version-effect",
+                    "text": "What changes when only the binding profile version advances while the logical proof content is unchanged?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Affected fields and templates",
+                      "Whether existing instances remain readable under the new profile version",
+                      "Recorded compatibility verdict for the version step"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-version-resign",
+                    "text": "Which version changes require producing a new proof rather than re-encoding the existing one?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Change classes that alter the signing input",
+                      "Change classes confined to unprotected containers",
+                      "Referenced runtime obligation for producing the new proof"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-q-version-provenance",
+                    "text": "Which specification edition and which registry snapshot were in force when this binding was produced?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Specification identifier and edition or version",
+                      "Registry snapshot reference with its own retrieval time",
+                      "Verification status where the clause text is paywalled or was not retrievable"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-proj-profile-version",
+                    "name": "Binding profile version",
+                    "description": "Version of the projection profile and template set in force for this record.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-015",
+                      "SRC-019"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-logical-proof-version",
+                    "name": "Logical proof version",
+                    "description": "Version of the model-level proof description, independent of any binding or host.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-host-artifact-version",
+                    "name": "Host artifact version",
+                    "description": "Version of the containing artifact as declared by the host model, recorded here only as a reference value.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-020"
+                    ]
+                  },
+                  {
+                    "id": "sig-proj-registry-snapshot-ref",
+                    "name": "Registry snapshot reference",
+                    "description": "Reference to the registry state used for parameter and algorithm identifiers, with the time that state was observed.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The three version values are coordinates on records owned elsewhere: the profile version belongs to the projection template artifact, the host version belongs to the host artifact model, and the logical version belongs to the proof record. Holding them inline as reference values keeps a single authoritative source for each while still making the distinction explicit and queryable."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-proj-select-binding-form",
+      "name": "Select and record binding form",
+      "description": "Chooses the binding form for a proof given payload location, host mutability and consumer constraints, and records the selection with the forms the target projection cannot express.",
+      "inputs": [
+        "Payload location and mutability constraints",
+        "Host artifact type and its addressing scheme",
+        "Required multi-proof topology",
+        "Candidate target projection codes"
+      ],
+      "outputs": [
+        "Binding form selection record with rationale",
+        "List of forms marked unavailable for each candidate projection"
+      ],
+      "preconditions": [
+        "At least one candidate projection profile is declared",
+        "The covered payload or payload reference is identified"
+      ],
+      "effects": [
+        "Records the selected binding form and level of assertion",
+        "Marks unsupported forms as blocked with a specification citation",
+        "Never encodes or produces a signature"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-010",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "sig-proj-declare-projection-profile",
+      "name": "Declare projection profile and template",
+      "description": "Registers a versioned profile for one target binding together with its encoding template, required and forbidden parameters, identifier space, media type and governing specification citation.",
+      "inputs": [
+        "Target projection code and serialization variant",
+        "Parameter requirements and prohibitions",
+        "Governing specification identifier with edition",
+        "Registry snapshot reference"
+      ],
+      "outputs": [
+        "Projection profile record",
+        "Encoding template artifact reference",
+        "Verification status flags for non-retrievable clauses"
+      ],
+      "preconditions": [
+        "An owner package is assigned",
+        "At least one primary specification citation is available"
+      ],
+      "effects": [
+        "Creates a new profile version without altering earlier versions",
+        "Marks paywalled or unretrievable clause requirements as unverified",
+        "Does not make the profile a default for any other projection"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-010",
+        "SRC-011",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "sig-proj-describe-payload-reference",
+      "name": "Describe detached payload reference",
+      "description": "Produces the descriptor a consumer needs to locate detached content: locator, digest algorithm and value, transform chain, byte range or header set, and concatenation order. Performs no dereferencing.",
+      "inputs": [
+        "Payload locator or byte range",
+        "Declared digest method and value where carried",
+        "Transform or processing chain identifiers",
+        "Multi-object ordering where applicable"
+      ],
+      "outputs": [
+        "Detached payload reference descriptor",
+        "Resolution-input checklist for the referenced runtime"
+      ],
+      "preconditions": [
+        "The binding form is detached or the host uses a byte-range binding",
+        "The locator scheme is known to the profile"
+      ],
+      "effects": [
+        "Records locator, digest and processing declarations",
+        "Leaves dereferencing, digest computation and comparison to the referenced resolver",
+        "Records an unresolvable or mismatch state only as reported by that resolver"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-014",
+        "SRC-015",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "sig-proj-compare-projections",
+      "name": "Compare projections and build loss ledger entries",
+      "description": "Compares a source profile with a target profile across the enumerated loss classes and produces ledger entries with severity, affected elements and cause classification.",
+      "inputs": [
+        "Source projection profile record",
+        "Target projection profile record",
+        "Loss class enumeration"
+      ],
+      "outputs": [
+        "Loss ledger entries with severity and cause",
+        "Draft projection loss report"
+      ],
+      "preconditions": [
+        "Both profiles are declared and versioned",
+        "Both registry snapshots are recorded"
+      ],
+      "effects": [
+        "Creates append-only ledger entries scoped to the pair",
+        "Records assessment event time separately from ingestion time",
+        "Never removes an earlier entry, only supersedes it by reference"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-004",
+        "SRC-007",
+        "SRC-011",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "sig-proj-map-method-identifier",
+      "name": "Map method identifier across identifier spaces",
+      "description": "Maps an algorithm, digest or canonicalization identifier from the source identifier space to the target space, marking unmapped identifiers and parameters that cannot be carried.",
+      "inputs": [
+        "Source identifier value and its space",
+        "Target identifier space and registry snapshot",
+        "Associated parameter set where carried separately"
+      ],
+      "outputs": [
+        "Target identifier value or an explicit unmapped marker",
+        "Parameter carriage note describing folded or dropped parameters"
+      ],
+      "preconditions": [
+        "Both identifier spaces are declared by their profiles",
+        "The registry snapshots used are recorded"
+      ],
+      "effects": [
+        "Records the mapping and its direction",
+        "Raises a loss ledger entry when the mapping is partial or absent",
+        "Never substitutes a near-equivalent algorithm silently"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-007",
+        "SRC-010",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "sig-proj-record-conversion-block",
+      "name": "Record conversion blocking condition",
+      "description": "Registers a condition that makes a conversion impossible or unsafe, with its specification citation and whether re-signing rather than re-encoding would be required.",
+      "inputs": [
+        "Source and target profile identifiers",
+        "Observed structural or cryptographic obstacle",
+        "Specification citation"
+      ],
+      "outputs": [
+        "Blocking condition record",
+        "Updated conversion verdict for the pair"
+      ],
+      "preconditions": [
+        "A loss comparison exists for the pair",
+        "The obstacle is traceable to a cited specification statement or a recorded profile constraint"
+      ],
+      "effects": [
+        "Sets or downgrades the pair verdict to conditional or blocked",
+        "Records the forbidden fallback paths associated with the condition",
+        "Does not itself prevent any runtime action; enforcement belongs to the referenced runtime"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "sig-proj-assemble-conformance-report",
+      "name": "Assemble binding conformance report",
+      "description": "Aggregates externally produced encoder, parser and validator results with the profile record, verdicts, ambiguity flags and evidence conflicts into a serial report.",
+      "inputs": [
+        "External component results with their producing component identifiers",
+        "Projection profile record and version",
+        "Conversion verdicts and blocking conditions"
+      ],
+      "outputs": [
+        "Binding conformance report artifact",
+        "Supersession reference where an earlier report is replaced"
+      ],
+      "preconditions": [
+        "Every external result carries its own provenance and observation time",
+        "The profile version under test is identified"
+      ],
+      "effects": [
+        "Records results by reference without re-running or re-interpreting them",
+        "States alignment findings and explicitly avoids asserting conformance",
+        "Appends rather than overwrites, citing any superseded report"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "sig-proj-register-version-binding",
+      "name": "Register version binding across the three axes",
+      "description": "Binds a record to its binding profile version, logical proof version and host artifact version, together with the specification edition and registry snapshot in force.",
+      "inputs": [
+        "Binding profile version",
+        "Logical proof version",
+        "Host artifact version reference",
+        "Specification edition and registry snapshot references"
+      ],
+      "outputs": [
+        "Version binding record",
+        "Compatibility verdict for the version step"
+      ],
+      "preconditions": [
+        "The profile version exists",
+        "The host artifact version is obtainable from the host model as a reference value"
+      ],
+      "effects": [
+        "Keeps the three version axes distinct and separately queryable",
+        "Flags any version step that would alter the signing input as requiring a new proof",
+        "Records paywalled or unretrievable clause status against the edition citation"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-011",
+        "SRC-014",
+        "SRC-020"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-034 is registered beneath WM-XCT-006, which owns the broader containing concern into which a proof is bound. This model contributes only proof binding, projection and interoperability semantics and never restates the parent's record identity, lifecycle or operational functions.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Host artifact or signable record model of the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "As a mixin, WM-XCT-034 attaches proof structure to a host record. The host keeps its own identity, versioning and revision history; this model contributes only the attachment point, the covered region and the binding declarations.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "IETF RFC 7515 JSON Web Signature with RFC 7797 unencoded payload option",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the JWS projection: serialization variants, protected and unprotected header semantics, criticality, key-identification headers, detached content and the b64 restrictions. Alignment only; no conformance is claimed and the specification is not reproduced.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "IETF RFC 9052 COSE with RFC 9338 countersignatures and RFC 9360 X.509 header parameters",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the COSE projection: structure choice and tags, header buckets, Sig_structure context, detached nil payload, external authenticated data, countersignature coverage and certificate carriage parameters.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "IETF RFC 5652 Cryptographic Message Syntax with ETSI EN 319 122-1 CAdES",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the CMS and CAdES projection: external signatures, signer identification, signed and unsigned attributes, certificate and CRL carriage and baseline levels. ETSI clause-level requirements are recorded as unverified where the text was not machine-retrievable.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-018"
+      ]
+    },
+    {
+      "target": "W3C XML Signature Syntax and Processing 1.1 with ETSI EN 319 132-1 XAdES",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the XML projection: the three classical forms, Reference and transform processing, canonicalization, Object and Manifest placement, and signed and unsigned qualifying properties.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-013",
+        "SRC-019"
+      ]
+    },
+    {
+      "target": "ETSI EN 319 142-1 PAdES over ISO 32000-2 PDF 2.0",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the PDF projection: signature dictionary and SubFilter pair, byte-range coverage, incremental-update placement, document timestamps and Document Security Store carriage. ISO clause content is paywalled and is treated as an unverified alignment target.",
+      "required": false,
+      "source_refs": [
+        "SRC-014",
+        "SRC-020",
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credential Data Integrity 1.0 with Securing Verifiable Credentials using JOSE and COSE",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for embedded proof properties and enveloping proofs: DataIntegrityProof structure, proof purpose, proof sets and chains, transformation requirements, and the registered credential media types.",
+      "required": false,
+      "source_refs": [
+        "SRC-011",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "External signature encoder, parser and validator runtime",
+      "relation": "REFERENCE",
+      "purpose": "This model carries the runtime reference, the profile binding and subject-specific parameters. Encoding, parsing, canonicalization, digest and signature computation, verification, enforcement of blocking conditions and any audit record the runtime emits are owned entirely by that runtime.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "X.509 certificate, trust-status and revocation-evidence model",
+      "relation": "REFERENCE",
+      "purpose": "Carries key-identification mechanisms and pointers to certificates, chains, thumbprints and revocation items. Path building, trust anchor selection, revocation determination and certificate lifecycle stay with the referenced model.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Time-stamp token model per IETF RFC 3161",
+      "relation": "REFERENCE",
+      "purpose": "Records the attachment point of a timestamp and what its message imprint covers. Token issuance, TSA policy, accuracy interpretation and the token's own validation belong to the referenced model.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "IANA JOSE and COSE parameter and algorithm registries",
+      "relation": "REFERENCE",
+      "purpose": "Supplies the governed identifier space for header parameter names, labels and algorithm values. This model pins a registry snapshot and reuses identifiers verbatim; registration procedures and expert review remain with IANA and the defining specifications.",
+      "required": true,
+      "source_refs": [
+        "SRC-017",
+        "SRC-006"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension names one owner package for WM-XCT-034 records and for every projection profile it publishes; two owners must never publish profiles under the same identifier.",
+        "The owner package declares explicitly which projections it supports and which it refuses; an undeclared projection is treated as unsupported and is never silently defaulted to a supported one.",
+        "Each profile is bound by the owner package to the exact specification edition and registry snapshot it was authored against, with a verification status flag for clauses that are paywalled or otherwise not machine-retrievable.",
+        "External execution components — encoders, parsers, canonicalizers, validators, time-stamp authorities and PKI services — are registered as referenced services with their own owners; the owner package must not claim them or their outputs as its own assertions."
+      ],
+      "namespace_guidance": "Mint profile, template and report identifiers as governed IRIs under a namespace the owner controls. Reuse the defining body's identifiers verbatim for standard components — JOSE header parameter names, COSE integer labels, XML Signature algorithm URIs, ASN.1 object identifiers, PAdES SubFilter names, W3C cryptosuite tokens and registered media types — and never mint a local alias for them. Local model identifiers use the sig-proj- prefix, remain lower-kebab-case, and carry no date, digest or version component.",
+      "registry_links": [
+        "IANA JOSE registries for JWS header parameters and algorithms, pinned by snapshot reference and retrieval time.",
+        "IANA COSE registries for header labels and algorithm values, pinned in the same way and required for any COSE profile.",
+        "IANA media types registry for the media types a profile declares, including application/jose, application/jose+json, application/cose, application/pdf, application/pkcs7-signature and the verifiable credential types.",
+        "ETSI deliverable index for CAdES, XAdES, PAdES and JAdES version numbering, with an explicit note where the clause text could not be retrieved automatically.",
+        "W3C cryptosuite and controlled-identifier references for Data Integrity profiles, with the required context digests recorded alongside."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Record every transformation, canonicalization, digest and signature method identifier verbatim in its source identifier space; never fold OIDs, URIs, string tokens and integer labels into a single local vocabulary.",
+        "Do not canonicalize or recompute signed octets inside this model. The signing input is an opaque declaration; any construction or reconstruction is performed by the referenced external runtime.",
+        "Where a projection defines its own canonical encoding — deterministic CBOR for the COSE signing structure, DER for CMS signed attributes, Canonical XML for SignedInfo, RDF Dataset Canonicalization or JCS for Data Integrity — record which one applies as a property of that profile and never promote it to a model-wide default.",
+        "Normalise time values to RFC 3339 for query purposes while retaining the projection-native time value verbatim, and flag any precision or offset information lost in the normalisation."
+      ],
+      "patch_rules": [
+        "Profile, template and loss-ledger records are patched additively. A triggered loss class is never removed silently; it is superseded by a new assessment that cites the superseded entry and its assessment time.",
+        "A change to any parameter that participates in a signing input is not a patch: it requires a new proof instance record, a new binding record and a new version binding, and the referenced runtime must produce the new proof.",
+        "Unprotected and unsigned containers may gain augmentation material such as timestamps, certificate values and revocation data by patch; protected containers are immutable in this model.",
+        "Loss and conformance reports are append-only. Corrections are issued as new serial reports that reference the superseded report identifier."
+      ],
+      "compatibility_rules": [
+        "A new profile version is backward compatible only if every instance valid under the previous version remains parseable under the new one and every previously recorded loss class is unchanged or reduced in severity.",
+        "Adding a parameter to a projection's critical-parameter list is a breaking change and forces a new profile version, because consumers that do not implement it must reject the instance.",
+        "Compatibility is always asserted per source-target pair and per version step; no projection may be promoted to a model-wide default or used as an implicit fallback.",
+        "A change of serialization variant that alters the signing input — including a change between single-signer and multi-signer structures whose identity is part of that input — is never a compatible version step."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record that holds the proof, profile or report — for example the signing service's own signature record key or the conformance system's report key.",
+        "Governed global identifier or IRI published by the body or registry that defines the projection: IANA-registered parameter names and media types, ASN.1 object identifiers, XML Signature algorithm URIs, PAdES SubFilter names, W3C cryptosuite identifiers and ETSI deliverable references.",
+        "UUID or ULID assigned by the adopting Dimension when neither a master-system identifier nor a governed identifier exists.",
+        "A date, version label, file name or digest is never used as an identifier. A digest is recorded only as integrity metadata, and a cryptosuite token that embeds a year is treated as an opaque governed string, not as a date."
+      ],
+      "timestamp_rule": "All time values are recorded in RFC 3339 format with explicit seconds and an explicit numeric UTC offset or the literal Z; a local time without an offset is rejected. Event time and observation or ingestion time are recorded in separate fields and are never merged: the event time is the claimed signing time, the time-stamp token generation time, the profile publication time or the loss assessment time, while the observation or ingestion time is when this model recorded or last re-checked the fact. Where a projection carries its own time syntax — ASN.1 GeneralizedTime, XML Schema dateTimeStamp or a CBOR epoch value — the native value is retained verbatim beside the normalised value, and any lost sub-second precision or offset information is flagged.",
+      "serial_naming_rule": "Loss reports and conformance reports are serial artifacts named as owner-namespace, then source and target profile identifiers, then a monotonic sequence value assigned by the issuing system as an integer or ULID. The issue date is never encoded in the name, a sequence value is never reused after supersession, and the sequence is scoped to the pair or profile it belongs to rather than being globally shared.",
+      "integrity_rule": "Every artifact records the digest algorithm identifier and digest value of the exact octets it describes, together with the identifier of the external component that produced those octets and the observation time of the digest. The digest is integrity metadata only and never an identifier; this model does not compute, recompute or compare digests, and any mismatch is recorded solely as reported by the referenced runtime."
+    },
+    "policies": [
+      "No projection is canonical. A record that does not name its projection profile explicitly is incomplete and must never be defaulted to JWS, CMS, PAdES or any other binding.",
+      "Silent fallback between bindings is prohibited. Any conversion that cannot preserve protected parameters, critical-parameter semantics, multi-proof topology, detached reference resolution or algorithm identity is blocked and recorded rather than degraded.",
+      "Paywalled or non-machine-retrievable clause-level requirements are marked as unverified in the record and are never paraphrased as though they had been verified.",
+      "Certificate, revocation, timestamp and validation results are held by reference. Material copied into a binding is recorded as carried evidence with its source and carriage mode, never as this model's own assertion of validity.",
+      "Alignment with an external standard is recorded as alignment; conformance is never claimed without an external conformance result recorded with its producing component and provenance."
+    ],
+    "crud": {
+      "read": [
+        "A read of a profile, template, loss ledger or report returns the profile version, the specification edition and the registry snapshot in force at the time of the record; a read without that context is invalid.",
+        "Reads never dereference detached payload locators, fetch certificates or resolve verification methods; all resolution is a referenced-runtime operation.",
+        "Reads of loss and conformance reports return the full supersession chain so that a superseded finding cannot be mistaken for the current one."
+      ],
+      "create": [
+        "A binding record is created only with a declared projection profile, a declared binding form and an identified payload or payload reference descriptor.",
+        "A projection profile is created only with at least one primary specification citation carrying an edition or version, a registry snapshot reference and an encoding template artifact for the target binding.",
+        "Loss ledger entries are created per source-target pair and per profile version, never globally, and always with a separate assessment event time and ingestion time."
+      ],
+      "update": [
+        "Profile and template changes create a new profile version; earlier versions remain readable and continue to be referenced by existing binding records.",
+        "Loss and conformance reports are append-only; corrections are new serial artifacts that cite the superseded artifact identifier and reason.",
+        "Parameters that were integrity protected in an instance are immutable in this model; only descriptive metadata, verification status flags and externally reported states may be updated."
+      ],
+      "delete": [
+        "This model's own records — binding records, projection profiles, encoding templates, loss ledger entries and loss and conformance reports — are never hard-deleted while any referencing record exists. Withdrawal is expressed as a tombstone that retains the identifier, the supersession or withdrawal reason, the withdrawing role and both the event and ingestion times.",
+        "Retention periods, legal holds and disposition schedules for these records are set by the adopting Dimension's records-management policy. Where a proof underpins a long-term validation claim, retention of the profile, template and loss ledger entries must be at least as long as retention of the host artifact.",
+        "Deletion or redaction of the signed payload, the host artifact, carried certificates, revocation data or time-stamp tokens is outside this model's boundary: execution is owned by the host artifact model and by the referenced PKI, time-stamp and records-management policies of the adopting Dimension. This model only records that a referenced object has become unresolvable, as reported by the external resolver.",
+        "Because removing octets covered by a signing input destroys the proof, this model never performs, authorises or schedules such a deletion; it records the resulting unresolvable-reference state and raises the corresponding blocking condition for any conversion that depended on it."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Proof binding steward",
+        "responsibilities": [
+          "Maintain binding records: form classification, attachment point, payload reference descriptors and signing-input declarations.",
+          "Keep detached reference descriptors accurate and record externally reported resolution states with their observation times.",
+          "Escalate any instance whose parameters conflict with its declared profile."
+        ]
+      },
+      {
+        "name": "Projection profile owner",
+        "responsibilities": [
+          "Author and version projection profiles and their encoding templates, one per target binding.",
+          "Cite the governing specification edition and pin the registry snapshot, flagging clauses that are paywalled or not machine-retrievable.",
+          "Publish deprecations and compatibility verdicts for each profile version step."
+        ]
+      },
+      {
+        "name": "Interoperability assessor",
+        "responsibilities": [
+          "Maintain the loss ledger per source-target pair and issue serial loss reports.",
+          "Record blocking conditions, forbidden fallback paths, media-type ambiguity and embedded evidence conflicts.",
+          "Re-check assessments after any profile version change or registry snapshot change."
+        ]
+      },
+      {
+        "name": "Registry liaison",
+        "responsibilities": [
+          "Track IANA, W3C, ETSI and ISO registry and specification changes affecting declared profiles.",
+          "Update registry snapshot references and notify profile owners of identifier space changes.",
+          "Record which clause-level requirements remain unverified and why."
+        ]
+      },
+      {
+        "name": "Adopting-Dimension data owner",
+        "responsibilities": [
+          "Set retention, access and disposition policy for this model's records.",
+          "Approve or refuse acceptance of a recorded projection loss and record the scope and expiry of that acceptance.",
+          "Own the relationship with the referenced execution, PKI and time-stamp services."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. Read access is granted per scope to identified principals of the adopting Dimension; authoring of profiles, templates and reports is restricted to the profile owner and interoperability assessor roles, and no principal may alter a record describing integrity-protected content.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Public specification citations, projection codes, registered media types and profile identifiers carry no confidentiality and may be exposed at bundle scope to support discovery and negotiation.",
+        "Loss and conformance reports can reveal exploitable weaknesses in a deployed binding and are restricted to the interoperability assessor and the data owner unless the data owner explicitly publishes them.",
+        "Carried certificate material, signer key identifiers and verification method references may contain personal data and are released only under the adopting Dimension's privacy rules and minimisation policy.",
+        "Time-boxed emergency read for incident response is permitted, recorded with the granting principal, the justification and an explicit expiry."
+      ],
+      "audit_requirements": [
+        "Record which principal created, superseded, tombstoned or granted access to a profile, template, ledger entry or report, with event time and ingestion time recorded separately in RFC 3339.",
+        "Record every access exception with its justification, scope and expiry, and close it when the expiry passes.",
+        "Audit entries are written to the adopting Dimension's audit facility and referenced from here; this model neither defines, owns nor interprets audit-trail semantics and never treats a referenced audit record as its own evidence of validation."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner package",
+        "Registry snapshot reference"
+      ],
+      "read_order": [
+        "AGENTS.md at the storage root, to obtain Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL before any other read, including when storage is MongoDB or the interface is MCP.",
+        "The document at Specification URL, to load the WM-XCT-034 scope, out-of-scope list, boundary notes and composition links before interpreting any record.",
+        "The projection profile index and its encoding templates, before creating, reading or interpreting any binding record, so that no projection is assumed by default.",
+        "The loss ledger and the current loss and conformance reports for the relevant source-target pair, before proposing, recommending or recording any conversion between bindings.",
+        "The document at Processes URL, for the create, update, supersede and tombstone procedures that the adopting Dimension owns."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This structure covers the binding and interoperability surface of a digital signature or proof: binding form classification across enveloped, enveloping, detached and internally detached arrangements; multi-proof and countersignature topology; detached payload discovery and reference resolution inputs; transformation and signing-input declarations; protected versus unprotected parameter placement and criticality; signer and key identity carriage with referenced certificate, revocation and timestamp evidence; versioned projection profiles and encoding templates for CMS/CAdES, XMLDSig/XAdES, JWS/JAdES, COSE, PDF/PAdES and W3C Data Integrity; an enumerated loss ledger with serial loss reports; conversion verdicts, blocking conditions, forbidden fallback paths, media-type ambiguity and embedded evidence conflicts; and the separation of binding profile version, logical proof version and host artifact version. It is grounded in primary IETF, W3C, ETSI, ISO, IANA and European Commission material, treats no projection as canonical, and deliberately leaves cryptographic execution, PKI trust determination, revocation decisions, audit-trail semantics and legal effect to referenced models.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority puts the authoritative master-system identifier first, then a governed IRI from the defining registry, then a Dimension ULID; profile, template and report identity strategies each restate it, and no local identifier contains a date. Cryptosuite tokens that embed a year are explicitly treated as opaque governed strings."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "gap",
+        "notes": "Profile versioning, supersession, tombstoning and the rule that a signing-input change forces a new proof are covered. The proof's own operational states — creation, augmentation to long-term levels, expiry and revocation-driven invalidation — are recorded only as referenced runtime and PKI outcomes and are not owned as local lifecycle machinery."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Countersignature targets, proof sets and chains with ordering, host attachment points, detached payload references and twelve composition links covering the parent, the mixin host, six alignments and four referenced models."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 with seconds and explicit offset, event time separated from observation or ingestion time, projection-native time values retained verbatim, assessment and re-check times on every ledger entry, and timestamp attachment points recorded without owning time-stamp semantics."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Specification edition and registry snapshot pinned per profile, carriage mode recorded for every piece of carried evidence, external results held with their producing component identifier, and verification status flags for clauses that could not be retrieved."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Owner package requirements, five roles, loss acceptance owner as a data element, and explicit statements that execution components, PKI, time-stamp and audit facilities are owned by referenced models."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Covered as declaration and reporting only: conformance reports aggregate externally produced results by reference, transformation non-determinism and critical-parameter rejection are recorded as required behaviours cited from the defining specifications, and no function performs or re-runs validation."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny by default across bundle, layer, finding and artifact scopes, with four exception classes including restricted loss reports and personal data in key references, and audit delegated to the adopting Dimension."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstone-with-identifier rule for this model's own records, retention at least as long as the host artifact where a long-term validation claim depends on it, and an explicit statement that deletion of payloads, certificates, revocation data and timestamp tokens is executed by the host artifact model and the Dimension's records-management policy."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Six projection templates with no canonical default, an enumerated loss ledger, identifier-space mapping across OIDs, URIs, string tokens and integer labels, media-type ambiguity handling, and conversion verdicts with cited blocking conditions."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Binding form codes asserted at a stated level, topology kinds, parameter protection classes, loss classes with severity and identifier-space codes are all closed vocabularies."
+      },
+      {
+        "dimension": "constraint and criticality",
+        "status": "covered",
+        "notes": "Critical-parameter declaration and unsupported-parameter behaviour, post-signing mutability classes, serialization capacity limits and prohibited forms per projection are all modelled with citations."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Loss severity grading from none through degraded and dropped to inexpressible, with an aggregate blocking indicator derived from severities per source-target pair."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Trust-relevant parameters must not be accepted from unprotected containers, key-identification protection status is a required element, forbidden fallback paths are recorded, and countersignature coverage differences across specification versions are flagged. Enforcement remains with the referenced runtime."
+      },
+      {
+        "dimension": "privacy",
+        "status": "gap",
+        "notes": "Personal data in signer identifiers, certificates and verification methods is handled through access exceptions and minimisation deferred to the adopting Dimension. Selective disclosure, redaction-safe encodings and unlinkability properties are referenced to the selective-disclosure model and are not modelled here."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Signer location appears only as a signed qualifying property carried by some projections; it is a property value with no geometry, and no spatial reasoning is required by the binding surface."
+      }
+    ],
+    "known_omissions": [
+      "Clause-level requirements of ETSI EN 319 122-1, EN 319 132-1, EN 319 142-1 and TS 119 182-1 and of ISO 32000-2:2020 were not machine-retrievable in this pass; versions and scope are cited from publisher listings and corroborated by the European Commission DSS documentation, and all attribute-level tables are recorded as unverified rather than paraphrased.",
+      "ASiC container profiles and multi-file container topology are not modelled, so container-level attachment cases fall outside the current structure.",
+      "Selective-disclosure bindings appear only as registered media types with a loss profile; disclosure construction, holder binding and unlinkability analysis are omitted by design.",
+      "Post-quantum, hybrid and composite signature identifier mappings across the four identifier spaces are not enumerated.",
+      "S/MIME variants, OpenPGP, SSH signatures, JWT-specific profiles, C2PA manifests and blockchain-native proof formats are not covered as projections.",
+      "XML Signature 2.0 and its different transform model are not covered; only version 1.1 semantics are represented.",
+      "Remote and cloud signing protocol bindings are not modelled; only the resulting binding is in scope.",
+      "Human-readable signature appearance, visual representation and what a signer saw at signing time are not modelled."
+    ],
+    "conflicts": [
+      "RFC 9052 states that COSE single-signer and multi-signer structures cannot be converted because the structure identity is part of the signing input, while implementation practice commonly speaks of converting between them. The model treats any such move as re-signing, not re-encoding, and records it as a blocking condition.",
+      "RFC 7797 permits unencoded payloads yet forbids them in JWTs and forbids a '.' character in unencoded compact payloads, so a valid JWS can be inexpressible to a JWT-shaped consumer. The model records this as a forbidden fallback rather than a tolerated degradation.",
+      "W3C Data Integrity recommends date-based cryptosuite version strings, which sits against the identity rule that a date is never an identifier. The model resolves this by treating the cryptosuite token as an opaque governed string carried verbatim, never parsed as a date.",
+      "RFC 9052 removed countersignatures and RFC 9338 redefined them with different coverage of the target's cryptographic material, so similarly named countersignatures from different specification generations are not equivalent; the model requires a version marker on countersignature coverage descriptors.",
+      "A PDF signature is a detached CMS object over a byte range while being enveloped at document level, so a single binding form label is ambiguous unless the level of assertion is stated; the model therefore requires the level alongside the form code.",
+      "The European Commission DSS implementation restricts PAdES packaging to enveloped, while ETSI and ISO material describes the byte-range mechanism without using that packaging vocabulary; the model records the packaging term as implementation-descriptive and the byte-range binding as the structural fact."
+    ],
+    "regional_assumptions": [
+      "The baseline level vocabulary B-B, B-T, B-LT and B-LTA and the CAdES, XAdES, PAdES and JAdES families are European constructs published by ETSI in support of EU electronic signature regulation. They are treated as alignments, not as universal requirements, and the model works unchanged where they do not apply.",
+      "The European Commission DSS documentation reflects one implementation's packaging vocabulary and is used as descriptive evidence of practice, never as a normative source.",
+      "Trusted list membership, qualified status and any legal presumption attached to a signature are jurisdiction-specific and are deliberately left outside the model boundary.",
+      "IANA, W3C and IETF material is treated as globally applicable, but registry contents change over time, so every profile pins a registry snapshot rather than assuming a stable global state."
+    ],
+    "adversarial_checks": [
+      "Searched for a hidden canonical projection: no bundle, layer, finding, function or service rule assumes JWS, CMS, PAdES or Data Integrity when a profile is absent. Absence is modelled as an incomplete record and an explicit policy forbids defaulting.",
+      "Searched for ownership creep into execution: no function canonicalizes, computes a digest, dereferences a locator, encodes, parses or verifies. Every such operation is delegated to the referenced runtime, and outputs are stored only by reference with their producing component.",
+      "Checked audit-trail capture: the access layer writes to the adopting Dimension's audit facility and states explicitly that this model neither defines nor interprets audit-trail semantics and never treats a referenced audit record as its own validation evidence.",
+      "Checked PKI capture: certificate issuance, path building, trust anchor selection and revocation determination were kept in the referenced PKI model even though the carriage parameters are defined in the same specifications this model cites.",
+      "Counterexample search against the claim that every projection supports detached binding: PAdES packaging is enveloped-only in the DSS implementation and binds by byte range; JWS Compact Serialization carries neither an unprotected header nor multiple signatures; COSE detached payload requires an application guarantee of unchanged transport. All three are recorded as constraints or blocking conditions rather than smoothed into a uniform capability claim.",
+      "Checked identifier hygiene: every local identifier is lower-kebab-case with the sig-proj- prefix and no date-like component, digests are recorded as integrity metadata only, and serial report names carry a monotonic sequence rather than an issue date.",
+      "Checked that conformance is not asserted: every external standard appears as an ALIGN or REFERENCE link, the conformance report explicitly aggregates external results and states alignment findings, and clauses that could not be retrieved are flagged unverified rather than restated.",
+      "Checked artifact discipline: five findings whose content is descriptive or reference-only carry empty artifact arrays with substantive rationales, and the three findings that genuinely produce documents carry artifacts with a null rationale; no finding populates both."
+    ]
+  }
+}
