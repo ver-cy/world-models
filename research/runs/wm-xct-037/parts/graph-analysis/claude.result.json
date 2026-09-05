@@ -1,0 +1,2249 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-037",
+    "model_id": "WM-XCT-037",
+    "name": "Dependency / Impact",
+    "entry_kind": "mixin",
+    "purpose": "Provide format-neutral graph-analysis semantics for typed dependency and downstream impact: preserve asserted edges as primary facts, express every derived graph result as a declared projection over a named snapshot, state when an edge licenses impact propagation and when it must be excluded, and forbid absence or non-reachability conclusions that are not backed by an explicit completeness declaration.",
+    "scope_statement": "This bounded pass covers only the graph-analysis surface of WM-XCT-037. In scope: the asserted dependency edge as an addressable primary fact (typed, directed, scoped, time-bounded, provenance- and confidence-bearing); the modality distinction between direct, transitive, inferred and hypothetical relations; propagation licensing and exclusion rules keyed on edge type, condition, lifecycle scope, time and confidence; completeness and closed-world declarations that must precede any absence or reachability conclusion; and derived results (paths, cycles, strongly connected groups, fan-in, fan-out, cut sets, reachability sets, alternative paths) recorded as projections carrying algorithm identity, parameters, edge filter and input snapshot digest. The model is a mixin applied to a host subject: it never owns the identity or inventory of the entities it connects, never executes graph algorithms, and never schedules or performs change.",
+    "in_scope": [
+      "Asserted dependency edge as an immutable primary fact with typed direction, lifecycle scope, validity window, assertion provenance and confidence",
+      "Modality discrimination so that direct, transitive, inferred and hypothetical relations are never conflated in a stored statement or an answer",
+      "Propagation licensing: the explicit conditions under which impact may traverse an edge, and typed exclusions when it must not (type, condition, scope, time, confidence)",
+      "Completeness and closed-world declarations, enumeration frontier and declared known unknowns as preconditions for any absence, non-reachability or 'no impact' claim",
+      "Derived graph results as declared projections: path semantics and path modes, cycle and strongly-connected-group detection, fan-in and fan-out degree, cut sets, reachability sets and alternative or disjoint paths",
+      "Projection provenance: algorithm identifier and version, parameters, edge-selection filter, input snapshot digest, run time, determinism class and supersession"
+    ],
+    "out_of_scope": [
+      "Graph storage, indexing and query execution: a graph database, triple store, GQL engine or in-memory projection library is an interface and storage projection, not part of these semantics",
+      "Identity, versioning, classification and inventory completeness of the entities at the edge endpoints; those belong to the owning component or asset inventory model and are carried here only by reference",
+      "Execution of graph algorithms, entailment computation and reasoner materialisation; this model records what a run declared, never performs it",
+      "Change scheduling, release orchestration, remediation planning and any change execution triggered by an impact result",
+      "Vulnerability adjudication, exploitability decisions, risk scoring and probability quantification; cut sets and path sets are recorded as method-declared results, not as risk verdicts",
+      "Access enforcement and audit-trail generation; this model declares only the metadata a released projection must carry so an external audit record can be correlated",
+      "Physical erasure, legal hold and retention execution over stored records",
+      "Domain-specific dependency vocabularies (build systems, supply chain, network topology, organisational dependency) beyond binding them by reference as governed edge-type codes"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Graph query engine and graph database (ISO/IEC 39075 GQL)",
+        "distinction": "GQL normatively defines graph pattern matching, path patterns and path restrictors as a query language executed by an engine. This model consumes those distinctions as declarative labels on a recorded result (which path mode, which bound, which selection), so that a stored projection is interpretable without the engine. It does not define query syntax, evaluation order, indexing or execution plans.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Provenance model (W3C PROV)",
+        "distinction": "PROV owns how an entity came to be, through activities, agents, generation and usage. This model owns the dependency edge and its analysis semantics. Critically, PROV-CONSTRAINTS states there is no inference making derivation transitive and shows wasInformedBy is non-transitive; this model therefore refuses to inherit transitivity by default and requires an explicit declared basis for every transitive or inferred relation.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Component inventory and SBOM models (SPDX 3.0.1, CycloneDX 1.6)",
+        "distinction": "Those specifications own element identity, component metadata and document-level inventory. This mixin reuses their relationship semantics (typed from/to relationship, completeness, lifecycle scope, dependsOn/provides) as alignment targets for the edge, and holds endpoints only as resolvable references into the owning inventory.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Reliability and risk analysis models (IEC 61025 fault tree analysis, IEC 61078 reliability block diagrams)",
+        "distinction": "Those standards own deductive failure modelling, cut-set derivation procedures, redundancy structures and quantitative dependability computation. This model records a cut set, path set or criticality measure as a projection that names the method and its inputs; it never computes or interprets failure probability, importance factors or risk acceptance.",
+        "source_refs": [
+          "SRC-010",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Ontology reasoner and entailment regime (OWL 2, RDF 1.1 Semantics)",
+        "distinction": "OWL 2 owns property characteristics such as TransitiveObjectProperty and property chains together with the global restrictions that keep reasoning decidable; RDF 1.1 Semantics establishes that a valid inference does not oblige any application to materialise it. This model records which characteristic or chain licensed an inferred edge and whether it was materialised; it does not perform entailment or claim conformance to any entailment regime.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Exploitability and exception statement models (VEX / OpenVEX)",
+        "distinction": "OpenVEX owns vulnerability status and its justifications for a product-vulnerability pair. This model borrows only the shape of a machine-readable justification to express edge-level propagation exclusion (for example, present but not on the execute path), and cites the external statement by reference. Vulnerability status, remediation and disclosure remain outside.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Change, release and remediation execution model",
+        "distinction": "An impact projection is an input to change planning. Deciding, scheduling, approving or executing a change, and recording that execution, belongs to the change model. Lifecycle scope on an edge (design, build, test, runtime) qualifies the dependency assertion; it does not grant this model any workflow or executor role.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-013"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Relationship - SPDX Specification 3.0.1 (Core model, Relationship class)",
+      "organization": "SPDX Project, The Linux Foundation",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Relationship/",
+      "version_or_date": "Version 3.0.1 (2024-12)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:10:00Z",
+      "relevance": "Normative shape of an asserted, addressable relationship: exactly one from Element, one or more to Elements, one relationshipType, optional completeness, optional startTime and endTime marking when the relationship became and ceased to be valid; NoneElement asserts no relationships exist while NoAssertionElement covers undeterminable existence."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RelationshipCompleteness - SPDX Specification 3.0.1",
+      "organization": "SPDX Project, The Linux Foundation",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/RelationshipCompleteness/",
+      "version_or_date": "Version 3.0.1 (2024-12)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:11:00Z",
+      "relevance": "Three-valued completeness vocabulary: complete ('known to be exhaustive'), incomplete ('known not to be exhaustive') and noAssertion. Direct normative basis for requiring an explicit completeness declaration before any closed-world or absence conclusion."
+    },
+    {
+      "id": "SRC-003",
+      "title": "LifecycleScopeType - SPDX Specification 3.0.1",
+      "organization": "SPDX Project, The Linux Foundation",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/LifecycleScopeType/",
+      "version_or_date": "Version 3.0.1 (2024-12)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:12:00Z",
+      "relevance": "Enumerates design, development, build, test, runtime and other as contexts for dependency relationships, with the explicit rationale that 'a build dependency may have different implications than an operational dependency'. Grounds scope-conditioned propagation licensing."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Constraints of the PROV Data Model (PROV-CONSTRAINTS)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-constraints/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:13:00Z",
+      "relevance": "States that there is no inference making wasDerivedFrom transitive and gives a timing counterexample showing wasInformedBy is not transitive; defines ordering constraints (generation before usage, start before end) and impossibility constraints. Authority for treating transitivity as a declared, not assumed, property."
+    },
+    {
+      "id": "SRC-005",
+      "title": "OWL 2 Web Ontology Language Structural Specification and Functional-Style Syntax (Second Edition)",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl2-syntax/",
+      "version_or_date": "W3C Recommendation, 11 December 2012",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:14:00Z",
+      "relevance": "Defines TransitiveObjectProperty and SubObjectPropertyOf with object property chains, plus the Section 11 global restrictions limiting where composite and transitive properties may be used in OWL 2 DL. Grounds the declared derivation basis for inferred and transitive edges and the need to bound closure."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RDF 1.1 Semantics",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/rdf11-mt/",
+      "version_or_date": "W3C Recommendation, 25 February 2014",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:15:00Z",
+      "relevance": "Defines entailment ('a graph G simply entails a graph E when every interpretation which satisfies G also satisfies E') and states that a valid inference does not oblige any application to make it, and that RDF is a purely assertional language. Basis for separating asserted facts from optionally materialised derived statements and for refusing absence semantics."
+    },
+    {
+      "id": "SRC-007",
+      "title": "ISO/IEC 39075:2024 Information technology - Database languages - GQL",
+      "organization": "ISO/IEC JTC 1/SC 32",
+      "url": "https://www.iso.org/standard/76120.html",
+      "version_or_date": "First edition, published April 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:16:00Z",
+      "relevance": "International standard for property-graph querying that normatively defines graph pattern matching, path patterns, match modes and path restrictors (walk, trail, acyclic, simple). Used here only as the alignment vocabulary for declaring which path semantics a recorded result assumed. Full normative text is paywalled; catalogue entry verified."
+    },
+    {
+      "id": "SRC-008",
+      "title": "CycloneDX Bill of Materials Specification, Protocol Buffers schema bom-1.6.proto (Dependency message)",
+      "organization": "OWASP Foundation / CycloneDX",
+      "url": "https://raw.githubusercontent.com/CycloneDX/specification/master/schema/bom-1.6.proto",
+      "version_or_date": "CycloneDX specification v1.6",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:17:00Z",
+      "relevance": "Defines ref, dependsOn and provides, and states that 'Components or services that are not represented in the dependency graph may have unknown dependencies. It is recommended that implementations assume this to be opaque and not an indicator of an object being dependency-free.' Direct authority for the opaque-absence rule."
+    },
+    {
+      "id": "SRC-009",
+      "title": "OpenVEX Specification",
+      "organization": "OpenVEX project (Chainguard and contributors)",
+      "url": "https://raw.githubusercontent.com/openvex/spec/main/OPENVEX-SPEC.md",
+      "version_or_date": "v0.2.0, revised 2023-07-18",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:18:00Z",
+      "relevance": "Machine-readable justification labels (component_not_present, vulnerable_code_not_present, vulnerable_code_not_in_execute_path, vulnerable_code_cannot_be_controlled_by_adversary, inline_mitigations_already_exist) and the product/subcomponent structure. Model for typed edge-level propagation exclusion distinct from edge absence."
+    },
+    {
+      "id": "SRC-010",
+      "title": "IEC 61025:2006 Fault tree analysis (FTA)",
+      "organization": "International Electrotechnical Commission (IEC), TC 56 Dependability",
+      "url": "https://webstore.iec.ch/en/publication/4311",
+      "version_or_date": "Edition 2.0, published 2006-12-13",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:19:00Z",
+      "relevance": "International standard for deductive top-down impact analysis; defines top event, intermediate and basic events, cut sets and minimal cut sets, and identification rules and symbols. Authority for cut-set results and for the requirement that assumptions and event boundaries be identified explicitly."
+    },
+    {
+      "id": "SRC-011",
+      "title": "IEC 61078:2016 Reliability block diagrams",
+      "organization": "International Electrotechnical Commission (IEC), TC 56 Dependability",
+      "url": "https://webstore.iec.ch/en/publication/25647",
+      "version_or_date": "Edition 3.0, published 2016-08-12",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:20:00Z",
+      "relevance": "Standard for modelling dependability with success-path structures, covering qualitative and quantitative analysis, non-coherent and dynamic diagrams, Boolean algebra methods, and the stated relationship with fault tree analysis (IEC 61025) and Markov techniques. Authority for alternative-path and redundancy semantics as the dual of cut sets."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Strongly Connected Components - Neo4j Graph Data Science documentation",
+      "organization": "Neo4j, Inc.",
+      "url": "https://neo4j.com/docs/graph-data-science/current/algorithms/strongly-connected-components/",
+      "version_or_date": "Graph Data Science, current documentation (versions 2.5 through 2026.07)",
+      "source_type": "first-party-doc",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-05T09:21:00Z",
+      "relevance": "Working definition of strongly connected components ('a set is considered a strongly connected component if there is a directed path between each pair of nodes within the set') and the operational pattern of computing over a named in-memory graph projection with stream, stats, mutate and write modes, where results reflect the projected graph at execution time. Used as implementation evidence for snapshot-bound projections, not as normative authority."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Framing Software Component Transparency: Establishing a Common Software Bill of Materials (SBOM), Third Edition",
+      "organization": "Cybersecurity and Infrastructure Security Agency (CISA)",
+      "url": "https://www.cisa.gov/resources-tools/resources/framing-software-component-transparency-2024",
+      "version_or_date": "Third edition, published 2024-10-15",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:22:00Z",
+      "relevance": "Public-authority framing that further defines and clarifies SBOM attributes, establishing that component and dependency relationship transparency is an expected attribute set rather than an optional analytic convenience. Cited only for that framing; the PDF body could not be machine-parsed in this pass."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "dep-graph-asserted-fact-base",
+        "name": "Asserted edge base and propagation gating",
+        "description": "The primary-fact layer of the dependency graph: what an asserted edge is, how it stays addressable and immutable, how derived or postulated relations are kept distinguishable from it, and the explicit gate that decides whether impact may travel along an edge at all.",
+        "rationale": "Every defensible impact answer resolves to a set of asserted edges plus a rule that permitted traversal. SPDX 3.0.1 models a relationship as an addressable assertion with from, to, type, completeness and a validity interval; SPDX lifecycle scope records that a build dependency and an operational dependency have different implications; OpenVEX shows that a present component can still be non-impacting for a stated reason. PROV-CONSTRAINTS and RDF 1.1 Semantics jointly forbid assuming transitivity or materialisation. Grouping these into one bundle keeps the fact base auditable and prevents propagation policy from leaking into stored facts.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-006",
+          "SRC-008",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "dep-graph-edge-assertion",
+            "name": "Edge assertion and relation modality",
+            "description": "How a single dependency edge is asserted, addressed, typed, scoped and time-bounded, and how direct, transitive, inferred and hypothetical relations remain separable in storage and in answers.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004",
+              "SRC-005",
+              "SRC-006"
+            ],
+            "findings": [
+              {
+                "id": "dep-graph-edge-fact",
+                "name": "Asserted dependency edge as a primary fact",
+                "description": "An asserted edge is a first-class, addressable statement that a source subject depends on one or more target subjects under a named relation type, a lifecycle scope, a validity interval, an asserting agent and a confidence value. It is treated as immutable: corrections are made by superseding assertions, never by silent edit, so that any projection computed over an earlier edge set remains explainable. Endpoints are references into an owning inventory model, never copies of the entities.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-008",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-edge-identity",
+                    "text": "What identifier makes this asserted dependency edge addressable independently of its endpoints?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Composite edge key over source reference, relation type, target reference, lifecycle scope and validity start",
+                      "Master-system assertion identifier or governed IRI where the asserting system issues one",
+                      "Minting authority and scheme for locally assigned surrogate identifiers"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-edge-typing",
+                    "text": "Which typed relation does the edge assert, in which direction, and under which lifecycle scope?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Relation type code drawn from a governed vocabulary such as SPDX RelationshipType or CycloneDX dependsOn/provides",
+                      "Direction convention fixing which endpoint is the dependant and which is the dependency",
+                      "Zero or more lifecycle scope codes (design, development, build, test, runtime, other)"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-edge-validity-window",
+                    "text": "Over which validity interval is the asserted edge held to be true, and when was that observed?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Edge start time and end time as RFC 3339 values with explicit offset or Z",
+                      "Separate assertion or observation timestamp for when the claim was recorded",
+                      "Marker for an open-ended or unknown interval end"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-edge-assertion-provenance",
+                    "text": "Who or what asserted the edge, from which evidence, and with what confidence?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Asserting agent, tool or document reference",
+                      "Evidence reference such as a build manifest, scan result, declared dependency file or human declaration",
+                      "Confidence value together with the identifier of the scale that defines it"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-edge-endpoint-binding",
+                    "text": "How do the edge endpoints resolve to entities owned by an external inventory model?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Endpoint reference scheme (SPDX Element identifier, CycloneDX bom-ref, purl, CPE, master-data key)",
+                      "Identifier of the inventory or asset model that owns each endpoint",
+                      "Behaviour when an endpoint reference fails to resolve, including quarantine rather than silent drop"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-edge-key",
+                    "name": "Edge key",
+                    "description": "Stable, date-free identifier for the asserted edge, resolved by the identity priority rule.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-source-ref",
+                    "name": "Source endpoint reference",
+                    "description": "Reference to the dependant subject, owned by an external inventory model.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-target-ref",
+                    "name": "Target endpoint reference",
+                    "description": "One or more references to depended-on subjects; a distinguished none-marker asserts that no such dependency exists, and is not the same as omission.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-edge-type",
+                    "name": "Relation type code",
+                    "description": "Governed code for the asserted relation, bound to an external vocabulary by namespace.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-lifecycle-scope",
+                    "name": "Lifecycle scope",
+                    "description": "Zero or more lifecycle contexts in which the dependency holds, following the SPDX lifecycle scope vocabulary.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-validity-window",
+                    "name": "Edge validity window",
+                    "description": "Start and end of the interval over which the asserted edge is claimed valid, recorded separately from assertion time.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-assertion-provenance",
+                    "name": "Assertion provenance",
+                    "description": "Asserting agent or tool, evidence references and assertion timestamp for the edge.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-assertion-confidence",
+                    "name": "Assertion confidence",
+                    "description": "Confidence attached to the edge assertion, with an explicit scale reference; consumed by propagation licensing thresholds.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-edge-assertion-record",
+                    "name": "Edge assertion record",
+                    "description": "The format-neutral record of one asserted dependency edge, carrying key, endpoints, type, scope, validity window, provenance and confidence, plus any supersession pointer. Projectable to an SPDX Relationship, a CycloneDX dependency entry, a reified RDF statement or a property-graph edge without loss of the declared semantics.",
+                    "media_or_form": [
+                      "structured record, format-neutral",
+                      "projection to SPDX 3.0.1 Relationship",
+                      "projection to CycloneDX 1.6 dependency entry",
+                      "projection to a qualified RDF statement or property-graph edge"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Authoritative master-system assertion identifier where the asserting system of record issues one; otherwise a governed IRI from a published namespace; otherwise a Dimension-minted UUID or ULID recorded with its minting authority. The composite edge key is retained as a natural key for deduplication but never replaces the assigned identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-graph-relation-modality",
+                "name": "Direct, transitive, inferred and hypothetical modality",
+                "description": "Every dependency statement carries a modality discriminator plus, for non-direct modalities, the basis that licensed it. Direct means asserted by an agent about an immediate relation. Transitive means produced by composing asserted edges under a declared closure with a stated depth bound. Inferred means entailed by a declared property characteristic, property chain or rule. Hypothetical means postulated for what-if analysis and not claimed to hold. PROV-CONSTRAINTS establishes that derivation is not transitive by default, and RDF 1.1 Semantics establishes that a valid inference need not be materialised, so both transitivity and materialisation must be declared rather than assumed.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-modality-definition",
+                    "text": "How are direct, transitive, inferred and hypothetical relations defined so that they never collapse into one another?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Closed modality vocabulary with one definition per term and mutually exclusive assignment",
+                      "Rule that a statement carries exactly one modality and that modality survives export to any storage projection",
+                      "Prohibition on promoting a derived statement to direct without a new agent assertion"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-modality-derivation-basis",
+                    "text": "For an inferred or transitive relation, which rule, property characteristic or closure method licensed it?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Reference to a declared transitive property or object property chain, with the OWL 2 global-restriction check recorded",
+                      "Closure method identifier and the traversal depth actually applied",
+                      "Ordered list of asserted edge keys consumed as premises"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-modality-materialization",
+                    "text": "Is a derived relation materialised as a stored statement, and how is it kept distinguishable from asserted facts?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Materialisation flag with the projection or run that produced the statement",
+                      "Storage rule keeping derived statements outside the asserted edge set",
+                      "Invalidation trigger when a premise edge is superseded or its validity window closes"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-hypothetical-quarantine",
+                    "text": "Under what conditions may a hypothetical relation enter an impact answer, and how is that answer labelled?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Scenario identifier that scopes the hypothetical edge set",
+                      "Mandatory labelling of any answer that consumed hypothetical edges",
+                      "Default exclusion of hypothetical edges from actual-state answers"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-modality",
+                    "name": "Relation modality",
+                    "description": "Discriminator with values direct, transitive, inferred or hypothetical, carried on every dependency statement.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-derivation-basis",
+                    "name": "Derivation basis",
+                    "description": "For transitive or inferred statements: the property characteristic, property chain, rule or closure method reference plus the depth applied and the premise edge keys.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-materialization-flag",
+                    "name": "Materialisation flag",
+                    "description": "Whether the derived statement is stored or is recomputed on demand; a valid inference does not oblige materialisation.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-hypothesis-scenario-ref",
+                    "name": "Hypothesis scenario reference",
+                    "description": "Identifier of the what-if scenario that scopes a hypothetical edge, including which edges it adds or removes.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Modality is a discriminator and a small justification structure carried on records that already exist elsewhere in the model: the edge assertion record for asserted facts and the analysis run descriptor and result sets for derived statements. Materialising it as its own artifact would create a second addressable object for the same statement and would immediately raise a synchronisation problem between the artifact and the statement it qualifies. The controlled modality vocabulary and the property-characteristic definitions it points to are governed outside this model, in OWL 2 and in the adopting Dimension's namespace registry, so this finding contributes constraints and reference bindings rather than a stored artifact of its own."
+              }
+            ]
+          },
+          {
+            "id": "dep-graph-propagation-gate",
+            "name": "Propagation licensing and exclusion",
+            "description": "The explicit gate that decides whether impact may traverse an asserted edge: positive licence profiles keyed on type, scope, direction, condition and confidence, and negative typed exclusions that suppress a present edge for a stated and evidenced reason.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-009",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "dep-graph-propagation-condition",
+                "name": "Conditions under which an edge licenses propagation",
+                "description": "An edge is a fact; it is not automatically a channel for impact. A propagation licence profile states which combinations of relation type, lifecycle scope, direction, validity overlap and minimum confidence permit traversal for a given impact question. Because SPDX records that a build dependency carries different implications from an operational dependency, the same asserted edge can license propagation in one scope and not in another. The default is deny: an edge that matches no profile is not traversed, and the resulting answer says so rather than silently omitting a branch.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-008",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-licence-scope",
+                    "text": "Which combination of relation type, lifecycle scope and direction licenses impact to propagate along an edge?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Licence profile matching relation type codes to permitted propagation directions",
+                      "Lifecycle scopes in which the licence applies and those in which it is withheld",
+                      "Impact question class the profile is written for, since one profile does not serve every question"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-licence-default",
+                    "text": "What is the default when no propagation licence profile matches an edge?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Explicit deny-by-default rule with no implicit fallback",
+                      "Required reporting of unmatched edges as a distinct category in the result",
+                      "Escalation path for requesting a new profile"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-licence-confidence-floor",
+                    "text": "What minimum assertion confidence must an edge carry before it may be traversed for a published impact answer?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Confidence threshold per profile and the scale it is expressed on",
+                      "Treatment of edges with absent confidence values",
+                      "Whether below-threshold edges are dropped or reported as a separate low-confidence frontier"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-licence-temporal-overlap",
+                    "text": "How must an edge validity window overlap the analysis reference time for traversal to be permitted?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Reference instant or interval the analysis is asked about",
+                      "Overlap predicate (contains, intersects, starts-before) applied to edge validity windows",
+                      "Handling of edges with open or unknown interval ends"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-licence-authority",
+                    "text": "Who owns and versions a propagation licence profile, and how are competing profiles resolved?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Owning role and approval record for each profile version",
+                      "Deterministic precedence rule when several profiles match the same edge",
+                      "Change class that makes a profile revision breaking for existing projections"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-licence-profile-id",
+                    "name": "Propagation licence profile identifier",
+                    "description": "Versioned identifier of the profile that governs traversal for a class of impact questions.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-licensed-edge-type",
+                    "name": "Licensed relation types",
+                    "description": "Relation type codes the profile permits to be traversed.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-propagation-direction",
+                    "name": "Permitted propagation direction",
+                    "description": "Whether impact may travel along the edge downstream, upstream or in both directions for this profile.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-licence-condition",
+                    "name": "Licence condition",
+                    "description": "Additional predicate that must hold for traversal, such as a configuration flag, deployment condition or lifecycle scope match.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-confidence-threshold",
+                    "name": "Confidence threshold",
+                    "description": "Minimum edge assertion confidence required by the profile, with its scale reference.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-propagation-licence-profile",
+                    "name": "Propagation licence profile",
+                    "description": "A versioned, format-neutral rule set binding relation types, lifecycle scopes, directions, temporal overlap predicates and confidence thresholds to a permission to traverse for a named class of impact question, together with its deny-by-default statement and precedence rank.",
+                    "media_or_form": [
+                      "versioned rule set, format-neutral",
+                      "tabular decision matrix over relation type and lifecycle scope",
+                      "declarative predicate document referenced by an analysis run"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Governed profile identifier issued by the owning package in the adopting Dimension's namespace, with an explicit semantic version; date-free. Superseded versions remain resolvable so historical projections stay interpretable.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-graph-propagation-exclusion",
+                "name": "Typed exclusion of a present edge",
+                "description": "An edge that exists and matches a licence profile may still be excluded from a specific impact answer for a stated, evidenced reason. OpenVEX demonstrates the pattern with machine-readable justifications such as the vulnerable code not being present, not being on the execute path, not being controllable by an adversary, or being covered by inline mitigations. Generalised here, an exclusion is a typed, scoped, expiring statement over an edge, an edge class or a subgraph. The critical rule is reporting: an excluded edge must be visible in the result as suppressed, never rendered as absent, because absence carries a completeness claim that an exclusion does not.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-exclusion-justification",
+                    "text": "Which machine-readable justification explains why a present edge does not propagate impact in this case?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Justification code from a governed vocabulary aligned to OpenVEX status justifications",
+                      "Free-text elaboration bound to the code, never replacing it",
+                      "Rule that an exclusion without a justification code is invalid"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-exclusion-scope-and-expiry",
+                    "text": "What is the applicability scope of an exclusion and when does it lapse?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Scope as a single edge, a relation-type class, a subgraph or an endpoint neighbourhood",
+                      "Effective-from and expiry timestamps in RFC 3339 with offset",
+                      "Re-review trigger when a premise edge or configuration changes"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-exclusion-evidence",
+                    "text": "What evidence supports the exclusion and who reviewed it?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Evidence references such as configuration proof, call-graph analysis or build settings",
+                      "Reviewing role and approval record",
+                      "Evidence strength or confidence recorded on the same scale as edge confidence"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-exclusion-visibility",
+                    "text": "How is an excluded edge reported so that a consumer can tell suppression from absence?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Result section listing suppressed edges with their justification codes",
+                      "Prohibition on removing suppressed edges from the traversal record",
+                      "Counts reported separately for traversed, suppressed and unmatched edges"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-exclusion-id",
+                    "name": "Exclusion identifier",
+                    "description": "Addressable identifier of the exclusion statement.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-exclusion-scope",
+                    "name": "Exclusion scope",
+                    "description": "The edge, relation-type class, subgraph or neighbourhood over which the exclusion applies, plus the impact question class it applies to.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-exclusion-justification",
+                    "name": "Exclusion justification code",
+                    "description": "Governed code stating why propagation is withheld despite the edge being present.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-exclusion-expiry",
+                    "name": "Exclusion expiry",
+                    "description": "Timestamp after which the exclusion no longer applies and the edge returns to normal licensing.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-exclusion-evidence-ref",
+                    "name": "Exclusion evidence reference",
+                    "description": "References to the evidence and the approval record supporting the exclusion.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-exclusion-statement",
+                    "name": "Propagation exclusion statement",
+                    "description": "A standalone, addressable statement that a present edge or edge class is suppressed for a named impact question, carrying justification code, scope, effective and expiry times, evidence references and approver. Kept separate from the edge record so the underlying fact is never mutated by a policy decision.",
+                    "media_or_form": [
+                      "standalone statement record, format-neutral",
+                      "projection to a VEX-style justification document",
+                      "annotation attached to a released projection's suppressed-edge section"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier where an upstream exception or exploitability system issues one; otherwise a governed IRI; otherwise a Dimension-minted UUID or ULID. The referenced edge key is carried as a foreign reference, never as the exclusion's own identity.",
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-graph-closed-world",
+            "name": "Completeness and closed-world declaration",
+            "description": "The declarations that must exist before any statement about absence, non-reachability or 'no impact' may be published, including the enumeration frontier actually covered and the gaps declared as known unknowns.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-006",
+              "SRC-008",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "dep-graph-completeness-declaration",
+                "name": "Completeness declaration and enumeration frontier",
+                "description": "Absence of an edge is not evidence of absence of dependency. CycloneDX states plainly that objects not represented in the dependency graph may have unknown dependencies and that implementations should treat this as opaque rather than as dependency-freedom; RDF is a purely assertional language with no way to express absence; SPDX therefore carries an explicit three-valued completeness marker on the relationship itself. This finding requires a scoped completeness declaration naming the node scope, relation types and traversal depth actually enumerated, the gaps recorded as known unknowns, and the flag that licenses a closed-world reading. Any negative conclusion must cite a resolvable declaration that covers the queried scope.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-completeness-value",
+                    "text": "Is the enumerated edge set for this scope complete, incomplete, or is no assertion made?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Three-valued completeness code aligned to SPDX complete, incomplete and noAssertion",
+                      "Basis for the claim, such as an exhaustive manifest parse or a partial scan",
+                      "Default of noAssertion when nothing has been declared"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-enumeration-frontier",
+                    "text": "Which node scope, relation types and traversal depth does the completeness declaration actually cover?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Node or subgraph scope the declaration applies to",
+                      "Relation type codes enumerated and those explicitly not enumerated",
+                      "Maximum traversal depth reached and whether the frontier was truncated"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-known-unknowns",
+                    "text": "Which gaps are declared as known unknowns rather than treated as absent edges?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Enumerated gap records naming the node or edge class that could not be resolved",
+                      "Reason for each gap, such as an opaque binary, a closed upstream or an unresolvable reference",
+                      "Distinguished no-assertion marker separate from a positive assertion that nothing exists"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-closed-world-licence",
+                    "text": "What licenses a closed-world reading so that absence of an edge may be read as absence of dependency?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Explicit closed-world flag scoped to the declared frontier, defaulting to false",
+                      "Named authority that may set the flag and the evidence required",
+                      "Rule that a negative conclusion outside the declared frontier is invalid regardless of the flag"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-completeness-currency",
+                    "text": "How long does a completeness declaration remain valid, and what invalidates it?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Declared validity interval with RFC 3339 bounds",
+                      "Invalidation triggers such as a new edge assertion inside the scope or a superseded endpoint",
+                      "Re-declaration obligation and the owning role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-completeness-id",
+                    "name": "Completeness declaration identifier",
+                    "description": "Addressable identifier of the declaration, citable from any negative conclusion.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-completeness-value",
+                    "name": "Completeness value",
+                    "description": "Three-valued marker: complete, incomplete or noAssertion.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-enumeration-frontier",
+                    "name": "Enumeration frontier",
+                    "description": "Node scope, relation types covered and maximum depth actually enumerated, with a truncation indicator.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-known-unknown",
+                    "name": "Known unknown record",
+                    "description": "Declared gap in enumeration, with the affected node or edge class and the reason it could not be resolved.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-closed-world-flag",
+                    "name": "Closed-world flag",
+                    "description": "Whether absence within the declared frontier may be read as absence in reality; defaults to false.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-completeness-declaration",
+                    "name": "Completeness declaration",
+                    "description": "A scoped, time-bounded declaration of how exhaustively an edge set was enumerated, naming the frontier, the completeness value, the declared known unknowns and the closed-world flag, signed by the declaring role. Cited by identifier from every projection that makes a negative or reachability claim.",
+                    "media_or_form": [
+                      "scoped declaration record, format-neutral",
+                      "projection to an SPDX relationship completeness value plus a scope note",
+                      "header block attached to a released impact projection"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Governed identifier issued by the declaring owner package; date-free and stable across re-declaration, with each re-declaration recorded as a new version that supersedes the prior one by explicit pointer.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dep-graph-derived-projections",
+        "name": "Derived graph projections and result semantics",
+        "description": "Everything computed rather than asserted: the run descriptor that makes a derived result reproducible and falsifiable, and the declared semantics of each result type - paths, cycles and strongly connected groups, reachability, fan-in and fan-out, cut sets and alternative paths.",
+        "rationale": "A graph result is meaningless without its algorithm, parameters, edge filter and input snapshot: implementation documentation for strongly connected components shows results reflect a projected graph at execution time, and ISO/IEC 39075 shows that even 'a path' is ambiguous until a restrictor such as walk, trail, acyclic or simple is fixed. IEC 61025 and IEC 61078 supply the established qualitative vocabulary for cut sets and success paths, but bind those results to a stated method and stated assumptions. Separating this bundle from the fact base enforces the rule that projections are never merged into the asserted edge set and are re-derived rather than patched.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005",
+          "SRC-007",
+          "SRC-010",
+          "SRC-011",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "dep-graph-analysis-provenance",
+            "name": "Analysis run and projection provenance",
+            "description": "How a derived result is bound to the algorithm, parameters, edge filter and immutable input snapshot that produced it, and how it becomes stale.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-007",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "dep-graph-analysis-run",
+                "name": "Declared analysis run over a named snapshot",
+                "description": "A derived result is admissible only as a projection carrying: the algorithm identifier and version, the full parameter set, the edge-selection filter (relation types, licence profile, modality inclusions, exclusions applied, temporal reference), the digest of the immutable input edge set, the run execution time, a determinism class and any supersession pointer. This mirrors how graph analytics actually behave, computing over a projected in-memory graph whose results reflect that projection at execution time. The model records the run; it never executes it, and it holds no claim over the evaluator's own execution logs or audit records.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-method-identity",
+                    "text": "Which algorithm identifier and version produced this derived result?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Registered method identifier with version, distinct per algorithm variant",
+                      "Implementation or evaluator reference where the same method has several implementations",
+                      "Rule that an algorithm change requires a new method identifier rather than a silent revision"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-run-parameters",
+                    "text": "Which parameters, edge filters and modality inclusions defined the analysed subgraph?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Complete parameter set including seeds, depth bounds and direction",
+                      "Edge filter naming relation types, licence profile version and applied exclusions",
+                      "Which relation modalities were admitted, in particular whether hypothetical edges were included"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-snapshot-binding",
+                    "text": "Against which immutable snapshot of the asserted edge set was the run executed?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Snapshot digest over the canonicalised selected edge set",
+                      "Reference to the completeness declarations covering the snapshot scope",
+                      "Temporal reference instant the snapshot represents, separate from the run execution time"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-result-determinism",
+                    "text": "Is the result reproducible from the recorded snapshot and parameters, and where is it not?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Determinism class such as deterministic, tie-break dependent or randomised with seed",
+                      "Recorded random seed or tie-break rule where applicable",
+                      "Known non-determinism such as arbitrary representative selection within a component"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-projection-supersession",
+                    "text": "What makes a stored projection stale, and how is supersession recorded?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Staleness triggers: input snapshot digest mismatch, licence profile revision, completeness re-declaration",
+                      "Supersedes and superseded-by pointers between run descriptors",
+                      "Rule that a stale projection may not support a negative or absence conclusion"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-method-id",
+                    "name": "Analysis method identifier",
+                    "description": "Registered identifier and version of the algorithm that produced the result.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-method-parameters",
+                    "name": "Method parameters",
+                    "description": "Complete parameter set including seeds, bounds, direction and tie-break or random seed.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-edge-filter",
+                    "name": "Edge selection filter",
+                    "description": "Relation types, licence profile version, applied exclusions, admitted modalities and temporal reference that defined the analysed subgraph.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-snapshot-digest",
+                    "name": "Input snapshot digest",
+                    "description": "Content digest over the canonicalised selected edge set, giving the projection a falsifiable input identity.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-run-time",
+                    "name": "Run execution time",
+                    "description": "When the analysis was executed, recorded separately from edge validity time and from the snapshot reference instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-determinism-class",
+                    "name": "Determinism class",
+                    "description": "Whether the result is fully deterministic, tie-break dependent or seeded-random.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-supersedes-ref",
+                    "name": "Supersession reference",
+                    "description": "Pointer to the run descriptor this projection replaces, or to the one that replaced it.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-analysis-run-descriptor",
+                    "name": "Analysis run descriptor",
+                    "description": "The header record that makes every derived result reproducible and challengeable: method identity and version, parameters, edge filter, snapshot digest, cited completeness declarations, run time, determinism class and supersession pointers. Every result set in this bundle is invalid without a resolvable descriptor.",
+                    "media_or_form": [
+                      "run descriptor record, format-neutral",
+                      "manifest header prepended to any released result set",
+                      "provenance-style record projectable to a PROV activity description without importing PROV lifecycle semantics"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Governed method identifier plus input snapshot digest plus a zero-padded monotonic run ordinal scoped to that method and snapshot; where an external evaluator issues its own authoritative run identifier, that master-system identifier takes precedence and the composite key is retained as a secondary key.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-graph-result-semantics",
+            "name": "Result-type semantics",
+            "description": "The declared meaning of each derived result class: path results and their restrictors, cycles and strongly connected groups, and reachability with the criticality measures built on it.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-010",
+              "SRC-011",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "dep-graph-path-semantics",
+                "name": "Path results, path restrictors and alternative paths",
+                "description": "A path result is uninterpretable until its restrictor is declared. ISO/IEC 39075 fixes the distinctions normatively with walk, trail, acyclic and simple restrictors controlling whether nodes or edges may repeat, alongside match modes and path search. A path result must therefore state its restrictor, direction, depth or hop bound and what happened at that bound, and whether it claims all paths, shortest paths, k paths or a single witness. Alternative-path counts are only meaningful with a declared disjointness criterion, which is the success-path dual of the cut-set view in reliability modelling.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-path-mode",
+                    "text": "Which path restrictor governs the result: walk, trail, acyclic or simple?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Restrictor code aligned to the GQL path restrictor vocabulary",
+                      "Statement of whether repeated nodes and repeated edges are permitted",
+                      "Default restrictor when the consumer does not specify one"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-path-bounds",
+                    "text": "What depth or hop bound and traversal direction were applied, and what happened at the bound?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Maximum hop or depth bound and traversal direction",
+                      "Truncation indicator distinguishing exhausted search from bound-limited search",
+                      "Count of frontier nodes left unexpanded at the bound"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-path-selection",
+                    "text": "Does the result claim all paths, shortest paths, k paths, or a single witness path?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Selection mode code and, for k paths, the value of k",
+                      "Cost or weight function used for shortest-path selection, if any",
+                      "Explicit statement that a witness path does not imply the absence of others"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-alternative-paths",
+                    "text": "How many node-disjoint or edge-disjoint alternative paths exist between the two endpoints?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Disjointness criterion applied (node-disjoint, edge-disjoint or none)",
+                      "Count of alternative paths found and whether the search was exhaustive",
+                      "Reference to the method used, since alternative-path counting is method-sensitive"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-path-identity",
+                    "text": "How is an individual path addressed and compared across runs?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Ordered edge-key sequence as the path's natural key",
+                      "Digest over that sequence for compact addressing",
+                      "Comparison rule when a path is stable but its constituent edges have been superseded"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-path-mode",
+                    "name": "Path restrictor",
+                    "description": "Declared restrictor: walk, trail, acyclic or simple.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-path-depth-bound",
+                    "name": "Depth or hop bound",
+                    "description": "Maximum traversal depth applied, with a truncation indicator.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-path-selection",
+                    "name": "Path selection mode",
+                    "description": "Whether the result claims all, shortest, k-shortest or any single path.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-path-edge-sequence",
+                    "name": "Path edge sequence",
+                    "description": "Ordered sequence of edge keys constituting the path, serving as its natural key.",
+                    "value_kind": "collection",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-path-disjointness",
+                    "name": "Alternative-path disjointness criterion",
+                    "description": "Node-disjoint, edge-disjoint or none, governing how alternative paths were counted.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-path-result-set",
+                    "name": "Path result set",
+                    "description": "The enumerated paths returned by one analysis run, each with its ordered edge sequence and digest, bound to the run descriptor and carrying the restrictor, bound, selection mode, truncation state and disjointness criterion that define what the set claims.",
+                    "media_or_form": [
+                      "result set record, format-neutral",
+                      "ordered edge-key sequences with per-path digests",
+                      "projection to a GQL path result or a property-graph path object"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Analysis run descriptor identifier plus a zero-padded ordinal for the result set, with each path addressed by the digest of its ordered edge-key sequence; no date component in any identifier.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-graph-cyclicity-and-components",
+                "name": "Cycles, strongly connected groups and closure safety",
+                "description": "Directed dependency graphs are not reliably acyclic. A strongly connected component is a maximal set of nodes with a directed path between every pair, and its presence changes what may be claimed: unbounded transitive closure over a cycle does not terminate, topological ordering is undefined inside a component, and shortest-path depth claims must state their restrictor. This finding records component membership, cycle witnesses, the acyclic condensation where computed, and an explicit closure-safety marker stating whether transitive or ordering claims over the analysed subgraph are sound.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-cycle-presence",
+                    "text": "Does the analysed subgraph contain directed cycles, and which edges witness them?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Boolean cyclicity result for the analysed subgraph under the declared edge filter",
+                      "One or more witness cycles as ordered edge-key sequences",
+                      "Whether cycle enumeration was exhaustive or bounded"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-scc-grouping",
+                    "text": "Which nodes form strongly connected groups, and how is each group addressed?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Component assignment mapping each node to a component identifier",
+                      "Component identity strategy independent of any arbitrarily chosen representative node",
+                      "Component size distribution and the count of non-trivial components"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-closure-safety",
+                    "text": "How do detected cycles constrain transitive closure, ordering and depth claims?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Closure-safety marker stating whether unbounded transitive claims are sound",
+                      "Mandatory depth bound or component-collapse strategy where cycles are present",
+                      "Explicit statement that topological ordering is undefined within a non-trivial component"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-condensation-use",
+                    "text": "Is the acyclic condensation of the graph recorded, and how does it relate to the original asserted edges?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Reference to the condensation projection and its own run descriptor",
+                      "Mapping from each condensation node back to its member node set",
+                      "Rule that condensation edges are derived, never asserted, and carry derived modality"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-component-id",
+                    "name": "Component identifier",
+                    "description": "Identifier of a strongly connected group, assigned so it does not depend on an arbitrary representative node.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-component-membership",
+                    "name": "Component membership",
+                    "description": "Mapping of node references to component identifiers for the analysed subgraph.",
+                    "value_kind": "collection",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-cycle-witness",
+                    "name": "Cycle witness",
+                    "description": "Ordered edge-key sequence demonstrating a directed cycle.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-condensation-ref",
+                    "name": "Condensation reference",
+                    "description": "Reference to the acyclic condensation projection derived from the component assignment.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-closure-safety-flag",
+                    "name": "Closure safety marker",
+                    "description": "Whether transitive closure and ordering claims over the analysed subgraph are sound given detected cycles and declared bounds.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-component-assignment-set",
+                    "name": "Component and cycle result set",
+                    "description": "The component assignment produced by one run, with cycle witnesses, component size statistics, the closure-safety marker and an optional condensation reference, bound to its run descriptor and snapshot digest.",
+                    "media_or_form": [
+                      "result set record, format-neutral",
+                      "node-to-component assignment table",
+                      "derived condensation graph projection referenced by identifier"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Analysis run descriptor identifier plus a zero-padded result ordinal; component identifiers are minted per run as ULIDs and mapped to their member sets, so component identity is never silently reused across snapshots.",
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-graph-reachability-and-criticality",
+                "name": "Reachability, negative claims, fan-in, fan-out and cut sets",
+                "description": "The impact answer itself: the set reachable from a seed under the declared licence, modality and temporal filters, together with the structural measures built on that traversal - fan-in and fan-out degree, minimal cut sets whose removal disconnects a seed from a target, and the count of surviving alternative paths. Fault tree analysis supplies the cut-set vocabulary and the discipline of identifying assumptions and event boundaries explicitly; reliability block diagrams supply the dual success-path view. The controlling rule is asymmetric: a positive reachability claim needs only the traversal record, while any negative claim - not reachable, not impacted, no dependency - additionally requires a resolvable completeness declaration with the closed-world flag covering the queried scope.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-graph-q-reachability-set",
+                    "text": "Which nodes are reachable from the seed under the declared licence, modality and temporal filters?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Reachable node set with, for each node, at least one witness path or hop distance",
+                      "The seed set and traversal direction that produced it",
+                      "Counts of edges traversed, suppressed by exclusion and unmatched by any licence profile"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-negative-claim-basis",
+                    "text": "On what basis may this result state that a node is not reachable or not impacted?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Identifier of the completeness declaration covering the queried scope, with its closed-world flag set",
+                      "Explicit downgrade to 'not known to be reachable' where the declaration is absent, incomplete or stale",
+                      "Record of which known unknowns bound the strength of the claim"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-fan-measures",
+                    "text": "What are the fan-in and fan-out degrees of the node, and over which edge selection were they counted?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "In-degree and out-degree counts with the edge filter and licence profile they were computed under",
+                      "Whether multi-edges, self-loops and suppressed edges were counted or excluded",
+                      "Whether the count is over asserted edges only or includes derived edges"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-cut-set",
+                    "text": "Which minimal sets of nodes or edges, if removed, disconnect the seed from the target?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Enumerated minimal cut sets with their cardinality, and identification of any single points of failure",
+                      "Whether enumeration was exhaustive or bounded, and the bound applied",
+                      "Method reference and the stated assumptions and event boundaries of the analysis"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-q-hypothetical-impact",
+                    "text": "How is a what-if impact answer over hypothetical or removed edges kept separate from the actual-state answer?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Scenario identifier and the edge additions or removals it applies",
+                      "Mandatory labelling of the result as hypothetical, including in any downstream export",
+                      "Prohibition on citing a hypothetical result as evidence of the actual state"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-graph-de-reachability-set",
+                    "name": "Reachability set",
+                    "description": "Nodes reachable from the seed under the declared filters, each with a witness path or hop distance.",
+                    "value_kind": "collection",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-negative-claim-flag",
+                    "name": "Negative claim marker",
+                    "description": "Whether the result asserts non-reachability, and the identifier of the completeness declaration that licenses it.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-fan-in",
+                    "name": "Fan-in degree",
+                    "description": "Count of licensed incoming edges at a node under the declared edge filter.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-fan-out",
+                    "name": "Fan-out degree",
+                    "description": "Count of licensed outgoing edges at a node under the declared edge filter.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-cut-set",
+                    "name": "Cut set",
+                    "description": "A minimal set of nodes or edges whose removal disconnects the seed from the target, with cardinality and exhaustiveness marker.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-graph-de-alternative-path-count",
+                    "name": "Surviving alternative path count",
+                    "description": "Number of disjoint alternative paths remaining between seed and target under the declared disjointness criterion.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-graph-art-impact-and-criticality-report",
+                    "name": "Impact and criticality result set",
+                    "description": "The released impact answer for one run: reachability set with witness paths, suppressed and unmatched edge counts, fan-in and fan-out measures, enumerated cut sets and surviving alternative-path counts, with every negative claim carrying an inline reference to the completeness declaration that licenses it and every hypothetical component labelled as such.",
+                    "media_or_form": [
+                      "result set record, format-neutral",
+                      "impact report with a mandatory completeness and assumptions header",
+                      "criticality measure table keyed by node reference"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Analysis run descriptor identifier plus a zero-padded result ordinal; node and edge entries are addressed by the endpoint references and edge keys owned by the fact base, never by report-local sequence numbers.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "dep-graph-assert-edge",
+      "name": "Assert dependency edge",
+      "description": "Record a new asserted dependency edge as an immutable primary fact with typed direction, lifecycle scope, validity window, provenance and confidence.",
+      "inputs": [
+        "Source and target endpoint references resolvable in the owning inventory model",
+        "Relation type code from a governed vocabulary",
+        "Lifecycle scope codes, validity window, asserting agent, evidence references and confidence"
+      ],
+      "outputs": [
+        "Edge assertion record with an assigned identifier under the identity priority rule",
+        "Rejection with reason where an endpoint reference does not resolve"
+      ],
+      "preconditions": [
+        "Endpoint references resolve, or the caller explicitly quarantines the edge as unresolved",
+        "Relation type code exists in a bound vocabulary version",
+        "Validity and assertion timestamps supplied as RFC 3339 values with an explicit offset or Z"
+      ],
+      "effects": [
+        "Creates one immutable edge assertion record in this model's fact base",
+        "Invalidates by digest mismatch any projection whose input snapshot included the affected scope",
+        "Does not create, modify or classify the endpoint entities, which remain owned by the inventory model"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "dep-graph-classify-modality",
+      "name": "Classify relation modality",
+      "description": "Assign exactly one modality (direct, transitive, inferred, hypothetical) to a dependency statement and attach the derivation basis for non-direct modalities.",
+      "inputs": [
+        "Dependency statement reference",
+        "Proposed modality and, where applicable, the property characteristic, property chain, rule or closure method reference with premise edge keys"
+      ],
+      "outputs": [
+        "Modality assignment with derivation basis and materialisation flag",
+        "Validation error when a non-direct modality is proposed without a resolvable basis"
+      ],
+      "preconditions": [
+        "Any declared transitive property or property chain is resolvable and its global-restriction status is recorded",
+        "Premise edges cited by a transitive statement are resolvable and within their validity window"
+      ],
+      "effects": [
+        "Sets the modality discriminator carried on the statement",
+        "Blocks promotion of a derived statement to direct modality without a new agent assertion",
+        "Does not perform entailment or invoke a reasoner; entailment computation remains with the external reasoner"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "dep-graph-declare-propagation-licence",
+      "name": "Declare propagation licence profile",
+      "description": "Publish or revise a versioned profile stating which relation types, lifecycle scopes, directions, temporal overlaps and confidence thresholds permit impact to traverse an edge for a named class of impact question.",
+      "inputs": [
+        "Impact question class the profile serves",
+        "Relation type codes, permitted directions, lifecycle scopes, temporal overlap predicate and confidence threshold",
+        "Precedence rank and approving role"
+      ],
+      "outputs": [
+        "Versioned propagation licence profile artifact",
+        "Change classification indicating whether the revision is breaking for existing projections"
+      ],
+      "preconditions": [
+        "Approving role holds authority over the profile's owner package",
+        "Deny-by-default is stated explicitly and no implicit fallback is introduced"
+      ],
+      "effects": [
+        "Creates a new profile version; prior versions remain resolvable so historical projections stay interpretable",
+        "Marks projections computed under a superseded profile version as requiring re-derivation",
+        "Does not enforce traversal at query time; enforcement is performed by the consuming evaluator"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "dep-graph-record-propagation-exclusion",
+      "name": "Record propagation exclusion",
+      "description": "Record a typed, scoped and expiring statement that a present edge or edge class does not propagate impact for a stated and evidenced reason.",
+      "inputs": [
+        "Target edge, relation-type class or subgraph, and the impact question class affected",
+        "Justification code from the governed exclusion vocabulary",
+        "Evidence references, reviewing role, effective-from and expiry timestamps"
+      ],
+      "outputs": [
+        "Exclusion statement artifact linked to the affected edges by reference",
+        "Rejection where no justification code is supplied"
+      ],
+      "preconditions": [
+        "A justification code is present; free text alone is invalid",
+        "Effective and expiry times are RFC 3339 values with an explicit offset or Z"
+      ],
+      "effects": [
+        "Creates an exclusion statement without mutating the underlying edge assertion",
+        "Requires downstream results to report the edge as suppressed rather than absent",
+        "Does not adjudicate the underlying vulnerability or exception; that remains with the referenced exception model"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "dep-graph-declare-completeness",
+      "name": "Declare completeness and enumeration frontier",
+      "description": "Publish a scoped, time-bounded declaration of how exhaustively an edge set was enumerated, including declared known unknowns and the closed-world flag.",
+      "inputs": [
+        "Node or subgraph scope, relation types enumerated and traversal depth reached",
+        "Completeness value (complete, incomplete, noAssertion) and its basis",
+        "Known-unknown records, validity interval and declaring role"
+      ],
+      "outputs": [
+        "Completeness declaration artifact citable by identifier from any projection",
+        "Default noAssertion result where the declarant cannot substantiate exhaustiveness"
+      ],
+      "preconditions": [
+        "The declaring role is authorised to set the closed-world flag for the named scope",
+        "Each known unknown names the affected node or edge class and the reason it is unresolved"
+      ],
+      "effects": [
+        "Creates a declaration version and supersedes any prior version by explicit pointer",
+        "Licenses negative conclusions only within the declared frontier and validity interval",
+        "Does not itself close the world for any scope it does not name"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-006",
+        "SRC-008",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "dep-graph-register-analysis-projection",
+      "name": "Register analysis projection",
+      "description": "Record a derived graph result produced by an external evaluator as a projection, binding it to method identity and version, parameters, edge filter, input snapshot digest, run time and determinism class.",
+      "inputs": [
+        "Registered method identifier and version, plus the full parameter set",
+        "Edge selection filter including licence profile version, admitted modalities, applied exclusions and temporal reference",
+        "Input snapshot digest, cited completeness declarations, run execution time and the result payload"
+      ],
+      "outputs": [
+        "Analysis run descriptor plus the associated result set artifact",
+        "Rejection where the method identifier is unregistered or the snapshot digest does not resolve"
+      ],
+      "preconditions": [
+        "The input snapshot digest resolves to a canonicalised, retained edge set",
+        "Cited completeness declarations are current for the analysed scope",
+        "Result semantics are declared: path restrictor, bounds, selection mode or component identity strategy as applicable"
+      ],
+      "effects": [
+        "Creates an immutable projection record separate from the asserted edge set",
+        "Never merges derived statements into the fact base",
+        "Does not execute the algorithm and asserts no ownership of the evaluator's execution logs or audit records"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-010",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "dep-graph-validate-absence-claim",
+      "name": "Validate absence or non-reachability claim",
+      "description": "Check that a proposed negative claim - not reachable, not impacted, no dependency - cites a resolvable, current completeness declaration whose frontier covers the queried scope, and return a verdict.",
+      "inputs": [
+        "Proposed negative claim with its queried scope and seed set",
+        "Referenced projection and its run descriptor",
+        "Referenced completeness declaration identifier"
+      ],
+      "outputs": [
+        "Verdict of licensed, downgraded or rejected, with the failing condition named",
+        "Rewritten claim strength, for example 'not known to be reachable', where the declaration is absent, partial or stale"
+      ],
+      "preconditions": [
+        "The projection's snapshot digest still resolves and the projection is not superseded",
+        "The completeness declaration is within its validity interval and its closed-world flag covers the queried scope"
+      ],
+      "effects": [
+        "Produces a validation verdict over this model's own records",
+        "Prevents publication of an unsupported negative conclusion by downgrading its stated strength",
+        "Does not enforce access, block delivery or write an audit record; enforcement and audit remain with the consuming service and the Dimension's audit model"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-006",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "dep-graph-supersede-stale-projection",
+      "name": "Supersede stale projection",
+      "description": "Mark a stored projection as stale and record its supersession when its input snapshot, licence profile version or completeness declaration has changed.",
+      "inputs": [
+        "Projection or run descriptor reference",
+        "Staleness trigger: snapshot digest mismatch, licence profile revision or completeness re-declaration",
+        "Replacement run descriptor reference where one exists"
+      ],
+      "outputs": [
+        "Updated run descriptor carrying a staleness marker and supersession pointers",
+        "List of downstream results that inherited the staleness"
+      ],
+      "preconditions": [
+        "The triggering change is itself recorded and resolvable",
+        "The projection has not already been tombstoned"
+      ],
+      "effects": [
+        "Marks the projection stale and forbids its use as support for a negative or absence conclusion",
+        "Propagates the staleness marker to derived results that consumed it",
+        "Does not delete the projection or trigger re-computation; re-derivation is requested from the external evaluator"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-012"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Component, asset or subject inventory model (SPDX 3.0.1 and CycloneDX 1.6 aligned)",
+      "relation": "REFERENCE",
+      "purpose": "Edge endpoints are carried only as resolvable references. Identity, versioning, classification and inventory completeness of the depended-on subjects stay with the inventory model; this model carries the reference, the resolution scheme binding and the failure behaviour when a reference does not resolve, and reproduces none of the inventory's lifecycle or curation functions.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Provenance model (W3C PROV aligned)",
+      "relation": "ALIGN",
+      "purpose": "Align assertion provenance and derivation vocabulary for edges and projections so they are exportable as PROV descriptions. The alignment is deliberately partial: PROV's non-transitivity of derivation is honoured as a constraint, while PROV's activity, agent and delegation lifecycle is not imported.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "ISO/IEC 39075 GQL path-pattern semantics",
+      "relation": "ALIGN",
+      "purpose": "Bind the declared path restrictor and selection mode on a path result to the standard's walk, trail, acyclic and simple vocabulary so results are interpretable across engines. Query syntax, evaluation and execution planning remain in the engine.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "OWL 2 property-characteristic declarations",
+      "relation": "ALIGN",
+      "purpose": "Reference a declared transitive property or object property chain as the derivation basis for an inferred edge, including whether the OWL 2 global restrictions on composite properties are satisfied. Entailment computation and reasoner materialisation stay outside.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Reliability and risk analysis model (IEC 61025 fault tree analysis and IEC 61078 reliability block diagrams aligned)",
+      "relation": "REFERENCE",
+      "purpose": "Cut-set and success-path results are recorded here as method-declared projections with their stated assumptions and event boundaries. Probability quantification, importance factors, risk acceptance and dependability verdicts belong to the risk model and are referenced, not reproduced.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Exception and exploitability statement model (VEX / OpenVEX aligned)",
+      "relation": "REFERENCE",
+      "purpose": "A propagation exclusion may cite an external exploitability or exception statement as its evidence and may carry the justification code and its scope binding. Vulnerability status determination, remediation and disclosure remain with that model.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Snapshot and dataset versioning model",
+      "relation": "COMPOSE",
+      "purpose": "The immutable input snapshot that gives a projection its falsifiable identity is composed from a shared snapshot and digest facility: canonicalisation, content digest and retention of the selected edge set. This model supplies the edge-set selection and consumes the digest as the snapshot's identifier.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Validity-period mixin",
+      "relation": "MIX-IN",
+      "purpose": "Edge validity windows, exclusion effective and expiry times and completeness declaration intervals reuse the shared validity-period mixin rather than redefining interval semantics locally.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "Change, release and remediation execution model",
+      "relation": "REFERENCE",
+      "purpose": "An impact projection is delivered as an input to change planning, carrying its completeness declaration and assumptions. Deciding, approving, scheduling and executing a change, and recording that execution, belong entirely to the change model.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "Host subject model applying this mixin",
+      "relation": "EXTEND",
+      "purpose": "The mixin specialises only the dependency and impact surface of its host subject: edge typing bound to the host's vocabulary and licence profiles written for the host's impact questions. Generic identity, authority, record lifecycle and conflict resolution remain with the host and are not duplicated here.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name a single owner package for the dependency-edge namespace, the exclusion justification vocabulary and the propagation licence profiles, with a named approving role for each profile version.",
+        "Maintain a registry of analysis method identifiers and versions; an algorithm change requires a new method identifier rather than a silent revision, and each entry names the evaluator implementations that may claim it.",
+        "Publish and re-publish completeness declarations for every scope over which the Dimension permits negative or non-reachability conclusions, and name the role authorised to set the closed-world flag.",
+        "Record, for every projection, which external evaluator produced it; the owner package must not claim ownership of that evaluator's execution, enforcement or audit records."
+      ],
+      "namespace_guidance": "Relation type codes, exclusion justification codes and analysis method identifiers are IRIs or governed codes in a namespace owned by the adopting Dimension, with explicit binding statements to external vocabularies (SPDX RelationshipType, SPDX LifecycleScopeType, CycloneDX dependsOn and provides, OpenVEX justifications, GQL path restrictors). Bindings are recorded as alignments with a vocabulary version, never as claims of conformance. Local identifiers are lower-kebab-case and carry no date component.",
+      "registry_links": [
+        "Vercy registry entry vr.wm-xct-037 (WM-XCT-037 Dependency / Impact), nav path NAV.XCT.DEP",
+        "SPDX 3.0.1 Core vocabularies for RelationshipType, RelationshipCompleteness and LifecycleScopeType",
+        "ISO/IEC 39075:2024 GQL for path restrictor and match-mode terminology",
+        "OpenVEX justification vocabulary for exclusion codes"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "The canonical natural key of an asserted edge is the ordered tuple of source reference, relation type, sorted target reference set, sorted lifecycle scope set and validity start; target and scope sets are sorted by their governed identifier to make the key stable under reordering.",
+        "All timestamps are normalised to RFC 3339 with whole-second or finer precision and an explicit numeric offset or Z before any digest is computed.",
+        "A snapshot digest is computed over the canonicalised, key-sorted selected edge set together with the edge filter and the identifiers of the cited completeness declarations, so that a filter change yields a different snapshot identity.",
+        "Canonicalisation is defined over the abstract record, not over any serialisation; JSON, YAML, RDF, Markdown, property-graph and document-store forms must all produce the same canonical key and digest."
+      ],
+      "patch_rules": [
+        "Asserted edges are append-only. A correction is a new assertion carrying a supersedes pointer and a correction reason; in-place mutation of an edge record is prohibited.",
+        "Derived projections are never patched. A changed input produces a new run descriptor and a new result set; the prior projection is marked stale and superseded.",
+        "Propagation licence profiles and completeness declarations are versioned artifacts; a revision creates a new version and retains the prior version as resolvable.",
+        "An exclusion statement is amended only by issuing a superseding statement; expiry lapse is recorded, not backdated."
+      ],
+      "compatibility_rules": [
+        "Adding a relation type code, a path restrictor binding or a new analysis method identifier is a minor, backward-compatible change.",
+        "Changing a propagation licence profile from deny to allow for any relation type or lifecycle scope is a breaking change and invalidates projections computed under the prior version.",
+        "Withdrawing, narrowing or expiring a completeness declaration is a breaking change for every negative conclusion that cited it; those conclusions must be re-validated or downgraded.",
+        "Changing the canonical edge key composition, the digest algorithm or the modality vocabulary is a breaking change requiring a model version increment and re-derivation of affected projections."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the identifier issued by the system of record that asserts the edge or governs its endpoints - for example an SPDX Element identifier, a CycloneDX bom-ref within the owning inventory, or an external evaluator's own run identifier for a projection.",
+        "Governed global identifier or IRI from a published namespace where no master-system identifier exists - for example a purl, a CPE or a Dimension-owned IRI for a licence profile, completeness declaration or analysis method.",
+        "UUID or ULID minted by the adopting Dimension, recorded together with its minting authority and the natural key it stands for.",
+        "A date, a version label, a file path or a report sequence number is never an identifier; the canonical edge key and the path edge-sequence digest are natural keys retained for deduplication and comparison, not substitutes for an assigned identifier."
+      ],
+      "timestamp_rule": "All time values use RFC 3339 date-time with at least whole seconds and an explicit numeric UTC offset or Z; local times without an offset are rejected. Edge validity time (the interval over which the dependency is claimed to hold), assertion or observation time (when the claim was recorded), and analysis-run execution or ingestion time (when a projection was computed and when it was registered) are stored as separate fields and are never conflated, because a projection is normally computed after the edge state it describes and may be ingested later still.",
+      "serial_naming_rule": "Serial artifacts are the repeatable outputs of analysis: run descriptors and result sets. Each is named by its analysis method identifier, its input snapshot digest and a zero-padded monotonic run ordinal scoped to that method-and-snapshot pair. Ordinals are never reused or renumbered, gaps are permitted and meaningful (they record a withdrawn run), and no ordinal encodes a date.",
+      "integrity_rule": "Every result-set artifact carries its own content digest plus the digest of its input edge set and the identifiers of the cited completeness declarations and licence profile versions. A projection whose input digest no longer resolves, or whose cited declaration has been superseded or has expired, is marked stale and must not be used to support any negative, non-reachability or 'no impact' conclusion; positive traversal witnesses from a stale projection may still be cited if labelled with the snapshot they came from."
+    },
+    "policies": [
+      "No absence, non-reachability or 'no impact' conclusion may be published without a resolvable, current completeness declaration whose frontier covers the queried scope and whose closed-world flag is set; otherwise the claim is downgraded to 'not known to be reachable'.",
+      "Derived results are projections and are never merged into the asserted edge set; asserted and derived statements remain separately addressable and separately queryable at every layer, in every storage form.",
+      "Propagation is deny-by-default: an edge licenses impact traversal only when an explicit licence profile matches it, and edges matched by no profile are reported as a distinct unmatched category rather than dropped.",
+      "An edge suppressed by an exclusion must be reported as suppressed with its justification code; rendering a suppressed edge as absent is prohibited because absence carries a completeness claim that an exclusion does not make.",
+      "Hypothetical edges and scenarios are excluded from actual-state answers by default; any answer that consumed them is labelled hypothetical, and that label survives export.",
+      "This model records analysis declarations only. It does not execute algorithms, enforce access, schedule or perform change, or generate audit trails; those remain with the referenced evaluator, enforcement point, change model and the adopting Dimension's audit service."
+    ],
+    "crud": {
+      "read": [
+        "Every read of an edge returns its modality, validity window and assertion provenance; a consumer must never receive a bare endpoint pair.",
+        "Every read of a projection returns its run descriptor: method identifier and version, parameters, edge filter, snapshot digest and cited completeness declarations.",
+        "A read that would answer a negative or absence question returns the governing completeness declaration alongside the answer, or returns the downgraded claim strength.",
+        "Stale projections remain readable but are returned with an explicit staleness marker and the trigger that caused it."
+      ],
+      "create": [
+        "An edge assertion is created only with resolvable endpoint references, a governed relation type, a declared modality and assertion provenance; unresolved endpoints are quarantined rather than silently accepted.",
+        "A projection is created only with a registered method identifier and version, a resolvable snapshot digest and a declared result semantics (path restrictor and selection mode, or component identity strategy, as applicable).",
+        "An exclusion is created only with a governed justification code, an applicability scope and an effective interval.",
+        "A completeness declaration is created only by a role authorised for the named scope, and defaults to noAssertion where exhaustiveness cannot be substantiated."
+      ],
+      "update": [
+        "Asserted edges are immutable; change is expressed only by a superseding assertion carrying a reason and a supersedes pointer.",
+        "Projections are never updated in place; a changed input produces a new run descriptor and result set and marks the prior one superseded.",
+        "Licence profiles, exclusions and completeness declarations are updated by issuing a new version that retains the prior version as resolvable.",
+        "Modality may never be upgraded from a derived value to direct without a new agent assertion recorded as its own edge fact."
+      ],
+      "delete": [
+        "This model's own records are tombstoned, not erased. A retired edge assertion, exclusion, completeness declaration or projection retains its identifier, canonical key, modality, validity window, supersession pointer and retirement reason for the retention period set by the adopting Dimension, so that historical projections remain explainable.",
+        "A tombstoned edge is never counted as an absence: any traversal or negative claim that encounters a tombstone must treat it as a declared known unknown unless a current completeness declaration covers the scope.",
+        "Deletion is cascade-safe in one direction only: retiring an edge marks dependent projections stale but never deletes them; retiring a completeness declaration invalidates the negative conclusions that cited it and requires their re-validation.",
+        "Physical erasure, cryptographic shredding, legal hold and jurisdictional erasure requests are executed by the adopting Dimension's records-retention policy together with the referenced storage and inventory models; this model owns only the disposition marker, the tombstone content rule and the prohibition on reading a tombstone as absence. Where an erasure obligation conflicts with the tombstone rule, the Dimension's retention policy prevails and the resulting gap must be recorded as a declared known unknown."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Edge assertion steward",
+        "responsibilities": [
+          "Records and supersedes asserted edges, ensuring endpoint references resolve and provenance and confidence are populated",
+          "Quarantines unresolved or conflicting assertions rather than dropping them",
+          "Maintains the binding between local relation type codes and external vocabulary versions"
+        ]
+      },
+      {
+        "name": "Propagation policy owner",
+        "responsibilities": [
+          "Authors, versions and approves propagation licence profiles per impact question class",
+          "Sets and reviews confidence thresholds and precedence ranks, and classifies revisions as breaking or minor",
+          "Reviews and approves propagation exclusions and their justification codes and expiry"
+        ]
+      },
+      {
+        "name": "Completeness declarant",
+        "responsibilities": [
+          "Declares the enumeration frontier, completeness value and known unknowns for a named scope",
+          "Holds the sole authority to set the closed-world flag and to re-declare or withdraw a declaration",
+          "Triggers re-validation of negative conclusions when a declaration lapses or narrows"
+        ]
+      },
+      {
+        "name": "Analysis method registrar",
+        "responsibilities": [
+          "Registers analysis method identifiers and versions and the evaluator implementations permitted to claim them",
+          "Verifies that registered projections carry complete parameters, edge filter, snapshot digest and determinism class",
+          "Marks projections stale on snapshot, profile or declaration change and records supersession"
+        ]
+      },
+      {
+        "name": "Impact analyst and projection consumer",
+        "responsibilities": [
+          "Requests projections with an explicit question class, seed set, temporal reference and licence profile",
+          "Publishes impact answers only with their completeness declaration, assumptions and suppressed-edge counts attached",
+          "Labels every hypothetical or scenario-based answer and does not cite it as evidence of actual state"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Least privilege with inherited sensitivity: a derived projection inherits the most restrictive classification of any contributing edge, endpoint reference, exclusion evidence item or completeness declaration in its input snapshot. A caller who may not read a contributing edge may not read a projection that reveals it, including indirectly through a witness path.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Aggregate-only release: fan-in, fan-out, component sizes and cut-set cardinalities may be released with endpoint references redacted, provided witness paths are withheld and the redaction is stated in the result.",
+        "Incident triage break-glass: time-boxed read of reachability answers for a named seed, granted by the propagation policy owner, requiring the completeness declaration to be attached and the grant to expire automatically.",
+        "Supply-chain disclosure: an edge set may be released to an external party under the completeness value and known unknowns of its declaration, never as a bare list that implies exhaustiveness.",
+        "Hypothetical scenario sandbox: scenario edge sets are readable only within the scenario scope and are never returned by an actual-state query."
+      ],
+      "audit_requirements": [
+        "Every released projection carries its method identifier and version, snapshot digest, licence profile version and cited completeness declaration identifiers so that an external audit record can be correlated to it.",
+        "Every negative or absence conclusion records which completeness declaration licensed it and which known unknowns bounded it.",
+        "Break-glass and aggregate-only releases record the granting role, the scope, the expiry and the redaction applied.",
+        "Access events and the audit trail itself are generated and retained by the adopting Dimension's audit service; this model supplies correlation metadata only and asserts no ownership of audit-record semantics or retention."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Registry ID",
+        "Propagation licence profile URL",
+        "Completeness declaration URL",
+        "Analysis method registry URL"
+      ],
+      "read_order": [
+        "AGENTS.md - resolve Name, Type, Registry ID and the four URL fields before any other action",
+        "Specification URL - read the model scope, boundary notes and out-of-scope list to confirm the request belongs to this model",
+        "Completeness declaration URL - resolve the declaration covering the queried scope before formulating any absence, non-reachability or 'no impact' answer",
+        "Propagation licence profile URL - resolve the governing profile version before traversing any edge",
+        "Analysis method registry URL - resolve the method identifier and version before registering or interpreting a projection",
+        "Storage type URL and Interface URL - bind the abstract records to the concrete storage and access projection in use",
+        "Processes URL - follow the assertion, declaration, registration, validation and supersession procedures"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This pass covers the graph-analysis semantics of WM-XCT-037: asserted edges as immutable primary facts, modality discrimination across direct, transitive, inferred and hypothetical relations, deny-by-default propagation licensing with typed exclusions, mandatory completeness and closed-world declarations before any absence or non-reachability claim, and derived results (paths and path restrictors, cycles and strongly connected groups, reachability, fan-in and fan-out, cut sets and alternative paths) recorded as snapshot-bound projections with declared algorithm and parameters. Structural nodes are grounded in SPDX 3.0.1 relationship and completeness semantics, CycloneDX's explicit opaque-absence rule, W3C PROV-CONSTRAINTS and RDF 1.1 Semantics on non-transitivity and non-obligatory materialisation, OWL 2 property characteristics, ISO/IEC 39075 path restrictors and IEC 61025 and 61078 cut-set and success-path vocabulary. It is not a graph database, a scheduler, a change executor or a risk quantification method, and it claims no conformance to any cited standard.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Edge key, path edge-sequence digest, component identifier, run descriptor identity and declaration identifiers are all defined, with the identity priority placing the authoritative master-system identifier first and explicitly excluding dates, paths and report sequence numbers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Edges are append-only with supersession; licence profiles, exclusions and completeness declarations are versioned; projections are re-derived and superseded rather than patched. Host-subject and endpoint-entity lifecycles are explicitly left to the host model and the inventory model."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "The typed, directed, scoped edge is the core object; modality separates direct, transitive, inferred and hypothetical relations; composition links bind the model to inventory, provenance, GQL, OWL 2, reliability, VEX, snapshot, validity, change and host models with explicit ownership boundaries."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Edge validity window, assertion or observation time, snapshot reference instant, run execution time and ingestion time are separated; temporal overlap is a licensing condition; exclusions and completeness declarations expire. All times are RFC 3339 with seconds and an explicit offset or Z."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every edge carries asserting agent, evidence and confidence; every projection carries method, parameters, edge filter, snapshot digest and cited declarations; derivation basis is mandatory for transitive and inferred statements. PROV is an alignment target, not an imported lifecycle."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Owner package requirements, five named roles and the composition ledger assign ownership; execution, enforcement, risk quantification, change execution and audit-trail generation are explicitly assigned elsewhere."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "The absence-claim validation function returns licensed, downgraded or rejected verdicts; deny-by-default licensing, mandatory justification codes, closure-safety marking and determinism class are all checkable conditions. Validation produces verdicts, not enforcement."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Inherited-sensitivity default rule, four scopes, and four exception classes including aggregate-only release and time-boxed break-glass. Audit requirements are limited to correlation metadata the model must emit."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstone rule with mandatory retained content, the prohibition on reading a tombstone as absence, one-directional cascade safety, and an explicit statement that physical erasure and legal hold are executed by the adopting Dimension's retention policy and the referenced storage and inventory models, with retention prevailing over the tombstone rule where they conflict."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments declared to SPDX, CycloneDX, PROV, OWL 2, GQL, OpenVEX, IEC 61025 and IEC 61078, each as an alignment with a version binding rather than a conformance claim. Canonicalisation is defined over abstract records so all serialisations agree."
+      },
+      {
+        "dimension": "closed-world and completeness",
+        "status": "covered",
+        "notes": "A dedicated layer and finding, grounded in the SPDX three-valued completeness vocabulary, the CycloneDX opaque-absence rule and RDF's purely assertional character; absence claims are structurally blocked without a covering declaration."
+      },
+      {
+        "dimension": "cycles and termination",
+        "status": "covered",
+        "notes": "Cycle witnesses, strongly connected group membership, condensation and an explicit closure-safety marker constrain transitive, ordering and depth claims; unbounded closure over cyclic subgraphs is prohibited."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Fan-in, fan-out, cut-set cardinality, alternative-path counts and confidence are all defined with the edge selection they were computed under; counting rules for multi-edges, self-loops and suppressed edges are required to be stated."
+      },
+      {
+        "dimension": "reproducibility and determinism",
+        "status": "covered",
+        "notes": "Method identity and version, full parameters, snapshot digest, determinism class and recorded seeds or tie-break rules make each projection reproducible or explicitly flagged as non-reproducible."
+      },
+      {
+        "dimension": "security and privacy of the graph itself",
+        "status": "gap",
+        "notes": "Inherited sensitivity and redaction exceptions are declared, but inference attacks that reconstruct a redacted edge from aggregate degree or cut-set statistics are not analysed here. This needs either a dedicated disclosure-control model or a follow-up finding; it is marked a gap rather than presented as solved."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Dependency and impact edges in this mixin are not intrinsically spatial. A host subject with geographic dependencies should compose a separate spatial model rather than extend edge semantics here."
+      },
+      {
+        "dimension": "conflict resolution between competing assertions",
+        "status": "gap",
+        "notes": "Precedence between competing licence profiles is defined, but reconciling two contradictory edge assertions from different authoritative systems is deliberately left to the host model's generic conflict machinery; only the append-only supersession mechanism is provided locally."
+      }
+    ],
+    "known_omissions": [
+      "Weighted and probabilistic propagation (impact strength decay over hops, Bayesian propagation) is not modelled. It was rejected for this pass because no cited primary source supports a general weighting semantics, and quantification belongs to the referenced risk model.",
+      "Cut-set enumeration complexity is not addressed: minimal cut-set enumeration is exponential in the general case, so the exhaustiveness marker is required but no bounding strategy is prescribed.",
+      "Centrality measures beyond degree (betweenness, PageRank, articulation points) are omitted. Only fan-in, fan-out and cut sets have direct support in the cited standards; adding others without primary grounding would be unsupported structure.",
+      "Temporal graph semantics beyond per-edge validity intervals - for example reachability over time-respecting paths, where a path is valid only if edge intervals are ordered - is identified but not modelled; it is a genuine gap that a temporal-reachability extension should close.",
+      "Multi-edge and hyperedge cases (one assertion with several targets, as SPDX permits) are carried in the data model but their effect on path and cut-set semantics is not fully specified.",
+      "The CISA Framing Software Component Transparency PDF body could not be machine-parsed in this pass, so it is cited only for the framing established on its landing page, not for internal normative claims about dependency depth or known unknowns.",
+      "The normative text of ISO/IEC 39075:2024 is paywalled; the path restrictor vocabulary was verified through the ISO catalogue entry plus implementation and secondary descriptions, not by reading the standard.",
+      "Incremental and streaming re-derivation (updating a projection from a delta rather than a full re-run) is out of this pass; only full supersession is defined."
+    ],
+    "conflicts": [
+      "W3C PROV-CONSTRAINTS states there is no inference making derivation transitive, while OWL 2 permits declaring a property transitive and composing property chains. These are not reconcilable by default, so this model requires transitivity to be explicitly declared per relation type with a recorded basis, and treats any unmarked transitive claim as invalid.",
+      "SPDX attaches completeness to an individual relationship assertion, whereas CycloneDX makes a document-level statement that absence from the graph is opaque. This model uses a scoped declaration covering a frontier, which is broader than the SPDX per-relationship marker and narrower than a blanket document-level assumption; neither source is fully satisfied and the divergence is recorded rather than hidden.",
+      "RDF 1.1 Semantics establishes that a valid inference need not be materialised, while graph analytics practice routinely writes derived properties back into the graph. This model permits materialisation but forbids merging derived statements into the asserted edge set, which is stricter than common practice.",
+      "IEC 61025 and IEC 61078 use cut set and path set in a coherent-system reliability sense with defined failure semantics, whereas software dependency analysis borrows the terms structurally without failure logic. The model records the method reference and assumptions to keep the borrowed usage honest, but the terminological overlap remains a source of misreading.",
+      "Graph engines differ in default path semantics: some default to trail or simple, others to walk. ISO/IEC 39075 makes the restrictor explicit, so this model mandates declaring it, which will produce results that differ from engine defaults."
+    ],
+    "regional_assumptions": [
+      "No jurisdiction-specific content is asserted. The only region-sensitive point is deletion: where a data-protection regime such as the EU GDPR right to erasure compels physical removal, the adopting Dimension's retention policy overrides the tombstone rule and the resulting gap must be recorded as a declared known unknown rather than as an absent edge.",
+      "Cited standards are English-language international or de facto standards; SPDX, CycloneDX and VEX practice is strongest in software supply chain contexts, and the mixin's generalisation to non-software dependency domains (organisational, physical, contractual) is asserted structurally and relies on the IEC dependability standards for cross-domain support.",
+      "Public-authority framing is drawn from a United States agency (CISA); comparable EU frameworks such as the Cyber Resilience Act were not examined in this pass and may impose different completeness expectations."
+    ],
+    "adversarial_checks": [
+      "Attempted to justify a 'no impact' answer from a traversal alone. Rejected: CycloneDX states that objects absent from the dependency graph may have unknown dependencies and should be treated as opaque, and RDF is purely assertional with no way to state absence. The structure therefore blocks the answer unless a covering completeness declaration with the closed-world flag exists.",
+      "Tested whether transitive impact could be inferred by default from chained edges. Rejected: PROV-CONSTRAINTS explicitly declines to make derivation transitive and demonstrates that wasInformedBy is not transitive. Transitivity is modelled as a declared property with a recorded basis and depth bound, not a default.",
+      "Tested whether this model should own the evaluation and enforcement of impact rules, since it defines licence profiles. Rejected under the relation contract: a reference to an evaluator, enforcement point or audit record grants no ownership of execution, enforcement or audit semantics. The validation function returns verdicts and the registration function records externally produced runs; neither executes or enforces.",
+      "Tested whether an exclusion could simply be modelled as edge removal, which would simplify the structure. Rejected: removal would convert a policy decision into an apparent absence and would silently strengthen every downstream negative claim. Exclusions are therefore separate statements and suppressed edges must be reported as suppressed.",
+      "Tested whether path, cycle, degree and cut-set results deserve one generic 'graph metric' finding. Rejected: ISO/IEC 39075's restrictors, the closure-safety consequences of cycles and the reliability-standard framing of cut sets impose genuinely different declaration obligations, and collapsing them would let a consumer read a walk-based result as a simple-path result.",
+      "Tested whether a graph schema, storage layout or query surface belonged in scope. Rejected: storage and query are projections, and modelling them would make the mixin a graph database specification, which the boundary notes and out-of-scope list explicitly forbid.",
+      "Searched for a counterexample to deny-by-default licensing, on the argument that most dependency edges obviously propagate. Retained deny-by-default anyway: SPDX lifecycle scope establishes that a build dependency and an operational dependency carry different implications, so 'obviously propagates' is question-dependent and an unmatched edge must be reported, not assumed."
+    ]
+  }
+}
