@@ -62,3 +62,14 @@ expensive and misleading. Vercy therefore uses three truthful catalogue tiers:
 The next architecture task is to make tiers 2 and 3 searchable through the
 same API and catalogue while preserving source licence, version, hierarchy and
 the distinction between a curated specification and a generated profile.
+
+## First scale implementation
+
+API version 1.1.0 now implements the first tier-3 discovery boundary. When no
+local model reaches score 0.55, `/api/v1/models/search/` sends only the public
+concept name and language to Wikidata `wbsearchentities`. Returned QIDs are
+labelled `generated-profile`, `external-profile-candidate` and
+`installable=false`; they include source and CC0 provenance and can enter the
+normal UUID materialization queue. Local curated models remain authoritative
+and rank first. No private need description, questions, properties, examples,
+client identity or Dimension data is sent to Wikidata.
