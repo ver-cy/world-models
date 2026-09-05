@@ -5,11 +5,11 @@ param(
     [string]$Action,
 
     [Parameter(Mandatory = $true, Position = 1)]
-    [ValidateSet("claude", "grok", "integration", "production-deploy")]
+    [ValidateSet("claude", "grok", "integration", "production-deploy", "dynamic-request")]
     [string]$Resource,
 
     [Parameter(Mandatory = $true, Position = 2)]
-    [ValidatePattern("^stream-0[1-6]$")]
+    [ValidatePattern("^(stream-0[1-6]|stream-api)$")]
     [string]$Stream,
 
     [string]$CoordinationRoot = "R:\02_PROJECTS\02_Meta_Models_Platforms\Ver.cy\current\vercy-workstreams\_coordination"
@@ -18,8 +18,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-if ($Resource -in @("integration", "production-deploy") -and $Stream -ne "stream-01") {
-    [Console]::Error.WriteLine("$Resource is reserved for stream-01")
+if ($Resource -in @("integration", "production-deploy") -and $Stream -notin @("stream-01", "stream-api")) {
+    [Console]::Error.WriteLine("$Resource is reserved for stream-01 and stream-api")
+    exit 4
+}
+
+if ($Resource -eq "dynamic-request" -and $Stream -ne "stream-api") {
+    [Console]::Error.WriteLine("dynamic-request is reserved for stream-api")
     exit 4
 }
 
