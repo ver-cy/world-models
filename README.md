@@ -4,6 +4,11 @@ A vendor-neutral library of meta-models describing **the world of people and wha
 
 Published by the [Vercy](https://ver.cy) project. The catalogue is standalone: bound to no product, no platform and no government program. Any Vercy-conformant Dimension can adopt any subset of it.
 
+Runtime proof is tracked separately from catalogue breadth. See
+[`planning/VERCY-RUNTIME-PROOF-0.4.md`](planning/VERCY-RUNTIME-PROOF-0.4.md) for
+the executable reference Dimension, validation, retrieval, time/conflict,
+parallel-write, migration, MCP and benchmark checkpoint.
+
 ## What is inside
 
 | Artifact | What it is |
