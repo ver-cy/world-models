@@ -1,4 +1,11 @@
-# Six-stream Vercy research protocol
+# Six-stream Vercy research protocol (retired)
+
+> Retired on 2026-09-06. The six branches and worktrees are preserved as
+> read-only evidence, but no agent may continue work in them. All research,
+> integration and publication now runs serially from
+> [`../research/single-stream/AGENTS.md`](../research/single-stream/AGENTS.md)
+> in the canonical `feat/mega-model-registry` worktree. This document describes
+> the former protocol only and is not an active execution contract.
 
 Copy-ready prompts for starting the six independent chats are stored in
 [`START-MESSAGES.md`](./START-MESSAGES.md).

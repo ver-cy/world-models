@@ -11,10 +11,13 @@ classifiers and protocols: they receive an alignment/verification pass and are
 not forced into an artificial Bundle/Layer hierarchy.
 
 The single queue was paused at sequence 90 (`WM-XCT-037`) and checkpointed in
-[`PAUSE-CHECKPOINT-2026-09-04.md`](./PAUSE-CHECKPOINT-2026-09-04.md). The owner
-subsequently replaced that execution mode with six isolated manual workstreams.
-Their authoritative ownership and coordination contract is
-[`../workstreams/README.md`](../workstreams/README.md).
+[`PAUSE-CHECKPOINT-2026-09-04.md`](./PAUSE-CHECKPOINT-2026-09-04.md). A later
+six-workstream experiment was retired on 2026-09-06 after producing only three
+completed models and a large set of provider-pending preparation dossiers. The
+three valid results were integrated; all unfinished work is now consumed by one
+canonical queue. The active execution contract is
+[`single-stream/AGENTS.md`](./single-stream/AGENTS.md). The old workstream
+contract remains only as historical evidence.
 
 ## Quality gate
 
