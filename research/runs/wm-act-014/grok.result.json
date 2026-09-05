@@ -1,0 +1,3342 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-act-014",
+    "model_id": "WM-ACT-014",
+    "name": "Health Care Delivery",
+    "entry_kind": "aggregate",
+    "purpose": "System side of care delivery: provider organizations, practitioner roles, facilities, service offerings, capacity and availability, demand routing (referrals, transfers, waiting) and directory/stewardship facts. Nested encounter instances are contained as WM-ACT-018 and are not given local encounter lifecycle.",
+    "scope_statement": "This model owns provision, capacity and demand routing for care delivery, plus the parent-side binding to contained encounter instances. It excludes person-side clinical state, diagnoses and personal health episodes; generic legal-entity, person, site, service, capability, workflow, access, audit and billing machinery; and evaluation, execution, enforcement and audit-trail engines.",
+    "in_scope": [
+      "Healthcare provider organizations as delivery actors, including ICHA-HP statistical class, national registry identifiers, healthcare-specific type, succession and non-hierarchical affiliations.",
+      "Practitioner roles: profession, specialty, role period, facilities and services served, registration-in-role, credential and privilege facts, locum or unnamed-role occupancy.",
+      "Facilities as care-delivery sites (IHE pairing of Location and Organization), including mobile, virtual, field, home-as-kind, and hierarchical campus/building/ward/room/bed kinds.",
+      "Healthcare service offerings at locations, including eligibility, programs, modality, referral method and nested schedulable services.",
+      "Quantified capacity (beds, chairs, places, procedure volumes, appointment slots, equipment classes) and occupancy or divert state.",
+      "Staffing coverage by cadre, rostered presence and on-call arrangements as delivery capacity, not employment contracts.",
+      "Directed demand: referrals and inter-facility transfer requests; waiting-list entries and waiting-time clocks.",
+      "Care-services directory, discovery queries, electronic endpoints and public versus professional projections.",
+      "Facts of licence-to-operate, accreditation and reporting obligation; not the enforcement or evaluation engine.",
+      "Parent-side binding that this delivery system contains encounter instances owned by WM-ACT-018."
+    ],
+    "out_of_scope": [
+      "Encounter instance lifecycle, class, subject status, admission/stay/discharge operations, EncounterHistory and ADT execution (WM-ACT-018).",
+      "Clinical content, diagnoses, problems, procedures as clinical events, medications and personal health episodes (personal-health sibling).",
+      "Person identity and demographics of patients or practitioners as people (person sibling).",
+      "Generic organization legal-entity lifecycle, tax identity and corporate filings (organization sibling); this model only specialises the healthcare-provider role.",
+      "Physical site geometry, cadastral parcel, building fabric and non-care land use (site sibling); this model binds facility to a site reference.",
+      "Generic service catalogue machinery (service sibling); this model EXTENDs only care-specific offering attributes.",
+      "Generic capability and competency frameworks (function-and-capability sibling); specialties are bound, not redefined.",
+      "Care-pathway orchestration and workflow engines (process-and-workflow sibling).",
+      "Access-control, consent, break-glass and authorisation engines (access/ownership siblings).",
+      "Audit-trail recording, integrity and retention of audit events (audit sibling).",
+      "Claims, tariffs, DRG grouping engines, coverage eligibility determination engines and insurer plan design.",
+      "Individual device, medicinal-product and inventory item lifecycles.",
+      "Clinical quality-measure computation (HEDIS, hospital-acquired condition algorithms) as an evaluation engine.",
+      "Computer/SOA technical services that are not care services (FHIR HealthcareService explicit exclusion).",
+      "Locations on a patient's body (FHIR Location boundary).",
+      "CommunicationRequest-only disclosure without a service to be performed.",
+      "Appointment used as a synonym for Encounter; Appointment/slot booking is demand/capacity, the actual interaction is WM-ACT-018."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-ACT-018 (contained encounter model)",
+        "distinction": "CONTAINS WM-ACT-018 is a matryoshka: this model may carry encounter instance references and facility/service/role bindings; it must not reproduce encounter status machines, admission/discharge operations, subject-status workflows or encounter-history semantics.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "Generic organization and site models (IHE Facility pairing)",
+        "distinction": "IHE mCSD Facility is a pairing of Location and Organization. This model records the pairing and healthcare-specific facility attributes; it does not own generic Organization or Location lifecycles.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "FHIR Location versus Organization for 'ward'",
+        "distinction": "Acknowledged conflict: Location is the physical structure, Organization the conceptual hierarchy. Facility findings must store both references rather than collapsing them.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Person and personal-health models",
+        "distinction": "Person-linked referrals and waiting-list entries store a person/episode reference only; they do not inline clinical reason or identity attributes owned by person or personal-health models.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "ISO 7101 quality-management system",
+        "distinction": "ISO 7101 quality-management requirements are alignment targets for stewardship facts. Conformity assessment, audit and improvement cycles are not owned here.",
+        "source_refs": [
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Jurisdictional regulation profiles",
+        "distinction": "Licence suspension, EMTALA anti-dumping, crisis standards of care, Certificate of Need and network-adequacy rules are jurisdiction profiles, not universal axioms.",
+        "source_refs": [
+          "SRC-015"
+        ]
+      },
+      {
+        "neighbor": "Facility place identity versus capacity counts",
+        "distinction": "Bed may appear as a Location instance (place) and as a capacity quantity. Place identity belongs with facility structure; counts and occupancy belong with capacity.",
+        "source_refs": [
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Evaluation, enforcement and audit siblings",
+        "distinction": "A reference to a runtime evaluator, enforcement engine or audit record never grants this model ownership of evaluation, execution, enforcement or audit-trail semantics; mCSD security considerations require access control and recommend IUA without making this model the PEP or audit store.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "HL7 FHIR R5 Encounter - scope, status, class, admission versus Appointment",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/encounter.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Defines the contained-child boundary: encounter status, class, subjectStatus, admission, EncounterHistory and jurisdictional variance in encounter grain belong to WM-ACT-018."
+    },
+    {
+      "id": "SRC-002",
+      "title": "HL7 FHIR R5 Organization",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/organization.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Identifier, type, name, alias, partOf, active and OrganizationAffiliation semantics for the provider-registry layer."
+    },
+    {
+      "id": "SRC-003",
+      "title": "HL7 FHIR R5 PractitionerRole",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/practitionerrole.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Role identifiers, period, code, specialty, location, healthcareService, availableTime; qualifications do not imply role; unnamed-occupancy pattern; split instances when availability differs."
+    },
+    {
+      "id": "SRC-004",
+      "title": "HL7 FHIR R5 Location",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/location.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "status versus operationalStatus, mode instance|kind, type, partOf, hoursOfOperation, building/ward/room/bed, mobile clinic, ambulance, patient-home kind, and the boundary excluding body locations."
+    },
+    {
+      "id": "SRC-005",
+      "title": "HL7 FHIR R5 HealthcareService - scope and SOA exclusion",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/healthcareservice.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Care service offering semantics: providedBy, offeredIn, location, category, type, specialty, eligibility, program, referralMethod, appointmentRequired, availability, active versus notAvailable, directory and costing examples."
+    },
+    {
+      "id": "SRC-006",
+      "title": "HL7 FHIR R5 ServiceRequest - patient-specific request for a service",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/R5/servicerequest.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Referral and transfer-of-care request semantics: identifier, requisition, status, intent, priority, performer, basedOn, replaces, encounter and subject references."
+    },
+    {
+      "id": "SRC-007",
+      "title": "HL7 FHIR R5 Schedule",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/schedule.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Schedule actors (HealthcareService, Practitioner, PractitionerRole, Location, Device), planning horizon and group-therapy seats as multiple slots."
+    },
+    {
+      "id": "SRC-008",
+      "title": "HL7 FHIR R5 Slot - element definitions",
+      "organization": "HL7 International",
+      "url": "https://www.hl7.org/fhir/slot-definitions.html",
+      "version_or_date": "5.0.0 (2023-03-26)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Slot status values busy|free|busy-unavailable|busy-tentative|entered-in-error, overbooked flag and serviceType as HealthcareService."
+    },
+    {
+      "id": "SRC-009",
+      "title": "IHE Mobile Care Services Discovery (mCSD) v4.0.0 Volume 1",
+      "organization": "IHE International",
+      "url": "https://profiles.ihe.net/ITI/mCSD/volume-1.html",
+      "version_or_date": "4.0.0 (2025-05-21)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Facility as a pairing of Location and Organization; Organization, Practitioner, PractitionerRole, Healthcare Service; ITI-90 Find Matching Care Services, ITI-91, ITI-130 feed; federated deployments with time-stamped updates and deprecation by status; HR capacity by facility and cadre; security considerations. Based on FHIR R4."
+    },
+    {
+      "id": "SRC-010",
+      "title": "UNSD Classification of Health Care Providers (ICHA-HP), SHA 2011",
+      "organization": "OECD/WHO/Eurostat via UNSD",
+      "url": "https://unstats.un.org/unsd/classifications/Family/Detail/1037",
+      "version_or_date": "SHA 2011",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Statistical classification of organisations contributing to provision of health care goods and services (HP.1-HP.9), used as provider class."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Classifying health workers (ISCO-08 mapping)",
+      "organization": "World Health Organization",
+      "url": "https://www.who.int/publications/m/item/classifying-health-workers",
+      "version_or_date": "2019-07-31",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Five broad groupings of health workers mapped to ISCO-08 skill level and specialisation; basis for cadre and profession codes."
+    },
+    {
+      "id": "SRC-012",
+      "title": "WHO Master Facility List Resource Package",
+      "organization": "World Health Organization",
+      "url": "https://www.who.int/publications/i/item/9789241516495",
+      "version_or_date": "2019",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Uniquely identify, locate and contact a health facility; multiple hierarchies (administrative, supply chain, reporting); establishment and maintenance of a master facility list."
+    },
+    {
+      "id": "SRC-013",
+      "title": "ISO 7101:2023 Healthcare organization management - Management systems for quality - Requirements",
+      "organization": "ISO",
+      "url": "https://www.iso.org/standard/81647.html",
+      "version_or_date": "7101:2023 ed.1 (2023-10)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Alignment target for stewardship facts, facilities management and contingency planning (TOC 8.2 / 8.2.2). Normative clause text was not retrieved; alignment only, no conformance claim."
+    },
+    {
+      "id": "SRC-014",
+      "title": "ISO 13940 System of concepts to support continuity of care (DIS ed.2 landing)",
+      "organization": "ISO/TC 215",
+      "url": "https://www.iso.org/obp/ui/en/#iso:std:iso:13940:dis:ed-2:v1:en",
+      "version_or_date": "2015 published; DIS ed.2 in revision",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Scope statement that the standard does not standardise specific care processes; second edition adds social care. Full concept table was not retrieved (OBP blocked)."
+    },
+    {
+      "id": "SRC-015",
+      "title": "NHS Data Model and Dictionary - REFERRAL TO TREATMENT PERIOD STATUS",
+      "organization": "NHS England",
+      "url": "https://www.datadictionary.nhs.uk/data_elements/referral_to_treatment_period_status.html",
+      "version_or_date": "current dictionary page retrieved 2026-09-05",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "England profile for waiting-time clock status national codes (10, 11, 12, 20, 21, 30-34) including clock stops; explicitly not a universal state machine."
+    },
+    {
+      "id": "SRC-016",
+      "title": "NHS England Waiting List Minimum Data Set (WLMDS)",
+      "organization": "NHS England",
+      "url": "https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/wlmds/",
+      "version_or_date": "WLMDS, from April 2024 publication note",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Weekly provider submission of open pathways, clock starts and clock stops; provider responsibility for accuracy; management information versus official statistics."
+    },
+    {
+      "id": "SRC-017",
+      "title": "NHS England Digital - Organisation Data Service ORD API (catalogue entry)",
+      "organization": "NHS England Digital",
+      "url": "https://digital.nhs.uk/developer/api-catalogue/organisation-data-service-ord",
+      "version_or_date": "ORD API, page retrieved via search 2026-09-05",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T00:00:00Z",
+      "relevance": "Master provider registry fields: ODS code, name, open/close/last-change dates, active/inactive status, address, succession and relationships. Full page fetch was blocked; fields taken from the catalogue search snippet."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "b-provision",
+        "name": "Provision",
+        "description": "Who is authorised to deliver care, where delivery sites exist, and which care services are offered. Owns provider-role, facility-role and service-offering facts.",
+        "rationale": "Delivery capability must be discoverable and attributable before capacity or demand can be reasoned about; the bundle does not own generic organization, person, site or service lifecycles, and does not own encounter execution.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-005"
+        ],
+        "layers": [
+          {
+            "id": "l-provider-registry",
+            "name": "Provider organization registry",
+            "description": "Healthcare-provider role of an organization: master identifiers, ICHA-HP class, status, succession, partOf and non-hierarchical affiliations.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-010",
+              "SRC-017"
+            ],
+            "findings": [
+              {
+                "id": "f-prov-identity",
+                "name": "Provider identity and classification",
+                "description": "A care provider is an organization or organizational unit whose primary or declared activity is delivery of health care goods or services, identified by a jurisdictional master-system identifier and classified for statistical and operational use.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-002",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-prov-id-1",
+                    "text": "What is the authoritative master-system identifier of this provider, which registry minted it, and which governed IRIs or Dimension ULIDs are secondary?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "master_system_id (identifier) - ODS code, national provider number or other jurisdictional master; NPI is a US profile, not universal",
+                      "master_system_uri (uri)",
+                      "id_type (code)",
+                      "governed_iri (uri)",
+                      "dimension_ulid (ulid)"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-id-2",
+                    "text": "How is the provider classified (ICHA-HP class, local organization type, hospital/clinic/practice/EMS/pharmacy/lab/LTC) and which classification system is binding in this jurisdiction?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "icha_hp_code (code) - HP.1-HP.9 with sublevels; statistical, may conflict with operational type",
+                      "local_organization_type (CodeableConcept)",
+                      "classification_system_uri (uri)",
+                      "primary_activity_is_healthcare (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-id-3",
+                    "text": "What human-readable names, aliases, contacts and description distinguish this provider from similarly named legal entities or from the facilities it operates?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "name (string)",
+                      "alias (string[])",
+                      "description (markdown)",
+                      "contact (ExtendedContactDetail[])",
+                      "organization_ref (reference) - generic organization sibling; do not inline legal-entity lifecycle"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-id-4",
+                    "text": "Which evidence and provenance support this registry entry (source directory, last-change time, attestation)?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "source_directory (uri)",
+                      "last_change_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "attestor_org_ref (reference)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-master-system-id",
+                    "name": "master_system_id",
+                    "description": "Authoritative registry identifier (ODS code, national provider or facility number). A date is not an identifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-governed-iri",
+                    "name": "governed_iri",
+                    "description": "Governed global identifier/IRI used when no authoritative master-system identifier exists.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-dimension-ulid",
+                    "name": "dimension_ulid",
+                    "description": "UUID or ULID assigned by the adopting Dimension as last-resort identity.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-icha-hp-code",
+                    "name": "icha_hp_code",
+                    "description": "SHA 2011 ICHA-HP statistical class of the provider (HP.1-HP.9 with sublevels).",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-organization-ref",
+                    "name": "organization_ref",
+                    "description": "Reference to the generic organization sibling that carries legal-entity lifecycle.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-provider-registry-record",
+                    "name": "provider_registry_record",
+                    "description": "Authoritative or locally cached record of a healthcare provider organization as known to a master facility/provider registry or IHE Directory. Populated by registerProvider and ingestDirectoryUpdate; carries provider_id, master_system_id, icha_hp_code, name, alias, organization_ref and active.",
+                    "media_or_form": [
+                      "directory-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by the authoritative master-system identifier; falls back to governed IRI, then to a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-prov-lifecycle-affiliation",
+                "name": "Provider lifecycle, succession and affiliations",
+                "description": "Provider records have open/close or active/inactive status, succession after merger or split, hierarchical partOf, and non-hierarchical affiliations (HIE membership, networks, supply-chain or reporting hierarchies). Deprecated entries are statused, not silently deleted.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-002",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-prov-lc-1",
+                    "text": "What is the provider record status (active/inactive), open and close event times, and which successor or predecessor identifiers apply after merger, split or re-coding?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "active (boolean)",
+                      "open_event_time (date-time)",
+                      "close_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "successor_provider_ref (reference)",
+                      "predecessor_provider_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-lc-2",
+                    "text": "What hierarchical parent (partOf) and which non-hierarchical affiliations (HIE, IDN, network, reporting, supply chain) exist, with role codes and effective periods?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "part_of_provider_ref (reference)",
+                      "affiliation_type (CodeableConcept)",
+                      "participating_organization_ref (reference)",
+                      "affiliation_period (Period)",
+                      "affiliation_active (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-lc-3",
+                    "text": "Who owns this registry record, which authority may inactivate it, and which access exceptions apply to contact data of providers or practitioners?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "record_owner_org_ref (reference)",
+                      "inactivation_authority_ref (reference)",
+                      "public_directory_visible (boolean)",
+                      "restricted_contact_flag (boolean) - IHE mCSD: practitioner home address/phone may pose privacy or safety risk"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-provider-active",
+                    "name": "active",
+                    "description": "Whether the provider registry record is currently active; deprecation is by status, not deletion.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-part-of-provider-ref",
+                    "name": "part_of_provider_ref",
+                    "description": "Hierarchical parent provider organization (Organization.partOf).",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-affiliation-type",
+                    "name": "affiliation_type",
+                    "description": "Coded type of a non-hierarchical affiliation such as HIE membership, network, reporting or supply-chain relationship.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-successor-provider-ref",
+                    "name": "successor_provider_ref",
+                    "description": "Successor identifier retained after merger, split or re-coding.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-affiliation-period",
+                    "name": "affiliation_period",
+                    "description": "Effective period of the affiliation or hierarchical relationship.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-provider-affiliation-record",
+                    "name": "provider_affiliation_or_succession_record",
+                    "description": "Typed, period-bounded relationship between provider organizations, or a succession/tombstone link. Populated by registerProvider, recordSuccession and recordAffiliation.",
+                    "media_or_form": [
+                      "relationship-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by the pair of related provider master-system identifiers plus affiliation type and period start.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-practitioner-role",
+            "name": "Practitioner role registry",
+            "description": "Roles in which a person (or an unnamed occupancy) is authorised to deliver care for an organization at locations and services, for a period.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-011",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "f-role-identity-authority",
+                "name": "Role identity, profession, registration and privileging facts",
+                "description": "A practitioner role is a time-bounded authorisation for a person (optional) to perform coded roles and specialties for an organization. Qualifications on the person do not imply the role. Registration, licence-to-practise and facility privileges are facts of authorisation, not enforcement actions.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-role-1",
+                    "text": "What identifiers are specific to this role or location occupancy, and which person reference (or explicit unnamed occupancy) does it bind?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "practitioner_role_id (identifier)",
+                      "master_system_id (identifier) - role-level registration or directory id, not the person national id",
+                      "person_ref (reference) - person sibling; empty allowed for unnamed occupancy",
+                      "unnamed_occupancy (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-role-2",
+                    "text": "What profession (WHO/ISCO grouping), role codes and specialties apply, and to which capability identifiers do they bind without copying the capability model?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "isco_or_who_occupation_code (code)",
+                      "who_broad_grouping (code) - health professional | associate professional | personal care | management and support | other",
+                      "role_code (CodeableConcept[])",
+                      "specialty (CodeableConcept[])",
+                      "capability_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-role-3",
+                    "text": "For what period is the person authorised in these roles, which boards or organizations issued registration or privileges, and is this a standing, locum or disaster-credential occupancy?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "active (boolean)",
+                      "authorization_period (Period)",
+                      "registration_identifier (identifier[])",
+                      "issuing_authority_ref (reference)",
+                      "privilege_set_coded (CodeableConcept[]) - facility-specific privileges are a jurisdiction profile; not Joint Commission-conformant unless evidenced",
+                      "occupancy_kind (code) - standing | locum | disaster_credential | trainee_supervised",
+                      "evidence_uri (uri)"
+                    ]
+                  },
+                  {
+                    "id": "q-role-4",
+                    "text": "When did authorisation start or end as a real-world event, versus when was that fact ingested, and who attested it?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "authorization_event_time (date-time)",
+                      "revocation_or_expiry_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "attestor_ref (reference)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-practitioner-role-id",
+                    "name": "practitioner_role_id",
+                    "description": "Identifier specific to the role occupancy, distinct from the person identifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-person-ref",
+                    "name": "person_ref",
+                    "description": "Reference to the person sibling; empty when the role is an unnamed occupancy.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-isco-occupation-code",
+                    "name": "isco_or_who_occupation_code",
+                    "description": "WHO/ISCO-08 occupation code for the profession exercised in the role.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-registration-identifier",
+                    "name": "registration_identifier",
+                    "description": "Registration, licence-to-practise or privilege identifier issued by a board or organization for this role.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-authorization-period",
+                    "name": "authorization_period",
+                    "description": "Period for which the role authorisation is valid.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-practitioner-role-record",
+                    "name": "practitioner_role_record",
+                    "description": "A specific set of roles, specialties and services a practitioner (or unnamed occupancy) may perform at an organization for a period. Populated by registerPractitionerRole and endPractitionerRole.",
+                    "media_or_form": [
+                      "directory-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by the role-level registration or directory identifier; falls back to governed IRI, then Dimension ULID. Person identity is referenced, never re-minted.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-role-placement",
+                "name": "Role placement at facilities, services and availability windows",
+                "description": "Each role instance links to organization, locations and healthcare services and may carry role-specific telecom and availability. Where availability differs by service or location, separate role instances are required (FHIR guidance).",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-role-p-1",
+                    "text": "For which provider organization, facilities and care services does this role practise?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "organization_ref (reference)",
+                      "facility_refs (reference[])",
+                      "healthcare_service_refs (reference[])"
+                    ]
+                  },
+                  {
+                    "id": "q-role-p-2",
+                    "text": "What routine availability windows and not-available periods apply to this role instance, and are they the same across all linked services and locations?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "available_time (Availability[])",
+                      "not_available_period (Period[])",
+                      "availability_homogeneous (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-role-p-3",
+                    "text": "Which electronic endpoints or contact points belong to this role rather than to the person or the organization, and which must be suppressed from public directory projections?",
+                    "kind": "access",
+                    "answer_data": [
+                      "role_contact (ExtendedContactDetail[])",
+                      "endpoint_refs (reference[])",
+                      "public_directory_visible (boolean)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-role-facility-refs",
+                    "name": "facility_refs",
+                    "description": "Facilities at which the role is exercised.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-role-service-refs",
+                    "name": "healthcare_service_refs",
+                    "description": "Care services the role is linked to.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-role-available-time",
+                    "name": "available_time",
+                    "description": "Routine availability windows for this role instance; split the instance when availability differs by site or service.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-role-endpoint-refs",
+                    "name": "endpoint_refs",
+                    "description": "Electronic endpoints belonging to the role rather than to the person or organization.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-role-placement",
+                    "name": "practitioner_role_placement",
+                    "description": "May be the same artifact as practitioner_role_record or a split instance when availability or contacts differ by site or service. Populated by registerPractitionerRole and updateRoleAvailability.",
+                    "media_or_form": [
+                      "directory-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Inherits the practitioner-role identifier; split instances are distinguished by the facility and service references they cover.",
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-facility-profile",
+            "name": "Facility profile",
+            "description": "Care-delivery sites as IHE Facility pairings of Location and Organization: identity, hierarchy, mode (instance versus kind), operational status, hours and commissioning.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-004",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "f-fac-identity-structure",
+                "name": "Facility identity, kind and whole-part structure",
+                "description": "A facility is a physical, mobile or virtual care-delivery site uniquely identified in a master facility list, with type of function, mode (specific instance versus class of locations), and optional hierarchy to campus, building, ward, room, bed, vehicle or jurisdiction. Physical geometry is referenced via site, not stored here.",
+                "source_refs": [
+                  "SRC-012",
+                  "SRC-004",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-fac-1",
+                    "text": "What master-facility identifier uniquely identifies this site nationally, and what Location plus Organization pairing constitutes the IHE Facility?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "facility_master_id (identifier)",
+                      "location_ref (reference) - or local location role record specialised from site",
+                      "managing_organization_ref (reference)",
+                      "site_ref (reference) - physical site sibling"
+                    ]
+                  },
+                  {
+                    "id": "q-fac-2",
+                    "text": "Is this an instance or a kind, what service-delivery location type applies, and what parent/child locations form the campus-bed or jurisdiction hierarchy?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "mode (code) - instance | kind",
+                      "location_type (CodeableConcept[]) - ServiceDeliveryLocationRoleType or national",
+                      "part_of_facility_ref (reference)",
+                      "physical_type (CodeableConcept) - site | building | ward | room | bed | vehicle | jurisdiction | virtual"
+                    ]
+                  },
+                  {
+                    "id": "q-fac-3",
+                    "text": "How is the facility located and contacted for care discovery without owning cadastral geometry (address, geocode, coverage jurisdiction)?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "address (Address)",
+                      "position_wgs84 (geo) - WHO MFL geographic coordinates as contact/locate attributes; detailed geography remains with site/geo siblings",
+                      "jurisdiction_ref (reference)",
+                      "contact (ExtendedContactDetail[])"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-facility-master-id",
+                    "name": "facility_master_id",
+                    "description": "Master facility list identifier uniquely identifying the care-delivery site.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-site-ref",
+                    "name": "site_ref",
+                    "description": "Reference to the physical site sibling that owns cadastral and building-fabric semantics.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-location-type",
+                    "name": "location_type",
+                    "description": "Service-delivery location type (national or ServiceDeliveryLocationRoleType binding).",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-facility-mode",
+                    "name": "mode",
+                    "description": "Whether the facility record describes a specific instance or a kind (class) of locations.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-facility-position",
+                    "name": "position_wgs84",
+                    "description": "Geographic coordinates used to locate and contact the facility; detailed geography stays with site and geo siblings.",
+                    "value_kind": "geometry",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-facility-master-record",
+                    "name": "facility_master_record",
+                    "description": "Master facility list entry pairing a care location with its managing provider organization. Populated by commissionFacility and ingestMasterFacilityList.",
+                    "media_or_form": [
+                      "directory-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by facility_master_id from the master facility list; falls back to governed IRI, then Dimension ULID. Location and Organization are referenced, not collapsed.",
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-fac-operation",
+                "name": "Facility operational status, hours and commissioning",
+                "description": "Location.status is general availability of the resource (active|suspended|inactive). operationalStatus covers bed/room activities such as occupancy, isolation, housekeeping or maintenance. Hours and not-available periods describe when the site is intended to deliver. Commissioning and closure are lifecycle events with succession.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-fac-op-1",
+                    "text": "What is the facility's general status versus bed/room operational status, and at which event time did that status become true versus when was it observed?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "status (code) - active | suspended | inactive",
+                      "operational_status (Coding) - HL7 v2 bed status preferred binding; occupancy/isolation/housekeeping/maintenance",
+                      "status_event_time (date-time)",
+                      "status_observation_time (date-time)"
+                    ]
+                  },
+                  {
+                    "id": "q-fac-op-2",
+                    "text": "What are the service hours, availability exceptions, and commissioning or closure event times including temporary field or converted sites?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "hours_of_operation (Availability[])",
+                      "availability_exceptions (string)",
+                      "commissioned_event_time (date-time)",
+                      "closed_or_mothballed_event_time (date-time)",
+                      "temporary_or_field_flag (boolean)",
+                      "who_emt_type (code) - WHO Emergency Medical Team classification is a profile; not live-fetched, a gap if used"
+                    ]
+                  },
+                  {
+                    "id": "q-fac-op-3",
+                    "text": "Which constraints (infection isolation, radiation licence, CLIA, pharmacy authority) apply to this facility as facts, and which regulator owns enforcement?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "facility_constraint_code (CodeableConcept[])",
+                      "constraint_jurisdiction (code)",
+                      "enforcement_authority_ref (reference) - enforcement not executed by this model",
+                      "profile_specific (boolean)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-facility-status",
+                    "name": "status",
+                    "description": "General availability of the facility resource: active, suspended or inactive.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-operational-status",
+                    "name": "operational_status",
+                    "description": "Bed or room activity status such as occupancy, isolation, housekeeping or maintenance (HL7 v2 bed status preferred binding).",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-hours-of-operation",
+                    "name": "hours_of_operation",
+                    "description": "Windows during which the site is intended to deliver care.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-status-event-time",
+                    "name": "status_event_time",
+                    "description": "Time at which the facility status became true in the real world, distinct from the observation time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-facility-status-snapshot",
+                    "name": "facility_operational_snapshot",
+                    "description": "Time-stamped facility status, hours and operationalStatus. Distinct from capacity counts. Populated by commissionFacility and reportFacilityStatus.",
+                    "media_or_form": [
+                      "observation-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by facility_master_id plus status_event_time expressed in RFC 3339 with seconds and offset; snapshots are appended, not rewritten.",
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-service-offering",
+            "name": "Care service offering",
+            "description": "Healthcare services offered by a provider at locations, including type, specialty, eligibility, programs, referral method and nested schedulable services. Specialises generic service; does not own fulfilment engines.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "f-svc-offering",
+                "name": "Service offering identity, type, modality and placement",
+                "description": "A HealthcareService describes a single service or category provided by an organization at one or more locations, including virtual and hospital-in-the-home. It is not a computer service. Catalogue, directory, referral address-book and schedulable-service uses are in scope.",
+                "source_refs": [
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-svc-1",
+                    "text": "What identifiers, names and coded category/type/specialty identify this care service offering, and which generic service record does it extend?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "healthcare_service_id (identifier)",
+                      "name (string)",
+                      "category (CodeableConcept[])",
+                      "type (CodeableConcept[])",
+                      "specialty (CodeableConcept[])",
+                      "generic_service_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-svc-2",
+                    "text": "Which organization provides it, at which locations or coverage areas, and is the location virtual, home-based, mobile or fixed?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "provided_by_org_ref (reference)",
+                      "location_refs (reference[])",
+                      "coverage_area_refs (reference[])",
+                      "modality (code) - inpatient | outpatient | emergency | virtual | home | mobile | community; a local profile of encounter class/service type, not encounter instances"
+                    ]
+                  },
+                  {
+                    "id": "q-svc-3",
+                    "text": "If this is a schedulable specialisation, which generic service is it offeredIn, and is the offering record active (as opposed to temporarily notAvailable)?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "offered_in_service_ref (reference)",
+                      "active (boolean)",
+                      "comment (markdown)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-healthcare-service-id",
+                    "name": "healthcare_service_id",
+                    "description": "Identifier of the care service offering.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-generic-service-ref",
+                    "name": "generic_service_ref",
+                    "description": "Reference to the generic service sibling that the care offering extends.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-service-modality",
+                    "name": "modality",
+                    "description": "Delivery modality of the offering: inpatient, outpatient, emergency, virtual, home, mobile or community.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-provided-by-org-ref",
+                    "name": "provided_by_org_ref",
+                    "description": "Provider organization that provides the service offering.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-healthcare-service",
+                    "name": "healthcare_service_offering",
+                    "description": "Care service available at a location, specialised from the generic service offering. Populated by publishServiceOffering and retireServiceOffering.",
+                    "media_or_form": [
+                      "catalogue-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by healthcare_service_id from the providing organization's master system; falls back to governed IRI, then Dimension ULID.",
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-svc-constraints",
+                "name": "Service eligibility, programs, referral method and booking constraints",
+                "description": "Offerings may declare eligibility, supported programs, referral methods, whether appointment is required, communication languages and extra details. Eligibility rules are jurisdiction- or payer-profile-specific and are recorded as constraints, not evaluated here.",
+                "source_refs": [
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-svc-c-1",
+                    "text": "What eligibility criteria and programs constrain who may receive this service, and which profile or jurisdiction owns those rules?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "eligibility_code (CodeableConcept[])",
+                      "eligibility_comment (markdown)",
+                      "program (CodeableConcept[])",
+                      "rule_profile (uri)",
+                      "evaluation_engine_ref (reference) - must not be executed by this model"
+                    ]
+                  },
+                  {
+                    "id": "q-svc-c-2",
+                    "text": "How are referrals accepted (method, questionnaires), is an appointment required, and what languages or characteristics apply?",
+                    "kind": "process",
+                    "answer_data": [
+                      "referral_method (CodeableConcept[])",
+                      "appointment_required (boolean)",
+                      "communication (CodeableConcept[])",
+                      "characteristic (CodeableConcept[])",
+                      "referral_questionnaire_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-svc-c-3",
+                    "text": "What availability is published on the offering itself versus delegated to Schedule/Slot, and who may see costing if present?",
+                    "kind": "access",
+                    "answer_data": [
+                      "service_availability (Availability[])",
+                      "schedule_refs (reference[])",
+                      "costing_present (boolean) - FHIR example: an internal directory may include costing while the public directory omits it",
+                      "projection (code) - public | professional | internal"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-eligibility-code",
+                    "name": "eligibility_code",
+                    "description": "Coded eligibility criterion constraining who may receive the service; recorded as a fact, not evaluated.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-referral-method",
+                    "name": "referral_method",
+                    "description": "Accepted referral methods for the offering.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-appointment-required",
+                    "name": "appointment_required",
+                    "description": "Whether an appointment is required to receive the service.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-rule-profile",
+                    "name": "rule_profile",
+                    "description": "URI of the jurisdiction or payer profile that owns the eligibility rules.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-service-constraint-set",
+                    "name": "healthcare_service_constraint_set",
+                    "description": "Usually stored on the same offering artifact; split if payer-specific eligibility profiles multiply. Populated by publishServiceOffering.",
+                    "media_or_form": [
+                      "catalogue-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Inherits healthcare_service_id; split sets are distinguished by the rule_profile URI they implement.",
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b-capacity",
+        "name": "Capacity and availability",
+        "description": "The system's ability to deliver: quantified beds, places, slots and equipment classes, staffing coverage, and availability exceptions including divert and surge.",
+        "rationale": "Capacity must be represented as counts, bookable time and coverage independent of any individual patient; encounter occupancy as a patient event stays with WM-ACT-018 using facility and bed references.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "l-quantified-capacity",
+            "name": "Quantified capacity",
+            "description": "Counts of deliverable units (beds, chairs, theatres, slots, equipment classes) with available, occupied and unavailable quantities and period.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "f-cap-quantified",
+                "name": "Bed, place and equipment-class capacity snapshot",
+                "description": "A capacity statement quantifies how much of a service a facility can deliver in a period, including occupied, available, closed, isolated and surge-converted units. Individual occupied-bed patient identity is an encounter location fact in WM-ACT-018, not a field here. Public heatmaps suppress small numbers.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cap-1",
+                    "text": "Which facility and service does this statement quantify, in what unit, for what period, and what quantities are licensed, staffed, available, occupied, isolated, closed or surge?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "capacity_statement_id (identifier)",
+                      "facility_ref (reference)",
+                      "healthcare_service_ref (reference)",
+                      "unit (code) - beds | icu_beds | chairs | theatres | incubators | ambulances | procedure_volume | other",
+                      "quantity_licensed (decimal)",
+                      "quantity_staffed (decimal)",
+                      "quantity_available (decimal)",
+                      "quantity_occupied (decimal)",
+                      "quantity_unavailable (decimal)",
+                      "quantity_surge (decimal)",
+                      "period (Period)"
+                    ]
+                  },
+                  {
+                    "id": "q-cap-2",
+                    "text": "What counting method, confidence and evidence produced this snapshot, and what were the census event time versus ingestion time?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "count_method (code) - midnight_census | live_bed_management | licensed_complement | self_report",
+                      "confidence (code)",
+                      "census_event_time (date-time)",
+                      "observation_or_ingestion_time (date-time)",
+                      "reporter_org_ref (reference)",
+                      "evidence_uri (uri)"
+                    ]
+                  },
+                  {
+                    "id": "q-cap-3",
+                    "text": "Is this snapshot shareable as a public heatmap, and what small-number suppression or facility-omission rules apply?",
+                    "kind": "access",
+                    "answer_data": [
+                      "projection (code)",
+                      "small_number_suppression (boolean)",
+                      "suppression_threshold (integer)",
+                      "aggregate_region_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-cap-4",
+                    "text": "Has capacity been reclassified (for example ward to ICU, hotel to field hospital) and what constraint or crisis-standards profile authorised the conversion?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "conversion_from_unit (code)",
+                      "conversion_to_unit (code)",
+                      "crisis_standards_profile (uri)",
+                      "conversion_event_time (date-time)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-capacity-statement-id",
+                    "name": "capacity_statement_id",
+                    "description": "Identifier of the capacity statement for a facility, service, unit and period.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-quantity-available",
+                    "name": "quantity_available",
+                    "description": "Count of units currently available for delivery.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-quantity-occupied",
+                    "name": "quantity_occupied",
+                    "description": "Count of units currently occupied; patient identity is not stored here.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-census-event-time",
+                    "name": "census_event_time",
+                    "description": "Real-world time of the capacity census.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-observation-ingestion-time",
+                    "name": "observation_or_ingestion_time",
+                    "description": "Time the adopting Dimension observed, received or stored the capacity fact, distinct from the census event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-capacity-snapshot",
+                    "name": "capacity_snapshot",
+                    "description": "Period-bounded quantified capacity for a facility, service and unit. Time series retained under jurisdiction policy. Populated by reportCapacity.",
+                    "media_or_form": [
+                      "observation-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by facility_ref, service, unit and census_event_time in RFC 3339 with seconds and offset; each census is a new snapshot rather than an in-place edit.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-cap-schedule",
+                "name": "Schedules and slots as bookable capacity",
+                "description": "A Schedule is a container of slots for a HealthcareService, Practitioner, PractitionerRole, Location or Device actor. Slot status (free|busy|busy-unavailable|busy-tentative|entered-in-error) is bookable capacity, not an encounter. Overbook flags and comments are constraints on booking.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-slot-1",
+                    "text": "Which actors (service, role, location, device) does this schedule apply to, and what is its planning horizon?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "schedule_id (identifier)",
+                      "actor_refs (reference[])",
+                      "service_type (CodeableReference)",
+                      "specialty (CodeableConcept[])",
+                      "planning_horizon (Period)"
+                    ]
+                  },
+                  {
+                    "id": "q-slot-2",
+                    "text": "For each slot, what are start and end (RFC 3339 with seconds and offset), status, overbook flag and comments or constraints?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "slot_id (identifier)",
+                      "start (date-time)",
+                      "end (date-time)",
+                      "slot_status (code)",
+                      "overbooked (boolean)",
+                      "comment (string)"
+                    ]
+                  },
+                  {
+                    "id": "q-slot-3",
+                    "text": "If a slot is consumed by a named booking, what waiting-list or referral identifier reserved it, and which nested encounter (WM-ACT-018) later fulfilled it without this model owning the encounter?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "waiting_entry_ref (reference)",
+                      "referral_ref (reference)",
+                      "appointment_ref (reference) - Appointment resource ownership is an unresolved boundary",
+                      "nested_encounter_ref (reference)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-slot-status",
+                    "name": "slot_status",
+                    "description": "Slot status: busy, free, busy-unavailable, busy-tentative or entered-in-error.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-schedule-id",
+                    "name": "schedule_id",
+                    "description": "Identifier of the schedule container for an actor.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-slot-start",
+                    "name": "start",
+                    "description": "Slot start time as RFC 3339 with seconds and offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-slot-end",
+                    "name": "end",
+                    "description": "Slot end time as RFC 3339 with seconds and offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-schedule-actor-refs",
+                    "name": "actor_refs",
+                    "description": "Actors the schedule applies to: HealthcareService, Practitioner, PractitionerRole, Location or Device.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-schedule-slot-set",
+                    "name": "schedule_and_slot_set",
+                    "description": "Bookable time capacity for a service, role or location. Not an encounter diary. Populated by publishSchedule and updateSlotStatus.",
+                    "media_or_form": [
+                      "availability-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by schedule_id plus slot_id; slot start and end are RFC 3339 with seconds and offset.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-staffing",
+            "name": "Staffing coverage",
+            "description": "Rostered presence and on-call coverage by cadre at facilities and services for a period. Not HR employment, payroll or professional-liability contracts.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "f-staff-coverage",
+                "name": "Rostered coverage and on-call arrangements",
+                "description": "Coverage states how many of which WHO/ISCO cadres, or which named roles, are rostered or on-call for a facility, service and period, including emergency-privilege expansions. Individual shift-assignment HR systems remain out of scope unless projected as coverage facts.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-staff-1",
+                    "text": "For which facility, service and period is coverage stated, by which cadre or named practitioner-role references, as rostered headcount versus on-call?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "staffing_statement_id (identifier)",
+                      "facility_ref (reference)",
+                      "healthcare_service_ref (reference)",
+                      "cadre_code (code)",
+                      "rostered_headcount (decimal)",
+                      "oncall_headcount (decimal)",
+                      "named_role_refs (reference[])",
+                      "period (Period)"
+                    ]
+                  },
+                  {
+                    "id": "q-staff-2",
+                    "text": "What minimum-staffing or supervision constraints apply (for example a trainee must be supervised), and which policy profile owns them without this model evaluating compliance?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "minimum_headcount (decimal)",
+                      "supervision_required (boolean)",
+                      "policy_profile_uri (uri)",
+                      "compliance_evaluator_ref (reference) - not owned by this model"
+                    ]
+                  },
+                  {
+                    "id": "q-staff-3",
+                    "text": "Are emergency or disaster privileges in effect, and what is the coverage event time versus roster ingestion time?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "disaster_privileges_active (boolean)",
+                      "coverage_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "industrial_action_flag (boolean)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-cadre-code",
+                    "name": "cadre_code",
+                    "description": "WHO/ISCO cadre for which coverage is stated.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-rostered-headcount",
+                    "name": "rostered_headcount",
+                    "description": "Headcount rostered as present for the facility, service and period.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-oncall-headcount",
+                    "name": "oncall_headcount",
+                    "description": "Headcount available on call for the facility, service and period.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-staffing-statement-id",
+                    "name": "staffing_statement_id",
+                    "description": "Identifier of the staffing coverage statement.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-staffing-coverage",
+                    "name": "staffing_coverage_statement",
+                    "description": "Period coverage by cadre or named role at a facility and service. Populated by reportStaffingCoverage.",
+                    "media_or_form": [
+                      "observation-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by facility_ref, cadre_code and period start in RFC 3339 with seconds and offset; new periods are appended.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-avail-exceptions",
+            "name": "Availability exceptions and divert",
+            "description": "Temporary inability or altered ability to deliver: holidays, maintenance, ambulance divert, evacuation, industrial action, crisis standards. Distinct from record inactivation.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "f-avail-exceptions",
+                "name": "Not-available periods, divert and contingency states",
+                "description": "Availability exceptions record when a service or facility cannot (or must still) accept demand. Emergency anti-dumping obligations (for example US EMTALA) are profile-specific constraints that may forbid divert for emergency services; they are not universal and were not live-fetched as statute text.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ex-1",
+                    "text": "Which facility or service is excepted, for what period, and of what kind (holiday, maintenance, divert, evacuation, industrial action, contamination, crisis standards)?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "exception_id (identifier)",
+                      "target_facility_ref (reference)",
+                      "target_service_ref (reference)",
+                      "exception_kind (code)",
+                      "period (Period)"
+                    ]
+                  },
+                  {
+                    "id": "q-ex-2",
+                    "text": "Does a profile-specific emergency-acceptance obligation override divert, and which statute or policy URI states that without this model enforcing it?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "divert_declared (boolean)",
+                      "emergency_acceptance_still_required (boolean)",
+                      "policy_uri (uri)",
+                      "jurisdiction (code)",
+                      "profile_specific (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-ex-3",
+                    "text": "Who declared the exception, at what event time versus ingestion time, and what recovery or safe state is planned?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "declaring_authority_ref (reference)",
+                      "declaration_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "planned_restore_time (date-time)",
+                      "contingency_note (markdown)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-exception-kind",
+                    "name": "exception_kind",
+                    "description": "Kind of availability exception: holiday, maintenance, divert, evacuation, industrial action, contamination or crisis standards.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-divert-declared",
+                    "name": "divert_declared",
+                    "description": "Whether divert has been declared for the target facility or service.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-exception-period",
+                    "name": "period",
+                    "description": "Period over which the exception applies; not-available is distinct from record inactivation.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-declaration-event-time",
+                    "name": "declaration_event_time",
+                    "description": "Time the exception was declared in the real world, distinct from ingestion time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-availability-exception",
+                    "name": "availability_exception_record",
+                    "description": "Declared not-available, divert or contingency period for a facility or service. Populated by declareAvailabilityException and clearAvailabilityException.",
+                    "media_or_form": [
+                      "event-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by exception_id plus target facility or service reference and declaration_event_time in RFC 3339 with seconds and offset.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b-demand",
+        "name": "Demand routing",
+        "description": "System-side directed demand: referrals and transfer requests, waiting-list entries and waiting-time clocks, plus the parent binding to nested encounter instances.",
+        "rationale": "Directed demand and queueing are delivery-system facts that must be representable without owning encounter lifecycle or clinical reasons, which stay with WM-ACT-018 and the personal-health sibling.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-015",
+          "SRC-001"
+        ],
+        "layers": [
+          {
+            "id": "l-referral-transfer",
+            "name": "Referral and transfer requests",
+            "description": "Directed requests for a service or for movement of care between providers and facilities. Person and clinical content referenced, not inlined. Fulfilment encounter owned by WM-ACT-018.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-005"
+            ],
+            "findings": [
+              {
+                "id": "f-ref-and-transfer",
+                "name": "Referral and inter-facility transfer request",
+                "description": "A referral or transfer request is a ServiceRequest-aligned record of a proposal, plan or order that a care service be performed by a target provider, service or facility. It carries source, target, urgency, status, intent, occurrence timing and person/episode references. Actual admission origin and destination on an encounter belong to WM-ACT-018. Task execution tracking is not owned here.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ref-1",
+                    "text": "What identifiers distinguish this request, is it a referral or a transfer, and which person or episode references does it carry without inlining clinical content?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "request_id (identifier)",
+                      "requisition_id (identifier)",
+                      "request_kind (code) - referral | transfer | diagnostic_order | other",
+                      "person_ref (reference)",
+                      "personal_health_episode_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-ref-2",
+                    "text": "What are source and target (organization, service, facility, role), coded service, intent, status, priority or urgency, and replacement or basedOn links?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "source_org_or_role_ref (reference)",
+                      "target_service_ref (reference)",
+                      "target_facility_ref (reference)",
+                      "target_role_ref (reference)",
+                      "service_code (CodeableConcept)",
+                      "intent (code)",
+                      "status (code)",
+                      "priority (CodeableConcept)",
+                      "replaces_request_ref (reference)",
+                      "based_on_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-ref-3",
+                    "text": "When was the request authored as an event, when received by the target, when ingested, and which nested encounter (if any) later fulfilled it?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "authored_event_time (date-time)",
+                      "received_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "occurrence_period (Period)",
+                      "nested_encounter_ref (reference) - WM-ACT-018; fulfilment pointer only"
+                    ]
+                  },
+                  {
+                    "id": "q-ref-4",
+                    "text": "What constraints (prior authorisation required, eligibility, urgency class) apply as recorded facts, and which engine, not this model, evaluates them?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "prior_auth_required (boolean)",
+                      "constraint_codes (CodeableConcept[])",
+                      "evaluator_ref (reference)",
+                      "profile_specific (boolean)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-request-id",
+                    "name": "request_id",
+                    "description": "Identifier of the referral or transfer request.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-personal-health-episode-ref",
+                    "name": "personal_health_episode_ref",
+                    "description": "Reference to the person-side episode; clinical reason is not inlined.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-request-status",
+                    "name": "status",
+                    "description": "Request status such as draft, active, on-hold, revoked or completed.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-request-intent",
+                    "name": "intent",
+                    "description": "Whether the request is a proposal, plan or order.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-request-priority",
+                    "name": "priority",
+                    "description": "Urgency or priority class of the request.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-referral-request",
+                    "name": "referral_or_transfer_request",
+                    "description": "System-side directed request for care elsewhere or for transfer. Clinical reason remains on personal-health; encounter fulfilment on WM-ACT-018. Populated by makeReferral and updateReferralStatus.",
+                    "media_or_form": [
+                      "request-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by request_id from the issuing system, grouped by requisition_id; authored_event_time is recorded separately from ingestion time.",
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-waiting",
+            "name": "Waiting and queue",
+            "description": "Registered demand not yet served, priority class, clock start/stop and waiting-time measurement. Clock-rule tables are jurisdiction profiles (NHS RTT, national cancer pathways, statutory lists).",
+            "source_refs": [
+              "SRC-015",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "f-wait-demand",
+                "name": "Waiting-list entry and waiting-time clock",
+                "description": "A waiting-list entry records that a person-referenced demand is queued for a service or facility with a priority class and a clock. NHS RTT status codes (the 10-34 family) and WLMDS open/start/stop sections are an England profile, not a universal state machine. Clock stops for first definitive treatment, active monitoring, DNA on first activity or transfer are profile-specific.",
+                "source_refs": [
+                  "SRC-015",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-wait-1",
+                    "text": "What pathway or entry identifier (with issuing organisation) identifies this queued demand, for which service or facility, and which person or episode is referenced?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "waiting_entry_id (identifier)",
+                      "patient_pathway_identifier (identifier)",
+                      "pathway_issuer_org_ref (reference)",
+                      "healthcare_service_ref (reference)",
+                      "facility_ref (reference)",
+                      "person_ref (reference)",
+                      "personal_health_episode_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-wait-2",
+                    "text": "What priority class and clock status apply, and what are clock start, stop, pause and removal event times versus ingestion time?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "priority_class (CodeableConcept)",
+                      "clock_status (code) - profile-mapped; NHS RTT codes are England-specific",
+                      "clock_start_event_time (date-time)",
+                      "clock_stop_event_time (date-time)",
+                      "removal_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "waiting_time_measurement_type (code)"
+                    ]
+                  },
+                  {
+                    "id": "q-wait-3",
+                    "text": "Which referral created this entry, which slot or booking reserved it, and which nested encounter stopped the clock without this model executing the encounter?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "referral_ref (reference)",
+                      "slot_ref (reference)",
+                      "nested_encounter_ref (reference)",
+                      "stop_reason (code) - first_treatment | active_monitoring | dna | transfer | other (profile-specific)"
+                    ]
+                  },
+                  {
+                    "id": "q-wait-4",
+                    "text": "What waiting duration was measured, by which methodology, and is the value reportable given small-number and identifiable-person constraints?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "wait_duration (duration)",
+                      "methodology_uri (uri)",
+                      "reportable (boolean)",
+                      "small_number_risk (boolean)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-waiting-entry-id",
+                    "name": "waiting_entry_id",
+                    "description": "Identifier of the waiting-list entry.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "de-patient-pathway-identifier",
+                    "name": "patient_pathway_identifier",
+                    "description": "Pathway identifier with its issuing organisation, used for waiting-time clock tracking.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "de-clock-start-event-time",
+                    "name": "clock_start_event_time",
+                    "description": "Real-world time at which the waiting-time clock started.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "de-clock-status",
+                    "name": "clock_status",
+                    "description": "Profile-mapped clock status; NHS RTT national codes are England-specific and must not be universalised.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "de-wait-duration",
+                    "name": "wait_duration",
+                    "description": "Measured waiting duration under a stated methodology.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-waiting-list-entry",
+                    "name": "waiting_list_entry",
+                    "description": "Queued demand for a care service with clock facts. Person identity referenced only. Populated by enqueueWaitingDemand, recordWaitingTime and removeWaitingEntry.",
+                    "media_or_form": [
+                      "demand-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by waiting_entry_id and, where a jurisdiction profile applies, the patient pathway identifier plus its issuing organisation.",
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-nested-encounter",
+            "name": "Nested encounter binding",
+            "description": "Parent-side composition parameters for contained WM-ACT-018 encounter instances. No local encounter state machine.",
+            "source_refs": [
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "f-enc-nested-binding",
+                "name": "Parent binding to contained encounter instances",
+                "description": "This delivery system contains encounter instances. The binding records the encounter instance reference and the facility, service and practitioner-role parameters the child needs. Encounter status, class, subjectStatus, admission, discharge, location-within-stay and history are forbidden local fields.",
+                "source_refs": [
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-enc-b-1",
+                    "text": "What WM-ACT-018 encounter instance identifier is contained under this delivery system, and which facility, service offering and practitioner roles are the parent-side bindings?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "encounter_instance_ref (reference)",
+                      "facility_ref (reference)",
+                      "healthcare_service_ref (reference)",
+                      "practitioner_role_refs (reference[])",
+                      "provider_org_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-enc-b-2",
+                    "text": "Which person or personal-health episode reference is passed through to the child without duplication, and which referral or waiting entry does this encounter fulfil?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "person_ref (reference)",
+                      "personal_health_episode_ref (reference)",
+                      "referral_ref (reference)",
+                      "waiting_entry_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-enc-b-3",
+                    "text": "When did this parent observe a notification that the nested instance opened or closed, as ingestion time distinct from the encounter's own event times owned by WM-ACT-018?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "notification_kind (code) - opened | closed | unknown",
+                      "notification_ingestion_time (date-time)",
+                      "child_owned_event_time_passthrough (date-time) - copied only as an opaque child fact, not locally authoritative"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-encounter-instance-ref",
+                    "name": "encounter_instance_ref",
+                    "description": "Reference to the WM-ACT-018 encounter instance contained under this delivery system; the parent never mints encounter lifecycle fields.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-notification-ingestion-time",
+                    "name": "notification_ingestion_time",
+                    "description": "Time this parent observed a notification that the nested instance opened or closed.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-binding-practitioner-role-refs",
+                    "name": "practitioner_role_refs",
+                    "description": "Practitioner-role parameters supplied by the parent for the contained encounter.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The nested encounter is a composition binding: an instance reference plus parent-owned facility, service and role parameters and a notification ingestion timestamp. The encounter record, its lifecycle, ADT operations and history are artifacts of WM-ACT-018. Storing a second encounter artifact here would duplicate the contained model's identity and lifecycle, violating the CONTAINS rationale."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b-stewardship",
+        "name": "Directory and stewardship",
+        "description": "Discovery projections, electronic endpoints, licence and accreditation facts, reporting obligations and retention/tombstone rules.",
+        "rationale": "Delivery facts must be discoverable and governable; access engines, audit stores and conformity-assessment engines are referenced, not owned.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "l-directory",
+            "name": "Care services directory and endpoints",
+            "description": "Queryable directory of providers, facilities, roles, services, hours and electronic endpoints; public versus professional projections.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-005"
+            ],
+            "findings": [
+              {
+                "id": "f-dir-discovery",
+                "name": "Directory discovery, projections and endpoints",
+                "description": "Consumers query where care is offered, hours, specialties and how to connect electronically. Public projections omit capacity, staffing, encounters and sensitive practitioner contacts. Endpoints describe connectivity; they do not grant this model ownership of the target FHIR server, XCA actor or audit log. Federated directories must preserve time-stamped updates and deprecation status rather than hard-delete.",
+                "source_refs": [
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-dir-1",
+                    "text": "Which projection (public directory, professional referral search, internal network, capacity heatmap) is being served, and which finding classes are included or omitted?",
+                    "kind": "access",
+                    "answer_data": [
+                      "projection (code)",
+                      "included_finding_ids (id[])",
+                      "omitted_finding_ids (id[])",
+                      "small_number_suppression (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-dir-2",
+                    "text": "What electronic endpoints are published for this organization or affiliation, with connection type, managing organization for support, and applicable network context?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "endpoint_id (identifier)",
+                      "connection_type (Coding)",
+                      "address (url)",
+                      "managing_organization_ref (reference)",
+                      "affiliation_context_ref (reference) - endpoint on Organization versus OrganizationAffiliation",
+                      "payload_type (CodeableConcept[])"
+                    ]
+                  },
+                  {
+                    "id": "q-dir-3",
+                    "text": "For federated ingest, what is the source directory, last-update watermark, conflict-resolution policy, and deprecation status of each entry?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "source_directory_uri (uri)",
+                      "update_watermark_time (date-time)",
+                      "conflict_policy_uri (uri)",
+                      "deprecated (boolean)",
+                      "refresh_interval (duration)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-endpoint-id",
+                    "name": "endpoint_id",
+                    "description": "Identifier of a published electronic endpoint bound to an organization or affiliation.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-connection-type",
+                    "name": "connection_type",
+                    "description": "Connection type of the endpoint; describes connectivity only, not ownership of the target system.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-projection",
+                    "name": "projection",
+                    "description": "Named directory projection: public, professional or internal, determining included and omitted finding classes.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-update-watermark-time",
+                    "name": "update_watermark_time",
+                    "description": "Last-update watermark for federated ingest, preserving time-stamped updates.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-directory-endpoint",
+                    "name": "directory_endpoint_record",
+                    "description": "Electronic access point bound to an organization or affiliation. Not the target system's operational log. Populated by publishEndpoint and directoryQuery.",
+                    "media_or_form": [
+                      "directory-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by endpoint_id within the managing organization's master system; falls back to governed IRI, then Dimension ULID.",
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "a-directory-projection",
+                    "name": "directory_projection_view",
+                    "description": "Named filtered view over provision records. Materialised only if the adopting Dimension stores views; otherwise derived. Populated by directoryQuery.",
+                    "media_or_form": [
+                      "projection"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by projection name plus the source directory URI and update watermark it was derived from.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "l-authority-retention",
+            "name": "Authorisation facts, reporting and retention",
+            "description": "Licence-to-operate and accreditation as recorded facts; capacity and waiting reporting obligations; tombstone and retention requirements. Enforcement, certification audit and physical deletion are delegated.",
+            "source_refs": [
+              "SRC-013",
+              "SRC-009",
+              "SRC-017"
+            ],
+            "findings": [
+              {
+                "id": "f-auth-license-accredit",
+                "name": "Licence-to-operate and accreditation facts",
+                "description": "Providers and facilities may hold jurisdictional licences and third-party accreditations (ISO 7101, hospital accreditation, CLIA, pharmacy). This model stores identifier, issuer, type, period, status and evidence URI. It does not decide, suspend or enforce. Regional rules are profiles.",
+                "source_refs": [
+                  "SRC-013",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-auth-1",
+                    "text": "What licence or accreditation identifiers apply to this provider or facility, issued by whom, of what type, for what scope and period?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "authorisation_id (identifier)",
+                      "authorisation_kind (code) - licence_to_operate | accreditation | iso7101_certificate | clia | pharmacy | other (profile-specific)",
+                      "issuer_ref (reference)",
+                      "scope_facility_or_service_refs (reference[])",
+                      "valid_period (Period)"
+                    ]
+                  },
+                  {
+                    "id": "q-auth-2",
+                    "text": "What is the recorded status (valid, suspended, revoked, expired), at which event time, and where is the evidence, without this model executing the suspension?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "status (code)",
+                      "status_event_time (date-time)",
+                      "ingestion_time (date-time)",
+                      "evidence_uri (uri)",
+                      "enforcement_authority_ref (reference)"
+                    ]
+                  },
+                  {
+                    "id": "q-auth-3",
+                    "text": "Is this authorisation a jurisdiction-specific profile (not universal), and which conflicting national schemes must not be treated as equivalent?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "profile_specific (boolean)",
+                      "jurisdiction (code)",
+                      "non_equivalent_schemes (string[])",
+                      "alignment_notes (markdown)"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-authorisation-id",
+                    "name": "authorisation_id",
+                    "description": "Certificate or licence number identifying the authorisation, with its issuer.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-authorisation-status",
+                    "name": "status",
+                    "description": "Recorded authorisation status: valid, suspended, revoked or expired; recorded as a fact, never enforced here.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-valid-period",
+                    "name": "valid_period",
+                    "description": "Period for which the licence or accreditation is valid.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-authorisation-evidence-uri",
+                    "name": "evidence_uri",
+                    "description": "Location of evidence supporting the recorded authorisation fact.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-authorisation-fact",
+                    "name": "licence_or_accreditation_fact",
+                    "description": "Recorded licence, accreditation or certificate fact with issuer and period. Not the certificate body and not an enforcement case file. Populated by recordAuthorisationFact.",
+                    "media_or_form": [
+                      "authority-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by the certificate or licence number plus issuing authority reference; status changes carry their own event times.",
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "f-steward-report-retention",
+                "name": "Reporting obligations, ownership, validation and retention or tombstone",
+                "description": "Provider organizations own their registry, capacity and demand records; public-health or payer authorities may have oversight access. Capacity and waiting submissions follow jurisdictional cadence. Validation is schema, identity and referential, not clinical correctness. Deletion is tombstone-first; physical destruction is executed only by the adopting-Dimension retention policy.",
+                "source_refs": [
+                  "SRC-016",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ret-1",
+                    "text": "Who owns this record, who has oversight access, and under which access model (not implemented here) is disclosure granted?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "record_owner_org_ref (reference)",
+                      "oversight_authority_ref (reference)",
+                      "access_model_ref (reference)",
+                      "public_health_reporting_flag (boolean)"
+                    ]
+                  },
+                  {
+                    "id": "q-ret-2",
+                    "text": "What reporting obligation (capacity, waiting, directory update) applies, at what cadence, to which authority, and what validation was performed (schema, identity, referential, not clinical)?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "obligation_type (code)",
+                      "cadence (duration)",
+                      "recipient_authority_ref (reference)",
+                      "validation_result (code)",
+                      "validation_profile_uri (uri)"
+                    ]
+                  },
+                  {
+                    "id": "q-ret-3",
+                    "text": "What retention period and disposition class apply, is a tombstone required, and which retention-policy model executes physical deletion while this model forbids silent erase of identifiers and succession?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retention_period (duration)",
+                      "disposition_class (code)",
+                      "tombstone_required (boolean)",
+                      "tombstone_id (identifier)",
+                      "deletion_execution_owner (reference) - adopting-Dimension retention policy or records model; WM-ACT-018 owns nested encounter deletion"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-tombstone-id",
+                    "name": "tombstone_id",
+                    "description": "Identifier of the tombstone retained when a provision record is inactivated or superseded.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "de-obligation-type",
+                    "name": "obligation_type",
+                    "description": "Type of reporting obligation: capacity, waiting or directory update.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "de-retention-period",
+                    "name": "retention_period",
+                    "description": "Jurisdiction-specified retention period before disposition; not a global constant.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-validation-result",
+                    "name": "validation_result",
+                    "description": "Outcome of schema, identity and referential validation of a submission; clinical correctness is delegated.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "a-report-submission",
+                    "name": "stewardship_report_submission",
+                    "description": "A submitted capacity, waiting or directory-update batch to an authority. Populated by reportCapacity, submitWaitingExtract and ingestDirectoryUpdate.",
+                    "media_or_form": [
+                      "report-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by submitting organization, obligation type and submission period; batch identifiers are retained for correction and re-submission.",
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "a-tombstone",
+                    "name": "record_tombstone",
+                    "description": "Inactivation or succession tombstone retaining master-system identifier, close event time and provenance. Populated by deactivateWithTombstone.",
+                    "media_or_form": [
+                      "tombstone"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by tombstone_id and the retained authoritative master-system identifier of the inactivated record, with successor identifiers preserved.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-017"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "fn-register-provider",
+      "name": "registerProvider",
+      "description": "Create or update a provider-registry record from a master-system feed or attested submission.",
+      "inputs": [],
+      "outputs": [
+        "provider_registry_record",
+        "provider_affiliation_or_succession_record where relationships accompany the feed"
+      ],
+      "preconditions": [
+        "master_system_id or attested create mandate",
+        "organization_ref resolvable or concurrently created in the organization sibling"
+      ],
+      "effects": [
+        "provider_registry_record upserted",
+        "provenance written by the audit sibling",
+        "confirmation-required when minting a new master-system id locally; autonomous upsert when ingesting an authoritative feed",
+        "not reversible: superseding requires succession and tombstone, not erase"
+      ],
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-commission-facility",
+      "name": "commissionFacility",
+      "description": "Open or materially change a facility pairing and its hours or status.",
+      "inputs": [],
+      "outputs": [
+        "facility_master_record",
+        "facility_operational_snapshot"
+      ],
+      "preconditions": [
+        "managing organization exists",
+        "site_ref if the facility is a physical instance"
+      ],
+      "effects": [
+        "facility_master_record created or updated",
+        "facility_operational_snapshot appended",
+        "confirmation-required for first commissioning; autonomous for hours updates from the owning provider",
+        "not reversible: closure is recorded as a lifecycle event with succession"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "fn-register-role",
+      "name": "registerPractitionerRole",
+      "description": "Allocate a person or unnamed occupancy to roles, sites and services for a period.",
+      "inputs": [],
+      "outputs": [
+        "practitioner_role_record",
+        "practitioner_role_placement"
+      ],
+      "preconditions": [
+        "organization_ref",
+        "person_ref unless unnamed_occupancy"
+      ],
+      "effects": [
+        "practitioner_role_record created or updated",
+        "confirmation-required for privileging and disaster credentials; autonomous for directory feed ingest",
+        "not reversible: authorisation end is recorded with a revocation or expiry event time"
+      ],
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "fn-publish-service",
+      "name": "publishServiceOffering",
+      "description": "Publish or revise a care service offering and its constraints.",
+      "inputs": [],
+      "outputs": [
+        "healthcare_service_offering",
+        "healthcare_service_constraint_set"
+      ],
+      "preconditions": [
+        "provided_by_org_ref",
+        "generic_service_ref optional"
+      ],
+      "effects": [
+        "healthcare_service_offering published or revised",
+        "autonomous for the owning provider; confirmation required when changing eligibility profiles that affect the public directory",
+        "not reversible: retirement is a status change, not deletion"
+      ],
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "id": "fn-report-capacity",
+      "name": "reportCapacity",
+      "description": "Record a capacity snapshot with event time and observation time.",
+      "inputs": [],
+      "outputs": [
+        "capacity_snapshot",
+        "stewardship_report_submission when submitted to an authority"
+      ],
+      "preconditions": [
+        "facility_ref",
+        "unit",
+        "census_event_time"
+      ],
+      "effects": [
+        "capacity_snapshot appended to the time series",
+        "autonomous for scheduled census; confirmation required for crisis conversion of unit type",
+        "not reversible: corrections are new snapshots, not history rewrites"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-publish-schedule",
+      "name": "publishSchedule",
+      "description": "Publish schedule and slot capacity for an actor.",
+      "inputs": [],
+      "outputs": [
+        "schedule_and_slot_set"
+      ],
+      "preconditions": [
+        "actor_refs"
+      ],
+      "effects": [
+        "schedule_and_slot_set published or updated",
+        "autonomous for owning provider systems",
+        "reversible: slot status may be updated within the planning horizon"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "fn-report-staffing",
+      "name": "reportStaffingCoverage",
+      "description": "Record rostered and on-call coverage by cadre.",
+      "inputs": [],
+      "outputs": [
+        "staffing_coverage_statement"
+      ],
+      "preconditions": [
+        "facility_ref",
+        "period",
+        "cadre_code"
+      ],
+      "effects": [
+        "staffing_coverage_statement appended",
+        "autonomous from roster projection; confirmation required for disaster-privilege expansion",
+        "not reversible: superseded coverage is a new period statement"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "fn-declare-exception",
+      "name": "declareAvailabilityException",
+      "description": "Declare divert, closure, maintenance or a crisis-standards exception.",
+      "inputs": [],
+      "outputs": [
+        "availability_exception_record"
+      ],
+      "preconditions": [
+        "target facility or service",
+        "declaring_authority_ref"
+      ],
+      "effects": [
+        "availability_exception_record created",
+        "confirmation-required because of safety impact",
+        "reversible: cleared by clearAvailabilityException with a restore time"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "fn-make-referral",
+      "name": "makeReferral",
+      "description": "Create a referral or transfer request carrying person and episode references only.",
+      "inputs": [],
+      "outputs": [
+        "referral_or_transfer_request"
+      ],
+      "preconditions": [
+        "target_service_ref or target_facility_ref",
+        "person_ref"
+      ],
+      "effects": [
+        "referral_or_transfer_request created",
+        "confirmation-required for the requesting clinician or system of record",
+        "not reversible: revocation is a status change with its own event time"
+      ],
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "fn-enqueue-wait",
+      "name": "enqueueWaitingDemand",
+      "description": "Place or update a waiting-list entry and its clock start.",
+      "inputs": [],
+      "outputs": [
+        "waiting_list_entry"
+      ],
+      "preconditions": [
+        "healthcare_service_ref",
+        "person_ref",
+        "clock_start_event_time"
+      ],
+      "effects": [
+        "waiting_list_entry created or updated",
+        "confirmation-required unless a mandated automated e-referral conversion applies",
+        "not reversible: removal is recorded with a removal event time"
+      ],
+      "source_refs": [
+        "SRC-015",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "fn-record-wait-time",
+      "name": "recordWaitingTime",
+      "description": "Record clock stop or removal and the measured wait; may point at a nested encounter reference.",
+      "inputs": [],
+      "outputs": [
+        "waiting_list_entry updated with clock stop and measured duration"
+      ],
+      "preconditions": [
+        "waiting_entry_id"
+      ],
+      "effects": [
+        "waiting_list_entry updated",
+        "autonomous when the child encounter completion notification is trusted; otherwise confirmation required",
+        "not reversible: clock corrections are attested amendments, not silent rewrites"
+      ],
+      "source_refs": [
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "fn-bind-encounter",
+      "name": "bindNestedEncounter",
+      "description": "Record parent-side containment parameters and notification ingestion for a WM-ACT-018 instance. Does not create, start, stop or evaluate the encounter.",
+      "inputs": [],
+      "outputs": [
+        "inline nested-encounter binding facts held on the delivery record"
+      ],
+      "preconditions": [
+        "encounter_instance_ref",
+        "facility_ref"
+      ],
+      "effects": [
+        "inline binding facts only; no encounter artifact is created here",
+        "autonomous on trusted notification from WM-ACT-018; confirmation required if minting a dangling reference",
+        "not reversible from this side: encounter correction is performed by the child model"
+      ],
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "fn-directory-query",
+      "name": "directoryQuery",
+      "description": "Find matching care services, facilities, roles and endpoints under a named projection.",
+      "inputs": [],
+      "outputs": [
+        "directory_projection_view"
+      ],
+      "preconditions": [
+        "projection authorised by the access sibling"
+      ],
+      "effects": [
+        "no change to the store",
+        "autonomous read",
+        "reversible: reads may be repeated without side effects"
+      ],
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-tombstone",
+      "name": "deactivateWithTombstone",
+      "description": "Inactivate a provision record with tombstone, succession identifiers and provenance. Does not physically destroy records and does not delete WM-ACT-018 encounters.",
+      "inputs": [],
+      "outputs": [
+        "record_tombstone"
+      ],
+      "preconditions": [
+        "master_system_id",
+        "inactivation_authority"
+      ],
+      "effects": [
+        "record_tombstone created and active set to false",
+        "confirmation-required",
+        "not reversible: physical destruction is executed only by the adopting-Dimension retention policy"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-017"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-ACT-018 (Encounter)",
+      "relation": "CHILD",
+      "purpose": "Healthcare matryoshka: care delivery contains encounters. This parent may carry encounter_instance_ref, occurred_at_facility_ref, service_offering_ref, practitioner_role_refs, a person or episode reference passthrough and a notification that a nested instance opened or closed. WM-ACT-018 owns encounter identity lifecycle after minting, status (planned|in-progress|on-hold|discharged|completed|cancelled|discontinued|entered-in-error|unknown), class, subjectStatus, admission/stay/discharge operations, EncounterHistory, clinical reason for encounter, discharge disposition as a clinical or billing outcome engine, and all encounter-level evaluation or execution. Registry review state for this relation remains candidate.",
+      "required": true,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "world.organization (generic organization sibling)",
+      "relation": "REFERENCE",
+      "purpose": "Provider organizations specialise a generic organization; this model stores healthcare-provider identifiers, ICHA-HP class, licence and accreditation facts and directory role, not generic legal-entity lifecycle. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "world.person (person sibling)",
+      "relation": "REFERENCE",
+      "purpose": "PractitionerRole.practitioner is a person reference; this model does not store person demographics. IHE mCSD and FHIR PractitionerRole separate the person from the organisational role. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "world.site (physical site sibling)",
+      "relation": "REFERENCE",
+      "purpose": "Facility grounds to a site; this model stores care-delivery location role, hours, operational status and service pairing, not cadastral or building-fabric semantics. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "world.personalHealth (personal-health sibling)",
+      "relation": "REFERENCE",
+      "purpose": "Referrals, waiting entries and nested-encounter bindings carry a person-side episode reference without inlining clinical content; FHIR Encounter.subject and ServiceRequest.subject point at Patient/Group, treated here as person or personal-health content. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "world.service (generic service sibling)",
+      "relation": "EXTEND",
+      "purpose": "Care service offerings specialise the generic service offering; only care-specific type, specialty, eligibility, modality and offeredIn are local. FHIR HealthcareService is explicitly not a SOA or computer service. Do not duplicate generic identity, catalogue, SLA or fulfilment machinery. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "world.functionAndCapability (capability sibling)",
+      "relation": "REFERENCE",
+      "purpose": "Profession and specialty codes bind to attributed capabilities; this model does not own competency frameworks. WHO health-worker classification maps occupations to ISCO-08 skill level and specialisation. Proposed, not in the relation ledger.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "world.processAndWorkflow (workflow sibling)",
+      "relation": "REFERENCE",
+      "purpose": "Care pathways and waiting-time clock rules may bind to workflow definitions; this model records clock facts and referral status, not the workflow engine. ISO 13940 states it does not standardise specific care processes, and NHS RTT is a measurement methodology over pathways. Proposed, not in the relation ledger.",
+      "required": false,
+      "source_refs": [
+        "SRC-014",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "HL7 FHIR administrative resources (Organization, Location, PractitionerRole, HealthcareService, Schedule, Slot, ServiceRequest, OrganizationAffiliation, Endpoint) and IHE mCSD",
+      "relation": "ALIGN",
+      "purpose": "Alignment, not claimed conformance. Encounter is aligned only as the contained child boundary. mCSD 4.0.0 is based on FHIR R4 while this research used FHIR R5 pages; the version conflict is recorded and must be version-pinned per adopting profile. Proposed, not in the relation ledger.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Terminology systems (ICHA-HP, WHO/ISCO-08, SNOMED CT, national coding)",
+      "relation": "REFERENCE",
+      "purpose": "Terminology bindings for service type, specialty, profession, location type and provider class. This model stores codes and system URIs; it does not own the code systems. SNOMED CT pages were not live-fetched, so that binding is a hold for the adopting profile. Proposed, not in the relation ledger.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Catalogue ownership/access and audit siblings",
+      "relation": "REFERENCE",
+      "purpose": "Directory and capacity access, owner-granted disclosure and audit-trail execution are referenced, never implemented here. IHE mCSD security considerations require access control and recommend IUA; they do not make this model the policy enforcement point or audit store. Proposed, not in the relation ledger.",
+      "required": true,
+      "source_refs": [
+        "SRC-009"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension supplies retention periods, disposition classes, licensing and eligibility rules, access exceptions and quality thresholds; none of these are universal constants in this model.",
+        "The adopting Dimension declares its jurisdiction profile (for example NHS ODS codes, RTT status list and WLMDS cadence apply only under a declared England profile) before regional code lists may be used.",
+        "The adopting Dimension binds terminology (service type, specialty, profession, location type, provider class) to concrete code systems; SNOMED CT bindings were not live-fetched and remain a hold.",
+        "The adopting Dimension version-pins the FHIR release used for alignment, because IHE mCSD 4.0.0 is based on FHIR R4 while this research used FHIR R5 pages.",
+        "The adopting Dimension owns physical deletion execution through its records-retention and disposition policy; this model only requires status transition and tombstones."
+      ],
+      "namespace_guidance": "Canonical structured names follow world.healthCareDelivery with bundle and layer segments: world.healthCareDelivery.provision.providerRegistry, .provision.practitionerRole, .provision.facilityProfile, .provision.serviceOffering, .capacity.capacityStatement, .capacity.staffing, .capacity.availabilityExceptions, .demandRouting.referralAndTransfer, .demandRouting.waitingAndQueue, .demandRouting.nestedEncounterBinding, .stewardship.directory, .stewardship.authorityAndRetention. JSON, YAML, Markdown, HTML, Git, MCP and MongoDB are projections of these names, not semantics.",
+      "registry_links": [
+        "Registry entry vr.wm-act-014 (WM-ACT-014, Health Care Delivery), navigation path NAV.ACT.HCR, domain tag ACT.HCR.",
+        "Known relation WM-ACT-014 CONTAINS WM-ACT-018, review state candidate; the aggregate-shell versus WM-ACT-018 split is not yet adjudicated.",
+        "Sibling references proposed but not yet in the relation ledger: organization, person, site, personal-health, service, function-and-capability, process-and-workflow, access/ownership and audit models."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "All time values are RFC 3339 date-times with seconds and an explicit numeric offset or Z; a bare date is never an identifier.",
+        "Identity is canonicalised in priority order: authoritative master-system identifier, then governed global identifier/IRI, then a UUID or ULID assigned by the adopting Dimension.",
+        "Serialisation format is not semantics: JSON, YAML, Markdown, HTML, Git, MCP and MongoDB are projections of the same canonical facts.",
+        "Facility identity is canonicalised as the IHE pairing of a Location reference and a managing Organization reference; the two are never collapsed into one record."
+      ],
+      "patch_rules": [
+        "Patch event time only with an attested correction; otherwise patch observation or ingestion time and leave the event time untouched.",
+        "Edit availability and capacity as new snapshots rather than in-place history rewrites.",
+        "Updates are time-stamped; federated conflict resolution is a jurisdictional policy, not a universal merge rule.",
+        "Encounter fields owned by WM-ACT-018 are never patched through this model's API."
+      ],
+      "compatibility_rules": [
+        "Alignment with HL7 FHIR, IHE mCSD, SHA ICHA-HP, WHO ISCO-08 and WHO MFL is declared as ALIGN; no conformance is claimed and no conformance testing was performed.",
+        "IHE mCSD 4.0.0 is based on FHIR R4 while HealthcareService.offeredIn, the Availability datatype and EncounterHistory come from FHIR R5; adopting profiles must version-pin.",
+        "ICHA-HP statistical classes are not 1:1 with operational registry type codes; a hospital classified HP.1 may also deliver outpatient and long-term care functions.",
+        "Waiting-time clock code lists (NHS RTT, cancer timed pathways, statutory national lists, OECD indicators) are not equivalent; record the methodology URI instead of universalising codes."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "authoritative master-system identifier",
+        "governed global identifier/IRI",
+        "UUID or ULID assigned by the adopting Dimension"
+      ],
+      "timestamp_rule": "All time values SHALL be RFC 3339 date-times with seconds and an explicit numeric offset or Z. A date alone is not an identifier. Record event time (when the real-world provision, capacity census, referral, wait-clock, exception, commissioning or inactivation occurred) separately from observation or ingestion time (when the adopting Dimension observed, received or stored the fact) whenever those differ.",
+      "serial_naming_rule": "Serial observation artifacts (capacity snapshots, staffing coverage statements, facility operational snapshots, availability exceptions, schedule and slot sets, report submissions) are named by their target reference plus the census, coverage, status or declaration event time expressed in RFC 3339 with seconds and offset; each new observation is appended as a further member of the series rather than overwriting the previous one. Bare dates, display names and encounter status codes are forbidden as identifiers.",
+      "integrity_rule": "Owned validation is identifier uniqueness within a master system, RFC 3339 timestamps, referential integrity of local artifacts, the design-time XOR of artifacts versus inline_only_rationale, and the rule that a CONTAINS binding must not include encounter status, class or admission fields. Clinical correctness, licence enforcement, eligibility determination, waiting-time rule evaluation as a decision engine and FHIR profile conformance testing are delegated."
+    },
+    "policies": [
+      "Autonomous actions: directory reads; ingest of attested master-system feeds; scheduled capacity census; slot updates from the owning provider.",
+      "Confirmation-required actions: minting local identifiers; facility commissioning; disaster privileges; availability divert; referrals; waiting-list clock starts; tombstones.",
+      "Forbidden actions: starting or stopping encounters; computing clinical quality measures; enforcing licences; writing audit stores.",
+      "Regional licensing, eligibility, accreditation, anti-dumping, reporting and waiting-time rules are recorded as profile-specific facts and are never treated as universal axioms.",
+      "Deletion is tombstone-first: status transition to inactive, closed, superseded or deprecated rather than silent erase, with the authoritative identifier, succession links, close event time and provenance retained."
+    ],
+    "crud": {
+      "read": [
+        "DirectoryQuery and targeted reads honour named projections.",
+        "The public directory omits capacity, staffing, waiting, referrals and encounters.",
+        "Professional referral search may include services and roles.",
+        "Capacity heatmaps aggregate and suppress small numbers.",
+        "Access decisions are executed by the access sibling, not by this model."
+      ],
+      "create": [
+        "Mint or ingest provision, capacity, demand and stewardship artifacts only when identity_priority can be satisfied.",
+        "Nested encounters are created by WM-ACT-018; this model only binds.",
+        "Pre-write: resolve sibling references (organization, person, site, service, personal-health) or record them as unknown; do not invent clinical content.",
+        "Post-write: emit provenance to the audit sibling without implementing the audit store."
+      ],
+      "update": [
+        "Apply time-stamped updates; do not rewrite event time when correcting observation or ingestion time.",
+        "Federated conflict resolution is a jurisdictional policy, not a universal merge.",
+        "Do not update WM-ACT-018 encounter fields through this API."
+      ],
+      "delete": [
+        "This model does not execute physical destruction of its own care-delivery records; the adopting-Dimension records-retention and disposition policy, or a referenced retention-and-deletion model, owns deletion execution.",
+        "Require a status transition to inactive, closed, superseded or deprecated rather than silent erase.",
+        "Require a tombstone retaining the authoritative master-system identifier, succession or replacement identifiers, the close or inactivation event time as RFC 3339 with seconds and offset, and the provenance of the inactivation.",
+        "Retain capacity snapshots, waiting-list clock records and referral outcomes for the jurisdiction-specified retention period before disposition.",
+        "Nested WM-ACT-018 encounter records are not deleted by this model; encounter retention, disposition and deletion execution remain owned by WM-ACT-018 and its retention policy.",
+        "Small-number suppression on public projections is a disclosure control, not a deletion."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Provider organization (record owner)",
+        "responsibilities": [
+          "Own and attest provider registry, facility, role, offering, capacity and demand records.",
+          "Submit capacity, waiting and directory updates at the jurisdictional cadence and be responsible for their accuracy.",
+          "Declare availability exceptions, divert and contingency states for its facilities and services."
+        ]
+      },
+      {
+        "name": "Directory steward (care services feed and query supplier)",
+        "responsibilities": [
+          "Operate directory feed and query interfaces, preserving time-stamped updates and deprecation by status rather than hard deletion.",
+          "Maintain federated ingest watermarks, source directory references and conflict-resolution policy.",
+          "Publish and maintain endpoints and named projections, suppressing sensitive practitioner contacts from public views."
+        ]
+      },
+      {
+        "name": "Oversight authority (public-health or payer directory)",
+        "responsibilities": [
+          "Receive mandated capacity, waiting and directory submissions and hold oversight access as jurisdictionally assigned.",
+          "Define reporting obligation type, cadence and validation profile for submissions.",
+          "Publish aggregate projections subject to small-number suppression."
+        ]
+      },
+      {
+        "name": "Issuing authority or regulator",
+        "responsibilities": [
+          "Issue licences to operate, accreditations and registration or privilege credentials whose facts this model records.",
+          "Hold enforcement, suspension and conformity-assessment powers that this model references but never executes."
+        ]
+      },
+      {
+        "name": "Health sub-agent (model maintainer)",
+        "responsibilities": [
+          "Maintain the model boundary against WM-ACT-018 and the sibling models, rejecting local encounter lifecycle, evaluation, enforcement or audit-trail semantics.",
+          "Track holds, evidence gaps and unresolved boundaries (Appointment and EpisodeOfCare ownership, social-care extension) until adjudicated."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Reads are served under a named projection; the public directory omits capacity, staffing, waiting, referrals and encounters, professional referral search may include services and roles, and internal projections may include costing. This model owns projection names and omitted-field lists and flags that a contact is sensitive; owner-granted access, consent, break-glass and policy enforcement are executed by the access sibling. IHE mCSD recommends IUA; this model is not the policy enforcement point.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Practitioner home address and telephone are flagged as sensitive and suppressed from public directory projections because of privacy and safety risk.",
+        "Capacity and waiting values that risk identifying individuals are aggregated with small-number suppression and a suppression threshold before public release.",
+        "Costing present on internal directories is omitted from the public directory projection.",
+        "Emergency credential verification may require role, registration and privilege facts to be readable to responders under a jurisdiction profile."
+      ],
+      "audit_requirements": [
+        "Provenance for every write is emitted to the audit sibling; this model does not implement the audit store.",
+        "Federated directory updates are time-stamped, with source directory URI, update watermark and deprecation status retained.",
+        "Inactivation is recorded as a tombstone with identifier, succession, close event time and provenance instead of a silent erase.",
+        "Capacity, staffing and status records carry reporter, event time and observation or ingestion time so that stale or unattributed reports are detectable."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "Header fields: Name (Health Care Delivery), Type (world-model WM-ACT-014), Specification URL, Storage type URL, Interface URL and Processes URL, each currently a publication dependency; https://ver.cy/model-agent-protocol.md is an explicit verification hold.",
+        "Traversal: Bundle to Layer to Finding to Question to Artifact (or inline-only binding); do not skip from bundle to artifact.",
+        "Fact, hypothesis, unknown: master-system identifiers and event times from an authoritative registry are facts; inferred ICHA-HP maps and federated entity matches are hypotheses until attested; missing child encounter status is unknown and must not be invented.",
+        "Delegated child and sibling models: CONTAINS WM-ACT-018 is bind-only; REFERENCE organization, person, site, personal-health, capability, workflow, access and audit; EXTEND generic service for care-specific attributes only.",
+        "Autonomous versus confirmation-required versus forbidden action lists.",
+        "Pre-write checks: identity priority; RFC 3339 timestamps with seconds and offset plus event versus observation time; sibling references present or explicitly unknown; no encounter status, class or admission fields; projection and access sibling consulted; regional rules treated as profiles.",
+        "Post-write checks: artifact XOR inline_only_rationale still holds; provenance handed to the audit sibling; tombstone instead of silent delete; nested encounter deletion not attempted; public projections still omit capacity, staffing, waiting, referrals and encounters unless the named projection allows suppressed aggregates.",
+        "Population, extension, patching, editing, validation and retirement guidance, including populating from master facility and provider directories and retiring via deactivateWithTombstone."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "Falsifiable wide-union of live primary sources as of 2026-09-05. Not universal. ISO 13940 concept tables, ISO 7101 clause text, US NPPES, FHIR SANER and Joint Commission privileging, and EHDS implementing acts were not retrieved as full normative text in this pass.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "f-prov-identity, f-role-identity-authority, f-fac-identity-structure, f-svc-offering, f-wait-demand and f-ref-and-transfer each mint or reference identity under the master-system-first priority."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "f-prov-lifecycle-affiliation, f-fac-operation, f-avail-exceptions, f-wait-demand and f-auth-license-accredit carry status, period and succession facts; encounter lifecycle is deliberately absent."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "f-prov-lifecycle-affiliation, f-role-placement, f-svc-offering, f-ref-and-transfer and f-enc-nested-binding record partOf, affiliation, placement, routing and containment links."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "f-role-identity-authority, f-fac-operation, f-cap-schedule, f-ref-and-transfer and f-wait-demand separate event time from observation or ingestion time under the RFC 3339 timestamp rule."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "f-prov-identity, f-avail-exceptions, f-dir-discovery and f-cap-quantified record source directory, reporter, attestor, watermark and evidence URIs."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "f-prov-lifecycle-affiliation and f-steward-report-retention record record owner, inactivation authority and oversight authority; access decisions stay with the access sibling."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "f-steward-report-retention plus the integrity rule own schema, identity and referential validation; clinical correctness, licence enforcement, eligibility determination and profile conformance are delegated."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "f-role-placement, f-svc-constraints, f-cap-quantified and f-dir-discovery define projections, sensitive-contact flags and small-number suppression without implementing a policy enforcement point."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "f-steward-report-retention and crud.delete require tombstones, retention periods, disposition class and a named deletion-execution owner; WM-ACT-018 owns nested encounter deletion."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "f-dir-discovery, f-auth-license-accredit and f-prov-identity carry endpoints, code system URIs and non-equivalent-scheme warnings; alignment is declared without conformance."
+      },
+      {
+        "dimension": "capacity",
+        "status": "covered",
+        "notes": "f-cap-quantified, f-cap-schedule, f-staff-coverage and f-avail-exceptions quantify units, bookable time, coverage and divert or contingency states."
+      },
+      {
+        "dimension": "credentialing and privileging",
+        "status": "covered",
+        "notes": "f-role-identity-authority and f-staff-coverage record registration, privilege sets, occupancy kind and disaster credentials as facts; Joint Commission privileging text was not retrieved."
+      },
+      {
+        "dimension": "demand and waiting",
+        "status": "covered",
+        "notes": "f-ref-and-transfer and f-wait-demand cover referral, transfer, queue entry, priority class and clock facts, with jurisdiction profiles flagged."
+      },
+      {
+        "dimension": "directory discovery",
+        "status": "covered",
+        "notes": "f-dir-discovery covers query, projections, endpoints, federated watermarks and deprecation by status."
+      },
+      {
+        "dimension": "licensing and accreditation",
+        "status": "covered",
+        "notes": "f-auth-license-accredit and f-fac-operation record licence, accreditation and facility constraint facts with enforcement delegated to the regulator."
+      }
+    ],
+    "known_omissions": [
+      "Blood, organ and tissue inventory as specialised capacity.",
+      "Ambulance offload-delay metrics and EMS vehicle tracking.",
+      "Pharmacy dispensing queues distinct from outpatient waiting lists.",
+      "Teaching-supervision matrices beyond a supervision_required flag.",
+      "Network-adequacy travel-time calculation (insurance regulation).",
+      "Price and costing on internal directories (FHIR mentions costing; no tariff model here).",
+      "Virtual-ward and hospital-at-home operational telemetry.",
+      "Correctional, military, veterans and indigenous health-system facility classes as first-class types.",
+      "ISO/DIS 13940 social-care organisations; social-care delivery is a likely omission unless an adopting profile extends ICHA-HP.",
+      "Prior-authorisation case records (constraint flag only).",
+      "Evidence gap: ISO 7101:2023 normative clause text (facilities management, workforce, virtual care) - catalogue and table of contents only.",
+      "Evidence gap: ISO 13940:2015 full concept definitions (healthcare actor, mandate, activity, encounter) - OBP blocked.",
+      "Evidence gap: US NPPES NPI, CMS Provider of Services, Joint Commission privileging and EMTALA statute text - not live-fetched; treated as region profiles, not canon.",
+      "Evidence gap: FHIR SANER implementation guide for hospital capacity measures - not fetched; capacity modelled from Location, Schedule, Slot and mCSD only.",
+      "Evidence gap: SNOMED CT bindings for service and specialty - not live-fetched; the adopting profile must bind.",
+      "Evidence gap: EU EHDS and TEFCA/QHIN directory rules - not fetched.",
+      "Evidence gap: openEHR demographic model - not fetched.",
+      "Evidence gap: WHO Emergency Medical Teams classification for field hospitals - flagged as a profile gap.",
+      "Evidence gap: Da Vinci Plan-Net and Validated Healthcare Directory implementation guides - not fetched.",
+      "Unresolved boundary: whether Appointment instances (named-person bookings) nest here, under WM-ACT-018, or under a future scheduling sibling; Slot and Schedule are in this model, the named Appointment resource is a hold.",
+      "Unresolved boundary: whether EpisodeOfCare (longitudinal administrative grouping) belongs with WM-ACT-018, personal health or this shell; not modelled locally pending child-model adjudication.",
+      "Unresolved boundary: whether inter-facility transport (ambulance offload, IHE/FHIR Transport) is a care-delivery service offering, a logistics sibling or an encounter movement; the EMS service offering is in scope, vehicle tracking is not.",
+      "Unresolved boundary: social-care providers in ISO/DIS 13940 second edition versus SHA HP classifications.",
+      "Hold: the CONTAINS WM-ACT-018 relation remains review_state candidate and the aggregate-shell versus WM-ACT-018 split is not yet adjudicated.",
+      "Hold: independent Claude research and a no-tools adversarial audit have not run.",
+      "Hold: https://ver.cy/model-agent-protocol.md and the specification, storage and interface URLs are publication dependencies.",
+      "Hold: cross-jurisdiction profile testing is outstanding; retention periods, licensing rules, access exceptions and quality thresholds must be supplied by adopting-jurisdiction policy.",
+      "Search and fetch budget: 6 searches and 12 fetches used; ISO OBP, the ISO 7101 HTML page and the NHS ODS full page failed or were challenged, so claims from those three rest on search snippets plus catalogue URLs."
+    ],
+    "conflicts": [
+      "FHIR R4 versus R5: IHE mCSD 4.0.0 is based on FHIR R4 while this research used FHIR R5 pages (HealthcareService.offeredIn, the Availability datatype, EncounterHistory replacing statusHistory). Alignment must be version-pinned per adopting profile.",
+      "Location versus Organization for ward: FHIR treats Location as physical and Organization as conceptual, while IHE Facility is a pairing of both. Do not collapse them.",
+      "ICHA-HP versus operational registries: SHA providers are expenditure-statistical classes, so a hospital (HP.1) may also deliver outpatient and long-term care functions; operational type codes will not be 1:1 with HP.",
+      "Encounter aggregation: FHIR Encounter explicitly notes jurisdictional variance in what starts a new encounter. That variance is WM-ACT-018's problem; this parent must not pick a universal encounter grain.",
+      "Waiting-time clocks: NHS RTT 18-week consultant-led clocks, cancer timed pathways, Polish statutory waiting lists and OECD waiting-time indicators are not equivalent. Record the methodology URI; do not universalise codes 10-34.",
+      "active versus notAvailable: FHIR HealthcareService.active is not for holidays or maintenance, and Location.status versus operationalStatus is a second distinction. Agents must not treat all closures as inactivation.",
+      "ISO 13940 social care: the DIS second edition explicitly adds social care and SHA HP.2 is residential long-term care, so whether social-care delivery belongs in this model is unresolved."
+    ],
+    "regional_assumptions": [
+      "NHS ODS codes, the RTT status list and WLMDS cadence apply only when the adopting Dimension declares an England profile.",
+      "NPI as a person-or-organization identifier applies only to a US profile and was not live-verified in this pass.",
+      "Eligibility, licensing, accreditation, anti-dumping, Certificate of Need, network adequacy, CLIA, DEA, 340B, cancer two-week waits and statutory waiting-list statutes are profile-specific.",
+      "Retention periods for medical and administrative records (commonly 7-30 years) are jurisdiction policy, not a global constant.",
+      "Public-directory privacy of health-worker home contacts is required by IHE consideration, but the legal basis (HIPAA, UK GDPR and others) is jurisdictional."
+    ],
+    "adversarial_checks": [
+      "Relation-ledger check against CONTAINS WM-ACT-018: encounter lifecycle, ADT, class, subjectStatus, EncounterHistory, admission and discharge operations and encounter evaluation or execution are owned by no bundle, layer, finding or function here; f-enc-nested-binding is inline binding only and bindNestedEncounter does not create or run encounters; referral and waiting entries point at encounter_instance_ref as a fulfilment parameter, not a reproduced lifecycle.",
+      "No local ownership check: evaluation engines, encounter execution, licence enforcement and audit-trail stores are referenced but never implemented; every reference to an evaluator, enforcement engine or audit record is accompanied by an explicit non-ownership statement.",
+      "Machine-gate preflight: identity_priority[0] names the authoritative master-system identifier; the timestamp rule contains RFC 3339, seconds and offset and splits event time from observation or ingestion time; the coverage checklist carries the ten mandatory dimensions; crud.delete carries retention, disposition, tombstone and a named execution owner; regional rules are marked profile-specific.",
+      "Hazard sweep: unsafe disclosure of practitioner home contacts, identifiable small-number capacity, accepting demand the service cannot staff, and divert of emergency services where a profile forbids it are each bound to an access exception or a recorded constraint rather than left implicit.",
+      "Failure-mode sweep: stale federated directory, missing clock start, capacity census without observation time, a duplicated encounter store and silent delete without tombstone are each detectable by the owned validation rules; recovery is tombstone, re-ingest or child-model correction, never a local encounter rewrite."
+    ]
+  }
+}
