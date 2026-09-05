@@ -22,14 +22,16 @@ evidence and prepared inputs.
    out of order only once, then normal lowest-sequence order resumes.
 3. Reuse the matching former-workstream dossier only as untrusted preparation.
    Do not copy its claims or provider attribution without verification.
-4. Freeze one model boundary. Ask Claude for the structured research using the
-   safe runner. Attempt Grok once when it is available and responsive; Grok is
-   supplemental and its timeout, authentication failure or invalid JSON is
-   recorded and waived for that model.
-5. Validate every admitted provider result. Compare admitted results, run the
-   separate no-tools adjudication, synthesize and validate. A valid result with
-   no critical conflict may publish as `reviewable-draft`; visible holds are
-   allowed and must not be hidden.
+4. Freeze one model boundary. Make one bounded Claude attempt and one bounded
+   Grok attempt through the safe runners unless a terminal manifest already
+   exists. A timeout, authentication failure, invalid JSON or missing provider
+   is recorded and never retried for the same model in later heartbeats.
+5. Validate every admitted external result. When neither external result is
+   usable, Codex produces a source-grounded `codex.result.json` under the active
+   provider waiver. Compare admitted results, run a separate no-tools
+   adversarial adjudication, synthesize and validate. A valid result with no
+   critical conflict may publish as `reviewable-draft`; visible provider and
+   source-verification holds are mandatory and must not be hidden.
 6. Generate `AGENTS.md`, `spec.yaml`, the human card and publication manifest.
    Update shared status, the site runtime catalogue, Bitrix import and all
    generated indexes. Deploy, migrate, run HTTP and SEO/AEO/GEO checks, then
@@ -41,10 +43,11 @@ evidence and prepared inputs.
 
 ## Throughput rule
 
-Provider perfection is not a completion gate. Claude is the required external
-research pass; Grok is useful when healthy but optional. A provider failure does
-not authorize fabricated evidence or invalid structure. Prefer a smaller valid
-reviewable draft with explicit holds over an indefinitely blocked ideal draft.
+Provider perfection is not a completion gate. Claude and Grok are bounded
+best-effort external passes. A provider failure does not authorize fabricated
+evidence or invalid structure; the transparent Codex fallback and no-tools
+audit preserve forward progress. Prefer a smaller valid reviewable draft with
+explicit holds over an indefinitely blocked ideal draft.
 
 Catalogue scale is tiered. Deep Vercy specifications remain individually
 validated. External standards and classifiers are indexed as external entries,
