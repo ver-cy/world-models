@@ -192,7 +192,7 @@ def main() -> int:
     publication_holds = list(plan.get("publication_holds", []))
     if len(active) == 1:
         publication_holds = unique(publication_holds + [
-            "Independent second-provider review was explicitly waived by the repository owner; this Claude-only result remains a reviewable draft."
+            f"Independent external review was explicitly waived by the repository owner; this {base_provider}-only result remains a reviewable draft."
         ])
     publishable = (
         len(active) > 1

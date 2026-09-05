@@ -29,7 +29,7 @@ PLAN_SCHEMA: dict[str, Any] = {
         "critical_conflicts", "publication_holds", "deferred_research",
     ],
     "properties": {
-        "base_provider": {"enum": ["claude", "grok"]},
+        "base_provider": {"enum": ["claude", "grok", "codex"]},
         "confidence": {"enum": ["low", "medium", "high"]},
         "coverage_claim": {"type": "string", "minLength": 40},
         "boundary_decision": {
@@ -52,7 +52,7 @@ PLAN_SCHEMA: dict[str, Any] = {
                 "type": "object", "additionalProperties": False,
                 "required": ["provider", "source_finding_id", "target_finding_id", "target_layer_id", "rationale"],
                 "properties": {
-                    "provider": {"enum": ["claude", "grok"]},
+                    "provider": {"enum": ["claude", "grok", "codex"]},
                     "source_finding_id": {"type": "string", "minLength": 1},
                     "target_finding_id": {"type": "string", "minLength": 1},
                     "target_layer_id": {"type": "string", "minLength": 1},
@@ -66,7 +66,7 @@ PLAN_SCHEMA: dict[str, Any] = {
                 "type": "object", "additionalProperties": False,
                 "required": ["provider", "source_function_id", "rationale"],
                 "properties": {
-                    "provider": {"enum": ["claude", "grok"]},
+                    "provider": {"enum": ["claude", "grok", "codex"]},
                     "source_function_id": {"type": "string", "minLength": 1},
                     "target_function_id": {"type": "string", "minLength": 1},
                     "rationale": {"type": "string", "minLength": 30},
@@ -238,7 +238,8 @@ Rules:
   defensible schema kind instead and explain both axes.
 - Inspect names, descriptions, questions and functions as a whole. Record at
   least five concrete accepted/rejected/deferred decisions.
-- Confidence cannot be high in single-provider mode.
+- Confidence cannot be high in single-provider mode, and a local Codex fallback
+  cannot claim independent external review.
 - The publication holds must expose both live source/version verification and
   the owner-authorized absence of independent second-provider review.
 - Critical conflicts are only unresolved contradictions that prevent even a

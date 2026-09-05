@@ -137,19 +137,24 @@ def main() -> int:
             "entry_kind_agreement": {
                 "status": "waived",
                 "agrees": None,
+                "active_provider": provider,
+                "active_value": result["model"]["entry_kind"],
                 "claude": result["model"]["entry_kind"] if provider == "claude" else None,
                 "grok": result["model"]["entry_kind"] if provider == "grok" else None,
+                "codex": result["model"]["entry_kind"] if provider == "codex" else None,
             },
             "sources": {
                 "common_urls": [],
                 "claude_only": urls if provider == "claude" else [],
                 "grok_only": urls if provider == "grok" else [],
+                "codex_only": urls if provider == "codex" else [],
             },
             "structure": {
                 plural: {
                     "matches": [],
                     "claude_only": flatten(result, level) if provider == "claude" else [],
                     "grok_only": flatten(result, level) if provider == "grok" else [],
+                    "codex_only": flatten(result, level) if provider == "codex" else [],
                 }
                 for plural, level in (
                     ("bundles", "bundle"),
@@ -164,7 +169,7 @@ def main() -> int:
                     "Run a separate no-tools adversarial audit of the active provider result.",
                     "Verify the model boundary and entry kind against the frozen relationship contract.",
                     "Verify live URLs and version pins for all accepted sources.",
-                    "Expose the owner-authorized provider waiver in every publication artifact.",
+                    "Expose every owner-authorized provider waiver in every publication artifact.",
                     "Keep the result reviewable-draft while independent second-provider review is waived.",
                 ],
             },

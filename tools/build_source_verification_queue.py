@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 FIELDS = [
     "source_id", "title", "organization", "url", "version_or_date",
-    "used_by_claude", "used_by_grok", "accepted_in_synthesis",
+    "used_by_claude", "used_by_grok", "used_by_codex", "accepted_in_synthesis",
     "live_status", "version_status", "claim_support_status", "notes",
 ]
 
@@ -39,6 +39,7 @@ def main() -> int:
             prior = {row["url"]: row for row in csv.DictReader(handle)}
     claude_urls = urls(run_dir / "claude.result.json")
     grok_urls = urls(run_dir / "grok.result.json")
+    codex_urls = urls(run_dir / "codex.result.json")
     rows = []
     for source in synthesis["sources"]:
         previous = prior.get(source["url"], {})
@@ -50,6 +51,7 @@ def main() -> int:
             "version_or_date": source["version_or_date"],
             "used_by_claude": str(source["url"] in claude_urls).lower(),
             "used_by_grok": str(source["url"] in grok_urls).lower(),
+            "used_by_codex": str(source["url"] in codex_urls).lower(),
             "accepted_in_synthesis": "true",
             "live_status": previous.get("live_status", "unverified"),
             "version_status": previous.get("version_status", "unverified"),

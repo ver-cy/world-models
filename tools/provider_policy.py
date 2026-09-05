@@ -10,7 +10,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "research" / "provider-policy.json"
-KNOWN_PROVIDERS = {"claude", "grok"}
+KNOWN_PROVIDERS = {"claude", "grok", "codex"}
 
 
 def load_provider_policy(path: Path = POLICY_PATH) -> dict[str, Any]:
@@ -19,7 +19,9 @@ def load_provider_policy(path: Path = POLICY_PATH) -> dict[str, Any]:
             "contract_version": "1.0.0",
             "mode": "dual-provider",
             "active_providers": ["claude", "grok"],
-            "waived_providers": [],
+            "waived_providers": [
+                {"provider": "codex", "reason": "External providers are available."}
+            ],
             "review_rule": "Both independent provider results are required.",
         }
     policy = json.loads(path.read_text(encoding="utf-8"))
@@ -36,11 +38,15 @@ def load_provider_policy(path: Path = POLICY_PATH) -> dict[str, Any]:
         raise ValueError("provider policy contains duplicate or unknown waived providers")
     if set(active) & set(waived_names):
         raise ValueError("a provider cannot be both active and waived")
-    expected_mode = "dual-provider" if len(active) == 2 else "single-provider-waiver"
+    expected_mode = {
+        1: "single-provider-waiver",
+        2: "dual-provider",
+        3: "multi-provider",
+    }[len(active)]
     if policy.get("mode") != expected_mode:
         raise ValueError(f"provider policy mode must be {expected_mode!r}")
-    if len(active) == 1 and set(active + waived_names) != KNOWN_PROVIDERS:
-        raise ValueError("single-provider policy must explicitly waive the inactive provider")
+    if set(active + waived_names) != KNOWN_PROVIDERS:
+        raise ValueError("provider policy must explicitly account for every known provider")
     return policy
 
 
@@ -53,4 +59,4 @@ def waived_provider_names(policy: dict[str, Any]) -> list[str]:
 
 
 def provider_label(provider: str) -> str:
-    return {"claude": "Claude", "grok": "Grok"}.get(provider, provider)
+    return {"claude": "Claude", "grok": "Grok", "codex": "Codex"}.get(provider, provider)
