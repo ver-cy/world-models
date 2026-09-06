@@ -1,0 +1,5 @@
+# Codex pre-provider boundary note: WM-ECO-027
+
+Provisional only. Marketing Campaign is a governed aggregate specializing the generic `WM-ACT-028 Campaign` signal without a settled relation. It owns a campaign revision's marketing objective, hypothesis, audience definition, proposition bindings, channel and content plan, budget allocations, measurement design, execution and optimization assertions, closure and learning. Generic campaign, parties, audience members and segments, consent, offers, promotions, advertisements, creative works, activities, placements, communications, contracts, financial records, datasets, observations, experiments, leads, opportunities, customers and records remain external masters.
+
+Provider research must reject identity collapse across campaign, wave, activity, placement and interaction; metric collapse across definition, measurement, attribution and causal effect; funnel collapse across reached party, response, lead, opportunity and customer; and consent collapse across lawful basis, consent, preference, objection and channel permission.
