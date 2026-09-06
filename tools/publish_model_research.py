@@ -252,7 +252,7 @@ def render_page(spec: dict[str, Any], adjudication: dict[str, Any], digest: str)
 <div class="draft-note"><strong>Published.</strong> Research assurance: {html.escape(adjudication['status'])}. {html.escape(assurance_note)}</div>
 <section class="facts"><div class="fact"><span>Catalogue ID</span><strong>{html.escape(meta['id'])}</strong></div><div class="fact"><span>Version</span><strong>{html.escape(meta['version'])}</strong></div><div class="fact"><span>Previous version</span><strong>{previous}</strong></div><div class="fact"><span>Type</span><strong>{html.escape(meta['entryKind'])}</strong></div><div class="fact"><span>Validation</span><strong>Passed</strong></div><div class="fact"><span>Synthesis digest</span><strong><code>sha256:{digest[:16]}…</code></strong></div></section>
 <section class="stats">{''.join(f'<div><strong>{metric[key]}</strong><span>{key.title()}</span></div>' for key in ('sources','bundles','layers','findings','questions','artifacts'))}</section>
-<section><span class="v-eyebrow">Format-independent logical structure</span><h2>Bundles → Layers → Findings → Questions + Artifacts</h2>{render_tree(spec)}</section>
+<section><span class="v-eyebrow">Format-independent logical structure</span><h2>Bundles to Layers to Findings to Questions + Artifacts</h2>{render_tree(spec)}</section>
 <div class="review-grid"><section><h2>Publication holds</h2><ul>{holds}</ul></section><section><h2>Deferred research</h2><ul>{omissions}</ul></section></div>
 </main><script src="/assets/site-shell.js?v=20260822.1"></script><script src="/assets/zip-store.js"></script><script src="/assets/template-builder.js?v=20260822.1"></script></body></html>
 """
@@ -385,7 +385,7 @@ def main() -> int:
 - Model agent protocol: https://ver.cy/model-agent-protocol.md
 - Research evidence: {source_url}
 
-Read this file first, then `spec.yaml`. Traverse Bundle → Layer → Finding →
+Read this file first, then `spec.yaml`. Traverse Bundle to Layer to Finding to
 Questions and Artifacts. The specification is published, while its research
 assurance remains `{adjudication['status']}`. Do not claim canonical completeness
 while `researchAdjudication.publicationHolds` is non-empty. Preserve source
