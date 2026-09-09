@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-011
+
+Published Business Establishment / Branch, version 0.3.0-research.1, with
+reviewable-draft assurance: 9 sources, 6 bundles, 12 layers/findings, 36 questions,
+12 artifacts and 6 proposed functions. Source-qualified establishment, registered
+branch and outlet boundaries remain distinct from buildings and legal persons.
+Both providers timed out once; transparent Codex fallback and frozen no-tools
+self-audit retained, not represented as independent review. Validation passed.
+Bitrix migration, live HTTP, exact digest, search/resolve and full SEO/AEO/GEO
+checks passed. Backup: /data/web/backups/ver.cy/20260909-231411-catalogue-189.
+188 valid/live completed, 213 remaining. Next: sequence 189 WM-ORG-012.
+Evidence: ../runs/wm-org-011/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-OBJ-020
 
 Published Inventory Stock Position as reviewable-draft: 10 primary sources,
