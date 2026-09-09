@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-014
+
+Published Customer / Account Relationship with reviewable-draft assurance:
+6 sources, 6 bundles, 12 layers/findings, 36 questions, 12 artifacts, 6 functions.
+Seller-scoped CRM relationship is distinct from party, billing and login;
+preferences are not consent, grouping is not legal control, and no record
+operation executes outreach, charging or CRM merges. Both providers timed out
+once; transparent Codex fallback and frozen self-audit, no independent review.
+Both projections, Bitrix import, live HTTP/digest/API and full SEO/AEO/GEO checks
+passed. Backup /data/web/backups/ver.cy/20260910-001610-catalogue-192.
+191 valid/live completed, 210 remaining; next sequence 192 WM-ORG-015.
+Evidence: ../runs/wm-org-014/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-013
 
 Published Stakeholder / Interest, reviewable-draft: 6 primary sources, 6 bundles,
