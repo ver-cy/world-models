@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-015
+
+Published Supplier / Partner Relationship with reviewable-draft assurance:
+7 primary sources, 6 bundles, 12 layers/findings, 36 questions, 12 artifacts,
+6 proposed record functions. Registration, qualification, approved scope and
+transaction authority remain separate; no payment, exclusion or contract action.
+Both providers timed out once; Codex fallback and frozen self-audit are explicit.
+Validation, both site projections, Bitrix import, exact live digest/API and full
+SEO/AEO/GEO checks passed. Backup:
+/data/web/backups/ver.cy/20260910-003941-catalogue-193.
+192 valid/live completed, 209 remaining; next sequence 193 WM-ORG-018.
+Evidence: ../runs/wm-org-015/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-014
 
 Published Customer / Account Relationship with reviewable-draft assurance:
