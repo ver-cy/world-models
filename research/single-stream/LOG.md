@@ -1,5 +1,17 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-POL-016
+
+Published Public Authority / Institution, reviewable-draft assurance. Six primary
+sources, 6 bundles, 12 layers/findings, 36 questions, 12 artifacts, 6 proposed
+record operations. Classification, legal personality, service responsibility,
+control and competence remain distinct. No government powers inferred or acted
+upon. Both providers timed out once; independent review and runtime holds remain
+visible. Validation, both projections, migration, HTTP/API/digest and full
+SEO/AEO/GEO passed. Backup /data/web/backups/ver.cy/20260910-022749-catalogue-198.
+197 completed, 204 remain; next sequence 198 WM-POL-017.
+Evidence: ../runs/wm-pol-016/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-PER-013
 
 Published Professional License / Credential with reviewable-draft assurance:
