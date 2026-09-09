@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-PER-011
+
+Published Interpersonal Relationship with reviewable-draft assurance: 6 sources,
+6 bundles, 12 layers/findings, 36 questions, 12 artifacts and 6 record functions.
+Dyadic scope, competing perspectives, role direction and privacy are explicit;
+no sensitive inference, outreach or legal authority is implied. Both providers
+timed out once; fallback and same-agent self-audit remain visible. Local artifact
+ID collision fixed before final valid freeze. Both projections, Bitrix migration,
+live HTTP/digest/API and full SEO/AEO/GEO passed.
+Backup /data/web/backups/ver.cy/20260910-014824-catalogue-196.
+195 completed, 206 remaining; next sequence 196 WM-PER-013.
+Evidence: ../runs/wm-per-011/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-019
 
 Published Organization Policy with reviewable-draft assurance: 6 primary sources,
