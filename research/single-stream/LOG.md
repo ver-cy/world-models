@@ -1,5 +1,17 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-PER-013
+
+Published Professional License / Credential with reviewable-draft assurance:
+6 primary sources, 6 bundles, 12 layers/findings, 36 questions, 12 artifacts,
+6 record functions. Award, scheme, subject, holder, envelope and actual practice
+permission stay distinct. Both providers timed out once; source-grounded Codex
+fallback and same-agent audit remain explicit. Validation, both projections,
+Bitrix migration, live HTTP/digest/API and full SEO/AEO/GEO passed.
+Backup /data/web/backups/ver.cy/20260910-020613-catalogue-197.
+196 completed, 205 remaining; next sequence 197 WM-POL-016.
+Evidence: ../runs/wm-per-013/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-PER-011
 
 Published Interpersonal Relationship with reviewable-draft assurance: 6 sources,
