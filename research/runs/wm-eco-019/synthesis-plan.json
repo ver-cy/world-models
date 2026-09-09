@@ -1,0 +1,144 @@
+{
+  "base_provider": "claude",
+  "confidence": "medium",
+  "coverage_claim": "Covers the purchase order as a buyer-issued commitment instrument across identity and revision, classification and replenishment pattern, parties and commitment authority, line and commercial content, delivery instruction, lifecycle and change control, and governance, anchored in UBL 2.4, Peppol BIS Ordering 3.3 and BIS Billing 3.0, US FAR Parts 4 and 13, CISG, Incoterms 2020, GS1 identification keys, UN/CEFACT Buy-Ship-Pay and RFC 3339, with signature, attachment and integrity evidence merged from the Grok pack. Alignment only; no conformance is claimed to any cited standard. Deliberately incomplete on classic EDI syntaxes (UN/EDIFACT ORDERS, ANSI X12 850/855/860/865), tax determination on orders, services procurement with milestone acceptance, public-sector procurement metadata, and retention law outside US federal contracting. Not a claim of universal or jurisdictional completeness.",
+  "boundary_decision": {
+    "entry_kind": "aggregate",
+    "status": "accepted",
+    "rationale": "Both providers independently converged on 'aggregate' for registry entry vr.wm-eco-019, and the reasoning holds under scrutiny: the order header is the aggregate root and order lines carry no identity outside it, so lines cannot be addressed, versioned or retained independently. The registry's 'standalone-mm' entry is expressed as an aggregate rather than reclassified. The boundary is drawn at the exchanged buyer-to-seller commitment: quotation content goes to WM-ECO-021, fulfilment execution events to WM-ECO-024, clause bodies and framework negotiation to WM-ECO-006, and invoice, tax breakdown and payment to the settlement model, with only typed references retained here. Grok's UN/EDIFACT document-name distinction is folded into the boundary rationale rather than the node set: code 105 denotes an internal enterprise purchase order and maps to an originator requisition reference, while this model is the exchanged commitment (UBL Order, typically code 220). Claude's out-of-scope entry for requisition and internal spend approval already excludes the 105 sense; the code-level trap is recorded so a synthesizer does not silently admit requisitions as order instances."
+  },
+  "add_findings": [
+    {
+      "provider": "grok",
+      "source_finding_id": "issue-and-validity-window",
+      "target_finding_id": "issue-time-and-validity-window",
+      "target_layer_id": "lifecycle-states-and-responses",
+      "rationale": "The base has no node for the order's stated validity window as an offer. Its nearest question (q-stalled-order-handling) asks what happens when no response arrives in an expected window, which is an operational timeout, not the ValidityPeriod field that determines when the offer lapses and a late acceptance has no target. Grok grounds this in UBL IssueDate, IssueTime and ValidityPeriod plus the Peppol mandatory IssueDate (SRC-002, SRC-004), and adds the concrete normalisation problem that Peppol dates carry no timezone while the model requires explicit-offset timestamps. Placed in the lifecycle layer so lapse sits beside the state model rather than being mistaken for header identity metadata, consistent with both packs' rule that a date must never do an identifier's job."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "blanket-calloff-consignment-vmi",
+      "target_finding_id": "replenishment-and-call-off-patterns",
+      "target_layer_id": "order-classification",
+      "rationale": "This is the base's own declared weakest node and a declared known omission: the base admits the blanket/standing/call-off vocabulary rests on a tier-4 secondary source (SRC-011) and that consignment and vendor-managed inventory are acknowledged but not modelled. Grok supplies primary support from Peppol (consignment order type 227, VMI where stock withdrawal auto-issues a consignment order) and UBL (VMI, cyclic replenishment, replenishment on customer demand). The genuinely new semantics are the auto-issued order and whether the seller still acknowledges it without treating it as a fresh offer negotiation, which the base cannot answer. Overlap with the base call-off drawdown question is accepted as narrow and is contained by keeping the base's split of coded order type from commitment pattern."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "signatures-attachments-validation",
+      "target_finding_id": "signature-attachment-and-integrity-evidence",
+      "target_layer_id": "provenance-and-audit-evidence",
+      "rationale": "The base marks the security dimension as an explicit gap, stating that signature formats and non-repudiation levels are referenced only in outline with no primary source verified. Grok closes exactly that gap with evidence: UBL enveloped XML signature and XAdES support, Peppol Base64 or URI attachments treated as supporting information rather than a second copy of the order, and the load-bearing caveat that Peppol Ordering does not mandate eSignature, so a valid order can lack non-repudiation evidence. Targeted at the provenance and audit layer because the material contribution is integrity and signature evidence sitting alongside transmission evidence; the instance-validation questions it also carries are already held by validation-matching-and-reference-integrity and should not be re-expressed there."
+    }
+  ],
+  "add_functions": [
+    {
+      "provider": "grok",
+      "source_function_id": "calculate-anticipated-totals",
+      "target_function_id": "calculate-anticipated-totals",
+      "rationale": "The base has no function that computes and manifests monetary totals; it holds validate-order and link-fulfilment-and-match, neither of which produces the anticipated amounts. Grok grounds this in the Peppol calculation rules and the UBL requirement that senders manifest calculated values so the receiver need not recompute, which pairs with the base finding price-basis-amounts-and-totals and its open question on whether totals or line detail is authoritative on disagreement."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "conclude-contract-on-acceptance",
+      "target_function_id": "conclude-contract-on-acceptance",
+      "rationale": "The base covers acceptance by performance and response registration but never determines the moment a contract is concluded. Grok distinguishes CISG timing, where acceptance is effective on reaching the offeror, from data-message dispatch and receipt timing, which is the operative distinction for an electronically exchanged order and directly serves the base's own adversarial check forbidding a contract from being reported as formed on issuance alone."
+    }
+  ],
+  "merge_service_layers": true,
+  "decisions": [
+    {
+      "concept": "Base provider selection",
+      "disposition": "Claude adopted as base",
+      "rationale": "Selected on boundary quality, not node count. Claude supplies seven neighbour-specific boundary notes each with source refs, a clean in-scope/out-of-scope split, and an explicit aggregate-root rationale. Grok's structure blurs two seams by placing delivery terms inside a payment and accounting layer and by pulling obligation content into a line-composition-and-fulfilment bundle that leans into contained sibling WM-ECO-024."
+    },
+    {
+      "concept": "Entry kind",
+      "disposition": "Accepted as aggregate",
+      "rationale": "Independent convergence by both providers, and the underlying test is satisfied: order lines have no identity, version or retention life outside the header, so the header is the aggregate root rather than a container of standalone entities."
+    },
+    {
+      "concept": "Order validity window as offer expiry",
+      "disposition": "Accepted from Grok into lifecycle-states-and-responses",
+      "rationale": "Materially absent from the base, which handles response timeouts but not the stated ValidityPeriod that causes an offer to lapse. Evidence-backed in UBL and Peppol and non-duplicative of the base state model."
+    },
+    {
+      "concept": "Consignment and vendor-managed inventory replenishment patterns",
+      "disposition": "Accepted from Grok into order-classification",
+      "rationale": "Replaces the base's weakest support, a tier-4 encyclopaedia citation, with Peppol and UBL primary evidence, and closes a gap the base itself listed as a known omission including auto-issued consignment orders on stock withdrawal."
+    },
+    {
+      "concept": "Signature, attachment and integrity evidence",
+      "disposition": "Accepted from Grok into provenance-and-audit-evidence",
+      "rationale": "Directly fills the base's self-declared security gap with primary evidence, including the operationally important caveat that Peppol Ordering does not mandate eSignature so a conformant order may still carry no non-repudiation evidence."
+    },
+    {
+      "concept": "Grok seller-response-lifecycle finding",
+      "disposition": "Rejected as duplicative",
+      "rationale": "The base already carries order-state-model-and-transitions and order-response-and-acceptance-semantics with the full Peppol header and line code set, multiple-response handling and acceptance by performance. Admitting this would create two competing state accounts in one model."
+    },
+    {
+      "concept": "Grok access-privacy-and-retention finding",
+      "disposition": "Rejected as duplicative; MLEC retention basis deferred",
+      "rationale": "It overlaps two base findings, retention-and-disposition and access-and-commercial-confidentiality, so importing it whole would duplicate a layer. Its one materially additive element, the UNCITRAL MLEC art. 10 requirement to retain a data message in accessible integrity-preserving form, is genuinely absent from the base's US-FAR-only retention and is carried to deferred research instead of smuggled in behind duplicate structure."
+    },
+    {
+      "concept": "Grok related-document-graph finding",
+      "disposition": "Rejected as substantially covered",
+      "rationale": "The base distributes this coverage across framework-agreement-and-clause-references, the provenance content-origin question naming requisition, quotation and catalogue, and BT-13/BT-14 downstream reference integrity. Only the Project and Catalogue typed references are genuinely new, which is too thin to justify a finding and is deferred instead."
+    },
+    {
+      "concept": "Grok master-order-identity finding",
+      "disposition": "Rejected as duplicative; CopyIndicator deferred",
+      "rationale": "The base's order-identifier-and-scheme already establishes buyer number as operative identity with UUID and seller sales-order alias. The one unmatched element, the UBL copy indicator distinguishing an original issued order from a copy, is deferred as an attribute-level question rather than admitted as structure."
+    },
+    {
+      "concept": "Syntax names inside artifact media_or_form",
+      "disposition": "Base format-neutral naming retained",
+      "rationale": "Grok names UBL Order, Peppol T01 and EDIFACT LIN groups directly in artifact forms. The base confines syntax to the interoperability layer and the projection function, which better preserves the shared rule that format must not leak into semantics; the merged model keeps the base convention for all accepted nodes."
+    },
+    {
+      "concept": "Incoterms treatment",
+      "disposition": "Base treatment retained",
+      "rationale": "The base cites the ICC source and models the trade term as a code plus edition plus named place with risk transfer distinguished from title transfer. Grok explicitly did not fetch the ICC text and treats CIF/FOB/EXW only as UBL example alignments, so the base account is better grounded."
+    },
+    {
+      "concept": "UN/EDIFACT 105 versus 220 document-name trap",
+      "disposition": "Folded into boundary rationale, not admitted as a node",
+      "rationale": "The clarification that code 105 is an internal enterprise purchase order while the exchanged commitment is typically 220 protects the model boundary, but it is boundary-note material rather than a finding, and the base already excludes requisitions from scope."
+    },
+    {
+      "concept": "Anticipated totals calculation function",
+      "disposition": "Accepted from Grok",
+      "rationale": "No base function computes or manifests monetary totals, leaving the base's own question about totals-versus-lines authority without an operation that produces the values it arbitrates."
+    },
+    {
+      "concept": "Contract conclusion function",
+      "disposition": "Accepted from Grok",
+      "rationale": "The base records acceptance modes but never fixes the moment of conclusion; separating reach-the-offeror timing from data-message dispatch and receipt is what makes the base's own prohibition on reporting formation at issuance enforceable."
+    },
+    {
+      "concept": "UBL full Order Response replace-whole-state semantics",
+      "disposition": "Deferred, not resolved in this pass",
+      "rationale": "Grok records that a full UBL Order Response proposes to replace the entire order while Peppol also permits partial and multiple responses. The base covers multiple responses but not replace-whole-state, and collapsing the two patterns would misstate one of them, so both must be modelled after verification."
+    }
+  ],
+  "critical_conflicts": [],
+  "publication_holds": [
+    "Source verification hold: all sixteen unique URLs across both packs must be re-fetched and version-pinned before publication. Specifically unresolved between the packs is the UNECE endpoint service.unece.org/trade/untdid/d99b/trmd/orders_c.htm, which the base pack reports as returning HTTP 403 while the Grok pack cites it as retrieved at D.99B revision 11 dated 1999-09-11; no EDIFACT alignment may be published until that retrieval is independently reproduced.",
+    "Version-pin hold on Peppol releases: the same Peppol BIS Ordering 3.3 URL is labelled 'BIS Ordering 3.3' by one pack and 'November 2025 / DEV 2026-Q2 documentation' by the other, and the same BIS Billing 3.0 OrderReference URL is labelled 'May 2026 release' versus 'November 2025 Release'. The live release label and the profile's bound UBL version must be confirmed before any profile or customization identifier is stated as canonical.",
+    "Authority-tier reconciliation hold: the packs disagree on whether OpenPeppol BIS Ordering and BIS Billing are tier 1 or tier 2 sources. Tier assignment drives how strongly Peppol-derived rules may be asserted and must be settled before publication.",
+    "Multi-profile validation hold: the merged model has only been exercised against an EU/Peppol profile and a US federal FAR profile. It must additionally be run against a US commercial non-FAR buyer profile, a retail or manufacturing classic-EDI profile, and a services-procurement profile with milestone acceptance before any claim of cross-domain applicability is published.",
+    "Retention scope hold: every retention period in the base derives from US federal contractor obligations under FAR 4.703, 4.705-1 and 4.705-3. Retention must not be published as a general rule until a jurisdiction-neutral basis and at least one national commercial-books regime are verified; the base pack itself lists commercial retention law as an unfilled omission.",
+    "Tax representation hold: neither pack verified a source for tax determination on orders. Peppol's position that order TAX is informative and does not affect terms of trade must be published with the caveat that some tax administrations may still treat a stated amount as a representation, and no tax-document status may be claimed."
+  ],
+  "deferred_research": [
+    "UN/EDIFACT ORDERS D.99B and ANSI ASC X12 850/855/860/865 mapping to the model's semantics. The base could not retrieve either (UNECE 403, x12.org did not expose the 850 transaction set) and X12 TR3 content is membership-gated, so classic EDI remains an alignment gap rather than a modelled node; this is the largest interoperability weakness in the merged model.",
+    "UNCITRAL Model Law on Electronic Commerce art. 10 as a jurisdiction-neutral retention basis requiring data messages to be retained in accessible, integrity-preserving form with origin, destination and dispatch and receipt times, together with at least one national commercial-books retention regime, to break the merged model's dependence on US federal retention periods.",
+    "Reconciliation of UBL full Order Response replace-entire-order-state semantics against Peppol partial acceptance and multiple responses per order, so both patterns are represented without collapsing either into the other.",
+    "Typed related-document references for Catalogue and Project on the order, plus UBL CopyIndicator original-versus-copy semantics, both present in the Grok pack but too narrow to admit as structure in this pass.",
+    "Tax determination on orders including VAT category codes, reverse charge and place-of-supply rules, for which neither provider verified any primary source.",
+    "Services procurement modelled distinctly from goods, covering statements of work, milestone-based acceptance and progress payments, which the base currently treats identically to goods at line level.",
+    "Public-sector order metadata including procurement procedure reference, CPV or UNSPSC classification obligations and contract award notice linkage, absent from both packs.",
+    "Electronic signature and sealing formats for orders and the legal weight of each beyond the UBL XAdES and Peppol non-mandate facts merged in this pass, including transport security, non-repudiation levels and key management for sealed revisions."
+  ]
+}

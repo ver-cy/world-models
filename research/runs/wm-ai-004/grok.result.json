@@ -1,0 +1,3484 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-ai-004",
+    "model_id": "WM-AI-004",
+    "name": "AI Inference / Agent Run",
+    "entry_kind": "event",
+    "purpose": "Represent one auditable inference or agent execution, including identity, nested steps, inputs, outputs, tools, usage, cost, timing, provenance, oversight and retention, so an agent can create, inspect and govern a run independently of storage format.",
+    "scope_statement": "WM-AI-004 models a time-bounded AI execution: a single model inference, agent invocation, workflow invocation, tool execution, retrieval, memory operation or nested combination of those steps as observed by a caller, provider or auditor. The run is an event in the PROV sense of an activity and in the OpenTelemetry sense of a span forest. It binds the executing agent and the exact configuration by reference, records billed usage and optional monetary cost, and supplies the automatic event log needed for operational monitoring and, where applicable, high-risk record-keeping. The model is format-neutral: traces, logs, API payloads and audit extracts are projections of the same execution semantics.",
+    "in_scope": [
+      "Identity of a run using a provider master identifier, a distributed trace and span context, and an adopting-Dimension identifier when no master identifier exists.",
+      "Classification of the operation (chat, generate_content, invoke_agent, execute_tool, retrieval, embeddings, plan, memory operations, fetch_response) and of the GenAI provider as observed by instrumentation.",
+      "Requested versus actually served model names, sampling and decoding parameters present on the request, seed, streaming flag, output type and finish reasons.",
+      "Conversation, session, thread or previous-response correlation identifiers when the instrumented system already has one; nested parent and child executions.",
+      "Start and end of the logical operation, including automatic retries inside one logical span, cancellation, timeout, error type and compaction of prior context.",
+      "Streaming marks such as time to first chunk and time per subsequent output chunk, plus client and server duration metrics.",
+      "Structured inputs and outputs: system instructions, input messages, output messages or choices, multimodal parts, tool definitions advertised to the model, and tool-call arguments and results.",
+      "Nested tool, retrieval, memory, plan, guardrail and evaluator steps that belong to the same run graph.",
+      "Token usage by type (input, output, cache read/write, reasoning, text, image, audio) preferring billed counts when both billed and consumed counts exist.",
+      "Optional monetary cost of the call when a first-party cost schema supplies it, together with currency and rate provenance.",
+      "Human oversight, deployer and provider control of logs, evaluation or annotation results attached to the run, integrity of the audit record, access, redaction, retention and erasure.",
+      "Interoperability alignments to OpenTelemetry GenAI conventions, OpenInference, W3C PROV, W3C Trace Context, ISO/IEC 22989 inference terminology and EU AI Act logging duties."
+    ],
+    "out_of_scope": [
+      "Durable identity, capability card, memory store or persona of an agent as a standing entity; those belong to the executing-agent sibling (WM-AI-002).",
+      "Versioned prompts, tools, decoding profiles, safety policies and runtime configuration objects as governed artifacts; those belong to the configuration sibling (WM-AI-005). The run only records which configuration was used.",
+      "Model training, fine-tuning, evaluation campaigns as programmes, dataset governance, model cards and system-level AI inventory except as references from a run.",
+      "Durable conversation, thread or case files as first-class collaboration objects; only correlation identifiers on a run are in scope.",
+      "Financial invoices, purchase orders, tokens wallets and provider billing accounts as commercial objects; only usage quantities and optional run-level cost figures are in scope.",
+      "Physical robot actuation, plant control or safety-instrumented functions except insofar as a tool call is recorded as a software execution.",
+      "MCP server catalogues, tool marketplaces and A2A agent directories as registries; only an in-run tool or agent invocation is in scope.",
+      "Content-credential, watermark or C2PA packaging of generated media as a media-provenance product; only run-level output capture is in scope."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-AI-001 parent AI world-model",
+        "distinction": "WM-AI-001 frames the broader AI system. WM-AI-004 is the operational execution event that occurs when that system infers, plans or acts. A system can exist with zero runs; a run cannot be understood without the parent system context, but it does not duplicate system-level inventory, risk classification or intended purpose.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "WM-AI-002 executing agent",
+        "distinction": "The agent is a responsible party and software agent in the PROV and ISO 22989 senses. The run is the activity. The run references a stable agent identifier (provider agent id, name, version) and must not mint a transient in-memory instance id as the agent identity. Nested invoke_agent steps remain runs, not new agent entities.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-006",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "WM-AI-005 exact configuration",
+        "distinction": "Reproducibility requires the run to point at the prompt, tool definitions, decoding parameters, safety policy and model routing that were in force. Those objects live in WM-AI-005. The run records names, versions, hashes or identifiers actually used, plus request-level overrides such as temperature or seed, without becoming the configuration catalogue.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Durable conversation or session object",
+        "distinction": "OpenTelemetry records gen_ai.conversation.id only when the instrumented library already has a conversation identifier; a new UUID, trace id or content hash must not be invented as a fallback. OpenInference uses session.id. Neither identifier makes the conversation itself this model.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "EU high-risk AI system technical documentation and QMS records",
+        "distinction": "Articles 11 and 18 keep system documentation for ten years. This model is the per-use automatic event log of Articles 12, 19 and 26: start and end of use, traceability of functioning, and logs under provider or deployer control for at least six months unless other law applies. It does not replace Annex IV technical documentation.",
+        "source_refs": [
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Financial invoice or usage subscription",
+        "distinction": "OpenTelemetry prefers billed token counts so usage matches customer charges. OpenInference records optional USD cost fields. Those quantities belong on the run. The invoice, credit, tax and counterparty remain outside this model.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-007"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Semantic conventions for generative client AI spans",
+      "organization": "OpenTelemetry / CNCF",
+      "url": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-spans.md",
+      "version_or_date": "Development status; semantic-conventions-genai main, accessed 2026-08-26",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Normative attribute, operation, provider, input/output, usage, streaming, retry, error and content-capture rules for a GenAI inference span as observed by the caller."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Semantic Conventions for GenAI agent and framework spans",
+      "organization": "OpenTelemetry / CNCF",
+      "url": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-agent-spans.md",
+      "version_or_date": "Development status; semantic-conventions-genai main, accessed 2026-08-26",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Defines create_agent, invoke_agent (client and internal), invoke_workflow, plan and execute_tool spans, including stable agent identifiers and conversation correlation."
+    },
+    {
+      "id": "SRC-003",
+      "title": "Semantic conventions for generative AI metrics",
+      "organization": "OpenTelemetry / CNCF",
+      "url": "https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/gen-ai-metrics.md",
+      "version_or_date": "Development status; semantic-conventions-genai main, accessed 2026-08-26",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Token usage, operation duration, time to first chunk, agent inference/tool call counts and server-side latency instruments for a run."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 (Artificial Intelligence Act)",
+      "organization": "European Union",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+      "version_or_date": "OJ L 2024/1689, 12.7.2024; ELI http://data.europa.eu/eli/reg/2024/1689/oj",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Articles 12, 14, 19 and 26 require automatic event logs over the lifetime of high-risk systems, start and end of each use, human oversight, and provider/deployer retention of logs under their control for at least six months unless other law applies."
+    },
+    {
+      "id": "SRC-005",
+      "title": "Artificial Intelligence Risk Management Framework (AI RMF 1.0), NIST AI 100-1",
+      "organization": "National Institute of Standards and Technology",
+      "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf",
+      "version_or_date": "NIST AI 100-1, 26 January 2023",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Govern, Map, Measure and Manage functions require documented monitoring of deployed AI, TEVV, accountability, third-party resource monitoring and post-deployment capture of operation."
+    },
+    {
+      "id": "SRC-006",
+      "title": "PROV-DM: The PROV Data Model",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/2013/REC-prov-dm-20130430/",
+      "version_or_date": "W3C Recommendation 30 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Defines Activity, Entity, Agent, usage, generation, association, attribution, delegation, start and end times, and bundles for provenance of provenance, which map directly onto an inference or agent run."
+    },
+    {
+      "id": "SRC-007",
+      "title": "OpenInference Semantic Conventions",
+      "organization": "Arize AI",
+      "url": "https://github.com/Arize-ai/openinference/blob/main/spec/semantic_conventions.md",
+      "version_or_date": "OpenInference spec main, accessed 2026-08-26",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Complementary span-kind model (LLM, AGENT, TOOL, RETRIEVER, GUARDRAIL, EVALUATOR) plus token, USD cost, session, user, graph-node and annotation attributes used widely in agent tracing backends."
+    },
+    {
+      "id": "SRC-008",
+      "title": "ISO/IEC 22989:2022 Information technology — Artificial intelligence — Artificial intelligence concepts and terminology",
+      "organization": "ISO/IEC JTC 1/SC 42",
+      "url": "https://www.iso.org/standard/74296.html",
+      "version_or_date": "ISO/IEC 22989:2022, published 2022-07, Edition 1",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Defines inference as reasoning by which conclusions are derived from known premises, covering both the process and the result, and defines agent and machine-learning model concepts that bound this event model."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile, NIST AI 600-1",
+      "organization": "National Institute of Standards and Technology",
+      "url": "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence",
+      "version_or_date": "NIST AI 600-1, 26 July 2024",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Generative-AI profile of the AI RMF; requires monitoring, incident handling and documented retention treatment of GAI inputs and outputs after deployment."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Trace Context",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/2021/REC-trace-context-1-20211123/",
+      "version_or_date": "W3C Recommendation 23 November 2021 (editorial update of 6 February 2020)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Defines trace-id and parent/span-id propagation for correlating a run across services; all-zero identifiers are invalid; trace-id should be globally unique and random."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339",
+      "version_or_date": "RFC 3339, July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T18:00:00Z",
+      "relevance": "Internet profile of ISO 8601 timestamps with required seconds and a numeric offset or Z, used for run event time and distinct observation or ingestion time."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "identity-and-classification",
+        "name": "Run identity and classification",
+        "description": "How a single inference or agent run is identified, typed and distinguished from the executing agent, the conversation and the configuration it uses.",
+        "rationale": "Auditable execution collapses unless the master provider identifier, distributed trace context, operation name, provider discriminator and requested versus served model can be recovered without treating dates or freshly minted UUIDs as identity.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-008",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "run-identity",
+            "name": "Master and correlated identifiers",
+            "description": "Authoritative provider identifiers, adopting-Dimension identifiers, and distributed trace context for the run.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "master-run-identifiers",
+                "name": "Master run and response identifiers",
+                "description": "A run is identified first by the identifier assigned by the inference or agent runtime that actually executed the work, such as a completion, response, invocation or hosted-agent run id. OpenTelemetry records this as gen_ai.response.id when available. Hosted agents use a stable provider agent id on the invoke, which is not the run id. Conversation identifiers are correlators only and must not be synthesised from a trace id, a hash of content or a new UUID. A date is never an identifier.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-which-master-run-id",
+                    "text": "What authoritative master-system identifier did the inference or agent runtime assign to this execution?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "provider-response-id",
+                      "provider-invocation-id",
+                      "hosted-run-id",
+                      "id-issuing-system",
+                      "id-issuance-time"
+                    ]
+                  },
+                  {
+                    "id": "q-dimension-fallback-id",
+                    "text": "If no provider master identifier exists, what UUID or ULID did the adopting Dimension assign, and why was a master identifier absent?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "dimension-run-ulid",
+                      "absence-reason-code",
+                      "assignment-actor"
+                    ]
+                  },
+                  {
+                    "id": "q-conversation-correlator",
+                    "text": "Which pre-existing conversation, session or thread identifier correlates this run, and was it supplied by the instrumented system rather than minted as a fallback?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "conversation-id",
+                      "session-id",
+                      "thread-id",
+                      "correlator-source",
+                      "fallback-forbidden-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-previous-response-link",
+                    "text": "Does this run continue a prior response or interaction, and what previous-response identifier was passed as context?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "previous-response-id",
+                      "continuation-kind",
+                      "provider-context-mechanism"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-provider-response-id",
+                    "name": "Provider response or invocation identifier",
+                    "description": "Master-system identifier for the completion, response or invocation assigned by the executing runtime.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-dimension-run-id",
+                    "name": "Adopting Dimension run identifier",
+                    "description": "UUID or ULID assigned by the adopting Dimension when no master identifier is available or as a local durable key.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-conversation-id",
+                    "name": "Conversation identifier",
+                    "description": "Pre-existing conversation, session or thread identifier used only for correlation.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-previous-response-id",
+                    "name": "Previous response identifier",
+                    "description": "Identifier of a prior response or interaction used as context for this run.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-run-identity-record",
+                    "name": "Run identity record",
+                    "description": "Canonical identity document for the execution listing master, Dimension and correlation identifiers without embedding prompt content.",
+                    "media_or_form": [
+                      "structured-record",
+                      "application/json",
+                      "application/ld+json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the provider response or invocation identifier when present; otherwise the Dimension ULID. Do not use event time as identity.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "distributed-trace-context",
+                "name": "Distributed trace and span context",
+                "description": "A run is also a node in a distributed trace. W3C Trace Context supplies a 16-byte trace-id and 8-byte parent/span-id carried in traceparent. All-zero values are invalid. OpenTelemetry GenAI spans form a forest: an invoke_agent or invoke_workflow parent with nested inference, tool, retrieval, plan and memory children. OpenInference additionally records graph.node.id and graph.node.parent_id for execution-graph visualisation. Trace identifiers must not be reused as fabricated conversation ids.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-trace-and-span-ids",
+                    "text": "What W3C trace-id and span-id identify this run, and is the sampled flag set?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "trace-id",
+                      "span-id",
+                      "parent-span-id",
+                      "trace-flags",
+                      "tracestate"
+                    ]
+                  },
+                  {
+                    "id": "q-parent-child-topology",
+                    "text": "Which parent execution, if any, contains this run, and which child spans did this run generate?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "parent-span-id",
+                      "child-span-ids",
+                      "graph-node-id",
+                      "graph-parent-id",
+                      "span-kind"
+                    ]
+                  },
+                  {
+                    "id": "q-trace-interop",
+                    "text": "How is this trace context propagated across HTTP or other carriers so vendor traces can be joined?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "traceparent-header",
+                      "tracestate-header",
+                      "propagation-protocol",
+                      "vendor-trace-mapping"
+                    ]
+                  },
+                  {
+                    "id": "q-invalid-zero-ids",
+                    "text": "Were all-zero or non-random trace identifiers rejected rather than stored as valid run identity?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "trace-id-valid-flag",
+                      "randomness-policy",
+                      "rejection-event"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-trace-id",
+                    "name": "W3C trace identifier",
+                    "description": "16-byte globally unique trace-id, encoded as 32 lowercase hex characters.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-span-id",
+                    "name": "Span identifier",
+                    "description": "8-byte identifier of this execution within the trace.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-parent-span-id",
+                    "name": "Parent span identifier",
+                    "description": "Span-id of the caller operation, if this run is nested.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-otel-span-kind",
+                    "name": "OpenTelemetry span kind",
+                    "description": "CLIENT, INTERNAL or other OTel span kind used for the GenAI operation.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-trace-context",
+                    "name": "Trace context envelope",
+                    "description": "W3C traceparent/tracestate values and local span identifiers bound to the run.",
+                    "media_or_form": [
+                      "text/plain",
+                      "structured-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Composite of trace-id plus span-id; never all-zero.",
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "operation-classification",
+            "name": "Operation, provider and model classification",
+            "description": "What kind of GenAI operation ran, against which provider flavour, and which model was requested versus served.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "operation-and-provider",
+                "name": "Operation name and provider discriminator",
+                "description": "OpenTelemetry requires gen_ai.operation.name and, for client spans, gen_ai.provider.name as the telemetry-format discriminator. Well-known operations include chat, generate_content, text_completion, invoke_agent, invoke_workflow, execute_tool, embeddings, retrieval, plan, create_agent, fetch_response and memory create/search/update/delete/upsert operations. fetch_response must not report token usage. Provider name may differ from the upstream model vendor when a proxy or host relays the call. OpenInference instead requires openinference.span.kind values such as LLM, AGENT, TOOL, CHAIN, RETRIEVER, GUARDRAIL, EVALUATOR, EMBEDDING, RERANKER and PROMPT. These vocabularies align but do not coincide. ISO/IEC 22989 treats inference as both process and result, which is broader than an LLM chat call.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-operation-name",
+                    "text": "Which well-known or custom operation name classifies this run, and does a predefined OpenTelemetry value apply?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "operation-name",
+                      "operation-name-source",
+                      "custom-operation-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-provider-name",
+                    "text": "Which GenAI provider name did instrumentation record, and does it identify a proxy rather than the upstream model vendor?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "provider-name",
+                      "upstream-vendor",
+                      "proxy-or-host-flag",
+                      "provider-specific-attribute-family"
+                    ]
+                  },
+                  {
+                    "id": "q-span-kind-alignment",
+                    "text": "What OpenInference span kind, if any, is recorded alongside the OpenTelemetry operation, and where do the two classifications disagree?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "openinference-span-kind",
+                      "otel-operation-name",
+                      "alignment-conflict-note"
+                    ]
+                  },
+                  {
+                    "id": "q-iso-inference-sense",
+                    "text": "Is this run an ISO/IEC 22989 inference process, an inference result, an agent activity, or a non-inferential fetch of a stored response?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "iso-inference-role",
+                      "process-versus-result",
+                      "fetch-without-inference-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-operation-name",
+                    "name": "GenAI operation name",
+                    "description": "Required OpenTelemetry operation name for the run.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-provider-name",
+                    "name": "GenAI provider name",
+                    "description": "Provider discriminator as identified by client or server instrumentation.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-openinference-kind",
+                    "name": "OpenInference span kind",
+                    "description": "Complementary span-kind classification used by OpenInference backends.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-operation-classification",
+                    "name": "Operation classification stamp",
+                    "description": "Recorded operation, provider and competing span-kind labels for the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by run master identifier plus operation-name recorded at span creation time.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "requested-versus-served-model",
+                "name": "Requested versus served model",
+                "description": "The model name requested by the caller can differ from the model that generated the response when a provider routes, falls back or serves a dated snapshot. OpenTelemetry records gen_ai.request.model and gen_ai.response.model. OpenInference adds llm.request.model_name, llm.response.model_name and a backward-compatible llm.model_name. Fine-tuned custom models should be named more specifically than the base model. For agents that dynamically select among models, a single request.model on the agent span should not be populated.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-requested-model",
+                    "text": "What exact model name did the caller request?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "requested-model-name",
+                      "fine-tune-base-model",
+                      "model-source-vendor"
+                    ]
+                  },
+                  {
+                    "id": "q-served-model",
+                    "text": "What exact model name did the provider report as having generated the response?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "served-model-name",
+                      "routing-or-fallback-flag",
+                      "model-snapshot-id"
+                    ]
+                  },
+                  {
+                    "id": "q-agent-multi-model",
+                    "text": "If an agent can select among multiple models, was a single request.model omitted on the agent span as required?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "agent-multi-model-flag",
+                      "request-model-populated-flag",
+                      "per-child-model-names"
+                    ]
+                  },
+                  {
+                    "id": "q-model-config-binding",
+                    "text": "Which governed configuration object records the allowed model routing that this run actually used?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "configuration-id",
+                      "routing-policy-version",
+                      "wm-ai-005-ref"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-request-model",
+                    "name": "Requested model name",
+                    "description": "Exact model name supplied in the request.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-response-model",
+                    "name": "Served model name",
+                    "description": "Exact model name reported as generating the response.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-model-resolution",
+                    "name": "Model resolution record",
+                    "description": "Requested and served model names and any routing note for the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by run master identifier; model names are not identifiers of the run.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lifecycle-time-and-state",
+        "name": "Lifecycle, time and state",
+        "description": "When the logical operation started and ended, how streaming and retries were bounded, and how the run terminated, failed, compacted, was cancelled or was fetched without new inference.",
+        "rationale": "EU Article 12 requires start and end of each use for specified high-risk systems. OpenTelemetry spans cover the logical operation including automatic retries. PROV activities have start and end. Clocks must be RFC 3339 with seconds and an explicit offset, and event time must be distinguished from observation or ingestion time.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-004",
+          "SRC-006",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "temporal-bounds",
+            "name": "Temporal bounds and streaming marks",
+            "description": "Event interval, ingestion time, duration and streaming latency marks.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "run-interval-and-clocks",
+                "name": "Run interval and clock discipline",
+                "description": "The run has an event start and event end covering the logical operation. If a transient issue caused automatic retries, the span covers all retries. EU Article 12(3) requires recording the period of each use (start date and time and end date and time) at least for Annex III point 1(a) systems, and more generally logging must support traceability of functioning. Observation or ingestion time of the audit record can lag the event and must be stored separately. Timestamps use RFC 3339 with seconds and an explicit numeric offset or Z.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-event-start-end",
+                    "text": "What are the RFC 3339 event start and event end of this logical operation, including any automatic retries?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "event-start-at",
+                      "event-end-at",
+                      "includes-retries-flag",
+                      "time-offset-or-z"
+                    ]
+                  },
+                  {
+                    "id": "q-ingestion-time",
+                    "text": "When was this run record observed or ingested into the governed store, if that instant differs from event time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "observed-at",
+                      "ingested-at",
+                      "clock-source",
+                      "skew-note"
+                    ]
+                  },
+                  {
+                    "id": "q-eu-use-period",
+                    "text": "Does this run satisfy the Article 12 duty to record the period of each use, and is the system in a high-risk class that makes that field mandatory?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "high-risk-flag",
+                      "annex-class",
+                      "use-period-recorded-flag",
+                      "legal-basis"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-activity-times",
+                    "text": "What PROV activity start and end times, and optional usage or generation times, are asserted for this run?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "prov-start-time",
+                      "prov-end-time",
+                      "usage-time",
+                      "generation-time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-event-start-at",
+                    "name": "Event start timestamp",
+                    "description": "Logical start of the operation in RFC 3339 with seconds and offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-event-end-at",
+                    "name": "Event end timestamp",
+                    "description": "Logical end of the operation, covering retries, in RFC 3339 with seconds and offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-ingested-at",
+                    "name": "Observation or ingestion timestamp",
+                    "description": "When the run record entered the governed store, if different from event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-run-timeline",
+                    "name": "Run timeline",
+                    "description": "Event, retry, stream and ingestion timestamps for the execution.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier; timestamps are attributes not identifiers.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-011",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "streaming-and-latency-marks",
+                "name": "Streaming and latency marks",
+                "description": "Streaming requests record gen_ai.request.stream and may record gen_ai.response.time_to_first_chunk in seconds from request issuance to first chunk. Metrics add gen_ai.client.operation.duration, time_to_first_chunk, time_per_output_chunk, invoke_agent.duration, execute_tool.duration and server time_to_first_token / time_per_output_token. These are measurements of the run, not a separate performance product.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-streaming-flag",
+                    "text": "Was this request issued in streaming mode, and if unset is non-streaming correctly assumed?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "stream-flag",
+                      "stream-assumption"
+                    ]
+                  },
+                  {
+                    "id": "q-time-to-first-chunk",
+                    "text": "What was the time in seconds from request issuance to first streamed chunk?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "time-to-first-chunk-seconds",
+                      "first-chunk-at",
+                      "unit"
+                    ]
+                  },
+                  {
+                    "id": "q-duration-histogram",
+                    "text": "What client or server operation duration was recorded for this run, and in which UCUM unit?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "client-duration-seconds",
+                      "server-duration-seconds",
+                      "invoke-agent-duration",
+                      "execute-tool-duration"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-request-stream",
+                    "name": "Streaming request flag",
+                    "description": "True only when the request is streaming; unset means non-streaming.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-ttfc",
+                    "name": "Time to first chunk",
+                    "description": "Seconds from request issuance to first streamed chunk.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-operation-duration",
+                    "name": "Operation duration",
+                    "description": "Logical operation duration in seconds, covering retries.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-latency-sample",
+                    "name": "Latency sample",
+                    "description": "Per-run duration and streaming latency measurements.",
+                    "media_or_form": [
+                      "structured-record",
+                      "metrics-histogram-sample"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by run master identifier plus metric name.",
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "state-termination",
+            "name": "State, termination, errors and rare endings",
+            "description": "How the run finished, failed, was cancelled, compacted context, or fetched a stored response without inference.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-006"
+            ],
+            "findings": [
+              {
+                "id": "run-status-finish-and-errors",
+                "name": "Status, finish reasons and errors",
+                "description": "OpenTelemetry span status follows the Recording Errors document. error.type is conditionally required if the operation ended in an error and should match the provider error code, exception name or other low-cardinality identifier. gen_ai.response.finish_reasons captures why generation stopped (stop, length and provider-specific values). OpenInference records status OK, ERROR or UNSET, llm.finish_reason and exception attributes. PROV can invalidate or end an activity. Truncation, content filters, tool-use stops and safety refusals are first-class terminal states, not missing data.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-terminal-state",
+                    "text": "In what terminal state did this run end, and which finish reasons did the model or agent report?",
+                    "kind": "state",
+                    "answer_data": [
+                      "span-status",
+                      "finish-reasons",
+                      "openinference-status"
+                    ]
+                  },
+                  {
+                    "id": "q-error-type",
+                    "text": "If the run failed, what error.type or exception type, message and stack were recorded?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "error-type",
+                      "error-code",
+                      "exception-message",
+                      "exception-stacktrace",
+                      "exception-escaped"
+                    ]
+                  },
+                  {
+                    "id": "q-safety-or-filter-stop",
+                    "text": "Did a content filter, guardrail, refusal or max-token length stop generation, and is that encoded as a finish reason rather than a silent truncation?",
+                    "kind": "event",
+                    "answer_data": [
+                      "finish-reasons",
+                      "guardrail-triggered-flag",
+                      "refusal-flag",
+                      "length-stop-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-lifecycle-phase",
+                    "text": "Is this run still open, completed, cancelled, timed out, or awaiting human oversight before it may close?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "lifecycle-state",
+                      "awaiting-oversight-flag",
+                      "timeout-flag",
+                      "cancel-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-span-status",
+                    "name": "Span or run status",
+                    "description": "OK, ERROR, UNSET or equivalent terminal status.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-finish-reasons",
+                    "name": "Finish reasons",
+                    "description": "Array of reasons the model stopped generating tokens.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-error-type",
+                    "name": "Error type",
+                    "description": "Low-cardinality class of error if the operation ended in error.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-termination-record",
+                    "name": "Termination record",
+                    "description": "Status, finish reasons, error class and exception payload for the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier; one terminal record per run.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "retry-cancel-compaction-fetch",
+                "name": "Retries, cancellation, compaction and fetch-without-inference",
+                "description": "Rare but specified endings: automatic retries folded into one logical span; cancellation or timeout; gen_ai.conversation.compacted indicating the effective context is a compacted view of a prior conversation and must not be set to false; and fetch_response, which loads a previously generated response by identifier without performing inference and must not report token usage. These cases are easy to omit from naive chat-only schemas.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "q-retries-folded",
+                    "text": "Were transient automatic retries folded into this logical run, and how many attempts occurred?",
+                    "kind": "process",
+                    "answer_data": [
+                      "retry-count",
+                      "retry-folded-flag",
+                      "attempt-error-types"
+                    ]
+                  },
+                  {
+                    "id": "q-cancel-or-timeout",
+                    "text": "Was the run cancelled or terminated by timeout before a model finish reason was produced?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "cancelled-flag",
+                      "timeout-flag",
+                      "cancel-actor",
+                      "cancel-at"
+                    ]
+                  },
+                  {
+                    "id": "q-context-compacted",
+                    "text": "Was the effective conversation context a compacted view of a prior conversation, and was the compacted attribute left unset rather than set to false when unknown?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "conversation-compacted",
+                      "compaction-evidence",
+                      "attribute-unset-when-unknown"
+                    ]
+                  },
+                  {
+                    "id": "q-fetch-without-inference",
+                    "text": "Is this a fetch of a stored response without inference, and were token usage attributes and metrics omitted as required?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "operation-name",
+                      "fetched-response-id",
+                      "token-usage-omitted-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-retry-count",
+                    "name": "Automatic retry count",
+                    "description": "Number of automatic retries folded into the logical span.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-conversation-compacted",
+                    "name": "Conversation compacted indicator",
+                    "description": "Positive indicator that compacted context was applied; must not be recorded as false.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-cancelled-flag",
+                    "name": "Cancelled flag",
+                    "description": "True when the caller or runtime cancelled the logical operation.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-rare-ending-note",
+                    "name": "Rare ending note",
+                    "description": "Retry, cancel, compaction or fetch-without-inference annotation on the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier plus ending-kind code.",
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "inputs-outputs-and-content",
+        "name": "Inputs, outputs and content control",
+        "description": "What was sent to the model or agent, what came back, in which modality, and how sensitive content is captured, truncated, redacted or offloaded.",
+        "rationale": "OpenTelemetry and OpenInference treat prompts, completions, system instructions and tool arguments as opt-in, privacy-sensitive payloads with JSON schemas. Capture policy is part of operating the run, not a storage-format concern.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-007",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "payloads",
+            "name": "Input and output payloads",
+            "description": "Messages, instructions, modalities and tool advertisements that constitute the run payload.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "input-messages-and-instructions",
+                "name": "Input messages, system instructions and prompt variables",
+                "description": "Inputs include ordered chat history (gen_ai.input.messages / llm.input_messages), system instructions supplied separately from history, named prompt templates with version and variables, and advertised tool definitions. Messages must be in the order sent. Content is likely to contain PII. Instrumentations may filter or truncate. Prompt template identity is a configuration reference, not a substitute for WM-AI-005.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-input-message-order",
+                    "text": "What ordered input messages and roles were provided to the model, and were they truncated or filtered?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "input-messages",
+                      "message-roles",
+                      "truncation-flag",
+                      "filter-policy"
+                    ]
+                  },
+                  {
+                    "id": "q-system-instructions",
+                    "text": "Were system instructions supplied separately from chat history, and what is their content or content hash?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "system-instructions",
+                      "instructions-hash",
+                      "instructions-source"
+                    ]
+                  },
+                  {
+                    "id": "q-prompt-template",
+                    "text": "Which named prompt and version were used, and what variable values were substituted?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "prompt-name",
+                      "prompt-version",
+                      "prompt-variables",
+                      "prompt-vendor-id",
+                      "wm-ai-005-ref"
+                    ]
+                  },
+                  {
+                    "id": "q-input-mime-and-modality",
+                    "text": "What MIME type, modalities and output type did the client request?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "input-mime-type",
+                      "output-type",
+                      "modalities"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-input-messages",
+                    "name": "Input messages",
+                    "description": "Ordered chat history sent to the model, following the GenAI input-messages JSON schema.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-system-instructions",
+                    "name": "System instructions",
+                    "description": "System message or instructions supplied separately from chat history.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-prompt-name",
+                    "name": "Prompt name",
+                    "description": "Name of the prompt template that uniquely identifies it.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-output-type",
+                    "name": "Requested output type",
+                    "description": "Modality requested by the client such as text, json, image or speech.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-input-payload",
+                    "name": "Input payload snapshot",
+                    "description": "Captured or referenced input messages, instructions and prompt variable bindings for the run.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/plain",
+                      "external-object-uri"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Content-addressed hash plus run master identifier; may be replaced by an external storage URI when payloads are offloaded.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "output-messages-and-modalities",
+                "name": "Output messages, choices and hidden reasoning",
+                "description": "Outputs are one message per choice or candidate, not split across messages. They may include text, images, audio, tool calls, and provider-specific reasoning or encrypted thinking blocks. OpenInference preserves message_content.signature, encrypted_content, redacted_thinking data and tool_call.reasoning_signature for stateless replay. Choice count other than one is conditionally required. Seed, temperature, top_p, top_k, max_tokens, stop sequences and reasoning level are request parameters that condition the output and should be recorded for reproducibility, while the governed defaults live in WM-AI-005.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-output-choices",
+                    "text": "What output messages or choices were returned, and which finish reason applies to each?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "output-messages",
+                      "choice-count",
+                      "per-choice-finish-reason"
+                    ]
+                  },
+                  {
+                    "id": "q-hidden-reasoning",
+                    "text": "Were reasoning, encrypted or redacted thinking blocks returned, and are vendor signatures preserved for replay without logging plaintext chain-of-thought?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "reasoning-present-flag",
+                      "encrypted-content-present",
+                      "reasoning-signature",
+                      "redacted-thinking-data"
+                    ]
+                  },
+                  {
+                    "id": "q-decoding-parameters",
+                    "text": "Which decoding parameters and seed actually applied to this run?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "temperature",
+                      "top-p",
+                      "top-k",
+                      "max-tokens",
+                      "seed",
+                      "stop-sequences",
+                      "reasoning-level"
+                    ]
+                  },
+                  {
+                    "id": "q-output-evidence-hash",
+                    "text": "What integrity hash or external URI identifies the canonical output payload used for later audit or evaluation?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "output-hash",
+                      "output-uri",
+                      "mime-type"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-output-messages",
+                    "name": "Output messages",
+                    "description": "One message per model choice or candidate, following the GenAI output-messages JSON schema.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-choice-count",
+                    "name": "Requested choice count",
+                    "description": "Target number of candidate completions when not equal to one.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-seed",
+                    "name": "Sampling seed",
+                    "description": "Seed supplied to make repeated requests more likely to agree.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-temperature",
+                    "name": "Temperature",
+                    "description": "Temperature setting for the request.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-output-payload",
+                    "name": "Output payload snapshot",
+                    "description": "Captured or referenced outputs, including tool-call parts and opaque reasoning envelopes.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/plain",
+                      "image",
+                      "audio",
+                      "external-object-uri"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Content-addressed hash plus run master identifier, or provider response id when that uniquely locates the stored completion.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "content-governance",
+            "name": "Content capture, redaction and offload",
+            "description": "Whether payloads are inline, hashed, truncated, redacted or stored externally, and how PII duties apply.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-009",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "capture-redaction-and-external-storage",
+                "name": "Capture policy, redaction and external content storage",
+                "description": "OpenTelemetry allows full buffered content on attributes, upload of content to external storage, or streaming-chunk capture, and warns that input and output attributes likely contain sensitive information. Instrumentations may filter or truncate. NIST AI 600-1 highlights documented retention treatment of GAI inputs and outputs. Capture policy is an operating decision of the run: inline content, hash-only, redacted view, or pointer to an external store. This is not implied by choosing JSON versus a database.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-capture-mode",
+                    "text": "Was content captured inline, truncated, hashed only, redacted, streamed as chunks, or uploaded to external storage?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "capture-mode",
+                      "truncation-limits",
+                      "external-storage-uri",
+                      "content-hash"
+                    ]
+                  },
+                  {
+                    "id": "q-pii-classes",
+                    "text": "What personal data or sensitive classes were detected in inputs or outputs, and which redaction rules applied?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "data-classes",
+                      "redaction-rules",
+                      "pii-detected-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-who-may-read-content",
+                    "text": "Who is authorised to read unredacted payloads for this run, and under which access exception?",
+                    "kind": "access",
+                    "answer_data": [
+                      "content-access-scope",
+                      "unredacted-roles",
+                      "exception-ticket"
+                    ]
+                  },
+                  {
+                    "id": "q-quality-of-capture",
+                    "text": "Is the captured payload complete enough to reproduce or evaluate the run, and what completeness or integrity evidence exists?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "completeness-code",
+                      "integrity-hash",
+                      "missing-fields"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-capture-mode",
+                    "name": "Content capture mode",
+                    "description": "How payloads are retained: inline, truncated, hashed, redacted, chunked or external.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-content-hash",
+                    "name": "Content integrity hash",
+                    "description": "Hash of the canonical captured payload.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-external-content-uri",
+                    "name": "External content URI",
+                    "description": "Pointer to offloaded input or output objects.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-redaction-manifest",
+                    "name": "Redaction and capture manifest",
+                    "description": "Declares capture mode, hashes, redaction rules and external URIs for the run payloads.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by run master identifier; content URIs use object-store identifiers, not dates.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "agent-tools-and-nested-work",
+        "name": "Agent, tools and nested work",
+        "description": "How an agent run composes nested inferences, tool executions, retrieval, memory, planning, guardrails and evaluations, and how those steps reference the executing agent and exact configuration.",
+        "rationale": "OpenTelemetry agent conventions and OpenInference span kinds exist specifically to make multi-step agent work auditable. The run remains an event; the agent and configuration remain siblings.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-006",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "agent-and-config-binding",
+            "name": "Executing agent and configuration binding",
+            "description": "References from the run to the standing agent and the exact configuration used.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "executing-agent-and-configuration",
+                "name": "Executing agent and exact configuration references",
+                "description": "Invoke and create agent spans record gen_ai.agent.id, name, description and version. For hosted agents the id should be the provider-assigned stable identifier (Bedrock ARN, GCP registry id, OpenAI assistant id). In-memory instance ids are not recommended. PROV associates the activity with an agent and optionally a plan. OpenInference records agent.name. The run also records the configuration identifiers needed for reproducibility (prompt version, tool definitions version, policy version, decoding profile) as references to WM-AI-005 rather than embedding the configuration catalogue.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-which-agent",
+                    "text": "Which stable executing agent identifier, name and version performed this run?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "agent-id",
+                      "agent-name",
+                      "agent-version",
+                      "agent-description",
+                      "wm-ai-002-ref"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-association",
+                    "text": "Which PROV association, attribution or delegation links this activity to the responsible agent, organisation or human overseer?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "prov-agent-id",
+                      "prov-role",
+                      "plan-id",
+                      "acted-on-behalf-of"
+                    ]
+                  },
+                  {
+                    "id": "q-which-configuration",
+                    "text": "Which exact configuration identifiers were in force for prompts, tools, decoding, routing and safety policy?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "configuration-id",
+                      "prompt-version",
+                      "tool-definitions-version",
+                      "policy-version",
+                      "wm-ai-005-ref"
+                    ]
+                  },
+                  {
+                    "id": "q-ownership-of-run",
+                    "text": "Which organisation, deployer or system owner is accountable for this execution?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "accountable-deployer",
+                      "system-owner",
+                      "provider-id",
+                      "tenant-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-agent-id",
+                    "name": "Stable agent identifier",
+                    "description": "Provider-assigned stable identifier of the invoked or created agent.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-agent-name",
+                    "name": "Agent name",
+                    "description": "Human-readable name of the invoked agent.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-agent-version",
+                    "name": "Agent version",
+                    "description": "Version of the invoked or created agent.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-configuration-ref",
+                    "name": "Configuration reference",
+                    "description": "Identifier of the exact configuration object used for this run.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-run-binding",
+                    "name": "Run binding record",
+                    "description": "Typed edges from the run to the executing agent and the exact configuration.",
+                    "media_or_form": [
+                      "structured-record",
+                      "typed-edges"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Run master identifier plus target identifiers; agent instance ids are forbidden as agent identity.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "nested-steps",
+            "name": "Tools, retrieval, memory and nested spans",
+            "description": "Child executions that make an agent run auditable as a graph rather than a single completion.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "tool-definitions-and-executions",
+                "name": "Tool definitions and tool executions",
+                "description": "Models may be advertised a list of tool definitions (gen_ai.tool.definitions / llm.tools) and then emit tool calls that are executed as execute_tool spans. OpenTelemetry sampling-relevant attributes include gen_ai.tool.name and gen_ai.tool.type at span creation. OpenInference records tool.name, tool.id, json schema, parameters, tool_call.id and function arguments. Metrics count gen_ai.invoke_agent.tool_calls and gen_ai.execute_tool.duration. Parallel tool calls need distinct call ids. Tool results re-enter the next inference as tool-role messages. MCP tool calls are an aligned but separately specified flavour and are treated as a coverage gap unless an MCP span is actually present.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-tools-advertised",
+                    "text": "Which tool definitions were advertised to the model or agent for this run?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "tool-definitions",
+                      "tool-names",
+                      "tool-json-schemas"
+                    ]
+                  },
+                  {
+                    "id": "q-tools-executed",
+                    "text": "Which tool calls were executed, with what call identifiers, arguments, results, duration and error type?",
+                    "kind": "process",
+                    "answer_data": [
+                      "tool-call-id",
+                      "tool-name",
+                      "tool-type",
+                      "arguments",
+                      "result",
+                      "duration",
+                      "error-type"
+                    ]
+                  },
+                  {
+                    "id": "q-tool-authority",
+                    "text": "Under what authority, allow-list or human approval was each tool allowed to run, especially for side-effecting tools?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "allow-list-id",
+                      "approval-id",
+                      "approver",
+                      "side-effect-class"
+                    ]
+                  },
+                  {
+                    "id": "q-parallel-tool-calls",
+                    "text": "Were multiple tool calls issued in parallel, and how are their identifiers kept distinct in the trace?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "tool-call-ids",
+                      "parallel-flag",
+                      "parent-inference-span-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-tool-definitions",
+                    "name": "Advertised tool definitions",
+                    "description": "Tool definitions available to the model or agent for this run.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-tool-call-id",
+                    "name": "Tool call identifier",
+                    "description": "Identifier of a specific tool invocation, unique among parallel calls.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-tool-name",
+                    "name": "Tool name",
+                    "description": "Name of the executed or advertised tool.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-tool-call-record",
+                    "name": "Tool call record",
+                    "description": "Per-call advertisement, arguments, result, timing and authorisation of a tool execution nested under the run.",
+                    "media_or_form": [
+                      "structured-record",
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Tool call identifier within the parent run; do not reuse model message indexes as durable identity.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "retrieval-memory-plan-nested",
+                "name": "Retrieval, memory, plan, guardrail and nested agent spans",
+                "description": "Agent runs commonly nest retrieval (data_source.id, query, documents, top_k), memory create/search/update/delete/upsert, a plan or task-decomposition phase, guardrail checks and evaluator or annotation spans, and further invoke_agent or invoke_workflow children. OpenTelemetry retrieval documents and query text are opt-in and sensitive. OpenInference adds RETRIEVER, RERANKER, GUARDRAIL, EVALUATOR, CHAIN and graph node attributes. Nested invoke_agent spans remain runs, not new agent entities. Embeddings operations are in scope when they occur as part of the run.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-retrieval-grounding",
+                    "text": "Which data sources were queried, with what query, top-k and retrieved document identifiers and scores?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "data-source-id",
+                      "retrieval-query",
+                      "top-k",
+                      "document-ids",
+                      "document-scores"
+                    ]
+                  },
+                  {
+                    "id": "q-memory-operations",
+                    "text": "Which memory store operations ran during this execution, and which memory records were created, searched, updated or deleted?",
+                    "kind": "process",
+                    "answer_data": [
+                      "memory-operation-name",
+                      "memory-store-id",
+                      "memory-record-ids"
+                    ]
+                  },
+                  {
+                    "id": "q-plan-phase",
+                    "text": "Did the agent emit a distinct plan or task-decomposition phase, and what plan artifact was produced?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "plan-span-id",
+                      "plan-artifact-ref",
+                      "plan-text-or-hash"
+                    ]
+                  },
+                  {
+                    "id": "q-nested-agents",
+                    "text": "Which nested agent or workflow invocations were spawned, and how do they reference their parent run without minting new agent entities?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "child-run-ids",
+                      "child-agent-ids",
+                      "workflow-id",
+                      "parent-run-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-data-source-id",
+                    "name": "Data source identifier",
+                    "description": "Identifier of the grounding data source as known to the GenAI system.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-retrieved-documents",
+                    "name": "Retrieved documents",
+                    "description": "Documents returned by retrieval, including identifiers and scores.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-child-run-ids",
+                    "name": "Nested run identifiers",
+                    "description": "Identifiers of child inferences, tools, plans, memory operations or sub-agents.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-run-graph",
+                    "name": "Run execution graph",
+                    "description": "Parent-child span or graph-node map of nested work under the agent run.",
+                    "media_or_form": [
+                      "structured-record",
+                      "application/vnd.opentelemetry.traces",
+                      "graph"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Root run master identifier plus child span or tool-call identifiers.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "usage-cost-and-performance",
+        "name": "Usage, cost and performance",
+        "description": "What the run consumed in tokens and optional money, and how long nested work took, including cache, reasoning and multimodal breakdowns.",
+        "rationale": "The registry purpose explicitly includes cost. OpenTelemetry standardises billed token counts and duration metrics but not currency. OpenInference standardises USD cost fields. Both must be recorded as alignments, not silently merged.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "consumption",
+            "name": "Token usage and monetary cost",
+            "description": "Billed token counts by type and optional currency amounts.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "token-usage-breakdown",
+                "name": "Token usage including cache, reasoning and modalities",
+                "description": "OpenTelemetry recommends gen_ai.usage.input_tokens and output_tokens, including cached tokens in the input total, plus optional cache_read/write, reasoning.output, text, image and audio breakdowns. When a provider reports both billed and consumed counts, billed counts MUST be reported so usage matches customer charges. fetch_response must not report token usage. OpenInference mirrors this with llm.token_count.* including cache_read, cache_write, reasoning and audio details. Totals and subsets must be consistent.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-billed-versus-consumed",
+                    "text": "Are the recorded token counts billed units, consumed units, or both, and which value is canonical for charging?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "token-basis",
+                      "input-tokens",
+                      "output-tokens",
+                      "billed-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-cache-and-reasoning",
+                    "text": "How many input tokens were cache reads or cache writes, and how many output tokens were reasoning tokens?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "cache-read-input-tokens",
+                      "cache-write-input-tokens",
+                      "reasoning-output-tokens"
+                    ]
+                  },
+                  {
+                    "id": "q-modality-tokens",
+                    "text": "What text, image and audio token counts were reported, and do they sum consistently into the totals?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "text-input-tokens",
+                      "image-input-tokens",
+                      "audio-input-tokens",
+                      "consistency-check"
+                    ]
+                  },
+                  {
+                    "id": "q-agent-inference-calls",
+                    "text": "How many nested inference calls and tool calls did this agent invocation make, and what were their token totals?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "inference-call-count",
+                      "tool-call-count",
+                      "aggregated-input-tokens",
+                      "aggregated-output-tokens"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-input-tokens",
+                    "name": "Input token count",
+                    "description": "Billed-preferred count of all input tokens including cached tokens.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-output-tokens",
+                    "name": "Output token count",
+                    "description": "Billed-preferred count of output tokens including reasoning tokens.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-cache-read-tokens",
+                    "name": "Cache-read input tokens",
+                    "description": "Input tokens served from a provider-managed cache.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-reasoning-tokens",
+                    "name": "Reasoning output tokens",
+                    "description": "Output tokens used for reasoning or extended thinking, included in output totals.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-usage-statement",
+                    "name": "Usage statement",
+                    "description": "Canonical billed-preferred token breakdown for the run and its nested inference calls.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier; optionally includes provider usage object id when the API returns one.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "monetary-cost",
+                "name": "Monetary cost of the run",
+                "description": "OpenInference defines llm.cost.prompt, llm.cost.completion, llm.cost.total and detail fields in USD. OpenTelemetry GenAI metrics do not currently define a cost instrument; they only define token usage. Cost on this model is therefore an OpenInference-aligned optional measurement, not an OTel-conformant field, and currency must be explicit. Rate cards, discounts and invoice identity remain out of scope. Absence of a cost field must not be filled by guessing a price.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-cost-present",
+                    "text": "Was a monetary cost recorded for this run, in what currency, and which schema supplied the fields?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "cost-total",
+                      "currency",
+                      "schema-family",
+                      "cost-source"
+                    ]
+                  },
+                  {
+                    "id": "q-cost-breakdown",
+                    "text": "How is cost split across prompt, completion, cache, reasoning and audio details?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "cost-prompt",
+                      "cost-completion",
+                      "cost-cache-read",
+                      "cost-cache-write",
+                      "cost-reasoning",
+                      "cost-audio"
+                    ]
+                  },
+                  {
+                    "id": "q-cost-gap",
+                    "text": "If only tokens are available, is cost left unset rather than inferred from an unofficial rate card?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "cost-unset-flag",
+                      "rate-card-used-flag",
+                      "inference-forbidden-note"
+                    ]
+                  },
+                  {
+                    "id": "q-cost-ownership",
+                    "text": "Which billing account, project or tenant is charged for this run without importing the invoice object?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "billing-account-ref",
+                      "project-id",
+                      "tenant-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-cost-total",
+                    "name": "Total run cost",
+                    "description": "Optional total cost of the LLM or agent call.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-cost-currency",
+                    "name": "Cost currency",
+                    "description": "Currency of recorded cost; OpenInference examples use USD.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-cost-schema-family",
+                    "name": "Cost schema family",
+                    "description": "Which cost schema was used, typically openinference-usd, never implied-otel.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-cost-statement",
+                    "name": "Cost statement",
+                    "description": "Optional monetary breakdown for the run, explicitly sourced from a cost schema rather than from OpenTelemetry metrics.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier plus schema family; not an invoice number.",
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "server-location",
+            "name": "Runtime location of the GenAI server",
+            "description": "Coarse location of the inference service as address and port, not a geospatial user location.",
+            "source_refs": [
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "server-address-and-port",
+                "name": "GenAI server address and port",
+                "description": "OpenTelemetry recommends server.address and, when address is set, server.port, representing the server behind intermediaries when known. This is the only spatial signal specified for GenAI spans. User geolocation, device location and data-residency region of training data are out of scope unless independently supplied by another model.",
+                "source_refs": [
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-server-address",
+                    "text": "What server address and port did the client observe for this GenAI operation, behind intermediaries if known?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "server-address",
+                      "server-port"
+                    ]
+                  },
+                  {
+                    "id": "q-residency-assumption",
+                    "text": "Does the recorded server address support a data-residency inference, or is residency unknown and therefore unset?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "residency-known-flag",
+                      "region-code",
+                      "uncertainty-note"
+                    ]
+                  },
+                  {
+                    "id": "q-intermediary",
+                    "text": "Was the call relayed through a gateway or proxy, and does provider.name therefore differ from the upstream vendor?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "proxy-flag",
+                      "observed-server-address",
+                      "upstream-provider"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-server-address",
+                    "name": "GenAI server address",
+                    "description": "Server address behind intermediaries when available.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-server-port",
+                    "name": "GenAI server port",
+                    "description": "Server port, required by convention when address is set.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Server address and port are scalar span attributes. They have no independent artifact unless a network capture is attached by another telemetry model; recording them inline on the run is the OpenTelemetry projection."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "governance-oversight-and-evidence",
+        "name": "Governance, oversight, evidence and retention",
+        "description": "Who may operate, oversee, read, retain or erase a run, and what automatic log, evaluation and integrity evidence the run must carry.",
+        "rationale": "EU Articles 12, 14, 19 and 26, NIST Measure/Manage, and PROV bundles make the run an accountable record, not merely a debug trace. Access, retention and evaluation are operating concerns of the same event.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005",
+          "SRC-006",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "legal-logging",
+            "name": "Automatic logging, retention and deletion",
+            "description": "High-risk automatic event logs and the general observability record, including retention conflicts with personal-data law.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "automatic-event-logging-duties",
+                "name": "Automatic event logging and traceability duties",
+                "description": "High-risk AI systems must technically allow automatic recording of events over their lifetime so that risk situations, substantial modifications, post-market monitoring and deployer operational monitoring can be reconstructed. For Annex III point 1(a) systems the log must at least include use period, reference database, matched input data and identification of natural persons who verified results. Providers keep logs under their control (Article 19) and deployers keep logs under their control (Article 26(6)) for a period appropriate to the intended purpose, at least six months, unless other Union or national law, in particular personal-data law, provides otherwise. Financial-institution providers and deployers may keep these logs inside existing financial-services documentation. These duties apply to high-risk systems, not automatically to every chatbot span. NIST still expects production monitoring and documentation for trustworthy operation more broadly.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-logging-applicable",
+                    "text": "Is this run in scope of EU high-risk automatic logging, of a voluntary NIST monitoring programme, or only of operational tracing?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "high-risk-flag",
+                      "legal-regime",
+                      "monitoring-programme",
+                      "logging-basis"
+                    ]
+                  },
+                  {
+                    "id": "q-minimum-log-fields",
+                    "text": "Which Article 12 minimum fields (use period, reference database, matched inputs, verifying persons) are present on this run?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "use-period",
+                      "reference-database-id",
+                      "matched-input-refs",
+                      "verifier-person-ids"
+                    ]
+                  },
+                  {
+                    "id": "q-who-controls-logs",
+                    "text": "Are the automatically generated logs under provider control, deployer control, or both, and where is the authoritative copy?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "log-controller",
+                      "authoritative-copy-location",
+                      "financial-services-override"
+                    ]
+                  },
+                  {
+                    "id": "q-post-market-use",
+                    "text": "Can this log identify a risk situation, substantial modification, or operational anomaly required for post-market monitoring?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "risk-signal",
+                      "substantial-modification-flag",
+                      "monitoring-note"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-high-risk-flag",
+                    "name": "High-risk logging applicability",
+                    "description": "Whether EU high-risk automatic logging applies to this run.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-log-controller",
+                    "name": "Log controller",
+                    "description": "Party that controls the automatically generated logs: provider, deployer or both.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-reference-database-id",
+                    "name": "Reference database identifier",
+                    "description": "Reference database against which input data was checked, where Article 12(3) applies.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-automatic-event-log",
+                    "name": "Automatic event log extract",
+                    "description": "Exportable, tamper-evident extract of the run as an Article 12 event log and/or operational trace.",
+                    "media_or_form": [
+                      "structured-record",
+                      "application/vnd.opentelemetry.traces",
+                      "text/plain"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Run master identifier plus log-controller; hash-chained to prior extracts when integrity policy requires.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "retention-deletion-and-holds",
+                "name": "Retention, deletion and legal holds",
+                "description": "Article 19 and Article 26(6) set a floor of six months for high-risk logs unless other law, especially personal-data law, provides otherwise. NIST 600-1 asks whether GAI input/output retention policies have been updated. Erasure of personal data in prompts can conflict with log retention; a governed run must record the retention schedule, legal hold, anonymisation or content-deletion exception rather than silently dropping the audit record or silently keeping PII.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-retention-period",
+                    "text": "What retention period applies to this run's metadata versus its payload content, and which legal basis sets each period?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "metadata-retain-until",
+                      "payload-retain-until",
+                      "legal-basis",
+                      "six-month-floor-applied"
+                    ]
+                  },
+                  {
+                    "id": "q-erasure-request",
+                    "text": "If a data-subject erasure request applies, was payload content deleted or anonymised while the audit skeleton was retained?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "erasure-request-id",
+                      "payload-deleted-flag",
+                      "skeleton-retained-flag",
+                      "anonymisation-method"
+                    ]
+                  },
+                  {
+                    "id": "q-legal-hold",
+                    "text": "Is the run under legal hold, incident investigation or competent-authority request that suspends deletion?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "legal-hold-flag",
+                      "hold-authority",
+                      "incident-id",
+                      "suspend-deletion-until"
+                    ]
+                  },
+                  {
+                    "id": "q-deletion-event",
+                    "text": "When and by whom was the run or its payloads deleted, and what evidence remains of the deletion?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "deleted-at",
+                      "deleted-by",
+                      "deletion-evidence-hash",
+                      "tombstone-id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-retain-until",
+                    "name": "Retain until",
+                    "description": "RFC 3339 instant after which the run record may be deleted absent a hold.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-legal-hold-flag",
+                    "name": "Legal hold flag",
+                    "description": "Whether deletion is suspended.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-payload-deleted-flag",
+                    "name": "Payload deleted flag",
+                    "description": "Whether sensitive payloads were erased while metadata remains.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-retention-decision",
+                    "name": "Retention and deletion decision",
+                    "description": "Schedule, hold, erasure and tombstone record for the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Keyed by run master identifier plus decision identifier; deletion time is not the run identifier.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "oversight-quality-access",
+            "name": "Human oversight, evaluation, integrity and access",
+            "description": "Who oversaw the result, how quality was judged, how the record is kept integer, and who may access it.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "human-oversight-and-authority",
+                "name": "Human oversight, verification and authority",
+                "description": "Article 14 requires human oversight of high-risk systems. Article 12(3)(d) requires identification of natural persons involved in verification of results for specified systems. Article 26 requires deployers to assign oversight to competent, trained persons with authority and support. PROV records association, role and optional plan. OpenInference records user.id. Oversight can approve, override, escalate or suspend use. This is decision evidence on the run, not a separate HR model.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-who-oversaw",
+                    "text": "Which natural persons or roles verified, approved, overrode or rejected the result of this run?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "overseer-ids",
+                      "overseer-roles",
+                      "competence-attested-flag"
+                    ]
+                  },
+                  {
+                    "id": "q-oversight-decision",
+                    "text": "What oversight decision was taken, at what event time, and did it alter the output that downstream systems consumed?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "decision-code",
+                      "decision-at",
+                      "original-output-hash",
+                      "released-output-hash"
+                    ]
+                  },
+                  {
+                    "id": "q-user-initiator",
+                    "text": "Which user or subject initiated the run, and is that identity a verified person, an application, or another agent?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "user-id",
+                      "subject-type",
+                      "initiator-auth-context"
+                    ]
+                  },
+                  {
+                    "id": "q-suspend-use",
+                    "text": "Did oversight suspend further use because the system may present an Article 79 risk?",
+                    "kind": "event",
+                    "answer_data": [
+                      "suspended-flag",
+                      "inform-provider-flag",
+                      "authority-notified-flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-overseer-id",
+                    "name": "Overseer identifier",
+                    "description": "Identifier of a natural person involved in verification or oversight.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-oversight-decision",
+                    "name": "Oversight decision",
+                    "description": "Approve, override, reject, escalate or suspend.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-user-id",
+                    "name": "Initiating user identifier",
+                    "description": "User identifier recorded on the span when available.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-oversight-attestation",
+                    "name": "Human oversight attestation",
+                    "description": "Who oversaw the run, the decision taken, and the hashes of original versus released outputs.",
+                    "media_or_form": [
+                      "structured-record",
+                      "application/jose"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Attestation identifier plus run master identifier; person identifiers come from the organisation identity system.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "evaluation-quality-and-integrity",
+                "name": "Evaluation, annotation and record integrity",
+                "description": "OpenInference defines annotation and evaluation objects with name, label, score, explanation, annotator_kind (HUMAN, LLM, CODE) at span, trace or session scope. NIST Measure requires documented TEVV and independent review. PROV bundles support provenance of provenance, so the evaluation itself can be attributed. Integrity of the run record should be hash-chained or otherwise tamper-evident if it will be used as an audit trail. Evaluations attached to a run are not a substitute for a separate evaluation-programme model.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-evaluations",
+                    "text": "What quality, safety or task evaluations were attached to this run, with which scores, labels and annotator kinds?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "evaluation-name",
+                      "score",
+                      "label",
+                      "annotator-kind",
+                      "explanation"
+                    ]
+                  },
+                  {
+                    "id": "q-independent-review",
+                    "text": "Was an independent reviewer used, and is the evaluation itself attributed as a PROV bundle?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "independent-review-flag",
+                      "reviewer-id",
+                      "prov-bundle-id"
+                    ]
+                  },
+                  {
+                    "id": "q-record-integrity",
+                    "text": "What integrity hash, signature or chain links this run record to previous audit records so post-hoc modification is detectable?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "content-hash",
+                      "signature",
+                      "previous-hash",
+                      "chain-position"
+                    ]
+                  },
+                  {
+                    "id": "q-security-of-telemetry",
+                    "text": "What security controls prevent prompt, tool-argument or secret leakage through telemetry exporters?",
+                    "kind": "security",
+                    "answer_data": [
+                      "exporter-redaction",
+                      "secret-scan-result",
+                      "tls-or-channel"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-evaluations",
+                    "name": "Evaluations and annotations",
+                    "description": "List of evaluation or annotation results attached to the run or its trace.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-record-hash",
+                    "name": "Run record integrity hash",
+                    "description": "Hash of the canonical run record excluding volatile ingestion fields.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-annotator-kind",
+                    "name": "Annotator kind",
+                    "description": "HUMAN, LLM, CODE or custom judge kind.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-evaluation-set",
+                    "name": "Run evaluation set",
+                    "description": "Annotations and evaluations attached to the run, with integrity metadata.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Evaluation identifier plus run master identifier; session-scoped evaluations also require session.id.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "access-privacy-and-exceptions",
+                "name": "Access, privacy exceptions and interoperability exports",
+                "description": "Default access to run metadata is role-scoped; unredacted payloads are exception-based. Exports must declare which convention they satisfy (OpenTelemetry GenAI, OpenInference, PROV, EU log extract) without claiming conformance that the record does not evidence. Competing attribute names are mapped, not overwritten.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-006",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-default-access",
+                    "text": "What default access rule applies to this run's metadata versus its payloads?",
+                    "kind": "access",
+                    "answer_data": [
+                      "default-rule",
+                      "metadata-roles",
+                      "payload-roles"
+                    ]
+                  },
+                  {
+                    "id": "q-break-glass",
+                    "text": "What exception, ticket or competent-authority request granted broader access, and is that access itself audited?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "exception-id",
+                      "authority",
+                      "granted-at",
+                      "expires-at",
+                      "audit-event-id"
+                    ]
+                  },
+                  {
+                    "id": "q-export-profile",
+                    "text": "Which interoperability profile was used to export this run, and which competing fields were mapped rather than treated as equivalent?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "export-profile",
+                      "field-map",
+                      "unmapped-fields",
+                      "conformance-claim"
+                    ]
+                  },
+                  {
+                    "id": "q-sampling-decision",
+                    "text": "Was this run sampled out of full telemetry, and does sampling still satisfy the applicable logging duty?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "sampled-flag",
+                      "sampling-policy",
+                      "logging-duty-satisfied"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-access-default-rule",
+                    "name": "Default access rule",
+                    "description": "Default deny/allow rule distinguishing metadata and payloads.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-export-profile",
+                    "name": "Export profile",
+                    "description": "Convention used for export: otel-genai, openinference, prov-dm, eu-article-twelve-log or a documented mix.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-006",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-sampled-flag",
+                    "name": "Sampled flag",
+                    "description": "Whether the trace was sampled for export.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-access-and-export-record",
+                    "name": "Access and export record",
+                    "description": "Access decisions, exceptions and declared export mappings for the run.",
+                    "media_or_form": [
+                      "structured-record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Run master identifier plus access-event or export-batch identifier.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "initiate-run",
+      "name": "Initiate inference or agent run",
+      "description": "Open a logical run when a caller issues chat, generate_content, invoke_agent, invoke_workflow, embeddings, retrieval, plan, execute_tool or a memory operation, capturing identifiers and classification at start because several attributes are sampling-relevant at span creation.",
+      "inputs": [
+        "operation-name",
+        "provider-name",
+        "requested-model",
+        "agent-id-if-any",
+        "configuration-ref",
+        "conversation-id-if-preexisting",
+        "trace-parent-if-any",
+        "request-parameters"
+      ],
+      "outputs": [
+        "run-identity-record",
+        "trace-context-envelope",
+        "lifecycle-state-open"
+      ],
+      "preconditions": [
+        "An executing agent or caller is authorised to start the operation.",
+        "A conversation identifier is recorded only if the instrumented system already has one."
+      ],
+      "effects": [
+        "A run exists in an open state with event-start-at set.",
+        "Parent trace context is continued or a new valid trace-id is created."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "record-model-inference",
+      "name": "Record model inference step",
+      "description": "Capture a nested or root inference span including optional content, usage, finish reasons and served model, covering automatic retries as one logical operation.",
+      "inputs": [
+        "parent-run-id",
+        "input-payload-or-ref",
+        "request-parameters",
+        "provider-response"
+      ],
+      "outputs": [
+        "inference-child-span",
+        "output-payload-snapshot",
+        "usage-statement",
+        "termination-record"
+      ],
+      "preconditions": [
+        "Parent run is open unless this inference is itself the root run."
+      ],
+      "effects": [
+        "Nested graph gains an inference node.",
+        "Billed-preferred token counts are attached when the provider reports them.",
+        "fetch_response operations omit token usage."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "execute-and-record-tool",
+      "name": "Execute and record tool",
+      "description": "Execute an advertised tool under the parent agent run, recording call id, arguments, result, duration, error and authorisation.",
+      "inputs": [
+        "parent-run-id",
+        "tool-call-id",
+        "tool-name",
+        "arguments",
+        "allow-list-or-approval"
+      ],
+      "outputs": [
+        "tool-call-record",
+        "tool-result",
+        "execute-tool-duration"
+      ],
+      "preconditions": [
+        "The tool was advertised or otherwise authorised for this run.",
+        "Side-effecting tools have an allow-list or human approval when policy requires it."
+      ],
+      "effects": [
+        "A child execute_tool span is closed with status and duration.",
+        "The result is available to a subsequent inference as a tool-role message."
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "apply-content-controls",
+      "name": "Apply content capture and redaction",
+      "description": "Decide whether to store payloads inline, truncated, hashed, redacted or externally, and record the manifest.",
+      "inputs": [
+        "run-id",
+        "raw-payloads",
+        "capture-policy",
+        "data-class-findings"
+      ],
+      "outputs": [
+        "redaction-and-capture-manifest",
+        "content-hash",
+        "external-content-uri-if-any"
+      ],
+      "preconditions": [
+        "A capture policy exists for the environment (for example production versus pre-production)."
+      ],
+      "effects": [
+        "Unredacted sensitive content is stored only according to policy.",
+        "Integrity hashes remain even when payloads are offloaded or truncated."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "record-human-oversight",
+      "name": "Record human oversight decision",
+      "description": "Attach the identity of verifying persons and the approve, override, reject, escalate or suspend decision required for high-risk oversight and for PROV association.",
+      "inputs": [
+        "run-id",
+        "overseer-ids",
+        "decision-code",
+        "original-output-hash"
+      ],
+      "outputs": [
+        "human-oversight-attestation",
+        "released-output-hash-if-altered"
+      ],
+      "preconditions": [
+        "Oversight is assigned to competent persons when the legal regime requires it."
+      ],
+      "effects": [
+        "Lifecycle may move from awaiting-oversight to completed, overridden or suspended.",
+        "Deployer monitoring obligations can be evidenced on the run."
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "annotate-run-quality",
+      "name": "Annotate run quality",
+      "description": "Attach human, LLM or code evaluations to the run, trace or session without turning the run into an evaluation programme.",
+      "inputs": [
+        "run-id",
+        "evaluation-name",
+        "score-or-label",
+        "annotator-kind",
+        "explanation"
+      ],
+      "outputs": [
+        "run-evaluation-set"
+      ],
+      "preconditions": [
+        "The run identity is stable enough to receive later annotations."
+      ],
+      "effects": [
+        "Quality evidence is linked to the run.",
+        "Independent review can be attributed via a PROV bundle."
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "finalize-run",
+      "name": "Finalize run with usage and cost",
+      "description": "Close the logical operation, set event-end-at, status, finish reasons, aggregated usage, optional OpenInference cost, and nested call counts.",
+      "inputs": [
+        "run-id",
+        "child-span-summaries",
+        "provider-usage-object",
+        "cost-schema-if-any"
+      ],
+      "outputs": [
+        "termination-record",
+        "usage-statement",
+        "cost-statement-or-explicit-unset",
+        "run-timeline"
+      ],
+      "preconditions": [
+        "All nested required work has completed, failed, cancelled or timed out.",
+        "Cost is recorded only when a cost schema actually supplied values."
+      ],
+      "effects": [
+        "Lifecycle state becomes completed, failed, cancelled or timed out.",
+        "Duration metrics can be emitted.",
+        "The record becomes eligible for export as an audit log."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "export-automatic-event-log",
+      "name": "Export automatic event log",
+      "description": "Produce a declared-profile extract for operational tracing, PROV interchange or EU Article 12/19/26 log keeping, including integrity metadata.",
+      "inputs": [
+        "run-id",
+        "export-profile",
+        "log-controller",
+        "redaction-manifest"
+      ],
+      "outputs": [
+        "automatic-event-log-extract",
+        "access-and-export-record"
+      ],
+      "preconditions": [
+        "Export profile is declared.",
+        "Sampling still satisfies any applicable logging duty or the export is a full legal log rather than a sampled trace."
+      ],
+      "effects": [
+        "A serial, hash-identified extract exists under provider or deployer control.",
+        "Conformance is claimed only for the mapped fields actually present."
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-001",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "retain-or-erase-run",
+      "name": "Retain, hold or erase run records",
+      "description": "Apply the retention schedule, legal hold or erasure exception, possibly deleting payloads while retaining an audit skeleton.",
+      "inputs": [
+        "run-id",
+        "retention-policy",
+        "legal-hold-or-erasure-request"
+      ],
+      "outputs": [
+        "retention-and-deletion-decision",
+        "tombstone-if-deleted"
+      ],
+      "preconditions": [
+        "Controller of the logs is known.",
+        "Personal-data law and high-risk six-month floor have been compared rather than assumed identical."
+      ],
+      "effects": [
+        "retain-until, hold or deletion is recorded.",
+        "Payload deletion does not silently destroy required traceability metadata unless law requires full erasure."
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-009"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-AI-001",
+      "relation": "REFERENCE",
+      "purpose": "Parent AI world-model that supplies system context; this model is the operational execution event of that system, not a duplicate system inventory.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "WM-AI-002",
+      "relation": "REFERENCE",
+      "purpose": "Each run references the executing agent via a stable provider agent identifier, name and version for execution provenance; in-memory instance ids are not agent identity.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "WM-AI-005",
+      "relation": "REFERENCE",
+      "purpose": "Each run references the exact configuration (prompt, tools, decoding, routing, safety policy) actually used so the execution can be reproduced without turning the run into a configuration catalogue.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "OpenTelemetry GenAI semantic conventions",
+      "relation": "ALIGN",
+      "purpose": "Align operation names, provider discriminator, spans, usage attributes and metrics; conventions are Development status and must not be cited as a stable OTel standard.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "OpenInference semantic conventions",
+      "relation": "ALIGN",
+      "purpose": "Align complementary span kinds, USD cost fields, session/user/graph attributes and evaluations; treat conflicts with OpenTelemetry names as mapped alignments, not silent equivalence.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "W3C PROV-DM Activity",
+      "relation": "ALIGN",
+      "purpose": "Treat the run as a PROV activity that uses input entities, generates output entities, is associated with agents and may sit in a provenance bundle.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "W3C Trace Context",
+      "relation": "ALIGN",
+      "purpose": "Propagate trace-id and span-id so nested and cross-service runs remain joinable.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Regulation (EU) 2024/1689 logging duties",
+      "relation": "ALIGN",
+      "purpose": "When the system is high-risk, align automatic event logs, use period, oversight identities and six-month retention under provider or deployer control; do not claim the duty for every GenAI span.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "ISO/IEC 22989:2022 inference and agent concepts",
+      "relation": "ALIGN",
+      "purpose": "Use ISO inference (process and result) and agent terminology as the vocabulary boundary, noting that LLM chat is a subset of inference.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The owning Dimension must name the AI system owner and the accountable deployer who control run records.",
+        "The owning package must declare whether EU high-risk logging, a voluntary NIST monitoring programme, or operational tracing only applies.",
+        "The owning package must declare content-capture, redaction, retention and billed-token policies before runs are ingested.",
+        "The owning package must bind WM-AI-002 agent identifiers and WM-AI-005 configuration identifiers rather than duplicating those catalogues."
+      ],
+      "namespace_guidance": "Use a Dimension namespace such as urn:vercy:wm-ai-004 or https://ver.cy/ns/wm-ai-004# for local run IRIs, and preserve provider identifiers and W3C trace-id/span-id in their native form rather than rewriting them into dates or storage keys.",
+      "registry_links": [
+        "vr.wm-ai-004",
+        "WM-AI-004",
+        "WM-AI-001",
+        "WM-AI-002",
+        "WM-AI-005",
+        "NAV.INF.AI.RUN"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Prefer the provider master identifier, then a governed IRI combining trace-id and span-id, then a Dimension ULID; never canonicalise on event time.",
+        "Token totals include cached input tokens and reasoning output tokens; when billed and consumed counts both exist, billed counts are canonical.",
+        "Requested and served model names are both retained; served name wins for llm.model_name-style fallbacks.",
+        "Conversation identifiers are omitted unless the instrumented system already had one.",
+        "Competing OpenTelemetry and OpenInference fields are stored in parallel with an explicit map, not overwritten."
+      ],
+      "patch_rules": [
+        "The execution body (inputs, outputs, usage, timing, identifiers) is append-only after finalize.",
+        "Allowed patches are redaction manifests, evaluations, oversight attestations, retention decisions and integrity chain updates.",
+        "Patches must carry their own actor, event time and ingestion time.",
+        "Content erasure replaces payloads with hashes or tombstones rather than rewriting history as if the payload never existed."
+      ],
+      "compatibility_rules": [
+        "OpenTelemetry GenAI conventions remain Development; exporters must pin the convention version they emit.",
+        "OpenInference span.kind is not OTel span kind.",
+        "EU six-month log retention is not a default for non-high-risk systems.",
+        "Absence of OpenTelemetry cost fields is compatible; minting a fake cost is not."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier assigned by the inference or agent runtime (provider response id, completion id, invocation id or hosted-agent run id such as gen_ai.response.id)",
+        "Governed global identifier or IRI, including a W3C trace-id plus span-id pair or a Dimension IRI that quotes those values",
+        "UUID or ULID assigned by the adopting Dimension when no master-system identifier is available"
+      ],
+      "timestamp_rule": "All time values use RFC 3339 with required seconds and an explicit numeric offset or Z. Record event time (logical start and end of the operation, including folded retries and streaming first-chunk instants) separately from observation or ingestion time of the audit record whenever those clocks differ.",
+      "serial_naming_rule": "Serial artifacts (traces, event-log extracts, usage statements, oversight attestations) use the run master identifier, then a monotonic sequence or child span id, never a calendar date in the identifier.",
+      "integrity_rule": "Canonical run records and legal log extracts carry a content hash; legal extracts may be hash-chained. Content offload stores the hash even when the payload URI is later deleted."
+    },
+    "policies": [
+      "Treat run execution bodies as immutable audit records; allow only annotated, redaction, retention and integrity patches.",
+      "Minimise payload capture in production; default to hash, truncate or external store with access exceptions for unredacted content.",
+      "Report billed token counts when both billed and consumed counts exist; do not invent monetary cost from unofficial rate cards.",
+      "Do not fabricate conversation identifiers from trace ids, content hashes or fresh UUIDs.",
+      "Apply the stricter of high-risk log retention and personal-data law; record holds and skeleton-versus-payload deletion explicitly.",
+      "Declare export profile and convention version; do not claim EU, OTel or OpenInference conformance without evidence."
+    ],
+    "crud": {
+      "read": [
+        "Auditors, deployers and system owners may read metadata according to role.",
+        "Unredacted payloads require an access exception or a pre-authorised oversight role.",
+        "Exports must record the profile used."
+      ],
+      "create": [
+        "Runs are created at initiate or, for late-arriving telemetry, at ingest with distinct event time and ingestion time.",
+        "Child spans and tool calls are created under an open parent.",
+        "Conversation ids are copied, never minted as fallbacks."
+      ],
+      "update": [
+        "No silent rewrite of inputs, outputs, usage or identifiers after finalize.",
+        "Permitted updates are evaluations, oversight, redaction manifests, retention holds and integrity links.",
+        "Served model and usage may be filled when the provider responds, which is completion of create rather than a semantic update."
+      ],
+      "delete": [
+        "Delete or anonymise payloads on erasure request or retention expiry.",
+        "Retain an audit skeleton unless law requires full erasure.",
+        "Legal hold blocks deletion.",
+        "Tombstones keep the run identifier so references from incidents remain resolvable."
+      ]
+    },
+    "roles": [
+      {
+        "name": "AI system owner",
+        "responsibilities": [
+          "Define capture, retention and export policies for runs.",
+          "Ensure WM-AI-002 and WM-AI-005 bindings exist.",
+          "Accept residual risk of sampled versus complete logging."
+        ]
+      },
+      {
+        "name": "Accountable deployer",
+        "responsibilities": [
+          "Keep automatically generated logs under deployer control when Article 26 applies.",
+          "Assign competent human overseers.",
+          "Monitor operation and suspend use when an Article 79 risk may be present."
+        ]
+      },
+      {
+        "name": "Inference operator",
+        "responsibilities": [
+          "Instrument initiate, nested inference, tool execution and finalize.",
+          "Keep provider, proxy and served-model discriminators accurate.",
+          "Ensure retries, streaming and fetch-without-inference are recorded as specified."
+        ]
+      },
+      {
+        "name": "Human overseer",
+        "responsibilities": [
+          "Verify results where required.",
+          "Approve, override, reject or suspend.",
+          "Remain identifiable on the run record."
+        ]
+      },
+      {
+        "name": "Auditor or competent authority recipient",
+        "responsibilities": [
+          "Read log extracts and integrity chains.",
+          "Not modify execution bodies.",
+          "Use declared export profiles."
+        ]
+      },
+      {
+        "name": "Data protection officer",
+        "responsibilities": [
+          "Set payload capture and erasure rules.",
+          "Resolve conflicts between log retention and personal-data rights.",
+          "Authorise or deny unredacted access exceptions."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Default-deny unredacted payloads; allow metadata read to deployer, system owner, operator and auditor roles; require an explicit exception for unredacted content, break-glass, or competent-authority disclosure.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Competent-authority or market-surveillance request for Article 12 logs.",
+        "Documented incident investigation or legal hold.",
+        "Human overseer viewing the payload they must verify.",
+        "Pre-production environments where capture policy explicitly permits full content."
+      ],
+      "audit_requirements": [
+        "Every read of unredacted payloads, every export, every retention override and every deletion must itself produce an auditable event with actor, event time and ingestion time.",
+        "Sampling decisions that drop a high-risk-required log are policy violations and must be recorded as exceptions."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "Specification URL",
+        "Processes URL",
+        "Interface URL",
+        "Storage type URL",
+        "WM-AI-002 agent binding",
+        "WM-AI-005 configuration binding"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "WM-AI-004 covers the defensible operating surface of an auditable AI inference or agent run: identity, nested composition, inputs and outputs, tools, billed usage, optional cost, timing, provenance, oversight, access and retention, aligned to OpenTelemetry GenAI, OpenInference, W3C PROV, W3C Trace Context, ISO/IEC 22989, NIST AI RMF/600-1 and EU AI Act logging. It does not claim universal completeness, stable OTel status, or that high-risk log duties apply to every span.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Provider master identifier, W3C trace/span ids, Dimension ULID, stable agent id, conversation correlator only when pre-existing; dates forbidden as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Open, awaiting-oversight, completed, failed, cancelled, timed out, compacted, fetch-without-inference, payload-deleted tombstone."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Typed references to WM-AI-001, WM-AI-002 and WM-AI-005; parent/child spans; previous-response continuation; user and overseer."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 event start/end with seconds and offset, distinct ingestion time, streaming TTFC, folded retries, EU use period."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "PROV activity, usage, generation, association, attribution, delegation and bundles; provider versus proxy; requested versus served model."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "System owner, accountable deployer, log controller, billing account/tenant reference, financial-services documentation override."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Token subset consistency, forbidden fallback conversation ids, all-zero trace rejection, billed-versus-consumed rule, integrity hashes."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default-deny payloads, role scopes at bundle/layer/finding/artifact, break-glass and competent-authority exceptions, export audit."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Six-month high-risk floor versus other law, payload versus skeleton, legal hold, erasure, tombstones."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "OTel GenAI, OpenInference, PROV, Trace Context, ISO 22989, EU log extract; explicit conflict map rather than false equivalence."
+      },
+      {
+        "dimension": "usage-and-cost",
+        "status": "covered",
+        "notes": "Billed-preferred tokens including cache, reasoning and modalities; optional USD cost only from OpenInference-class schemas."
+      },
+      {
+        "dimension": "tool-execution",
+        "status": "covered",
+        "notes": "Advertised definitions, call ids, parallel calls, duration, authorisation, nested graph."
+      },
+      {
+        "dimension": "content-privacy",
+        "status": "covered",
+        "notes": "Opt-in capture, truncation, redaction, external offload, encrypted/redacted reasoning blocks."
+      },
+      {
+        "dimension": "human-oversight",
+        "status": "covered",
+        "notes": "Article 14/12/26 verifying persons, decisions, suspend-use path."
+      },
+      {
+        "dimension": "spatial",
+        "status": "covered",
+        "notes": "Only server.address and server.port as specified; user geolocation out of scope."
+      }
+    ],
+    "known_omissions": [
+      "OpenTelemetry MCP semantic conventions were listed by the GenAI repository but not ingested in this research budget, so MCP-flavoured tool spans are a gap pending that document.",
+      "ISO/IEC 42001 AI management-system controls and ISO/IEC 23894 risk management were not fetched and are not claimed.",
+      "IETF SCITT AI-agent action receipts are an emerging draft, not an adopted alignment.",
+      "Provider-specific cost APIs, invoices, reservations and spot GPU economics are omitted beyond run-level quantities.",
+      "Multi-agent A2A directories, long-running unsupervised agent loops without a closable span, and hardware/accelerator traces are omitted.",
+      "C2PA/watermark packaging of generated media is omitted.",
+      "NIST AI 800-4 post-deployment monitoring (March 2026) appeared during search but was not fully ingested; treat as a likely future alignment.",
+      "Amendment 1 to ISO/IEC 22989 for generative AI is still a draft and not used as terminology beyond the published 2022 edition."
+    ],
+    "conflicts": [
+      "OpenTelemetry GenAI conventions are Development, not stable; existing instrumentations on v1.36.0 or prior are told not to change default emission.",
+      "OpenTelemetry operation names and span kinds conflict in naming with OpenInference openinference.span.kind (especially AGENT, TOOL, LLM versus invoke_agent, execute_tool, chat).",
+      "OpenTelemetry uses gen_ai.conversation.id and forbids UUID/trace/hash fallbacks; OpenInference uses session.id and user.id.",
+      "Monetary cost is specified by OpenInference in USD and is absent from OpenTelemetry GenAI metrics.",
+      "EU Articles 12/19/26 apply to high-risk systems with a six-month log floor; claiming that duty for every GenAI observability span would over-assert the law.",
+      "Personal-data erasure can conflict with log retention; the model records the conflict rather than picking a universal winner.",
+      "Requested model versus served model, and billed tokens versus consumed tokens, are specified as distinct and must not be collapsed.",
+      "Secondary reporting describes a Digital Omnibus delay of some high-risk application dates; this research treats Regulation (EU) 2024/1689 as in force on its published terms and flags the delay as a regional legal-watch item rather than rewriting Article 12."
+    ],
+    "regional_assumptions": [
+      "EU logging, oversight and six-month retention are mandatory only where Regulation (EU) 2024/1689 classifies the system as high-risk and the actor is in scope (including certain third-country providers whose output is used in the Union).",
+      "NIST AI RMF 1.0 and NIST AI 600-1 are voluntary United States frameworks used here as monitoring and documentation alignments, not as legal duties.",
+      "ISO/IEC 22989 is a paid international terminology standard; only publicly visible definitions (inference as process and result, agent, ML model) are relied upon.",
+      "OpenInference cost examples assume USD; other currencies require an explicit code and are not specified by OTel.",
+      "Server address does not by itself prove data-residency region."
+    ],
+    "adversarial_checks": [
+      "Reject any run identity that uses a date, a freshly minted conversation UUID, a trace id, or a prompt hash as the master identifier when the rules require otherwise.",
+      "Reject a claim that OpenTelemetry GenAI is a stable specification or that OpenTelemetry defines monetary cost.",
+      "Reject silent equivalence of OpenInference span.kind and OpenTelemetry span kind or operation name.",
+      "Reject applying Article 12/19/26 six-month retention and verifying-person fields to systems not evidenced as high-risk.",
+      "Reject collapsing requested versus served model or billed versus consumed tokens.",
+      "Reject treating this event as the executing agent (WM-AI-002) or as the configuration catalogue (WM-AI-005).",
+      "Reject capturing full prompts in production without a capture-mode and redaction manifest while still claiming privacy alignment.",
+      "Reject fetch_response operations that report token usage, and compacted attributes set to false rather than unset."
+    ]
+  }
+}

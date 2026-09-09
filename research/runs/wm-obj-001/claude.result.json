@@ -1,0 +1,4089 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-obj-001",
+    "model_id": "WM-OBJ-001",
+    "name": "Physical Item Instance",
+    "entry_kind": "entity",
+    "purpose": "Model the context an agent needs to identify, describe, track and govern one individual physical thing as a distinguishable instance, separately from the type it instantiates and from any value, inventory or asset projection over it.",
+    "scope_statement": "This model covers the individuated, one-of-a-kind record of a discrete physical thing: how it is identified and marked, which type it instantiates, what was measured on this specimen, its condition and lifecycle state, where it has been observed, who has held it, the events and provenance evidence attached to it, and the governance of that record. It excludes all class-level description, all quantity aggregation, and every concept mastered by a composable sibling model. Storage and interface (JSON, Markdown, Git, MongoDB, MCP) are projections, never semantics.",
+    "in_scope": [
+      "Instance-level identifiers, identity marks, data carriers, and identifier resolution/collision handling for one physical thing",
+      "The instance-of link to a product type or configuration, and rules for identity continuity across repair, replacement and reconfiguration",
+      "Properties measured on this specimen (as-built/as-observed), distinct from type specifications",
+      "Condition, damage, intervention history and lifecycle state including end of life",
+      "Observed whereabouts (location fixes, containment context) and custody/possession records",
+      "Events, provenance, chain-of-custody and evidence/attestations attached to the individual thing",
+      "Record stewardship: mastership, access scoping, privacy, retention, audit and external alignment"
+    ],
+    "out_of_scope": [
+      "Type, model, design and configuration specifications (mastered by WM-OBJ-002 and WM-OBJ-017)",
+      "Material substance classes and their properties (mastered by the material substance sibling model)",
+      "Countable stock quantities and inventory positions (mastered by WM-OBJ-020)",
+      "Packaging and handling-unit structures as containers in their own right (mastered by WM-OBJ-021)",
+      "Place identity, premises geometry and address semantics (mastered by WM-BLT-002)",
+      "Financial, value and asset-management projections over the item (WM-OBJ-022 is a view, not a second master)",
+      "Legal title, ownership registration and party identity (mastered by the S1 ownership/party models)",
+      "Bulk, fungible or continuous matter with no individuating boundary, and batch/lot-level identity",
+      "Human beings, living organisms and purely digital or conceptual items",
+      "Maintenance work management, job planning and spare-part provisioning processes"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-OBJ-002 Product type / WM-OBJ-017 Product configuration",
+        "distinction": "Type-instance boundary. schema.org separates Product/ProductModel from IndividualProduct ('a single, identifiable product instance'), and EPCIS separates class-level identification (GTIN/LGTIN with quantity) from instance-level identification (SGTIN, SSCC). Specifications, variants and marketing attributes stay in the type models; only the resolved reference and instance-specific deviations live here.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-016"
+        ]
+      },
+      {
+        "neighbor": "WM-OBJ-012 As-built assembly",
+        "distinction": "The assembly graph, positions and build structure are mastered by WM-OBJ-012. This model carries only the membership pointer (parent item, role, installed/removed time) needed to interpret the individual, mirroring CIDOC CRM P46 is composed of and EPCIS AggregationEvent parent/child semantics.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "WM-OBJ-020 Stock position",
+        "distinction": "Inventory is a quantity of a type at a location; this model never masters counts. An item instance may be referenced by a stock position, but a stock position is not decomposable into instances unless each instance is separately identified.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-016"
+        ]
+      },
+      {
+        "neighbor": "WM-OBJ-021 Handling unit",
+        "distinction": "A handling unit (SSCC-identified logistic unit) is itself a physical thing that contains items. Containment is recorded here as observed context only; the packaging hierarchy is mastered by WM-OBJ-021.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "WM-OBJ-022 Asset lifecycle",
+        "distinction": "ISO 55000 defines an asset as a thing or entity with potential or actual value to an organization; that is a value-relative role that may span portfolios, systems and non-physical entities. Asset records are a projection over this item and must not mint a second master identity.",
+        "source_refs": [
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "WM-BLT-002 Premises",
+        "distinction": "Premises contain item instances. Place identity, geometry and hierarchy are mastered there; here only a resolved place reference plus observation quality (EPCIS readPoint vs bizLocation, CIDOC P53 has former or current location).",
+        "source_refs": [
+          "SRC-001",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Batch/lot and bulk material records",
+        "distinction": "Instance identity requires an individuating physical boundary. ISO 22095 chain-of-custody models such as mass balance and controlled blending explicitly break one-to-one identity between input and output material, so batch/lot traceability must not be modelled as instance identity here.",
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "S1 ownership and party models",
+        "distinction": "Custody (holding, CIDOC P49 keeper) is modelled here; title and ownership (CIDOC P52 current owner) resolve to the ownership model, which also supplies the stewardship authority for this record.",
+        "source_refs": [
+          "SRC-004"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "EPCIS and CBV linked data reference (EPCIS classes, properties and CBV code lists)",
+      "organization": "GS1",
+      "url": "https://ref.gs1.org/epcis/",
+      "version_or_date": "EPCIS 2.0 / CBV 2.0 reference site, accessed 2026-08-24",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:05:00Z",
+      "relevance": "Normative vocabulary for item-level visibility events: ObjectEvent, AggregationEvent, TransformationEvent, AssociationEvent, TransactionEvent, and the fields eventTime, recordTime, eventTimeZoneOffset, epcList, quantityList, action, bizStep, disposition, persistentDisposition, readPoint, bizLocation, bizTransactionList, sourceList, destinationList, sensorElementList and ilmd."
+    },
+    {
+      "id": "SRC-002",
+      "title": "GS1 Digital Link Standard: URI Syntax",
+      "organization": "GS1",
+      "url": "https://ref.gs1.org/standards/digital-link/uri-syntax/",
+      "version_or_date": "Release 1.7.0, ratified August 2026",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:10:00Z",
+      "relevance": "Defines how an instance identifier is expressed as a resolvable web URI (primary key plus key qualifier, e.g. GTIN with AI 21 serial number) and what a resolver does when connecting a GS1-identified item to related online resources."
+    },
+    {
+      "id": "SRC-003",
+      "title": "schema.org IndividualProduct",
+      "organization": "Schema.org Community Group / W3C",
+      "url": "https://schema.org/IndividualProduct",
+      "version_or_date": "Schema.org V30.0, 2026-03-19",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-24T09:02:00Z",
+      "relevance": "Anchors the type/instance distinction (Thing > Product > IndividualProduct, isVariantOf a ProductModel) and provides serialNumber and itemCondition as widely deployed instance-level terms."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Definition of the CIDOC Conceptual Reference Model, version 7.1.3",
+      "organization": "CIDOC / ICOM CIDOC CRM Special Interest Group",
+      "url": "https://www.cidoc-crm.org/html/cidoc_crm_v7.1.3.html",
+      "version_or_date": "v7.1.3, February 2024",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:03:00Z",
+      "relevance": "Formal treatment of individual physical things (E18 Physical Thing, E19 Physical Object, E22 Human-Made Object), identifier assignment (E42 Identifier), and the properties P1 is identified by, P44 has condition, P45 consists of, P46 is composed of, P49 has former or current keeper, P52 has current owner, P53 has former or current location."
+    },
+    {
+      "id": "SRC-005",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:06:00Z",
+      "relevance": "Entity/Activity/Agent model with wasGeneratedBy, wasDerivedFrom, wasAttributedTo, wasAssociatedWith, actedOnBehalfOf, startedAtTime/endedAtTime, atLocation and the specializationOf/alternateOf pattern used here for record-versus-thing and identity-continuity questions."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:12:00Z",
+      "relevance": "Issuer/holder/verifier roles, credentialSubject, proof, validFrom/validUntil, credentialStatus and evidence, used for attestations about an item and for the correlatability warning attached to persistent item identifiers."
+    },
+    {
+      "id": "SRC-007",
+      "title": "IEC 63278-1:2023 Asset Administration Shell for industrial applications - Part 1: Asset Administration Shell structure",
+      "organization": "International Electrotechnical Commission (IEC)",
+      "url": "https://webstore.iec.ch/publication/65628",
+      "version_or_date": "Edition 1.0, 2023-12-14",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:08:00Z",
+      "relevance": "Defines a standardized digital representation of an asset covering its complete lifecycle for physical, digital and intangible entities, supporting the record-versus-thing separation and submodel-style grouping of instance properties."
+    },
+    {
+      "id": "SRC-008",
+      "title": "IEC 61406-1:2022 Identification Link - Part 1: General requirements",
+      "organization": "International Electrotechnical Commission (IEC)",
+      "url": "https://webstore.iec.ch/publication/67673",
+      "version_or_date": "Edition 1.0, 2022-09-15",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:09:00Z",
+      "relevance": "Requirements for a globally unique machine-readable identification link (URL) attached to an individual physical object via a 2D symbol or NFC tag, linking the thing to its digital information; explicitly excludes nameplate content and marking layout."
+    },
+    {
+      "id": "SRC-009",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339",
+      "version_or_date": "July 2002, Proposed Standard (updated by RFC 9557)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:11:00Z",
+      "relevance": "Normative timestamp rule: full date-time with seconds and an explicit offset to UTC, 'Z' for a zero offset, and '-00:00' for a known UTC instant with unknown local offset."
+    },
+    {
+      "id": "SRC-010",
+      "title": "ISO 55000:2024 Asset management - Vocabulary, overview and principles",
+      "organization": "International Organization for Standardization (ISO)",
+      "url": "https://www.iso.org/standard/83053.html",
+      "version_or_date": "2024 edition (catalogue record)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:07:00Z",
+      "relevance": "Defines asset as a thing or entity with potential or actual value to an organization and standardizes asset life and life-cycle management vocabulary; used to keep asset-management concepts as a projection rather than a second identity for the item."
+    },
+    {
+      "id": "SRC-011",
+      "title": "ISO 22095:2020 Chain of custody - General terminology and models",
+      "organization": "International Organization for Standardization (ISO)",
+      "url": "https://www.iso.org/standard/72532.html",
+      "version_or_date": "First edition, October 2020 (Amendment 1, 2026)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:14:00Z",
+      "relevance": "Harmonised chain-of-custody terminology and models applicable to all materials and products; establishes that only some custody models preserve one-to-one identity, which bounds instance-level custody claims."
+    },
+    {
+      "id": "SRC-012",
+      "title": "ISO/IEC 15459-4:2008 Information technology - Unique identifiers - Part 4: Individual items",
+      "organization": "ISO/IEC JTC 1",
+      "url": "https://www.iso.org/standard/51284.html",
+      "version_or_date": "2008 edition (catalogue record); series includes Part 1:2014 and Part 2 registration procedures",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:13:00Z",
+      "relevance": "Specifies a unique, non-significant character string as the unique identifier for individual items, issued under registered issuing agencies; referenced by EU product-passport rules as the identifier compliance baseline."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Digital Product Passport (DPP)",
+      "organization": "European Commission, DG Internal Market, Industry, Entrepreneurship and SMEs",
+      "url": "https://single-market-economy.ec.europa.eu/single-market/digital-product-passport_en",
+      "version_or_date": "Accessed 2026-08-24; DPP Registry operational 20 July 2026; batteries mandatory 18 February 2027",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:16:00Z",
+      "relevance": "Official description of the DPP under Regulation (EU) 2024/1781: a data carrier such as a QR code links the physical product to its passport, the Registry generates a unique URI, and economic operators are responsible for registration before placing on the market."
+    },
+    {
+      "id": "SRC-014",
+      "title": "Data protection in the EU (Regulation (EU) 2016/679, GDPR)",
+      "organization": "European Commission",
+      "url": "https://commission.europa.eu/law/law-topic/data-protection/data-protection-eu_en",
+      "version_or_date": "Accessed 2026-08-24; GDPR in force 24 May 2016, applicable 25 May 2018",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:17:00Z",
+      "relevance": "Authority for treating item records that link to identifiable natural persons (owners, holders, assessors, location traces) as personal data processing, constraining retention, disclosure and erasure."
+    },
+    {
+      "id": "SRC-015",
+      "title": "Regulation (EU) 2024/1781 establishing a framework for the setting of ecodesign requirements for sustainable products (ESPR)",
+      "organization": "European Union (EUR-Lex, Publications Office)",
+      "url": "https://eur-lex.europa.eu/eli/reg/2024/1781/oj/eng",
+      "version_or_date": "OJ L, 28 June 2024; entered into force 18 July 2024",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T09:15:00Z",
+      "relevance": "Legal basis for the digital product passport, unique product identifier, unique operator and facility identifiers, data carriers and the product registry. Article text could not be rendered by the retrieval tool in this session, so all ESPR-derived statements here are limited to what SRC-013 confirms."
+    },
+    {
+      "id": "SRC-016",
+      "title": "EPCIS 2.0 and EPCIS 1.2 documentation",
+      "organization": "OpenEPCIS (benelog GmbH & Co. KG)",
+      "url": "https://openepcis.io/docs/epcis/",
+      "version_or_date": "Accessed 2026-08-24; documents EPCIS 2.0 published June 2022",
+      "source_type": "secondary",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-08-24T09:04:00Z",
+      "relevance": "Open-core conformant implementation documentation used only to corroborate the EPCIS 2.0 publication date and the readPoint/bizLocation, eventTime/recordTime and instance-versus-class identifier distinctions found in the GS1 reference."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "identity-and-designation",
+        "name": "Identity and designation",
+        "description": "Everything needed to tell this individual thing apart from every other thing, to bind marks and identifiers to it, and to decide when it is still the same thing.",
+        "rationale": "Instance modelling collapses without a defensible identity rule. Standards agree that instance-level identification is a distinct construct (schema.org IndividualProduct, EPCIS SGTIN/SSCC versus GTIN, ISO/IEC 15459-4 unique identifier for individual items), but they do not agree on scheme, so identity, marking and resolution must be modelled explicitly rather than assumed.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "instance-identification",
+            "name": "Instance identification",
+            "description": "The identifiers borne by the item, the physical marks and data carriers that carry them, and the resolution of an observed identifier back to one record.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-008",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "master-identifier",
+                "name": "Master identifier and issuing authority",
+                "description": "Which identifier is authoritative for this item, who issued it, under which scheme and syntax, and what uniqueness guarantees apply. ISO/IEC 15459-4 specifies a unique, non-significant string for individual items issued under a registered issuing agency; GS1 expresses the same idea as a primary key plus serial qualifier.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-012",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-master-id",
+                    "text": "Which single identifier is the authoritative master identifier for this item, and which agency or system issued it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "identifier value",
+                      "identifier scheme code",
+                      "issuing agency or master system reference",
+                      "assignment timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-id-uniqueness",
+                    "text": "What uniqueness and non-reuse guarantee does the issuing scheme give, and over what period?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "uniqueness scope (global, issuer, adopting Dimension)",
+                      "reuse policy statement",
+                      "guarantee duration"
+                    ]
+                  },
+                  {
+                    "id": "q-id-fallback",
+                    "text": "If no authoritative external identifier exists, which locally minted identifier is used and how is its provenance recorded?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "local identifier value (UUID or ULID)",
+                      "minting authority",
+                      "reason no governed identifier was available"
+                    ]
+                  },
+                  {
+                    "id": "q-id-syntax",
+                    "text": "In which syntaxes may this identifier legitimately be expressed for exchange?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "canonical form",
+                      "alternate syntax list (EPC URI, GS1 Digital Link URI, IRI, plain string)",
+                      "transformation rule reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-item-id",
+                    "name": "masterIdentifier",
+                    "description": "The authoritative identifier value for this individual item.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-id-scheme",
+                    "name": "identifierScheme",
+                    "description": "Coded scheme under which the identifier was issued (for example GS1 SGTIN, ISO/IEC 15459 issuing agency code, manufacturer serial scheme).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-id-issuer",
+                    "name": "issuingAuthority",
+                    "description": "Reference to the party or master system that assigned the identifier.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-id-assigned-at",
+                    "name": "identifierAssignedAt",
+                    "description": "RFC 3339 timestamp at which the identifier was assigned to this item.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "identifier-assignment-record",
+                    "name": "Identifier assignment record",
+                    "description": "The record evidencing that a specific identifier was allocated to this specific physical thing by a named authority, corresponding to CIDOC CRM identifier assignment.",
+                    "media_or_form": [
+                      "structured record",
+                      "registry entry",
+                      "allocation certificate"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the assigned identifier plus assigning authority and assignment timestamp.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "identity-marking",
+                "name": "Identity marks and data carriers",
+                "description": "The physical realisation of identity on the thing itself: marking method, placement, durability, legibility, and the machine-readable carrier. IEC 61406-1 requires a globally unique identification link, machine readable via 2D symbol or NFC and attached to the individual unit; ESPR-driven passports require a data carrier on the product.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-002",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-mark-method",
+                    "text": "How is each identifier physically applied to the item and where on the item is it placed?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "marking method code (engraved, etched, printed label, moulded, RFID tag)",
+                      "placement description",
+                      "application timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-mark-durability",
+                    "text": "Is the mark expected to survive the item's service life, and what happens when it becomes illegible or is removed?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "durability class",
+                      "current legibility state",
+                      "re-marking procedure reference"
+                    ]
+                  },
+                  {
+                    "id": "q-carrier-payload",
+                    "text": "What exactly does the machine-readable carrier encode, and does it resolve to a live information service?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "carrier type code",
+                      "encoded payload string",
+                      "resolver endpoint reference",
+                      "link type set"
+                    ]
+                  },
+                  {
+                    "id": "q-mark-authority",
+                    "text": "Who is permitted to apply, alter or remove an identity mark on this item?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "authorised role reference",
+                      "legal or contractual basis",
+                      "alteration event log reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-mark",
+                    "name": "identityMark",
+                    "description": "One physical mark bearing an identifier, with method, placement and legibility state.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-carrier",
+                    "name": "dataCarrier",
+                    "description": "Machine-readable carrier attached to the item (2D symbol, NFC tag, RFID tag) and its encoded link.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-carrier-uri",
+                    "name": "identificationLinkUri",
+                    "description": "The URI encoded by the carrier, for example a GS1 Digital Link URI carrying the primary key and serial qualifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "nameplate-or-label",
+                    "name": "Identity nameplate, label or tag",
+                    "description": "The physical or photographed nameplate, label, engraving or tag carrying human-readable and machine-readable identity on the item.",
+                    "media_or_form": [
+                      "physical marking",
+                      "photograph",
+                      "2D symbol image",
+                      "NFC/RFID tag record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the item identifier plus mark placement and application timestamp; superseded marks retained with end timestamps.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "identifier-resolution",
+                "name": "Identifier resolution, aliases and collisions",
+                "description": "How an observed identifier is resolved to exactly one item record, how multiple scheme identifiers for the same thing are related, and how duplicates, cloned identifiers and merge/split situations are handled.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-001",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-resolve",
+                    "text": "Given a scanned or quoted identifier, what procedure resolves it to at most one item record?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "resolution rule reference",
+                      "matched record reference",
+                      "match confidence",
+                      "unresolved fallback action"
+                    ]
+                  },
+                  {
+                    "id": "q-alias-set",
+                    "text": "Which additional identifiers are asserted to designate this same item, and on whose authority?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "alias identifier list",
+                      "asserting party reference",
+                      "assertion timestamp",
+                      "equivalence strength"
+                    ]
+                  },
+                  {
+                    "id": "q-collision",
+                    "text": "What is done when two physical things present the same identifier, or one thing presents conflicting identifiers?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "collision case reference",
+                      "triage decision",
+                      "quarantine state",
+                      "investigation reference"
+                    ]
+                  },
+                  {
+                    "id": "q-merge-split",
+                    "text": "How are duplicate records merged or an erroneously merged record split, and how is the prior identifier preserved?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "merge or split event record",
+                      "surviving record reference",
+                      "retired identifier list",
+                      "reversal procedure reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-alias",
+                    "name": "alternateIdentifier",
+                    "description": "A secondary identifier asserted to designate the same item, with scheme and asserting party.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-record-status",
+                    "name": "recordResolutionStatus",
+                    "description": "State of the record with respect to identity resolution (resolved, ambiguous, quarantined, merged, superseded).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-superseded-by",
+                    "name": "supersededBy",
+                    "description": "Reference to the surviving record when this record has been merged into another.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "resolution-decision-log",
+                    "name": "Identity resolution decision log",
+                    "description": "Log of resolution, merge, split and quarantine decisions with the evidence relied upon, so identity changes are reversible and auditable.",
+                    "media_or_form": [
+                      "append-only log",
+                      "decision record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by item record reference plus decision sequence number and RFC 3339 decision timestamp.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "type-linkage-and-individuation",
+            "name": "Type linkage and individuation",
+            "description": "The link from this instance to the class it instantiates, and the rules that decide when the instance begins, persists or ceases to be the same individual.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "instance-of-type",
+                "name": "Instance-of-type reference",
+                "description": "The resolved reference from this individual to its product type or configuration, and the confidence in that resolution. schema.org places IndividualProduct under Product with isVariantOf pointing at a ProductModel; EPCIS keeps class-level identification separate from instance-level identification.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-001",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-kind-ref",
+                    "text": "Which type or configuration record does this item instantiate, and in which sibling model is it mastered?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "type model identifier",
+                      "type record reference",
+                      "configuration reference",
+                      "resolution confidence"
+                    ]
+                  },
+                  {
+                    "id": "q-kind-evidence",
+                    "text": "On what evidence was the type resolved: marking, documentation, expert determination or inference?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "resolution method code",
+                      "evidence artifact reference",
+                      "determining party reference"
+                    ]
+                  },
+                  {
+                    "id": "q-deviation",
+                    "text": "In what respects does this specimen deviate from its type specification, and are those deviations authorised?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "deviation description",
+                      "authorisation reference",
+                      "measured value versus specified value"
+                    ]
+                  },
+                  {
+                    "id": "q-unclassified",
+                    "text": "How is an item that cannot be assigned to any known type represented without inventing one?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "unclassified flag",
+                      "provisional descriptive text",
+                      "review task reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-type-ref",
+                    "name": "instanceOfType",
+                    "description": "Reference to the product type or configuration record that classifies this item.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-type-confidence",
+                    "name": "typeResolutionConfidence",
+                    "description": "Confidence that the type reference is correct, with the method that produced it.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-deviation",
+                    "name": "specificationDeviation",
+                    "description": "A recorded difference between this specimen and its type specification.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "type-determination-record",
+                    "name": "Type determination record",
+                    "description": "Dated statement of which class the item instantiates, by whom and on what evidence, including provisional or contested determinations.",
+                    "media_or_form": [
+                      "structured record",
+                      "expert report",
+                      "photograph set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by item reference plus determination timestamp and determining party.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "identity-continuity",
+                "name": "Individuation and identity continuity",
+                "description": "The rules deciding what counts as one item and whether identity survives repair, component replacement, reconfiguration, division or joining. No consulted standard settles this; CIDOC CRM anchors documentation units and composition, and PROV offers specializationOf/alternateOf to relate records without asserting sameness.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-individuation",
+                    "text": "What physical criterion individuates this thing as one item rather than a part, a set or a quantity?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "individuation criterion text",
+                      "boundary description",
+                      "granularity level code"
+                    ]
+                  },
+                  {
+                    "id": "q-continuity-rule",
+                    "text": "Which changes preserve identity and which terminate it and create a successor item?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "continuity rule reference",
+                      "triggering change type",
+                      "successor item reference"
+                    ]
+                  },
+                  {
+                    "id": "q-lineage",
+                    "text": "When an item is split, merged or rebuilt, how is lineage to predecessor and successor items recorded?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "predecessor item references",
+                      "successor item references",
+                      "derivation event reference"
+                    ]
+                  },
+                  {
+                    "id": "q-continuity-authority",
+                    "text": "Who decides a contested continuity case and by what documented rule?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "deciding role",
+                      "rule citation",
+                      "decision record reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-granularity",
+                    "name": "individuationGranularity",
+                    "description": "The level at which this record individuates matter (whole object, installed component, assembly).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-derived-from",
+                    "name": "derivedFromItem",
+                    "description": "Reference to a predecessor item from which this item was produced, rebuilt or divided.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-continuity-decision",
+                    "name": "continuityDecision",
+                    "description": "Recorded decision that identity was preserved or terminated by a given change.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "continuity-policy",
+                    "name": "Identity continuity policy",
+                    "description": "The written, versioned rule set stating which interventions preserve item identity in this Dimension, needed because no cited standard resolves it.",
+                    "media_or_form": [
+                      "policy document",
+                      "rule table"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by policy identifier and version with an effective-from RFC 3339 timestamp.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "physical-characterisation",
+        "name": "Physical characterisation of the specimen",
+        "description": "What is true of this particular specimen as measured or observed, and how it is physically built up, as distinct from what its type specifies.",
+        "rationale": "Type models carry nominal specifications; only the instance can carry measured values, as-built content and its own component set. IEC 63278-1 provides a standardized digital representation of an asset across its lifecycle, CIDOC CRM P45 consists of covers material content and P46 is composed of covers parts, and EPCIS aggregation covers physical grouping.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-007",
+          "SRC-001"
+        ],
+        "layers": [
+          {
+            "id": "observed-properties",
+            "name": "Observed and as-built properties",
+            "description": "Properties measured on this specimen, their measurement context, and the materials it is actually made of.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-004",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "measured-attributes",
+                "name": "Measured attributes and measurement context",
+                "description": "Quantities measured on this individual (mass, dimensions, readings) together with unit, method, instrument, uncertainty and the separation of measurement time from record time.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-001",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-measure-what",
+                    "text": "Which properties are measured on this specimen rather than inherited from its type?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "property code",
+                      "measured value",
+                      "unit of measure code"
+                    ]
+                  },
+                  {
+                    "id": "q-measure-how",
+                    "text": "By what method and instrument was each value obtained, and with what stated uncertainty?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "method reference",
+                      "instrument or sensor reference",
+                      "uncertainty or tolerance",
+                      "calibration reference"
+                    ]
+                  },
+                  {
+                    "id": "q-measure-when",
+                    "text": "When was the value measured and when was it recorded, and which one governs currency of the value?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "measurement timestamp (RFC 3339)",
+                      "record timestamp (RFC 3339)",
+                      "validity window"
+                    ]
+                  },
+                  {
+                    "id": "q-measure-conflict",
+                    "text": "How are conflicting measurements of the same property at the same time reconciled?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "conflict case reference",
+                      "precedence rule",
+                      "superseded value reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-measured-property",
+                    "name": "measuredProperty",
+                    "description": "One measured property of the specimen with value, unit, method and uncertainty.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-measured-at",
+                    "name": "measuredAt",
+                    "description": "RFC 3339 timestamp with explicit offset at which the measurement was taken.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-sensor-ref",
+                    "name": "measuringDevice",
+                    "description": "Reference to the instrument, sensor or observer that produced the value.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "measurement-report",
+                    "name": "Measurement or test report",
+                    "description": "Dated report of measurements taken on this specimen, including method, instrument identity and uncertainty, suitable as evidence.",
+                    "media_or_form": [
+                      "test report",
+                      "calibration certificate",
+                      "sensor reading set"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by report number from the issuing laboratory or, failing that, item reference plus measurement timestamp.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "material-content",
+                "name": "Material content and substances of concern",
+                "description": "What this specimen is actually made of, referenced to material classes rather than restated, including substance declarations that product-passport regimes attach to the individual product.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-material-ref",
+                    "text": "Which material classes constitute this item, and in what proportions where known?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "material class references",
+                      "proportion or mass fraction",
+                      "determination basis"
+                    ]
+                  },
+                  {
+                    "id": "q-substance-declared",
+                    "text": "Which declarable or hazardous substances are recorded for this individual, and under which regime?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "substance identifier",
+                      "concentration",
+                      "regulatory regime reference",
+                      "declaration timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-material-evidence",
+                    "text": "Is the material content declared, tested or inferred from the type specification?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "determination method code",
+                      "evidence artifact reference",
+                      "confidence"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-material",
+                    "name": "materialConstituent",
+                    "description": "Reference to a material class present in the item, with proportion where known.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-substance-decl",
+                    "name": "substanceDeclaration",
+                    "description": "Declared substance of concern with concentration and governing regime.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "material-declaration",
+                    "name": "Material or substance declaration",
+                    "description": "Declaration listing material content and substances of concern for the product, as carried into product-passport payloads.",
+                    "media_or_form": [
+                      "declaration document",
+                      "structured payload"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by declaration identifier and version; bound to item or to its type with the binding level stated explicitly.",
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "instance-structure",
+            "name": "Instance structure and containment boundary",
+            "description": "The item's membership in assemblies and the point at which instance identity stops and quantity begins.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-001",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "component-membership",
+                "name": "Component membership in an assembly",
+                "description": "Whether this item is currently or was formerly installed in a parent item, in what position or role, and over what period. The assembly graph itself is mastered by WM-OBJ-012; EPCIS AggregationEvent and CIDOC P46 supply the parent/child semantics.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-parent",
+                    "text": "Which parent item does this item form part of at a given instant, and in what position or role?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "parent item reference",
+                      "position or role code",
+                      "effective period start and end"
+                    ]
+                  },
+                  {
+                    "id": "q-install-event",
+                    "text": "Which events installed or removed this item from a parent, and who performed them?",
+                    "kind": "event",
+                    "answer_data": [
+                      "install or remove event reference",
+                      "event timestamp",
+                      "performing party reference"
+                    ]
+                  },
+                  {
+                    "id": "q-child-identity",
+                    "text": "Do child components retain their own instance identity while installed, or are they absorbed into the parent?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "child identity retention flag",
+                      "child item references",
+                      "absorption rule reference"
+                    ]
+                  },
+                  {
+                    "id": "q-structure-master",
+                    "text": "Where is the full assembly structure mastered, and which parts of it may be cached here?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "mastering model identifier",
+                      "permitted cached fields",
+                      "cache refresh rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-parent-item",
+                    "name": "partOfItem",
+                    "description": "Reference to the parent item in which this item is installed, valid over a stated period.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-position",
+                    "name": "assemblyPosition",
+                    "description": "Position, slot or functional role occupied by this item within the parent.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-membership-period",
+                    "name": "membershipPeriod",
+                    "description": "Start and end timestamps of the membership, using RFC 3339 with explicit offsets.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "as-built-record",
+                    "name": "As-built configuration extract",
+                    "description": "Extract of the assembly state showing this item's parent, position and effective period at a stated instant, sourced from the as-built assembly model.",
+                    "media_or_form": [
+                      "structured extract",
+                      "build record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by parent item reference plus effective instant; not a second master of the assembly graph.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "instance-boundary",
+                "name": "Boundary against quantity, batch and bulk",
+                "description": "The rule that refuses instance identity to matter with no individuating boundary. ISO 22095 chain-of-custody models such as mass balance and controlled blending explicitly do not preserve one-to-one identity, and EPCIS provides class-level quantity fields precisely for this case.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-001",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-no-instance",
+                    "text": "On what test is a candidate refused an item-instance record and represented as a quantity or batch instead?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "refusal test statement",
+                      "representation chosen (quantity, lot, batch)",
+                      "referring model identifier"
+                    ]
+                  },
+                  {
+                    "id": "q-contained-bulk",
+                    "text": "How are non-instance contents held inside this item (fluids, consumables, loose parts) represented without minting instances?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "content class reference",
+                      "quantity and unit",
+                      "measurement timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-custody-model",
+                    "text": "Which chain-of-custody model applies to the material in or around this item, and does it preserve identity?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "chain-of-custody model code",
+                      "identity preservation flag",
+                      "standard reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-quantity-content",
+                    "name": "nonInstanceContent",
+                    "description": "A quantity of material or unserialised parts associated with the item, expressed with unit rather than as instances.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-coc-model",
+                    "name": "chainOfCustodyModel",
+                    "description": "Coded chain-of-custody model applicable to the associated material, indicating whether identity is preserved.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding states a boundary rule and a small set of inline quantity fields. Its outputs are decisions and references into the batch, stock and material sibling models; producing a separate artifact here would duplicate records those models already master."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state-condition-and-lifecycle",
+        "name": "State, condition and authenticity",
+        "description": "Where the item stands in its life, what shape it is in, what has been done to it, and whether it is what it claims to be.",
+        "rationale": "EPCIS carries lifecycle meaning in bizStep, disposition and persistentDisposition; ISO 55000 standardises asset life and life-cycle management vocabulary; CIDOC CRM P44 has condition binds condition states to time-spans. Authenticity is separated because a verified mark is an assertion about the identity binding, not about condition.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-010",
+          "SRC-004",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "lifecycle-state",
+            "name": "Lifecycle state",
+            "description": "The item's status in a governed state model and the terminal states that end its tracked existence.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-010",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "lifecycle-status",
+                "name": "Lifecycle status and permitted transitions",
+                "description": "The current governed status of the item, the transition that produced it, and the constraints on legal transitions. EPCIS disposition expresses the business state of an object after an event, and persistentDisposition expresses states that survive later events.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-status-now",
+                    "text": "What is the item's current lifecycle status and which event set it?",
+                    "kind": "state",
+                    "answer_data": [
+                      "status code",
+                      "setting event reference",
+                      "status effective timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-transitions",
+                    "text": "Which status transitions are permitted from the current status, and which are forbidden?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "allowed transition list",
+                      "guard condition",
+                      "authorising role"
+                    ]
+                  },
+                  {
+                    "id": "q-persistent-state",
+                    "text": "Which states persist across subsequent events until explicitly cleared, and who may clear them?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "persistent state code",
+                      "set and unset event references",
+                      "clearing authority"
+                    ]
+                  },
+                  {
+                    "id": "q-status-unknown",
+                    "text": "How is an item represented whose status is genuinely unknown, and for how long may that persist?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "unknown-status flag",
+                      "last known status",
+                      "last observation timestamp",
+                      "escalation rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-status",
+                    "name": "lifecycleStatus",
+                    "description": "Current governed lifecycle status code for the item.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-persistent-state",
+                    "name": "persistentState",
+                    "description": "State flags that persist across events until explicitly cleared, such as recalled or stolen.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-status-since",
+                    "name": "statusEffectiveFrom",
+                    "description": "RFC 3339 timestamp from which the current status is effective.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "state-model-definition",
+                    "name": "Lifecycle state model definition",
+                    "description": "Versioned definition of the status vocabulary, permitted transitions, guards and authorising roles used by this Dimension, mapped to external vocabularies where they exist.",
+                    "media_or_form": [
+                      "state model document",
+                      "transition table"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by state model identifier and version with effective-from timestamp.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "end-of-life",
+                "name": "End of life, loss and disposal",
+                "description": "How the item leaves tracked existence: destruction, recycling, permanent loss, theft or export beyond the record's reach, and what evidence closes the record without deleting it.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-013",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "q-eol-mode",
+                    "text": "By what mode did the item leave tracked existence, and when?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "disposal mode code",
+                      "effective timestamp",
+                      "responsible party reference"
+                    ]
+                  },
+                  {
+                    "id": "q-eol-evidence",
+                    "text": "What evidence proves the terminal event, and who issued it?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "evidence artifact reference",
+                      "issuer reference",
+                      "verification status"
+                    ]
+                  },
+                  {
+                    "id": "q-eol-recovery",
+                    "text": "Can a terminal state be reversed, for example when a lost item is recovered, and how is the gap recorded?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "reversal permitted flag",
+                      "recovery event reference",
+                      "unobserved period start and end"
+                    ]
+                  },
+                  {
+                    "id": "q-eol-record",
+                    "text": "How long is the record retained after the item ceases to exist, and under what obligation?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retention period",
+                      "legal or contractual basis",
+                      "disposition action at expiry"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-disposal-mode",
+                    "name": "disposalMode",
+                    "description": "Coded manner in which the item left tracked existence.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-eol-at",
+                    "name": "endOfLifeAt",
+                    "description": "RFC 3339 timestamp of the terminal event.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-retention-until",
+                    "name": "recordRetainedUntil",
+                    "description": "Date until which the item record is retained after the terminal event.",
+                    "value_kind": "date",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "disposal-certificate",
+                    "name": "Disposal, destruction or recycling certificate",
+                    "description": "Third-party or operator certificate evidencing destruction, recycling or other permanent retirement of the individual item.",
+                    "media_or_form": [
+                      "certificate",
+                      "structured record",
+                      "photograph"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by certificate number from the issuing operator plus issue timestamp; linked to the item master identifier.",
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "condition-and-intervention",
+            "name": "Condition and intervention history",
+            "description": "Dated judgements about the item's physical condition and the record of interventions that changed it.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-010",
+              "SRC-005"
+            ],
+            "findings": [
+              {
+                "id": "condition-assessment",
+                "name": "Condition assessment and intervention history",
+                "description": "Condition as an assessed, dated judgement bound to a scale, assessor and method, together with the repairs, restorations and modifications that altered the individual. CIDOC CRM binds condition states to time-spans; schema.org itemCondition is a commerce enumeration and is not equivalent.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003",
+                  "SRC-010",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-condition-grade",
+                    "text": "What condition grade is asserted, on which named scale, and by whom?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "condition grade code",
+                      "scale identifier and version",
+                      "assessor reference",
+                      "assessment timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-condition-method",
+                    "text": "By what method was condition determined: visual inspection, measurement, functional test or declaration?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "assessment method code",
+                      "observed defect list",
+                      "supporting artifact reference"
+                    ]
+                  },
+                  {
+                    "id": "q-intervention",
+                    "text": "Which interventions have been performed on this item, by whom, and what did they change?",
+                    "kind": "process",
+                    "answer_data": [
+                      "intervention type code",
+                      "performing party reference",
+                      "affected components",
+                      "completion timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-condition-currency",
+                    "text": "How stale may a condition assessment be before it must not be presented as current?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "assessment validity period",
+                      "staleness threshold",
+                      "re-assessment trigger"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-condition",
+                    "name": "conditionAssessment",
+                    "description": "A dated condition judgement with grade, scale, method and assessor.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-defect",
+                    "name": "observedDefect",
+                    "description": "A specific defect, damage or wear feature observed on the item.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-intervention",
+                    "name": "interventionRecord",
+                    "description": "A repair, restoration, upgrade or modification performed on the item.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "condition-report",
+                    "name": "Condition or inspection report",
+                    "description": "Dated report recording condition grade, defects, method, assessor and supporting imagery for this individual item.",
+                    "media_or_form": [
+                      "inspection report",
+                      "photograph set",
+                      "structured record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the assessor's report number where one exists, otherwise item reference plus assessment timestamp and assessor.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "authenticity",
+            "name": "Authenticity and verification",
+            "description": "Whether the physical thing in hand is the thing the record designates.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-008",
+              "SRC-002"
+            ],
+            "findings": [
+              {
+                "id": "authenticity-verification",
+                "name": "Authenticity verification and cloned-identifier handling",
+                "description": "Checks that bind the physical thing to the record: mark inspection, carrier verification, tamper evidence and cryptographically verifiable credentials, plus the handling of negative results and duplicate presentations.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-002",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-verify-how",
+                    "text": "Which verification checks were performed on this item, by whom, and with what result?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "check type code",
+                      "verifier reference",
+                      "result code",
+                      "verification timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-verify-credential",
+                    "text": "Which verifiable credentials assert facts about this item, and what is their current status?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "credential identifier",
+                      "issuer identifier",
+                      "validFrom and validUntil",
+                      "credentialStatus"
+                    ]
+                  },
+                  {
+                    "id": "q-verify-fail",
+                    "text": "What happens when verification fails or when the same identifier is presented on two physical things?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "failure handling action",
+                      "quarantine or recall state",
+                      "notified parties",
+                      "investigation reference"
+                    ]
+                  },
+                  {
+                    "id": "q-tamper",
+                    "text": "What tamper-evidence exists on marks and carriers, and how is tampering recorded?",
+                    "kind": "security",
+                    "answer_data": [
+                      "tamper feature description",
+                      "tamper observation record",
+                      "observation timestamp"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-verification",
+                    "name": "verificationResult",
+                    "description": "Outcome of an authenticity check with type, verifier, timestamp and result.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-credential-ref",
+                    "name": "attachedCredential",
+                    "description": "Reference to a verifiable credential whose credentialSubject is this item.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "authenticity-credential",
+                    "name": "Authenticity credential or certificate",
+                    "description": "Issued credential or certificate asserting that the individual item is genuine, with issuer, validity window and revocation status.",
+                    "media_or_form": [
+                      "verifiable credential",
+                      "certificate document",
+                      "signed payload"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the credential id assigned by its issuer; status resolved through the issuer's credentialStatus mechanism.",
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "whereabouts-and-control",
+        "name": "Whereabouts and control",
+        "description": "Where the item has been observed, what it is inside, who holds it and who owns it.",
+        "rationale": "EPCIS separates the read point where an event occurred from the business location where the object is considered to be afterwards; CIDOC CRM separates keeper (P49) from owner (P52); ISO 22095 supplies custody terminology. Conflating observation, containment, custody and title is the most common modelling error in item tracking.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-004",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "location-observation",
+            "name": "Location observation",
+            "description": "Dated statements of where the item was, with observation quality, and the containers or carriers it was observed within.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "location-fix",
+                "name": "Location fix and observation quality",
+                "description": "A dated statement of the item's whereabouts resolved against a place reference, distinguishing the point of observation from the business location asserted afterwards, and carrying precision and source.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-016",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-where-now",
+                    "text": "Where is the item now believed to be, on the strength of which observation?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "place reference",
+                      "observation reference",
+                      "belief timestamp",
+                      "confidence"
+                    ]
+                  },
+                  {
+                    "id": "q-readpoint",
+                    "text": "Is a given location statement the point where the observation happened or the location the item is considered to be at afterwards?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "read point reference",
+                      "business location reference",
+                      "statement type code"
+                    ]
+                  },
+                  {
+                    "id": "q-fix-source",
+                    "text": "How was the whereabouts established: scan, sensor, sighting, declaration or inference?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "observation source code",
+                      "observing party or device reference",
+                      "precision or accuracy"
+                    ]
+                  },
+                  {
+                    "id": "q-fix-conflict",
+                    "text": "How are contradictory or physically impossible location statements resolved?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "conflict case reference",
+                      "precedence rule",
+                      "rejected observation reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-place-ref",
+                    "name": "observedPlace",
+                    "description": "Reference to a place or premises record where the item was observed.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-fix-type",
+                    "name": "locationStatementType",
+                    "description": "Whether the statement is a read point, a business location or an inferred position.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-fix-time",
+                    "name": "observedAt",
+                    "description": "RFC 3339 timestamp with explicit offset at which the item was observed at the stated place.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-fix-precision",
+                    "name": "locationPrecision",
+                    "description": "Stated precision or accuracy qualifier of the location statement.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "observation-log",
+                    "name": "Location observation log",
+                    "description": "Ordered log of dated location statements about the item with source, precision and statement type, from which current whereabouts is derived.",
+                    "media_or_form": [
+                      "event log",
+                      "scan record set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Each entry identified by observation identifier plus RFC 3339 event time; the log is keyed on the item master identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "containment-context",
+                "name": "Containment and carrier context",
+                "description": "What the item was inside when observed: a handling unit, a vehicle, a room or another item, and how aggregation and disaggregation change that context without changing item identity.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-container",
+                    "text": "What container, handling unit or carrier was the item inside at a given instant?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "container reference",
+                      "container type code",
+                      "effective period"
+                    ]
+                  },
+                  {
+                    "id": "q-aggregation",
+                    "text": "Which aggregation or disaggregation events changed the item's containment, and when?",
+                    "kind": "event",
+                    "answer_data": [
+                      "aggregation event reference",
+                      "action code",
+                      "event timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-nesting",
+                    "text": "How deep may containment nest, and how is the outermost location derived from the innermost item?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "containment chain references",
+                      "derivation rule",
+                      "derived place reference"
+                    ]
+                  },
+                  {
+                    "id": "q-container-master",
+                    "text": "Which model masters the container itself, so that its contents are not restated here?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "mastering model identifier",
+                      "permitted local fields"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-container",
+                    "name": "containedIn",
+                    "description": "Reference to the handling unit, vehicle or parent container holding the item over a stated period.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-containment-period",
+                    "name": "containmentPeriod",
+                    "description": "Start and end timestamps of a containment relationship.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "aggregation-event-record",
+                    "name": "Aggregation or disaggregation event record",
+                    "description": "Record of the item being added to or removed from a container, carrying parent identifier, child identifiers, action and event time.",
+                    "media_or_form": [
+                      "event record",
+                      "packing list entry"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by event identifier plus event time; child and parent bound by their own master identifiers.",
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "custody-and-rights",
+            "name": "Custody, possession and rights",
+            "description": "Who physically holds the item and under what basis, kept strictly distinct from who owns it.",
+            "source_refs": [
+              "SRC-011",
+              "SRC-004",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "custody-transfer",
+                "name": "Custody record and transfer",
+                "description": "Periods during which a named party held the item, the basis of holding, and the transfer events between holders, aligned with ISO 22095 custody terminology and EPCIS source/destination and shipping/receiving semantics.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-001",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-holder",
+                    "text": "Who holds the item now, since when, and on what basis (ownership, lease, loan, bailment, transport)?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "holder party reference",
+                      "custody start timestamp",
+                      "basis code",
+                      "agreement reference"
+                    ]
+                  },
+                  {
+                    "id": "q-transfer",
+                    "text": "Which transfer moved custody from one party to another, and was it acknowledged by both sides?",
+                    "kind": "process",
+                    "answer_data": [
+                      "transfer event reference",
+                      "source party",
+                      "destination party",
+                      "acknowledgement status"
+                    ]
+                  },
+                  {
+                    "id": "q-custody-overlap",
+                    "text": "What prevents two open custody records existing at once, and how is an overlap corrected?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "single open custody rule",
+                      "overlap detection result",
+                      "correction record reference"
+                    ]
+                  },
+                  {
+                    "id": "q-custody-gap",
+                    "text": "How are custody gaps recorded when the holder is genuinely unknown for a period?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "gap start and end",
+                      "last known holder",
+                      "gap reason code"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-holder",
+                    "name": "currentHolder",
+                    "description": "Reference to the party currently holding the item.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-custody-record",
+                    "name": "custodyPeriod",
+                    "description": "A closed or open period of holding with holder, basis, start and end timestamps.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-custody-basis",
+                    "name": "custodyBasis",
+                    "description": "Coded legal or operational basis on which the holder holds the item.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "custody-transfer-receipt",
+                    "name": "Custody transfer receipt",
+                    "description": "Signed or acknowledged record of a handover, naming source and destination parties, item identifiers, condition at handover and time.",
+                    "media_or_form": [
+                      "receipt",
+                      "delivery note",
+                      "signed record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the issuing party's document number plus issue timestamp; cross-referenced to the item master identifier.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "ownership-reference",
+                "name": "Ownership and rights reference",
+                "description": "The reference to legal title and encumbrances held in the ownership sibling model, and the rule that possession does not imply title. CIDOC CRM distinguishes current owner (P52) from keeper (P49); ISO 55000 frames value-bearing entities as assets of an organization.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-owner",
+                    "text": "Who is recorded as owner of this item, and in which model is that assertion mastered?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "owner party reference",
+                      "mastering model identifier",
+                      "assertion timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-owner-vs-holder",
+                    "text": "When holder and owner differ, which record governs each type of decision about the item?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "decision type",
+                      "governing role",
+                      "basis reference"
+                    ]
+                  },
+                  {
+                    "id": "q-encumbrance",
+                    "text": "What claims, liens, restitution claims or export restrictions limit dealings with this item?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "encumbrance type",
+                      "claiming party reference",
+                      "jurisdiction",
+                      "effective period"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-owner-ref",
+                    "name": "ownerReference",
+                    "description": "Reference to the ownership record asserting title over this item; never a local title statement.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-encumbrance",
+                    "name": "encumbrance",
+                    "description": "A recorded restriction or claim limiting dealings with the item.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "title-evidence-reference",
+                    "name": "Title or rights evidence reference",
+                    "description": "Pointer to the document evidencing title, lien or restriction held by the ownership model, retained here only as a resolvable reference.",
+                    "media_or_form": [
+                      "reference record",
+                      "document pointer"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the external document identifier issued by the owning registry or model; no local identifier is minted.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "events-provenance-and-evidence",
+        "name": "Events, provenance and evidence",
+        "description": "The event backbone that produces every other statement about the item, its time semantics, its origin story and the evidence that supports claims.",
+        "rationale": "EPCIS models visibility as events answering what, when, where, why and how, with eventTime and recordTime distinguished; PROV-O models generation, derivation and attribution; W3C Verifiable Credentials supply issuer-signed evidence. Together they let claims about an item be traced and challenged rather than merely asserted.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-006",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "event-record",
+            "name": "Event record and time semantics",
+            "description": "How events about the item are captured, corrected and ordered in time.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-009",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "event-capture",
+                "name": "Event capture and correction",
+                "description": "The event structure that records what happened to the item, why, where and how, and the rules for idempotent capture, correction and retraction of events that must not be silently overwritten.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-event-shape",
+                    "text": "What minimum fields must an event carry to be a valid statement about this item?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "event type code",
+                      "item identifier list",
+                      "event time",
+                      "business step code",
+                      "disposition code",
+                      "location references"
+                    ]
+                  },
+                  {
+                    "id": "q-event-why",
+                    "text": "What business step and resulting disposition does the event assert, and from which vocabulary?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "business step code",
+                      "disposition code",
+                      "vocabulary identifier and version"
+                    ]
+                  },
+                  {
+                    "id": "q-event-correct",
+                    "text": "How is an erroneous event corrected or retracted without destroying the original assertion?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "correction event reference",
+                      "superseded event identifier",
+                      "reason code",
+                      "corrector reference"
+                    ]
+                  },
+                  {
+                    "id": "q-event-idempotent",
+                    "text": "How are duplicate captures of the same real-world occurrence detected and collapsed?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "event identifier",
+                      "deduplication key",
+                      "duplicate decision record"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-event",
+                    "name": "itemEvent",
+                    "description": "An event asserting something happened to or about the item, with type, time, place, business step and disposition.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-event-id",
+                    "name": "eventIdentifier",
+                    "description": "Stable identifier of the event used for deduplication and correction chains.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-event-agent",
+                    "name": "eventAgent",
+                    "description": "Reference to the party, device or software agent responsible for the event.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "item-event-stream",
+                    "name": "Item event stream",
+                    "description": "Append-only stream of events concerning the item, from which current state, whereabouts and custody are derived rather than independently asserted.",
+                    "media_or_form": [
+                      "append-only event log",
+                      "exchange payload"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Stream keyed on the item master identifier; each entry identified by event identifier plus RFC 3339 event time.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "time-semantics",
+                "name": "Time semantics and ordering",
+                "description": "The separation of when something happened from when it was recorded, the required timestamp form, and how ordering is decided when clocks disagree. RFC 3339 requires a stated offset to UTC, with 'Z' for zero offset and '-00:00' where the local offset is unknown; EPCIS carries eventTime, eventTimeZoneOffset and repository recordTime separately.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-001",
+                  "SRC-016"
+                ],
+                "questions": [
+                  {
+                    "id": "q-time-two",
+                    "text": "For each statement, when did the fact occur and when was it observed or ingested?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "event time (RFC 3339 with offset)",
+                      "record or ingestion time (RFC 3339 with offset)",
+                      "local time zone offset"
+                    ]
+                  },
+                  {
+                    "id": "q-time-order",
+                    "text": "How is the order of statements decided when event times are equal, missing or inconsistent with record times?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "ordering rule",
+                      "tie-break key",
+                      "anomaly flag"
+                    ]
+                  },
+                  {
+                    "id": "q-time-uncertain",
+                    "text": "How is an imprecise or historical time expressed without fabricating precision?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "time interval start and end",
+                      "precision qualifier",
+                      "estimation basis"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-event-time",
+                    "name": "eventTime",
+                    "description": "RFC 3339 timestamp with seconds and explicit offset stating when the fact occurred.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-record-time",
+                    "name": "recordTime",
+                    "description": "RFC 3339 timestamp with explicit offset stating when the statement was recorded or ingested.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-tz-offset",
+                    "name": "eventTimeZoneOffset",
+                    "description": "Local time zone offset in force at the place of the event, retained even when the timestamp is normalised to UTC.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-time-interval",
+                    "name": "timeInterval",
+                    "description": "Bounded interval used when only an approximate time is defensible.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Time semantics govern fields carried by every other finding rather than producing a document of their own. The rules are inline constraints and reference data (offset handling, ordering, precision qualifiers); materialising them as an artifact would duplicate the event stream and the canonicalisation rules already recorded in the service layers."
+              }
+            ]
+          },
+          {
+            "id": "provenance-and-evidence",
+            "name": "Provenance and evidence",
+            "description": "Where the item came from, through whose hands, and what evidence supports each claim.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-011",
+              "SRC-006",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "origin-provenance",
+                "name": "Origin and chain of custody provenance",
+                "description": "The origin of the individual (maker, place, date of production or first observation) and the ordered chain of custody from origin to the present, including declared gaps. PROV-O supplies generation, derivation and attribution; ISO 22095 supplies the custody model vocabulary.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-011",
+                  "SRC-004",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-origin",
+                    "text": "Who produced this individual, where and when, and how is that known?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "producing party reference",
+                      "production place reference",
+                      "production timestamp or interval",
+                      "evidence reference"
+                    ]
+                  },
+                  {
+                    "id": "q-chain",
+                    "text": "What is the ordered chain of holders from origin to now, and where are the gaps?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "ordered custody references",
+                      "gap intervals",
+                      "chain completeness assessment"
+                    ]
+                  },
+                  {
+                    "id": "q-chain-model",
+                    "text": "Which chain-of-custody model does the chain claim to satisfy, and is that claim independently checked?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "custody model code",
+                      "verification body reference",
+                      "verification status"
+                    ]
+                  },
+                  {
+                    "id": "q-provenance-dispute",
+                    "text": "How are contested or fabricated provenance claims flagged without deleting them?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "dispute record reference",
+                      "disputing party",
+                      "claim status code"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-origin",
+                    "name": "originStatement",
+                    "description": "Assertion of maker, place and time of production or first entry into tracking.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-provenance-link",
+                    "name": "provenanceLink",
+                    "description": "A generation, derivation or attribution link from the item to an activity or agent.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-chain-gap",
+                    "name": "provenanceGap",
+                    "description": "A declared interval for which no custody or location evidence exists.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "provenance-dossier",
+                    "name": "Provenance dossier",
+                    "description": "Compiled, ordered set of provenance statements and supporting documents for the individual item, including declared gaps and disputes.",
+                    "media_or_form": [
+                      "dossier",
+                      "document set",
+                      "structured payload"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by dossier identifier and version, bound to the item master identifier, with each constituent document keeping its own issuer identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "attestation-evidence",
+                "name": "Attestations, evidence quality and conflicting claims",
+                "description": "How each claim about the item is supported, who vouches for it, how strong that support is, and what happens when two credible sources disagree.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-005",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-evidence-for",
+                    "text": "Which claim does each item of evidence support, and who issued that evidence?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "supported claim reference",
+                      "evidence artifact reference",
+                      "issuer identifier",
+                      "issue timestamp"
+                    ]
+                  },
+                  {
+                    "id": "q-evidence-strength",
+                    "text": "How is evidence strength graded, and what is the minimum grade for a claim to be published externally?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "evidence grade",
+                      "grading scheme reference",
+                      "publication threshold"
+                    ]
+                  },
+                  {
+                    "id": "q-evidence-status",
+                    "text": "How is a credential's revocation, suspension or expiry reflected in claims that relied on it?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "credential status value",
+                      "status checked at timestamp",
+                      "dependent claim references"
+                    ]
+                  },
+                  {
+                    "id": "q-claim-conflict",
+                    "text": "When two sources make incompatible claims about the item, which prevails and on what recorded rule?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "conflicting claim references",
+                      "precedence rule reference",
+                      "resolution decision",
+                      "decider reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-claim",
+                    "name": "assertedClaim",
+                    "description": "A discrete assertion about the item, with asserting party, timestamp and supporting evidence references.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-evidence-grade",
+                    "name": "evidenceGrade",
+                    "description": "Graded strength of the evidence supporting a claim.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-credential-status",
+                    "name": "credentialStatusValue",
+                    "description": "Current status of a supporting credential (active, suspended, revoked, expired) with the time it was checked.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "attestation-set",
+                    "name": "Attestation and supporting document set",
+                    "description": "The set of issuer-signed credentials, certificates, reports and images attached to claims about the item, each with issuer, validity window and status endpoint.",
+                    "media_or_form": [
+                      "verifiable credential",
+                      "certificate",
+                      "report",
+                      "image"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Each attestation identified by its issuer-assigned identifier; the set is keyed on the item master identifier.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "record-governance-and-interoperability",
+        "name": "Record governance and interoperability",
+        "description": "Who governs the item record, who may see what, how long it is kept, and how it exchanges with external standards without overclaiming conformance.",
+        "rationale": "The record is not the thing. IEC 63278-1 frames a standardized digital representation of an asset across its lifecycle; PROV-O separates entities from the agents responsible for them; GDPR constrains item records that link to identifiable people; product-passport regimes impose external disclosure duties on the economic operator.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-005",
+          "SRC-014",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "record-stewardship",
+            "name": "Record stewardship, access and retention",
+            "description": "Mastership and authority over the record, scoped disclosure, and privacy and retention duties.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-013",
+              "SRC-014",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "mastership-authority",
+                "name": "Mastership, authority and record lifecycle",
+                "description": "Which system and which party master this record, who may assert or change each part of it, and how record versions relate to the physical thing they describe.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-master-system",
+                    "text": "Which system of record masters this item record, and which fields are copies from elsewhere?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "mastering system reference",
+                      "mastered field list",
+                      "referenced field list with source model"
+                    ]
+                  },
+                  {
+                    "id": "q-who-asserts",
+                    "text": "Which roles may create, amend or retire each class of statement about the item?",
+                    "kind": "access",
+                    "answer_data": [
+                      "role reference",
+                      "permitted statement classes",
+                      "authorisation basis"
+                    ]
+                  },
+                  {
+                    "id": "q-record-vs-thing",
+                    "text": "How is a change to the record distinguished from a change to the physical thing?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "record version identifier",
+                      "record change timestamp",
+                      "physical change event reference"
+                    ]
+                  },
+                  {
+                    "id": "q-record-retire",
+                    "text": "What retires the record itself, as opposed to ending the item's life?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "record status code",
+                      "retirement reason",
+                      "approving role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-master-system",
+                    "name": "masteringSystem",
+                    "description": "Reference to the authoritative system of record for this item record.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-record-version",
+                    "name": "recordVersion",
+                    "description": "Version identifier of the record, incremented on every accepted change.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-steward",
+                    "name": "recordSteward",
+                    "description": "Reference to the party accountable for the accuracy of the record, derived from the ownership model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "record-audit-trail",
+                    "name": "Record change audit trail",
+                    "description": "Immutable trail of record changes with actor, timestamp, before/after values and authorisation basis, separate from the physical event stream.",
+                    "media_or_form": [
+                      "audit log",
+                      "append-only journal"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by record identifier plus monotonic change sequence and RFC 3339 change timestamp.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "access-disclosure",
+                "name": "Access scoping and disclosure views",
+                "description": "Which audiences may see which parts of the record, including a public identity view that deliberately withholds whereabouts and holder, and the exceptions that override the default.",
+                "source_refs": [
+                  "SRC-013",
+                  "SRC-006",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-default-access",
+                    "text": "What is the default visibility of each bundle and layer for a party with no explicit grant?",
+                    "kind": "access",
+                    "answer_data": [
+                      "scope reference",
+                      "default decision (deny or allow)",
+                      "policy reference"
+                    ]
+                  },
+                  {
+                    "id": "q-public-view",
+                    "text": "Which fields may appear in a publicly resolvable view of the item, and which must never appear?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "published field list",
+                      "prohibited field list",
+                      "publication basis"
+                    ]
+                  },
+                  {
+                    "id": "q-exception-access",
+                    "text": "Under what exceptions may withheld data be disclosed, to whom, and with what record?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "exception type (legal order, theft report, safety recall, regulator request)",
+                      "requesting party",
+                      "disclosure record reference",
+                      "approval reference"
+                    ]
+                  },
+                  {
+                    "id": "q-grant-lifecycle",
+                    "text": "How are access grants issued, time-boxed and revoked, and what happens to data already disclosed?",
+                    "kind": "security",
+                    "answer_data": [
+                      "grant identifier",
+                      "validity window",
+                      "revocation event",
+                      "post-disclosure obligations"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-visibility",
+                    "name": "visibilityClass",
+                    "description": "Coded visibility class attached to a bundle, layer, finding or artifact of this record.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-grant",
+                    "name": "accessGrant",
+                    "description": "A scoped, time-boxed grant of read access to a named party.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-disclosure-log",
+                    "name": "disclosureEvent",
+                    "description": "Record of a disclosure made under an exception, with recipient, scope, basis and timestamp.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "disclosure-view-definition",
+                    "name": "Disclosure view definition",
+                    "description": "Versioned definition of each published projection (public identity view, custody chain view, holder inventory view) listing included and excluded fields.",
+                    "media_or_form": [
+                      "view definition",
+                      "policy document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by view identifier and version with effective-from timestamp.",
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "privacy-retention",
+                "name": "Privacy exposure and retention",
+                "description": "When item data becomes personal data, and how retention duties for traceability are reconciled with data-protection limits. GDPR applies to processing of personal data about identifiable natural persons; item records routinely carry holder identity, ownership history and movement traces.",
+                "source_refs": [
+                  "SRC-014",
+                  "SRC-013",
+                  "SRC-006",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-personal-linkage",
+                    "text": "Which fields link the item to an identifiable natural person, directly or by combination?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "linking field list",
+                      "identifiability assessment",
+                      "lawful basis reference"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-period",
+                    "text": "How long is each class of item data retained, on what legal or contractual basis?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "data class",
+                      "retention period",
+                      "basis reference",
+                      "disposition action"
+                    ]
+                  },
+                  {
+                    "id": "q-erasure-conflict",
+                    "text": "How is an erasure request reconciled with traceability, safety or product-passport duties that require retention?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "request reference",
+                      "competing obligation reference",
+                      "outcome (erase, restrict, pseudonymise, refuse)",
+                      "decision record"
+                    ]
+                  },
+                  {
+                    "id": "q-correlation-risk",
+                    "text": "What correlation risk arises from a persistent, publicly resolvable item identifier, and how is it mitigated?",
+                    "kind": "security",
+                    "answer_data": [
+                      "risk assessment reference",
+                      "mitigation measures",
+                      "residual risk statement"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-personal-flag",
+                    "name": "personalDataLinkage",
+                    "description": "Flag and description of how the record links to identifiable natural persons.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "de-retention-rule",
+                    "name": "retentionRule",
+                    "description": "Retention period and disposition action for a class of item data, with its basis.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "de-erasure-decision",
+                    "name": "erasureDecision",
+                    "description": "Recorded outcome of an erasure or restriction request affecting this record.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "retention-and-privacy-schedule",
+                    "name": "Retention and privacy schedule",
+                    "description": "Versioned schedule mapping each data class of the item record to a retention period, lawful basis, disposition action and privacy classification.",
+                    "media_or_form": [
+                      "schedule document",
+                      "structured policy"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by schedule identifier and version with effective-from timestamp and approving role.",
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "interoperability",
+            "name": "External alignment and exchange",
+            "description": "How this model maps to external standards and exchanges item data without asserting unproven conformance.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-007",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "vocabulary-alignment",
+                "name": "Identifier and vocabulary alignment",
+                "description": "Mappings from this model's terms to external vocabularies (GS1 EPCIS/CBV, GS1 Digital Link, schema.org, IEC 63278-1, CIDOC CRM, PROV-O) recorded as alignments with known conflicts, never as conformance claims.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-mapping",
+                    "text": "For each external standard, which of its terms does a given element of this model map to, and is the mapping exact, broader or narrower?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "external term identifier",
+                      "local element identifier",
+                      "mapping strength",
+                      "standard version"
+                    ]
+                  },
+                  {
+                    "id": "q-mapping-conflict",
+                    "text": "Where do external standards contradict one another about the same fact, and how is the contradiction recorded rather than hidden?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "conflicting term pair",
+                      "conflict description",
+                      "local resolution rule"
+                    ]
+                  },
+                  {
+                    "id": "q-version-drift",
+                    "text": "Which version of each external vocabulary is the mapping valid against, and how is drift detected?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "standard version or date",
+                      "mapping validated at timestamp",
+                      "re-validation trigger"
+                    ]
+                  },
+                  {
+                    "id": "q-conformance-claim",
+                    "text": "What evidence would be required before claiming conformance to a given external standard?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "conformance criteria reference",
+                      "test evidence reference",
+                      "current claim status"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-mapping",
+                    "name": "externalMapping",
+                    "description": "A recorded mapping between a local element and an external standard term, with strength and standard version.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-conformance-status",
+                    "name": "conformanceClaimStatus",
+                    "description": "Status of any conformance claim: none, asserted, evidenced or withdrawn.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "alignment-map",
+                    "name": "External alignment map",
+                    "description": "Versioned table mapping model elements to external standard terms with strength, standard version, validation date and recorded conflicts.",
+                    "media_or_form": [
+                      "mapping table",
+                      "structured crosswalk"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by alignment map identifier and version, each row keyed on local element identifier plus external term identifier and standard version.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "exchange-projection",
+                "name": "Exchange projections and external obligations",
+                "description": "The outbound payloads built from this model (visibility events, product-passport content, credential presentations) and the obligations that attach when data is published to an external regime.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-013",
+                  "SRC-006",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "q-projection",
+                    "text": "Which outbound projection is required for a given consumer, and which fields does it draw from?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "projection identifier",
+                      "consumer or regime reference",
+                      "source field list"
+                    ]
+                  },
+                  {
+                    "id": "q-binding-level",
+                    "text": "Does an external payload bind to the item instance, to a batch or to the model, and is that level stated explicitly?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "binding level code",
+                      "bound identifier",
+                      "level assertion basis"
+                    ]
+                  },
+                  {
+                    "id": "q-publish-duty",
+                    "text": "What accuracy, availability and update duties attach once data is published to an external regime, and who is responsible?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "regime reference",
+                      "responsible operator reference",
+                      "availability duty",
+                      "update trigger"
+                    ]
+                  },
+                  {
+                    "id": "q-projection-drift",
+                    "text": "How is divergence detected between a published projection and the current internal record?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "published snapshot reference",
+                      "comparison timestamp",
+                      "divergence finding",
+                      "remediation action"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-projection",
+                    "name": "outboundProjection",
+                    "description": "A defined outbound payload derived from the record for a named consumer or regulatory regime.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-binding-level",
+                    "name": "payloadBindingLevel",
+                    "description": "Whether the payload binds at model, batch or item-instance level.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-published-at",
+                    "name": "publishedAt",
+                    "description": "RFC 3339 timestamp at which a projection was published externally.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "published-payload-snapshot",
+                    "name": "Published payload snapshot",
+                    "description": "Immutable snapshot of what was published externally (visibility event batch, passport payload, credential presentation) with time, recipient and integrity digest.",
+                    "media_or_form": [
+                      "exchange payload",
+                      "signed snapshot",
+                      "resolver response"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by publication identifier plus RFC 3339 publication timestamp and content digest; linked to the item master identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "register-item-instance",
+      "name": "Register item instance",
+      "description": "Create the master record for one individual physical thing, binding it to an authoritative identifier and, where known, to its type.",
+      "inputs": [
+        "candidate identifier and scheme",
+        "individuation evidence",
+        "type reference (optional)",
+        "registering party"
+      ],
+      "outputs": [
+        "item record with master identifier",
+        "registration event",
+        "resolution status"
+      ],
+      "preconditions": [
+        "The candidate passes the individuation test and is not bulk, batch or fungible matter",
+        "No existing record already resolves the same identifier under the same scheme"
+      ],
+      "effects": [
+        "A new master record exists with record version 1 and an RFC 3339 creation timestamp",
+        "A registration event is appended to the item event stream"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "assign-identifier-and-mark",
+      "name": "Assign identifier and record identity mark",
+      "description": "Allocate or record an identifier for the item and register the physical mark or data carrier that bears it.",
+      "inputs": [
+        "item reference",
+        "identifier value and scheme",
+        "marking method and placement",
+        "carrier type and encoded link"
+      ],
+      "outputs": [
+        "identifier assignment record",
+        "identity mark record",
+        "carrier link URI"
+      ],
+      "preconditions": [
+        "The assigning party is authorised under the scheme's rules",
+        "The identifier is unique within the declared uniqueness scope"
+      ],
+      "effects": [
+        "The item carries an additional identifier and mark with an application timestamp",
+        "Superseded marks are closed with an end timestamp rather than deleted"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-002",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "resolve-identifier",
+      "name": "Resolve observed identifier to item",
+      "description": "Resolve a scanned, quoted or inferred identifier to at most one item record, reporting ambiguity instead of guessing.",
+      "inputs": [
+        "observed identifier string",
+        "scheme hint (optional)",
+        "observation context"
+      ],
+      "outputs": [
+        "matched item reference or empty result",
+        "match confidence",
+        "ambiguity report where more than one candidate matches"
+      ],
+      "preconditions": [
+        "The identifier syntax is recognisable or explicitly flagged as unrecognised"
+      ],
+      "effects": [
+        "A resolution attempt is logged with outcome and timestamp",
+        "Multiple matches raise a collision case rather than returning an arbitrary record"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "capture-item-event",
+      "name": "Capture item event",
+      "description": "Append a validated event about the item recording what happened, when, where, why and how.",
+      "inputs": [
+        "item identifier list",
+        "event type",
+        "event time with offset",
+        "location references",
+        "business step and disposition",
+        "agent and sensor data (optional)"
+      ],
+      "outputs": [
+        "stored event with event identifier",
+        "updated derived state",
+        "duplicate decision where applicable"
+      ],
+      "preconditions": [
+        "Event time is RFC 3339 with seconds and an explicit offset",
+        "The item identifier resolves to exactly one record or the event is quarantined"
+      ],
+      "effects": [
+        "The event stream gains an immutable entry with both event time and record time",
+        "Derived current status, whereabouts and containment are recalculated"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-009",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "record-condition-assessment",
+      "name": "Record condition assessment",
+      "description": "Attach a dated condition judgement to the item with scale, method, assessor and supporting evidence.",
+      "inputs": [
+        "item reference",
+        "condition grade and scale",
+        "assessment method",
+        "assessor reference",
+        "defect observations",
+        "supporting artifacts"
+      ],
+      "outputs": [
+        "condition assessment record",
+        "updated current condition view",
+        "validity window"
+      ],
+      "preconditions": [
+        "The scale is a named, versioned scale rather than an ad hoc grade",
+        "The assessor reference resolves to a party or device"
+      ],
+      "effects": [
+        "Prior assessments are retained as history and not overwritten",
+        "Assessments older than the staleness threshold cease to be presented as current"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-010",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "transition-lifecycle-state",
+      "name": "Transition lifecycle state",
+      "description": "Move the item to a new governed status through a permitted transition, or reject the request.",
+      "inputs": [
+        "item reference",
+        "target status",
+        "triggering event reference",
+        "authorising role"
+      ],
+      "outputs": [
+        "updated lifecycle status",
+        "transition record",
+        "rejection reason where refused"
+      ],
+      "preconditions": [
+        "The transition is permitted by the versioned state model",
+        "Persistent states such as recalled or stolen are not silently cleared"
+      ],
+      "effects": [
+        "Status and effective-from timestamp are updated and the prior status is retained in history",
+        "Terminal transitions start the record retention clock"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "transfer-custody",
+      "name": "Transfer custody",
+      "description": "Close the outgoing custody period and open the incoming one, recording basis, parties and acknowledgement.",
+      "inputs": [
+        "item reference",
+        "source party",
+        "destination party",
+        "basis of holding",
+        "transfer time",
+        "condition at handover (optional)"
+      ],
+      "outputs": [
+        "closed custody period",
+        "open custody period",
+        "transfer event",
+        "receipt artifact reference"
+      ],
+      "preconditions": [
+        "At most one custody period is open before and after the operation",
+        "Transfer time is not earlier than the start of the custody period being closed"
+      ],
+      "effects": [
+        "Custody history gains a closed period and a new open period",
+        "Unacknowledged transfers are flagged for reconciliation rather than assumed complete"
+      ],
+      "source_refs": [
+        "SRC-011",
+        "SRC-001",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "link-to-assembly",
+      "name": "Attach or detach item from assembly",
+      "description": "Record that the item was installed into or removed from a parent item at a stated time and position.",
+      "inputs": [
+        "item reference",
+        "parent item reference",
+        "position or role",
+        "action (attach or detach)",
+        "event time"
+      ],
+      "outputs": [
+        "membership period record",
+        "aggregation or disaggregation event",
+        "updated containment view"
+      ],
+      "preconditions": [
+        "The parent item resolves to an existing item record",
+        "No overlapping open membership exists for the same item"
+      ],
+      "effects": [
+        "Membership periods are opened or closed without altering either item's identity",
+        "Derived location of the child may be inherited from the parent while membership is open"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-004",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "verify-authenticity",
+      "name": "Verify authenticity",
+      "description": "Evaluate marks, carriers, tamper evidence and credentials to decide whether the physical thing is the thing the record designates.",
+      "inputs": [
+        "item reference",
+        "observed mark and carrier data",
+        "presented credentials",
+        "verifier reference"
+      ],
+      "outputs": [
+        "verification result",
+        "credential status results",
+        "failure handling action"
+      ],
+      "preconditions": [
+        "Credential status can be checked or the check is explicitly recorded as unavailable"
+      ],
+      "effects": [
+        "A verification result is appended with verifier, method and timestamp",
+        "Failures raise a case and may set a persistent state such as suspected counterfeit"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-008",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "reconcile-duplicate-records",
+      "name": "Merge or split item records",
+      "description": "Reconcile records after discovering that two records describe one thing, or that one record conflated two things.",
+      "inputs": [
+        "candidate record references",
+        "reconciliation evidence",
+        "deciding role"
+      ],
+      "outputs": [
+        "surviving record reference",
+        "retired record references",
+        "reconciliation decision record"
+      ],
+      "preconditions": [
+        "Evidence supporting sameness or difference is attached and graded",
+        "The deciding role is authorised by the mastership rules"
+      ],
+      "effects": [
+        "Retired records are marked superseded with a pointer to the survivor rather than deleted",
+        "Events, custody and observations are re-parented with their original provenance preserved"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "retire-item",
+      "name": "Retire item and close record",
+      "description": "Record the item's end of life with evidence and place the record under its retention schedule.",
+      "inputs": [
+        "item reference",
+        "disposal mode",
+        "terminal event time",
+        "evidence artifact reference"
+      ],
+      "outputs": [
+        "terminal lifecycle status",
+        "retention schedule assignment",
+        "closure record"
+      ],
+      "preconditions": [
+        "Evidence of the terminal event is attached or the mode is recorded as unverified",
+        "No open custody period remains, or the open period is explicitly closed as part of the operation"
+      ],
+      "effects": [
+        "The item is no longer presented as active in any projection",
+        "The record is retained until its retention date and then handled per the disposition action"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-013",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "issue-disclosure-view",
+      "name": "Issue scoped disclosure view",
+      "description": "Produce a projection of the record limited to a defined field set for a named audience, and log the disclosure.",
+      "inputs": [
+        "item reference",
+        "view identifier",
+        "requesting party",
+        "basis of access",
+        "validity window"
+      ],
+      "outputs": [
+        "projected payload",
+        "disclosure log entry",
+        "published snapshot reference where external"
+      ],
+      "preconditions": [
+        "A grant, published-view definition or recorded exception authorises the disclosure",
+        "Prohibited fields for the view are enforced by the view definition, not by the caller"
+      ],
+      "effects": [
+        "The requesting party receives only the fields the view defines",
+        "A disclosure record is written with recipient, scope, basis and RFC 3339 timestamp"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-014",
+        "SRC-001"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-OBJ-002 Product type",
+      "relation": "REFERENCE",
+      "purpose": "Resolve the instance-of link to the class the item instantiates; all type-level specification stays there.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "WM-OBJ-017 Product configuration",
+      "relation": "REFERENCE",
+      "purpose": "Resolve the configured variant an item was built to, where configuration is distinguished from base type.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "WM-OBJ-012 As-built assembly",
+      "relation": "COMPOSE",
+      "purpose": "Assembly structure composes item instances; this model holds only the membership pointer and effective period.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "WM-OBJ-021 Handling unit",
+      "relation": "REFERENCE",
+      "purpose": "Record observed containment of the item in a logistic unit without restating the packaging hierarchy.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "WM-OBJ-020 Stock position",
+      "relation": "REFERENCE",
+      "purpose": "Allow inventory to reference identified instances; quantities and stock mastership remain outside this model.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "WM-OBJ-022 Asset lifecycle",
+      "relation": "REFERENCE",
+      "purpose": "Asset-management records project value, criticality and life-cycle planning over this item; no second master identity is created.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "WM-BLT-002 Premises",
+      "relation": "REFERENCE",
+      "purpose": "Resolve location fixes and containment context to governed place and premises identities.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "Material substance model (legacy M1)",
+      "relation": "REFERENCE",
+      "purpose": "Resolve material constituents to material classes rather than restating material properties on the instance.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "S1 ownership and party model",
+      "relation": "REFERENCE",
+      "purpose": "Supply owner, holder and steward party identities and the authority basis for every access grant over this record.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Specialised item models (equipment, vehicle, device hardware, cultural artifact)",
+      "relation": "EXTEND",
+      "purpose": "Domain item models extend this instance core with their own semantics instead of duplicating identity, condition and custody.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "GS1 EPCIS 2.0 and Core Business Vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Align event capture, business step, disposition, read point and business location semantics; alignment only, no conformance claim.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "GS1 Digital Link URI Syntax 1.7.0",
+      "relation": "ALIGN",
+      "purpose": "Align the resolvable expression of an instance identifier (primary key plus serial qualifier) and resolver link types.",
+      "required": false,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "schema.org IndividualProduct",
+      "relation": "ALIGN",
+      "purpose": "Align the type/instance distinction and the serialNumber and itemCondition terms for web-facing publication.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "CIDOC CRM 7.1.3",
+      "relation": "ALIGN",
+      "purpose": "Align physical-thing, identifier, condition, keeper, owner, location and composition semantics for cultural and heritage items.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "W3C PROV-O",
+      "relation": "ALIGN",
+      "purpose": "Align provenance of statements about the item and the record-versus-thing distinction via specialization and attribution.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credentials Data Model 2.0",
+      "relation": "ALIGN",
+      "purpose": "Align issuer-signed attestations, validity windows, credential status and evidence attached to the item.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "IEC 63278-1:2023 Asset Administration Shell",
+      "relation": "ALIGN",
+      "purpose": "Align the digital representation of an asset instance and submodel-style grouping of instance properties for industrial exchange.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "IEC 61406-1:2022 Identification Link",
+      "relation": "ALIGN",
+      "purpose": "Align the requirement that a machine-readable, globally unique link is attached to the individual physical unit.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "ISO 22095:2020 Chain of custody",
+      "relation": "ALIGN",
+      "purpose": "Align custody terminology and make explicit which custody models preserve one-to-one identity.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Regulation (EU) 2024/1781 digital product passport regime",
+      "relation": "ALIGN",
+      "purpose": "Align passport payload, unique identifier and data carrier obligations where the item falls in scope of the EU regime.",
+      "required": false,
+      "source_refs": [
+        "SRC-013",
+        "SRC-015"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must name one owning package that masters item records and declare which fields are copies referenced from sibling models (type, place, party, assembly, stock).",
+        "The package must publish its identity policy: accepted identifier schemes, uniqueness scope, non-reuse guarantee and the fallback rule for locally minted identifiers.",
+        "The package must publish the versioned lifecycle state model, condition scales, disclosure view definitions and retention schedule it operates under, each with an effective-from timestamp.",
+        "The package must declare its stewardship binding to the ownership model, since every access grant over an item record derives from that authority."
+      ],
+      "namespace_guidance": "Use one stable namespace for item instance semantics (for example world.physicalItem) with bundle-level sub-namespaces mirroring the bundle identifiers. Do not create namespaces for storage projections; JSON, Markdown, Git, MongoDB and MCP bindings reuse the same namespace. External identifier namespaces (GS1 keys, ISO/IEC 15459 issuing agency codes, IEC 61406 identification links, AAS globalAssetId) are referenced, never re-minted locally.",
+      "registry_links": [
+        "Registry entry vr.wm-obj-001 with nav path NAV.PHY.OBJ.INST and domain tags PHY.OBJ.INST",
+        "Relation records to WM-OBJ-002, WM-OBJ-017, WM-OBJ-012, WM-OBJ-020, WM-OBJ-021, WM-OBJ-022 and WM-BLT-002 with their review states",
+        "Alignment register recording external standard, version, mapping strength and last validation date for each ALIGN link"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Normalise every timestamp to RFC 3339 with seconds and an explicit offset; retain the original local offset alongside any UTC normalisation and never drop it.",
+        "Canonicalise identifiers to the declared canonical form per scheme, retaining alternate syntaxes (EPC URI, GS1 Digital Link URI, plain string) as derived representations rather than separate identities.",
+        "Order event and observation collections by event time, breaking ties by event identifier, so canonical serialisations are stable across projections.",
+        "Represent absent knowledge as an explicit unknown with a reason, never as a default value, an empty string or a fabricated timestamp."
+      ],
+      "patch_rules": [
+        "Statements about the physical thing are appended as events; corrections create a correction event referencing the superseded event identifier and reason, and never overwrite it in place.",
+        "Record-level patches increment the record version and write an audit entry with actor, before/after values, authorisation basis and change timestamp.",
+        "Identity-affecting patches (identifier change, merge, split, continuity decision) require the authorised deciding role, attached evidence, and a documented reversal path.",
+        "Fields sourced from sibling models are refreshed by reference resolution, not by local edit; a local override must be flagged with a reason and an expiry."
+      ],
+      "compatibility_rules": [
+        "Adding a bundle, layer, finding, optional data element or new code value is a minor change; removing or narrowing one, or making an element required, is a breaking change requiring a new major version.",
+        "Vocabulary and scale changes are versioned and effective-dated; historical statements keep the scale version under which they were made.",
+        "External alignments are versioned against a named standard version; a new standard version does not implicitly change local semantics until the mapping is re-validated.",
+        "Published projections keep a snapshot per publication so downstream consumers can detect divergence rather than silently receiving reinterpreted data."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier for the item (manufacturer or registry serial identity under its issuing scheme, for example a GS1 instance key or an ISO/IEC 15459 unique item identifier)",
+        "Governed global identifier or IRI (GS1 Digital Link URI, IEC 61406 identification link, AAS globalAssetId, or another registered IRI)",
+        "UUID or ULID minted by the adopting Dimension, recorded with the reason no governed identifier was available",
+        "A date, a location, a model name or a holder name is never an identifier and must not be used as a surrogate key"
+      ],
+      "timestamp_rule": "All timestamps use RFC 3339 with seconds and an explicit numeric offset or 'Z'; '-00:00' is used only where the UTC instant is known but the local offset is not. Event time and record/ingestion time are stored separately and never conflated.",
+      "serial_naming_rule": "Serialised artifacts (certificates, receipts, reports, credentials, published snapshots) are named by issuer-assigned document identifier plus issue timestamp; where the issuer assigns none, use item master identifier plus artifact type plus RFC 3339 creation timestamp plus a monotonic sequence. Serial numbers are never reused, and superseded artifacts are retained with an end timestamp.",
+      "integrity_rule": "Every artifact carries a content digest, its issuer, and the time it was captured or published; artifacts referenced as evidence are immutable, and any revision is a new artifact linked to its predecessor. Digest mismatch invalidates dependent claims until re-verified."
+    },
+    "policies": [
+      "The record is not the thing: changes to the record and changes to the physical item are separate, separately timestamped and separately authorised.",
+      "No fabricated precision: unknown identity, whereabouts, custody or time is recorded as an explicit unknown with a reason, never inferred into a concrete value.",
+      "No second master: quantities, type specifications, place geometry, assembly structure, title and asset valuation are referenced from sibling models and never re-mastered here.",
+      "External standards are alignments; conformance is claimed only with test evidence recorded in the alignment register.",
+      "Instance identity is refused to matter with no individuating boundary; batch, bulk and fungible material are represented as quantities in the appropriate sibling model."
+    ],
+    "crud": {
+      "read": [
+        "Reads are scoped by bundle, layer, finding or artifact; the default for parties without a grant is deny for whereabouts, custody, holder identity and condition detail.",
+        "Derived current state (status, whereabouts, containment, custody) is read as a projection over the event stream, with the deriving observation always disclosed alongside the value.",
+        "Every external read of a published projection is logged with recipient, view identifier and timestamp."
+      ],
+      "create": [
+        "Creating an item record requires a passed individuation test and an identifier under an accepted scheme, or an explicit locally minted identifier with a recorded reason.",
+        "Creating a statement about the item requires an event time in RFC 3339 form and a resolvable asserting party or device.",
+        "Creation of a duplicate identifier is refused and raises a collision case rather than silently creating a second record."
+      ],
+      "update": [
+        "Physical facts are updated only by appending events; derived views are recomputed, not edited.",
+        "Record metadata updates increment the record version and write an audit entry; identity-affecting updates require the authorised deciding role and attached evidence.",
+        "Vocabulary-valued fields may only take values from the declared, versioned code list in force at the statement's event time."
+      ],
+      "delete": [
+        "Item records are not hard-deleted on end of life; they are transitioned to a terminal status and held under the retention schedule.",
+        "Erasure requests affecting personal data are resolved by pseudonymisation or restriction where a competing retention duty exists, with the decision and its basis recorded.",
+        "Hard deletion occurs only at retention expiry under the schedule, is performed by an authorised role, and leaves a tombstone recording the identifier, deletion time and basis."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Item record steward",
+        "responsibilities": [
+          "Accountable for the accuracy and completeness of the item record",
+          "Approves identity-affecting changes including merges, splits and continuity decisions",
+          "Maintains the binding to the ownership model that authorises access grants"
+        ]
+      },
+      {
+        "name": "Observer or capture agent",
+        "responsibilities": [
+          "Captures events, scans, sensor readings and location observations with correct event time and offset",
+          "Records observation source, device identity and precision",
+          "Flags rather than resolves contradictory observations"
+        ]
+      },
+      {
+        "name": "Custodian or holder",
+        "responsibilities": [
+          "Holds the item and acknowledges custody transfers",
+          "Reports condition at handover, loss, theft or damage",
+          "Requests and receives scoped disclosure views needed to operate the item"
+        ]
+      },
+      {
+        "name": "Assessor or verifier",
+        "responsibilities": [
+          "Performs condition assessments and authenticity verifications against named, versioned scales and methods",
+          "Issues or validates evidence and credentials with issuer, validity window and status",
+          "Records negative and inconclusive results rather than omitting them"
+        ]
+      },
+      {
+        "name": "Access and privacy administrator",
+        "responsibilities": [
+          "Defines and versions disclosure views, grants and exceptions",
+          "Operates the retention and privacy schedule and resolves erasure conflicts",
+          "Audits disclosures and correlation risk arising from publicly resolvable identifiers"
+        ]
+      },
+      {
+        "name": "Interoperability maintainer",
+        "responsibilities": [
+          "Maintains the alignment register against named external standard versions",
+          "Re-validates mappings on standard version drift and records conflicts",
+          "Governs outbound projections and detects divergence from published snapshots"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default outside the owning Dimension. Identity, type and lifecycle status may be exposed through an explicitly defined public view; whereabouts, containment, custody, holder identity, condition detail, evidence and provenance dossiers require an explicit, time-boxed grant derived from the ownership model.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Lawful requests from a competent authority or a court order, recorded with the instrument reference",
+        "Theft, loss or recovery investigations, limited to the fields needed to identify and locate the item",
+        "Safety recalls and regulatory product-passport disclosure duties, limited to the mandated field set",
+        "Emergency response where withholding location or hazardous-content data would create physical risk",
+        "Verification requests by a prospective holder, limited to identity, type, lifecycle status and authenticity result"
+      ],
+      "audit_requirements": [
+        "Every access grant, use, denial and revocation is logged with party, scope, basis and RFC 3339 timestamp",
+        "Every disclosure made under an exception records the instrument or basis, the recipient and the exact field set released",
+        "Audit records are immutable, retained independently of the item record's own retention clock, and reviewable by the steward and the privacy administrator",
+        "Publication of any external projection records a content digest so later divergence can be proven"
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Model ID and registry ID",
+        "Version and effective-from timestamp (RFC 3339)",
+        "Identity policy URL",
+        "Access and retention policy URL"
+      ],
+      "read_order": [
+        "AGENTS.md at the package root: identify Name, Type, Model ID and the four URLs before touching any data",
+        "Specification URL: read scope, boundaries and the bundle/layer/finding structure to learn what this model does and does not master",
+        "Storage type URL: learn the concrete projection (file tree, Git, MongoDB collection, MCP resource) and its canonicalisation rules",
+        "Interface URL: learn the read, capture, transfer and disclosure operations and their preconditions",
+        "Processes URL: learn the governed procedures for identity decisions, event correction, access grants, retention and external publication",
+        "Only then resolve sibling model references for type, place, party, assembly and stock"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model covers the identity, characterisation, state, whereabouts, custody, event, provenance and governance context an agent needs to operate records about individual physical things, grounded in GS1 EPCIS/CBV and Digital Link, ISO/IEC 15459, ISO 55000, ISO 22095, IEC 61406-1, IEC 63278-1, CIDOC CRM, schema.org, W3C PROV-O and Verifiable Credentials, RFC 3339 and the EU product-passport regime. It is deliberately incomplete where sources are paywalled, sector-specific or absent, and those points are recorded as gaps rather than filled by assertion.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Master identifier, issuing authority, uniqueness and non-reuse, physical marks and carriers, resolution, aliases and collision handling grounded in ISO/IEC 15459-4, GS1 Digital Link 1.7.0 and IEC 61406-1."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Governed status model with permitted transitions, persistent states, end of life and record retirement, aligned to EPCIS disposition/persistentDisposition and ISO 55000 life-cycle vocabulary."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Type link, assembly membership, containment, custody, ownership reference and lineage, each pointed at the model that masters it."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Event time versus record time, explicit offsets, intervals for imprecise time and an ordering rule, grounded in RFC 3339 and EPCIS eventTime/recordTime/eventTimeZoneOffset."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Origin, chain of custody, declared gaps, disputes and statement-level attribution via PROV-O and ISO 22095."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Custody is modelled here; title is referenced to the ownership model, matching the CIDOC CRM keeper/owner split. Encumbrances are captured as references only."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Resolution rules, single-open-custody and membership constraints, duplicate detection, credential status checks and conformance-claim evidence requirements."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny-by-default with bundle/layer/finding/artifact scopes, defined disclosure views, enumerated exceptions and audit obligations."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention schedule tied to terminal events, no hard delete on end of life, erasure-versus-traceability conflict handling and tombstones at retention expiry."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Versioned alignment register with mapping strength and drift detection, outbound projections with explicit binding level, and a rule against unproven conformance claims."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Instance-of-type reference with resolution confidence, deviations and an explicit unclassified path; type semantics stay in WM-OBJ-002/WM-OBJ-017."
+      },
+      {
+        "dimension": "composition",
+        "status": "covered",
+        "notes": "Assembly membership and containment modelled as periods; the assembly graph is mastered by WM-OBJ-012, and non-instance content is deliberately excluded from instance identity."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Measured properties with unit, method, instrument, uncertainty and separate measurement and record times."
+      },
+      {
+        "dimension": "evidence and quality",
+        "status": "covered",
+        "notes": "Evidence grading, credential status propagation, condition staleness thresholds and recorded conflict resolution."
+      },
+      {
+        "dimension": "spatial",
+        "status": "covered",
+        "notes": "Location statements distinguish read point from business location and carry precision and source; place identity and geometry are referenced to WM-BLT-002."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Tamper evidence, authenticity verification, cloned-identifier handling, grant revocation and correlation risk from publicly resolvable identifiers."
+      },
+      {
+        "dimension": "privacy",
+        "status": "covered",
+        "notes": "Personal-data linkage assessment, lawful basis and erasure conflict handling under GDPR as described by the European Commission."
+      },
+      {
+        "dimension": "exception handling",
+        "status": "covered",
+        "notes": "Every major finding carries an exception question: unknown status, custody gaps, contradictory fixes, verification failure, merge/split and disclosure exceptions."
+      },
+      {
+        "dimension": "financial valuation",
+        "status": "not-applicable",
+        "notes": "Value, depreciation and criticality are asset-management projections mastered by WM-OBJ-022; ISO 55000 frames value as organisation-relative, which would create a second identity if modelled here."
+      },
+      {
+        "dimension": "quantity and inventory",
+        "status": "not-applicable",
+        "notes": "Counts and stock positions are mastered by WM-OBJ-020; this model refuses to aggregate instances into quantities."
+      },
+      {
+        "dimension": "regulatory conformance testing",
+        "status": "gap",
+        "notes": "No conformance test was executed against EPCIS, AAS, Digital Link or DPP profiles in this research; all external relations are recorded as alignments only."
+      },
+      {
+        "dimension": "sector-specific instance identification",
+        "status": "gap",
+        "notes": "Vehicle VIN, medical-device UDI, aerospace serialisation and firearm marking regimes were not researched; scheme-specific constraints may add mandatory elements."
+      }
+    ],
+    "known_omissions": [
+      "ISO 55000:2024, ISO 22095:2020 and ISO/IEC 15459-4:2008 are paywalled; structure was derived from ISO catalogue scope and title metadata, not from clause text, so clause-level obligations may be missed.",
+      "The EUR-Lex text of Regulation (EU) 2024/1781 could not be rendered by the retrieval tool in this session; all product-passport statements rest on the European Commission's Digital Product Passport page, and article-level obligations (including whether a passport binds at model, batch or item level) are unverified here.",
+      "GS1 EPCIS 2.0 and CBV 2.0 normative PDFs could not be parsed; field-level grounding comes from the GS1 linked-data reference at ref.gs1.org/epcis/, corroborated by implementation documentation, so exact clause wording is not quoted.",
+      "Sector identification regimes (VIN, UDI, aerospace and defence item unique identification, firearms marking) were not researched and may impose mandatory identity elements.",
+      "Automatic data capture technology standards (RFID air interfaces, symbol quality grading) and metrology vocabulary for uncertainty were not consulted.",
+      "Animal and plant individual identification, and identification of persons, are excluded and unresearched.",
+      "Cultural-property specific provenance and restitution regimes were not researched beyond CIDOC CRM's structural vocabulary."
+    ],
+    "conflicts": [
+      "Instance identity has at least four competing governed namespaces: GS1 instance keys, ISO/IEC 15459 unique item identifiers under registered issuing agencies, IEC 61406 identification links and AAS global asset identifiers. None subsumes the others, so the model must carry multiple identifiers with an explicit priority rule rather than assume one canonical scheme.",
+      "schema.org itemCondition is a commerce enumeration attached to offers, while ISO 55000 and CIDOC CRM treat condition as an assessed state over a time-span. Publishing an engineering condition grade as itemCondition would lose the assessor, method and validity window.",
+      "ISO 55000 defines an asset as a value-bearing thing or entity for an organization, which can include portfolios, systems, software and people. Treating an item record as an asset record would create a second, value-relative identity for the same physical thing.",
+      "CIDOC CRM individuates physical things as units of documentation at whatever granularity the documenting institution chooses, while EPCIS expects one instance identifier per tracked object. The same physical thing can therefore be legitimately individuated differently by two conformant systems.",
+      "ISO 22095 mass-balance and controlled-blending custody models explicitly do not preserve one-to-one identity between input and output, so a chain-of-custody claim is not evidence of instance continuity even when it accompanies a serialised product.",
+      "RFC 3339 and ISO 8601 diverge on details such as the '-00:00' unknown-offset convention, and RFC 9557 extends RFC 3339 with time zone names; systems exchanging timestamps may interpret offsets differently.",
+      "No consulted source resolves identity continuity across component replacement or rebuild, so the continuity rule is a local policy decision and not a standards-backed fact."
+    ],
+    "regional_assumptions": [
+      "Digital product passport, unique product identifier, data carrier and registry obligations are EU-specific under Regulation (EU) 2024/1781; the Commission's registry became operational on 20 July 2026 and battery passports are indicated as mandatory from 18 February 2027. Non-EU jurisdictions have different or no equivalent duties.",
+      "GDPR-derived privacy and retention constraints assume EEA applicability; other jurisdictions apply different lawful bases, retention rules and erasure rights.",
+      "GS1 identification is globally scoped but voluntary and licence-based; sectors and national regimes mandate other schemes, so an item may have no GS1 key at all.",
+      "Custody, title and possession distinctions assume a legal system that separates them; specific transfer formalities, restitution claims and export controls are jurisdiction-dependent and out of scope here.",
+      "Condition grading scales are industry- and market-specific; no global scale was found, so scale identity and version must always accompany a grade."
+    ],
+    "adversarial_checks": [
+      "Ship of Theseus: after progressive replacement of every component, does the record still designate the same item? The model forces an explicit, versioned continuity policy and lineage links instead of an implicit answer, and marks the absence of a standards-backed rule as a gap.",
+      "Fungible counterexample: five hundred identical unmarked screws must not receive instance records. The individuation test and the quantity boundary finding refuse instance identity and redirect to the stock and batch models.",
+      "Cloned identifier: two physical things presenting one serial number must not silently merge. Resolution raises a collision case, authenticity verification can set a persistent suspected-counterfeit state, and neither record is deleted.",
+      "Passport level mismatch: a digital product passport may bind at model or batch level, so its presence must never be read as proof of instance identity; the exchange finding requires the binding level to be stated explicitly.",
+      "Asset conflation: an asset register entry covering a system or portfolio must not become a second master identity for one item; WM-OBJ-022 is held as a projection.",
+      "Never-observed item: an item known to exist but never scanned must be representable without inventing a location fix; unknown whereabouts is an explicit state with a last-known observation and an escalation rule.",
+      "Clock disorder: a record time earlier than its event time, or two events with identical timestamps, must not silently reorder history; the ordering rule and anomaly flag surface it.",
+      "Erasure versus traceability: a lawful erasure request that collides with a statutory retention or product-safety duty must produce a recorded decision (erase, restrict, pseudonymise or refuse), not a silent deletion or a silent refusal.",
+      "Destroyed item with live obligations: destruction must close the item's life without deleting the record, since warranty, recall, restitution and audit duties can outlive the thing."
+    ]
+  }
+}

@@ -1,0 +1,2363 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-037",
+    "model_id": "WM-XCT-037",
+    "name": "Dependency / Impact",
+    "entry_kind": "mixin",
+    "purpose": "Define the format-neutral contract by which typed dependency and downstream-impact assertions are projected into Git and files, Markdown, HTML, JSON, YAML, CSV, RDF, APIs, MCP, MongoDB and domain-standard carriers without silently losing assertion identity, direction, endpoint roles, conditions, evidence, time, lifecycle or derivation provenance.",
+    "scope_statement": "This bounded split area covers only the projection surface of the Dependency / Impact mixin: what a rendered representation of a dependency or impact assertion must preserve, how it must be canonicalised and ordered, how namespaces and terms are bound, which target formats provably cannot carry n-ary, conditional, temporal or uncertain semantics, how that loss is declared, how round-trip expectations and version compatibility are stated, and how a generation run is recorded. It does not define the dependency/impact assertion semantics themselves, nor does it own publication approval, endpoint mutation, access enforcement or audit-trail semantics.",
+    "in_scope": [
+      "Per-format expressivity mapping and mandatory machine-readable loss reporting for dependency and impact assertions",
+      "Canonical serialization, deterministic ordering, digest binding and identity carriage rules for projected assertions",
+      "Namespace, prefix and term binding declarations, including alignment bindings to domain-standard dependency carriers",
+      "Round-trip expectations, conformance corpora and verdicts for lossless and lossy projection pairs",
+      "Projection version compatibility classification and consumer-facing change declarations",
+      "Derivation provenance of a projection run, separating event time from observation and generation time"
+    ],
+    "out_of_scope": [
+      "The definition, typing, admission or retraction of dependency and impact assertions themselves (owned by the assertion-core split area of this model)",
+      "Publication approval, release sign-off and any workflow that authorises a projection to become externally visible",
+      "Mutation of dependency endpoints or of the subjects an assertion points at",
+      "Runtime evaluation, propagation or blast-radius computation of impact, and any enforcement engine acting on the result",
+      "Access-control decisioning and audit-trail record semantics for consumers of a projection",
+      "Storage engine administration, indexing strategy and query planning for any specific database or repository",
+      "Definition of the external vocabularies (SPDX, CycloneDX, PROV-O, schema.org) that this model only binds to as alignments"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Dependency / Impact assertion-core split area (same model)",
+        "distinction": "The core area owns the assertion's typed relation, endpoint roles, direction, conditions, confidence and lifecycle states. This area owns only how those already-defined properties survive a rendering into a target carrier, and must reference them rather than redefine them. Directionality with one `from` and one-or-many `to` endpoints, and completeness qualifiers, are taken from the aligned standard rather than invented here.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Publication / release-approval model of the adopting Dimension",
+        "distinction": "This model may produce a candidate projection package and declare its compatibility class, but the decision to publish, the approver identity and the approval record live outside. A generation function's effect ends at a stored candidate artifact; it never performs an HTTP or MCP write that exposes the projection.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-024"
+        ]
+      },
+      {
+        "neighbor": "Provenance model aligned to PROV-O",
+        "distinction": "This area carries a derivation reference (which source assertion revision a projection was generated from, by which activity, at which time) as a binding parameter. It does not reproduce PROV-O's entity/activity/agent lifecycle, qualified-influence machinery or agent responsibility semantics.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Access-control and audit model",
+        "distinction": "Projections carry a sensitivity marking and a redaction flag so that a downstream authoriser can act. Evaluating an authorisation request, enforcing it, and writing the audit record are owned elsewhere; naming an MCP or HTTP interface here does not grant this model enforcement or audit-trail ownership.",
+        "source_refs": [
+          "SRC-019",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Serialization standards themselves (JCS, JSON-LD, RDF 1.2, YAML, CommonMark, HTML, CSV)",
+        "distinction": "These are alignments, not conformance claims. This model states which clauses it depends on and records conflicts (for example CSV's absence of a formal standard, or RDF's inability to express n-ary relations directly) rather than asserting that a projection conforms.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-006",
+          "SRC-009",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Storage-engine and interface models (Git, MongoDB, HTTP API, MCP server)",
+        "distinction": "Git object addressing, BSON type fidelity, HTTP validators and MCP resource URIs are projection targets whose native rules this model must respect and cite, but whose administration, transport and connection lifecycle it does not model. No single one of them is canonical.",
+        "source_refs": [
+          "SRC-021",
+          "SRC-020",
+          "SRC-008",
+          "SRC-019"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "SPDX 3.0.1 Specification - Core Profile, Relationship class",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Relationship/",
+      "version_or_date": "v3.0.1",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Normative model of a directional relationship assertion with exactly one `from`, one-or-many `to`, `relationshipType`, `completeness`, `startTime` and `endTime`, plus NoneElement/NoAssertionElement rules. Grounds endpoint-role, direction and temporal preservation requirements."
+    },
+    {
+      "id": "SRC-002",
+      "title": "SPDX 3.0.1 Specification - RelationshipCompleteness vocabulary",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/RelationshipCompleteness/",
+      "version_or_date": "v3.0.1",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Defines complete / incomplete / noAssertion. Grounds the requirement that a projection distinguish 'no dependency' from 'no assertion made', which is the most common silent projection loss."
+    },
+    {
+      "id": "SRC-003",
+      "title": "SPDX 3.0.1 Specification - Serializations",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/serializations/",
+      "version_or_date": "v3.0.1",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "A domain standard that defines multiple parallel serializations (JSON-LD, Turtle, N-Triples, RDF/XML) plus a canonical serialization notion, while making no round-trip or loss statement - direct evidence that loss reporting must be added by the adopting model."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 8785: JSON Canonicalization Scheme (JCS)",
+      "organization": "RFC Editor (Independent Submission stream)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html",
+      "version_or_date": "June 2020, Informational",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Deterministic JSON canonicalization: recursive property sorting by UTF-16 code units, no inter-token whitespace, ECMAScript number serialization, I-JSON constraints. Grounds canonical-form and digest rules; its non-Standards-Track status is recorded as a conflict."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 6902: JavaScript Object Notation (JSON) Patch",
+      "organization": "IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc6902.html",
+      "version_or_date": "April 2013, Standards Track",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "add/remove/replace/move/copy/test operations over JSON Pointer paths with all-or-nothing application. Grounds the patch representation for projection-to-projection differences and for candidate change sets."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 4180: Common Format and MIME Type for Comma-Separated Values (CSV) Files",
+      "organization": "IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc4180.html",
+      "version_or_date": "October 2005, Informational",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Registers text/csv and documents that CSV has never been formally specified, admitting wide interpretation variance. Grounds the mandatory loss declaration and dialect pinning for tabular projections."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "organization": "IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+      "version_or_date": "July 2023, Standards Track",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "type/title/status/detail/instance plus extension members, and rules for registering new problem types. Grounds a machine-readable, extensible shape for loss and degradation reports surfaced over API projections."
+    },
+    {
+      "id": "SRC-008",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "IETF",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "June 2022, Internet Standard (STD 97)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "A resource may have multiple representations selected by proactive content negotiation, with Content-Type metadata and ETag validators. Grounds the 'projection is a representation, not the resource' principle and the read/write separation for API projections."
+    },
+    {
+      "id": "SRC-009",
+      "title": "RDF 1.2 Concepts and Abstract Syntax",
+      "organization": "W3C",
+      "url": "https://www.w3.org/TR/rdf12-concepts/",
+      "version_or_date": "Candidate Recommendation Snapshot, 07 April 2026",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Triple terms, rdf:reifies and reifiers allow statements about statements including non-asserted ones; the spec states that relations involving more than two entities can only be expressed indirectly. Grounds the RDF expressivity entry and the uncertainty/non-assertion mapping."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Defining N-ary Relations on the Semantic Web (W3C Working Group Note)",
+      "organization": "W3C Semantic Web Best Practices and Deployment Working Group",
+      "url": "https://www.w3.org/TR/swbp-n-aryRelations/",
+      "version_or_date": "12 April 2006, Working Group Note (informative)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Pattern 1 (a class for the relation instance) and Pattern 2 (lists) for relations carrying probability, severity or temporal qualifiers. Grounds the reified-assertion projection pattern used when a target format has only binary edges."
+    },
+    {
+      "id": "SRC-011",
+      "title": "JSON-LD 1.1: A JSON-based Serialization for Linked Data",
+      "organization": "W3C",
+      "url": "https://www.w3.org/TR/json-ld11/",
+      "version_or_date": "W3C Recommendation, 16 July 2020",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "@context term-to-IRI mapping, @id/@type/@graph, and explicitly enumerated features without direct RDF equivalents (@json literals, blank node predicates, @list ordering). Grounds namespace binding and the JSON↔RDF loss boundary."
+    },
+    {
+      "id": "SRC-012",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "W3C",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Entity/Activity/Agent with wasDerivedFrom, wasGeneratedBy, wasAttributedTo, wasRevisionOf, specializationOf, and qualified forms that attach attributes to an influence. Grounds derivation-provenance carriage for a projection run as an alignment only."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Model for Tabular Data and Metadata on the Web",
+      "organization": "W3C",
+      "url": "https://www.w3.org/TR/tabular-data-model/",
+      "version_or_date": "W3C Recommendation, 17 December 2015",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Table group/table/column/row/cell model with core and additional annotations; cells hold atomic or list values only, with no nested structures and no graph linking. Grounds the CSV expressivity ceiling and the sidecar-metadata requirement."
+    },
+    {
+      "id": "SRC-014",
+      "title": "YAML Ain't Markup Language (YAML) version 1.2.2",
+      "organization": "YAML Language Development Team",
+      "url": "https://yaml.org/spec/1.2.2/",
+      "version_or_date": "Revision 1.2.2, 1 October 2021",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "YAML 1.2 is a strict superset of JSON; anchor names are a serialization detail discarded after composing; indentation, styles and comments are presentation details that must not convey content. Grounds YAML round-trip limits and comment-loss declarations."
+    },
+    {
+      "id": "SRC-015",
+      "title": "CommonMark Spec",
+      "organization": "CommonMark",
+      "url": "https://spec.commonmark.org/0.31.2/",
+      "version_or_date": "Version 0.31.2, 28 January 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Unambiguous Markdown-to-AST/HTML parsing, seven HTML block types passed through as raw HTML, and no statement about round-tripping back from HTML. Grounds Markdown as a presentation-only, non-authoritative projection requiring an embedded machine block."
+    },
+    {
+      "id": "SRC-016",
+      "title": "HTML Standard - Microdata",
+      "organization": "WHATWG",
+      "url": "https://html.spec.whatwg.org/multipage/microdata.html",
+      "version_or_date": "Living Standard, 4 September 2026",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "itemscope/itemtype/itemid/itemprop/itemref and the microdata-to-JSON algorithm; properties are unordered except among same-named properties. Grounds embedding machine-readable assertion identity and endpoint roles in HTML projections and the ordering caveat."
+    },
+    {
+      "id": "SRC-017",
+      "title": "OpenAPI Specification v3.1.1",
+      "organization": "OpenAPI Initiative (The Linux Foundation)",
+      "url": "https://spec.openapis.org/oas/v3.1.1.html",
+      "version_or_date": "3.1.1, 24 October 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Media-type keyed content maps with most-specific-key selection, Schema Object as a superset of JSON Schema 2020-12, and separation of specification version, document version and API version. Grounds API projection description and three-way version distinction."
+    },
+    {
+      "id": "SRC-018",
+      "title": "Model Context Protocol - Versioning",
+      "organization": "Model Context Protocol project",
+      "url": "https://modelcontextprotocol.io/specification/versioning",
+      "version_or_date": "Current protocol version 2026-07-28",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Date-string protocol versions incremented only on backwards-incompatible change, per-request protocolVersion declaration, UnsupportedProtocolVersionError and a documented deprecation window. Grounds compatibility declarations for MCP projections."
+    },
+    {
+      "id": "SRC-019",
+      "title": "Model Context Protocol - Server Features: Resources",
+      "organization": "Model Context Protocol project",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/resources",
+      "version_or_date": "Revision 2026-07-28",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "RFC 3986 resource URIs, resources/list pagination cursors, mimeType, text vs base64 blob contents, subscriptions, and the rule that an empty contents array must not be returned for a non-existent resource. Grounds MCP projection addressing and ambiguity avoidance."
+    },
+    {
+      "id": "SRC-020",
+      "title": "MongoDB Extended JSON (v2)",
+      "organization": "MongoDB, Inc.",
+      "url": "https://www.mongodb.com/docs/manual/reference/mongodb-extended-json/",
+      "version_or_date": "MongoDB Manual v8.3 (Current)",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Canonical mode preserves BSON type information while relaxed mode loses Int32/Int64/Double distinctions and date precision context. Grounds the document-store projection mode requirement and its declared loss."
+    },
+    {
+      "id": "SRC-021",
+      "title": "gitattributes - Defining attributes per path",
+      "organization": "Git project (git-scm.com)",
+      "url": "https://git-scm.com/docs/gitattributes",
+      "version_or_date": "Git documentation, current",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "text/eol normalization, diff and merge drivers, and clean/smudge filters with the explicit idempotence requirement that clean→clean equals clean and smudge→smudge→clean equals clean. Grounds byte-stability and round-trip rules for file/Git projections."
+    },
+    {
+      "id": "SRC-022",
+      "title": "Pro Git - Git Internals: Git Objects",
+      "organization": "Git community (Chacon & Straub)",
+      "url": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+      "version_or_date": "Pro Git, 2nd edition (online)",
+      "source_type": "secondary",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "Content-addressable blob/tree/commit objects where the hash is both identity and integrity check, forming an immutable DAG. Used to explain why a Git projection's commit identity is a carrier identifier, not the assertion identifier."
+    },
+    {
+      "id": "SRC-023",
+      "title": "ECMA-424: CycloneDX Bill of Materials Standard",
+      "organization": "Ecma International",
+      "url": "https://ecma-international.org/publications-and-standards/standards/ecma-424/",
+      "version_or_date": "2nd edition, December 2025 (CycloneDX v1.7)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "An independent, formally standardised domain carrier for component dependency information and supply-chain relationships. Used as a second, non-SPDX domain-standard projection target so no single vendor or consortium format is treated as canonical."
+    },
+    {
+      "id": "SRC-024",
+      "title": "Semantic Versioning 2.0.0",
+      "organization": "Semantic Versioning (semver.org)",
+      "url": "https://semver.org/",
+      "version_or_date": "2.0.0",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T10:00:00Z",
+      "relevance": "MAJOR/MINOR/PATCH increment rules, with rule 8 requiring a MAJOR increment for any backward-incompatible public-API change. Grounds the compatibility class assigned to a projection schema change."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "dep-proj-fidelity-bundle",
+        "name": "Projection Fidelity and Expressivity Contract",
+        "description": "What a rendering of a dependency or impact assertion must preserve, how it is canonicalised and ordered, which target formats cannot carry the full semantics, how that shortfall is declared, and how terms and namespaces are bound to external vocabularies.",
+        "rationale": "Dependency and impact assertions are minimally a directional relation with one source endpoint, one or more target endpoints, a relation type, a completeness qualifier and optional start/end times (SRC-001, SRC-002). Most carriers cannot hold that shape: RDF can express relations over more than two entities only indirectly (SRC-009), CSV cells hold only atomic or list values with no nesting and no graph links (SRC-013), and CSV itself has never been formally specified (SRC-006). A fidelity contract is therefore required before any format is emitted, so that loss is declared rather than discovered.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-006",
+          "SRC-009",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "dep-proj-invariants-layer",
+            "name": "Projection Invariants and Canonical Form",
+            "description": "The properties of an assertion that every projection must carry regardless of format, and the deterministic byte-level form used to identify, compare and digest a projection.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-016",
+              "SRC-021"
+            ],
+            "findings": [
+              {
+                "id": "dep-proj-assertion-identity-carry",
+                "name": "Assertion identity, direction and endpoint-role carriage",
+                "description": "Every projection must carry a resolvable assertion identifier, the assertion's revision, the direction of the relation, and the role of each endpoint (single source endpoint versus one or more target endpoints), so that a consumer can rejoin the projection to the authoritative assertion without re-deriving it. Where the target format has no place for these, the projection must nominate a sidecar or embedded machine block rather than dropping them.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-011",
+                  "SRC-016",
+                  "SRC-019"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-identity-carrier",
+                    "text": "Which field, attribute or URI in each target format carries the authoritative assertion identifier, and is it dereferenceable?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Target format code",
+                      "Carrier path expression (JSON Pointer, XPath, column name, itemid attribute, resource URI)",
+                      "Dereferenceable flag",
+                      "Resolution base IRI"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-endpoint-roles",
+                    "text": "How does the projection distinguish the single source endpoint from the one-or-many target endpoints when the carrier only has undirected or symmetric structures?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Source endpoint reference",
+                      "Ordered target endpoint reference list",
+                      "Role label vocabulary term",
+                      "Direction encoding strategy"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-nonassertion-encoding",
+                    "text": "How is 'no dependency exists' encoded distinctly from 'no assertion is being made' in each carrier?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Completeness code (complete, incomplete, noAssertion)",
+                      "None-endpoint sentinel encoding",
+                      "No-assertion sentinel encoding",
+                      "Carrier-specific null-handling note"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-carrier-vs-assertion-id",
+                    "text": "When a carrier assigns its own identifier, such as a Git object hash or a document primary key, which identifier is authoritative for the assertion?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Carrier-assigned identifier",
+                      "Authoritative assertion identifier",
+                      "Precedence rule statement",
+                      "Mapping record reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-invariant-verification",
+                    "text": "What check confirms that all mandatory invariants survived a given rendering before it is stored?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Invariant checklist identifier",
+                      "Per-invariant pass or fail result",
+                      "Failing invariant list",
+                      "Verification timestamp"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-assertion-ref",
+                    "name": "Projected assertion reference",
+                    "description": "Reference to the authoritative dependency/impact assertion and its revision that this projection renders.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-endpoint-role-binding",
+                    "name": "Endpoint role binding",
+                    "description": "Mapping from each assertion endpoint and its role (source or target) to the concrete location in the target format that carries it.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-direction-encoding",
+                    "name": "Direction encoding strategy",
+                    "description": "Coded strategy used to preserve relation direction in the carrier (native directed edge, role-named property, reified relation node, ordered column pair).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-completeness-carrier",
+                    "name": "Completeness qualifier carrier",
+                    "description": "Where the complete / incomplete / noAssertion qualifier is placed in the projection, or the declared reason it cannot be placed.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-identity-binding-map",
+                    "name": "Projection Identity Binding Map",
+                    "description": "Per-format table binding assertion identifier, revision, direction, endpoint roles and completeness qualifier to concrete carrier locations, including the sidecar or embedded block used where the carrier has no native slot.",
+                    "media_or_form": [
+                      "structured field-binding table",
+                      "embedded machine-readable block (JSON-LD @context plus @id, or HTML microdata itemid/itemprop)",
+                      "sidecar metadata descriptor"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the adopting Dimension's authoritative binding-map identifier; where none exists, a governed IRI formed from the model namespace and the target format code, with the map revision recorded separately.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-016",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-proj-canonical-form",
+                "name": "Canonical form, deterministic ordering and integrity digest",
+                "description": "The deterministic serialization used to compare, digest and sign a projection: recursive key ordering, whitespace suppression, number and string normalisation, a declared collation for collection ordering, and a content digest that binds the bytes. Canonical form exists for comparison and integrity, not as the published presentation form.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003",
+                  "SRC-021",
+                  "SRC-022"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-canonical-algorithm",
+                    "text": "Which canonicalization algorithm and version applies to this projection profile, and what is its normative status?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Canonicalization algorithm identifier",
+                      "Algorithm version or RFC reference",
+                      "Normative status note (standards-track versus informational)",
+                      "Deviation list"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-collection-ordering",
+                    "text": "What total order is applied to the target-endpoint list and to any repeated structures, and which collation is used?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Sort key expression",
+                      "Collation identifier (for example UTF-16 code-unit order)",
+                      "Tie-break rule",
+                      "Stability guarantee statement"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-digest-binding",
+                    "text": "Which digest algorithm binds the canonical bytes, and what exactly is covered by the digest?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Digest algorithm identifier",
+                      "Digest value",
+                      "Covered byte range or component list",
+                      "Digest computation time"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-byte-stability",
+                    "text": "How are line endings, encoding and trailing bytes fixed so that the same input yields identical bytes on every platform?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Character encoding declaration",
+                      "Line-ending policy",
+                      "Trailing-newline rule",
+                      "Idempotence test result for repeated generation"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-canonical-scope",
+                    "text": "Is the canonical form the published form, and if not which transformation produces the published form?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Published form code",
+                      "Transformation identifier applied after canonicalization",
+                      "Reversibility flag",
+                      "Rationale note"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-canonical-algorithm",
+                    "name": "Canonicalization algorithm binding",
+                    "description": "Identifier and version of the canonicalization rule set applied, with any declared deviations.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-order-key",
+                    "name": "Ordering key and collation",
+                    "description": "The declared sort key, collation and tie-break used to impose a total order on projected collections.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-content-digest",
+                    "name": "Canonical content digest",
+                    "description": "Algorithm-qualified digest over the canonical byte sequence, used as the integrity and comparison handle for the projection.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-022",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-encoding-policy",
+                    "name": "Encoding and byte-stability policy",
+                    "description": "Character encoding, line-ending normalisation and trailing-byte rules that make repeated generation byte-identical.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-021"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-canonical-serialization",
+                    "name": "Canonical Projection Serialization",
+                    "description": "The deterministic byte sequence produced for a specific assertion set, target profile and profile version, retained as the comparison and digest basis for the corresponding published projection.",
+                    "media_or_form": [
+                      "deterministic byte stream",
+                      "canonical JSON (sorted keys, no inter-token whitespace)",
+                      "canonical RDF serialization",
+                      "content-addressed repository object"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by its algorithm-qualified content digest; where the adopting Dimension operates an authoritative artifact register, the register identifier takes precedence and the digest is retained as the integrity claim.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-022"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-proj-expressivity-layer",
+            "name": "Expressivity Mapping, Loss Declaration and Round-Trip",
+            "description": "The per-format capability assessment for n-ary, conditional, temporal and uncertain assertion semantics, the mandatory machine-readable loss report when a format falls short, and the round-trip expectation attached to each projection pair.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-009",
+              "SRC-010",
+              "SRC-013",
+              "SRC-014",
+              "SRC-020"
+            ],
+            "findings": [
+              {
+                "id": "dep-proj-capability-matrix",
+                "name": "Per-format expressivity capability assessment",
+                "description": "For each target format, a recorded assessment of whether it can natively express relations over more than two entities, conditions or guards on an assertion, validity intervals, and uncertainty or non-assertion - and if not, which documented workaround pattern is mandated. RDF expresses relations over more than two entities only indirectly; CSV cells hold only atomic or list values; YAML discards anchors, comments and style as presentation detail; document stores lose numeric and date type distinctions in relaxed mode.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-013",
+                  "SRC-014",
+                  "SRC-020",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-nary-support",
+                    "text": "Can this format natively express an assertion linking a source endpoint to several target endpoints, and if not which reification or relation-class pattern is mandated?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Format code",
+                      "Native n-ary support flag",
+                      "Mandated workaround pattern code (relation-class node, reifier triple, list, join table)",
+                      "Reference to pattern definition"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-conditional-support",
+                    "text": "How are conditions or guards that qualify an assertion represented, and what happens to them when the carrier has no slot?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Condition carrier path",
+                      "Representation strategy code",
+                      "Degradation behaviour code (retain, sidecar, drop-with-report)",
+                      "Consumer warning text"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-temporal-support",
+                    "text": "Which time semantics can this format carry: validity interval endpoints, event time, and observation or generation time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Validity start support flag",
+                      "Validity end support flag",
+                      "Event time support flag",
+                      "Observation or generation time support flag",
+                      "Timestamp encoding rule"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-uncertainty-support",
+                    "text": "How is confidence, inference status or explicit non-assertion represented without a consumer reading it as a firm claim?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Confidence encoding strategy",
+                      "Asserted versus non-asserted marker",
+                      "Completeness qualifier placement",
+                      "Consumer interpretation note"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-capability-evidence",
+                    "text": "Which specification clause supports each capability verdict, and when was that clause last checked?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Specification reference URL",
+                      "Clause or section identifier",
+                      "Specification version or date",
+                      "Verdict review timestamp"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-format-code",
+                    "name": "Target format code",
+                    "description": "Coded identifier of the projection target (files and Git, Markdown, HTML, JSON, YAML, CSV, RDF, HTTP API, MCP, document store, domain-standard carrier).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-019",
+                      "SRC-023"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-capability-verdict",
+                    "name": "Capability verdict",
+                    "description": "Per semantic dimension (n-ary, conditional, temporal, uncertainty, provenance), a verdict of native, workaround-required or unsupported.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-workaround-pattern",
+                    "name": "Mandated workaround pattern",
+                    "description": "The documented pattern to be used where support is not native, such as a relation-class node or a reifying triple.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-capability-evidence-ref",
+                    "name": "Capability evidence reference",
+                    "description": "Specification URL, clause and version supporting each verdict, with the date the clause was last verified.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-020"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-capability-matrix",
+                    "name": "Projection Capability Matrix",
+                    "description": "Versioned matrix of target formats against the semantic dimensions of a dependency/impact assertion, recording native support, mandated workaround, or unsupported, each with a citation to the governing specification clause and version.",
+                    "media_or_form": [
+                      "versioned decision matrix",
+                      "tabular record with per-cell citations",
+                      "machine-readable capability descriptor"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the adopting Dimension's authoritative matrix identifier; otherwise a governed IRI under the model namespace, with revisions distinguished by a monotonically increasing revision counter rather than by publication date.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-013",
+                      "SRC-020"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-proj-loss-report",
+                "name": "Mandatory projection loss report",
+                "description": "A machine-readable report emitted with every projection whose target format cannot carry the full assertion semantics, naming each dropped or degraded element, the reason, the severity, and where the omitted content can still be obtained. A projection into a lossy format is only valid when accompanied by this report; silent degradation is a defect.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-006",
+                  "SRC-013",
+                  "SRC-020",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-loss-inventory",
+                    "text": "Which specific assertion elements were dropped, flattened or coerced in this rendering, and at which path?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Dropped element path list",
+                      "Degradation kind code (dropped, flattened, coerced, truncated, sentinel-substituted)",
+                      "Original value reference",
+                      "Occurrence count"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-loss-severity",
+                    "text": "How severe is each loss for a consumer making an impact decision from this projection?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Severity code",
+                      "Affected decision class",
+                      "Safe-use statement",
+                      "Unsafe-use warning"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-loss-recovery",
+                    "text": "Where can a consumer obtain the omitted content, and is that route available to the same audience as the projection?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Recovery locator or IRI",
+                      "Recovery format code",
+                      "Audience equivalence flag",
+                      "Fallback instruction"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-loss-report-shape",
+                    "text": "What is the wire shape of the loss report and how is it correlated with the projection it describes?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Report media type",
+                      "Problem type IRI",
+                      "Correlation key (projection digest or run identifier)",
+                      "Extension member list"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-loss-threshold",
+                    "text": "Which losses block emission outright rather than being reported and accepted?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Blocking loss class list",
+                      "Threshold rule expression",
+                      "Override request reference",
+                      "Override decision owner reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-loss-entry",
+                    "name": "Loss entry",
+                    "description": "One recorded degradation: the source path, the degradation kind, the reason clause, the severity and the occurrence count.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-loss-type-iri",
+                    "name": "Loss problem type identifier",
+                    "description": "Stable IRI identifying the class of loss, resolvable to human-readable documentation of its cause and consequences.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-recovery-locator",
+                    "name": "Omitted-content recovery locator",
+                    "description": "Locator for a representation that still carries the omitted content, plus a flag indicating whether the same audience can reach it.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-lossless-claim",
+                    "name": "Lossless claim flag",
+                    "description": "Explicit boolean asserting that no semantic element was dropped or degraded; must be false whenever any loss entry exists.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-loss-report",
+                    "name": "Projection Loss Report",
+                    "description": "Machine-readable report accompanying a projection run, listing every dropped, flattened, coerced or sentinel-substituted element with a stable problem-type identifier, severity, recovery locator and correlation to the projection digest.",
+                    "media_or_form": [
+                      "problem-details style JSON document with extension members",
+                      "sidecar report file adjacent to the projection",
+                      "API error or warning payload"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the projection run identifier it is correlated with, which itself derives from the adopting Dimension's authoritative run register; the canonical digest of the described projection is carried as a correlation key, not as the report identifier.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-proj-roundtrip-conformance",
+                "name": "Round-trip expectation and conformance verdict",
+                "description": "For each projection profile, the declared round-trip class - byte-lossless, semantics-lossless, one-way presentational, or not round-trippable - and the corpus-based test that substantiates it. Filter and rendering pipelines must be idempotent, and a claim of losslessness requires a passing verdict, not an assumption.",
+                "source_refs": [
+                  "SRC-021",
+                  "SRC-014",
+                  "SRC-015",
+                  "SRC-004",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-roundtrip-class",
+                    "text": "What round-trip class is claimed for this projection profile, and is the claim symmetric in both directions?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Round-trip class code",
+                      "Forward direction claim",
+                      "Reverse direction claim",
+                      "Asymmetry note"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-roundtrip-comparator",
+                    "text": "What comparison decides whether a round trip succeeded: byte equality, canonical digest equality or semantic equivalence?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Comparator code",
+                      "Canonicalization step applied before comparison",
+                      "Tolerated difference list",
+                      "Comparison result"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-roundtrip-corpus",
+                    "text": "Which test corpus exercises the hard cases - multi-target assertions, conditional assertions, open intervals and explicit non-assertions?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Corpus identifier and revision",
+                      "Case count by semantic dimension",
+                      "Coverage gap list",
+                      "Last execution timestamp"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-idempotence",
+                    "text": "Is repeated application of the rendering and parsing filters idempotent, and what evidence shows it?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Idempotence test result",
+                      "Repeated-application difference report",
+                      "Filter identifier and version",
+                      "Known non-idempotent step list"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-roundtrip-failure-handling",
+                    "text": "What happens when a profile that previously claimed losslessness fails its round-trip test?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Failure verdict record reference",
+                      "Claim downgrade action",
+                      "Consumer notification requirement",
+                      "Owner responsible for the downgrade decision"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-roundtrip-class",
+                    "name": "Round-trip class",
+                    "description": "Declared class for the projection pair: byte-lossless, semantics-lossless, one-way presentational, or not round-trippable.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-comparator",
+                    "name": "Round-trip comparator",
+                    "description": "The comparison basis used to judge round-trip success, including the canonicalization applied before comparison.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-conformance-verdict",
+                    "name": "Conformance verdict",
+                    "description": "Pass, fail or partial verdict for a corpus execution against a named profile revision, with the failing case list.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-idempotence-result",
+                    "name": "Filter idempotence result",
+                    "description": "Result of applying the rendering and parsing filters repeatedly, confirming that repeated application does not alter the output.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-021"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-roundtrip-corpus",
+                    "name": "Round-Trip Conformance Corpus",
+                    "description": "Curated set of dependency and impact assertion cases covering multi-target, conditional, open-interval, uncertain and explicitly non-asserted forms, held with the expected projection output for each declared profile.",
+                    "media_or_form": [
+                      "versioned test case collection",
+                      "paired input and expected-output fixtures",
+                      "corpus manifest"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the adopting Dimension's authoritative corpus register identifier; otherwise a governed IRI under the model namespace with a monotonic revision counter.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-art-roundtrip-verdict",
+                    "name": "Round-Trip Conformance Verdict",
+                    "description": "Record of one corpus execution against one profile revision, stating comparator, per-case outcome, idempotence result and the resulting round-trip class claim.",
+                    "media_or_form": [
+                      "structured verdict record",
+                      "conformance summary report"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the run identifier issued by the adopting Dimension's execution register, with the corpus revision and profile revision recorded as attributes rather than embedded in the identifier.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-021"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-proj-binding-layer",
+            "name": "Namespace, Term and Domain-Standard Binding",
+            "description": "How local assertion terms are bound to stable global identifiers in each carrier, and how the projection declares alignment to independent domain standards for dependency information without asserting conformance to them.",
+            "source_refs": [
+              "SRC-011",
+              "SRC-001",
+              "SRC-023",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "dep-proj-namespace-binding",
+                "name": "Namespace, prefix and term binding declaration",
+                "description": "The declared mapping from local assertion terms to stable global identifiers, the prefixes used, the resolution base, and the versioning of the mapping itself. A projection must declare its term bindings explicitly so that two projections emitted at different times cannot silently disagree about what a term means.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-016",
+                  "SRC-009",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-term-mapping",
+                    "text": "Which global identifier does each local relation type, endpoint role and qualifier map to in this projection profile?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Local term name",
+                      "Target IRI",
+                      "Mapping kind (exact, broader, narrower, no match)",
+                      "Vocabulary version"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-prefix-governance",
+                    "text": "Which prefixes are bound in this profile, and who governs the namespaces they abbreviate?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Prefix string",
+                      "Namespace IRI",
+                      "Governing organisation",
+                      "Namespace stability statement"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-unmapped-terms",
+                    "text": "How are local terms with no global counterpart emitted so that consumers do not mistake them for standard terms?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Unmapped term list",
+                      "Local namespace IRI used",
+                      "Consumer handling instruction",
+                      "Escalation route for adding a mapping"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-context-versioning",
+                    "text": "How is a change to the term binding map versioned and correlated with previously emitted projections?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Binding map revision identifier",
+                      "Change classification",
+                      "Affected projection profile list",
+                      "Superseded binding reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-term-binding",
+                    "name": "Term binding entry",
+                    "description": "One local term mapped to a target IRI with an explicit mapping kind and the source vocabulary version.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-prefix-binding",
+                    "name": "Prefix binding",
+                    "description": "Prefix string bound to a namespace IRI, with the governing organisation and stability statement recorded.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-resolution-base",
+                    "name": "Resolution base IRI",
+                    "description": "Base IRI against which relative references in the projection are resolved.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-binding-revision",
+                    "name": "Binding map revision",
+                    "description": "Monotonic revision identifier of the binding map applied to a given projection run.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-namespace-binding-map",
+                    "name": "Projection Namespace and Term Binding Map",
+                    "description": "Machine-readable declaration of prefixes, namespace IRIs, resolution base and per-term mappings used when rendering dependency and impact assertions into a semantic or tabular carrier, including explicit handling for terms with no global counterpart.",
+                    "media_or_form": [
+                      "linked-data context document",
+                      "tabular metadata descriptor for columnar carriers",
+                      "prefix and vocabulary manifest"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the authoritative namespace-registry identifier of the adopting Dimension where one exists; otherwise a governed IRI under the model namespace, with revisions carried in a separate revision attribute.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-proj-domain-standard-profile",
+                "name": "Domain-standard carrier alignment",
+                "description": "Declared alignments between this model's dependency and impact assertions and independent domain standards for dependency information, recorded as bindings and mapping gaps rather than as conformance claims. At least two independently governed carriers are recognised so that no single consortium format is treated as canonical.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-023",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-standard-selection",
+                    "text": "Which domain standards are recognised as carriers for these assertions, and which independent bodies govern each?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Standard identifier and edition",
+                      "Governing organisation",
+                      "Carrier scope statement",
+                      "Selection rationale"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-relation-type-mapping",
+                    "text": "How does each local relation type map onto the target standard's relationship vocabulary, and which types have no counterpart?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Local relation type",
+                      "Target vocabulary term",
+                      "Mapping kind",
+                      "Unmapped type list with reason"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-alignment-conflicts",
+                    "text": "Where do two recognised standards disagree about direction, cardinality or completeness semantics for the same relation?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Conflicting standard pair",
+                      "Conflict description",
+                      "Affected assertion property",
+                      "Resolution or non-resolution statement"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-conformance-evidence",
+                    "text": "What evidence would be required before claiming conformance rather than alignment to a domain standard?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Required test suite reference",
+                      "Certification or self-attestation route",
+                      "Current claim level (alignment only)",
+                      "Evidence gap list"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-standard-binding",
+                    "name": "Domain standard binding",
+                    "description": "Reference to a recognised domain standard, its edition, its governing body and the profile subset this model binds to.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-023"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-relation-type-map",
+                    "name": "Relation type mapping entry",
+                    "description": "Local relation type mapped to a target-standard vocabulary term with an explicit mapping kind, including no-match entries.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-alignment-conflict",
+                    "name": "Alignment conflict record",
+                    "description": "Recorded disagreement between two recognised standards about direction, cardinality or completeness for the same relation concept.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-023"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-claim-level",
+                    "name": "Standard claim level",
+                    "description": "Explicit claim level for each binding: alignment, partial conformance with evidence, or conformance with cited test results.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding produces no artifact of its own. It is a set of reference declarations pointing at externally governed vocabularies whose definitions, versions and change control belong to the issuing standards bodies. Materialising a local copy of a domain-standard vocabulary would create a second, unauthoritative source of relation-type meaning that would drift from the upstream edition, and would breach the alignment-not-conformance rule by implying local ownership of terms this model only references. The binding parameters - standard reference, edition, mapped term, mapping kind, conflict note and claim level - are small, purely referential values that belong inline on the projection profile; the concrete carrier documents they enable are produced by the projection run, not by this finding."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dep-proj-operation-bundle",
+        "name": "Projection Generation and Compatibility Control",
+        "description": "How a projection run is executed and recorded as derived output with its own provenance and timing, and how changes to a projection profile are classified and declared to consumers - with generation deliberately separated from publication approval and from any mutation of the assertion endpoints.",
+        "rationale": "A projection is a representation of a resource, and one resource may have many representations selected per request (SRC-008); the representation is therefore derived, never authoritative. Derivation of one entity from another, by an activity, at a time, is exactly what PROV-O models (SRC-012), and consumer-visible compatibility is governed by the increment rules of semantic versioning (SRC-024) and by date-stamped protocol revisions that change only on backwards-incompatible change (SRC-018). Recording the run and the compatibility class is in scope; approving release and writing to endpoints is not.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-012",
+          "SRC-018",
+          "SRC-024"
+        ],
+        "layers": [
+          {
+            "id": "dep-proj-generation-layer",
+            "name": "Generation Run and Derivation Provenance",
+            "description": "The record of a single projection generation: inputs, profile, agent, event time versus generation and observation time, digest, verdicts, and the explicit statement that the run produced a candidate only.",
+            "source_refs": [
+              "SRC-012",
+              "SRC-008",
+              "SRC-022",
+              "SRC-019"
+            ],
+            "findings": [
+              {
+                "id": "dep-proj-generation-run",
+                "name": "Projection run record and derivation provenance",
+                "description": "One record per generation, binding the source assertion revision, the profile and binding-map revisions, the executing agent, the canonical digest, the loss report and the round-trip verdict, and distinguishing the time the underlying assertion held from the time it was observed and the time the projection bytes were produced. The record's effect ends at a stored candidate; it neither publishes nor mutates any endpoint.",
+                "source_refs": [
+                  "SRC-012",
+                  "SRC-008",
+                  "SRC-019",
+                  "SRC-022"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-run-inputs",
+                    "text": "Exactly which assertion revision, profile revision and binding-map revision were consumed by this run?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Source assertion revision reference",
+                      "Projection profile revision",
+                      "Binding map revision",
+                      "Capability matrix revision"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-run-times",
+                    "text": "How are the assertion's own validity time, the observation time and the generation time recorded separately in this run?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Assertion validity interval",
+                      "Observation or ingestion timestamp",
+                      "Generation start timestamp",
+                      "Generation completion timestamp"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-run-agent",
+                    "text": "Which agent executed the run and under whose delegated authority?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Executing agent identifier",
+                      "Agent kind (software, person, organisation)",
+                      "Delegating owner reference",
+                      "Software version"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-run-outcome",
+                    "text": "What is the run's outcome state, and which candidate artifacts did it produce?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Run outcome code (succeeded, degraded, failed)",
+                      "Produced artifact digest list",
+                      "Loss report reference",
+                      "Round-trip verdict reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-run-boundary",
+                    "text": "What confirms that the run performed no publication and no endpoint mutation?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Write-target allowlist",
+                      "Attempted-write rejection count",
+                      "Candidate storage location",
+                      "Handoff reference to the approving owner"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-run-id",
+                    "name": "Projection run identifier",
+                    "description": "Identifier of a single generation execution, issued by the adopting Dimension's authoritative run register.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-derived-from",
+                    "name": "Derived-from reference",
+                    "description": "Reference to the source assertion revision the projection was derived from, expressed as a derivation link rather than a copy.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-generation-time",
+                    "name": "Generation timestamp",
+                    "description": "Time at which the projection bytes were produced, recorded separately from the assertion's validity interval and from the observation time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-observation-time",
+                    "name": "Observation or ingestion timestamp",
+                    "description": "Time at which the source assertion state used by the run was observed or ingested, where this differs from the assertion's own validity time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-run-outcome",
+                    "name": "Run outcome",
+                    "description": "Coded outcome of the run and the references to the loss report and round-trip verdict it produced.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-019"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-run-record",
+                    "name": "Projection Run Record",
+                    "description": "Immutable record of one generation execution: inputs and their revisions, executing agent, the three time values, produced candidate digests, loss report and verdict references, and the write-target allowlist proving that no publication or endpoint mutation occurred.",
+                    "media_or_form": [
+                      "structured provenance record",
+                      "append-only run log entry",
+                      "content-addressed repository object"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the run identifier from the adopting Dimension's authoritative run register; where no such register exists, a ULID assigned at run start, with the produced-artifact digests recorded as attributes and never used as the run identifier.",
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-022"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-proj-compatibility-layer",
+            "name": "Profile Versioning and Consumer Compatibility",
+            "description": "How a change to a projection profile, binding map or capability matrix is classified for consumer impact, declared, and negotiated at read time.",
+            "source_refs": [
+              "SRC-024",
+              "SRC-018",
+              "SRC-017",
+              "SRC-005",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "dep-proj-version-compatibility",
+                "name": "Projection profile version and compatibility declaration",
+                "description": "The versioning contract for a projection profile: a compatibility class assigned to every change, the distinction between the profile version, the underlying specification version and the version of the assertion content described, the machine-readable change set, and the negotiation behaviour when a consumer asks for an unsupported version.",
+                "source_refs": [
+                  "SRC-024",
+                  "SRC-017",
+                  "SRC-018",
+                  "SRC-005",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-proj-q-compatibility-class",
+                    "text": "What compatibility class does this profile change carry, and which consumer behaviour would break without a major increment?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Compatibility class code (major, minor, patch)",
+                      "Breaking change description",
+                      "Affected consumer behaviour list",
+                      "Justification reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-version-axes",
+                    "text": "Which distinct versions must a consumer read: the profile version, the underlying format specification version, and the version of the described assertion content?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Projection profile version",
+                      "Underlying specification version",
+                      "Described content version",
+                      "Field carrying each version"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-change-set",
+                    "text": "How is the difference between two profile revisions expressed so a consumer can apply it mechanically?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Change set representation (pointer-based operation list)",
+                      "Operation sequence",
+                      "Atomicity guarantee statement",
+                      "Precondition test operations"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-version-negotiation",
+                    "text": "What does a reader receive when it requests a profile version the emitter does not support?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Error or status code",
+                      "Supported version list returned",
+                      "Retry guidance",
+                      "Fallback representation reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-q-deprecation-window",
+                    "text": "How long does a superseded profile version remain readable, and who decides its removal?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Minimum support window duration",
+                      "Deprecation notice reference",
+                      "Removal decision owner reference",
+                      "Migration path statement"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-proj-de-profile-version",
+                    "name": "Projection profile version",
+                    "description": "Version identifier of the projection profile itself, incremented per the declared compatibility rules.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-024",
+                      "SRC-018"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-compatibility-class",
+                    "name": "Compatibility class",
+                    "description": "Classification of a profile change as backward-incompatible, backward-compatible addition, or corrective.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-024"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-change-set",
+                    "name": "Profile change set",
+                    "description": "Ordered, all-or-nothing operation list expressing the difference between two profile revisions, with precondition tests.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-supported-versions",
+                    "name": "Supported version list",
+                    "description": "Versions an emitter can currently produce or an endpoint can currently serve, returned when a requested version is unsupported.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-018",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-proj-de-support-window",
+                    "name": "Support window duration",
+                    "description": "Minimum period a superseded profile version remains readable after a deprecation notice.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-018"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-proj-art-compatibility-declaration",
+                    "name": "Projection Compatibility Declaration",
+                    "description": "Consumer-facing declaration for one profile revision: version identifiers on all three axes, compatibility class against the prior revision, the mechanical change set, the supported version list, negotiation error behaviour and the deprecation window for superseded revisions.",
+                    "media_or_form": [
+                      "structured compatibility declaration",
+                      "interface description document",
+                      "release note with machine-readable change set"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the profile identifier combined with its version identifier from the adopting Dimension's authoritative profile register; the version identifier is a monotonic version string, never a date-derived key, and supersession is recorded as an explicit link.",
+                    "source_refs": [
+                      "SRC-024",
+                      "SRC-017",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "dep-proj-fn-resolve-profile",
+      "name": "Resolve projection profile",
+      "description": "Select the projection profile for a requested target format and consumer audience, resolving the applicable capability matrix revision, binding map revision and canonicalization rule set, and predicting the loss set before any bytes are produced.",
+      "inputs": [
+        "Target format code",
+        "Consumer audience or purpose code",
+        "Assertion selection criteria",
+        "Requested profile version"
+      ],
+      "outputs": [
+        "Resolved projection profile reference",
+        "Predicted loss entry list",
+        "Applicable capability verdicts",
+        "Resolved binding map revision"
+      ],
+      "preconditions": [
+        "A capability matrix revision exists for the requested target format",
+        "The requested profile version is present in the supported version list",
+        "A binding map revision is bound to the profile"
+      ],
+      "effects": [
+        "Produces a projection plan with a predicted loss set",
+        "Records the resolved revision triple for later run correlation",
+        "Raises an unsupported-version condition and returns the supported version list when no profile matches"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-018",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-canonicalize",
+      "name": "Canonicalize projection payload",
+      "description": "Apply the profile's canonicalization rule set to an assembled projection payload - recursive key ordering, whitespace suppression, number and string normalisation, declared collection collation - and compute the algorithm-qualified content digest over the resulting bytes.",
+      "inputs": [
+        "Assembled projection payload",
+        "Canonicalization algorithm binding",
+        "Ordering key and collation",
+        "Encoding and byte-stability policy"
+      ],
+      "outputs": [
+        "Canonical byte sequence",
+        "Algorithm-qualified content digest",
+        "Deviation list where the algorithm could not be applied"
+      ],
+      "preconditions": [
+        "The payload contains no duplicate object keys and no values outside the declared value space",
+        "The ordering key yields a total order over every projected collection",
+        "The encoding policy is pinned for the profile"
+      ],
+      "effects": [
+        "Produces a reproducible byte sequence for identical input",
+        "Binds an integrity digest to the payload",
+        "Fails the run rather than emitting a non-deterministic serialization when the payload violates the declared value space"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-021"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-render-projection",
+      "name": "Render assertion set into target format",
+      "description": "Transform a selected set of dependency and impact assertions into the target carrier per the resolved profile, applying the mandated workaround pattern wherever the format lacks native support for n-ary, conditional, temporal or uncertain semantics, and recording every degradation as it occurs.",
+      "inputs": [
+        "Resolved projection profile reference",
+        "Selected assertion revisions",
+        "Identity binding map",
+        "Namespace and term binding map"
+      ],
+      "outputs": [
+        "Candidate projection payload",
+        "Observed loss entry list",
+        "Endpoint role binding record",
+        "Unmapped term list"
+      ],
+      "preconditions": [
+        "Every assertion in the set carries a resolvable identifier, a direction and at least one target endpoint",
+        "A workaround pattern is declared for every non-native capability verdict in scope",
+        "The completeness qualifier has a declared carrier or a declared loss entry"
+      ],
+      "effects": [
+        "Produces a candidate payload held in generation storage only",
+        "Appends one loss entry for every dropped, flattened, coerced or sentinel-substituted element",
+        "Performs no write to any assertion endpoint and no publication"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-010",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-emit-loss-report",
+      "name": "Emit projection loss report",
+      "description": "Assemble the observed and predicted loss entries into a machine-readable report with stable problem-type identifiers, severity, recovery locators and a correlation key to the projection digest, and evaluate the blocking-loss threshold.",
+      "inputs": [
+        "Observed loss entry list",
+        "Predicted loss entry list",
+        "Canonical content digest",
+        "Blocking loss class list"
+      ],
+      "outputs": [
+        "Projection loss report",
+        "Lossless claim flag",
+        "Blocking condition verdict"
+      ],
+      "preconditions": [
+        "Each loss entry resolves to a registered problem-type identifier",
+        "A recovery locator exists or is explicitly declared unavailable for each dropped element",
+        "The canonical digest of the described projection is available"
+      ],
+      "effects": [
+        "Sets the lossless claim flag to false whenever any loss entry exists",
+        "Blocks emission when a loss falls into a blocking class, pending an override decided outside this model",
+        "Correlates the report to the run and to the projection digest"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-006",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-verify-roundtrip",
+      "name": "Verify round-trip conformance",
+      "description": "Parse a candidate projection back into the assertion structure, compare it against the source using the profile's declared comparator, execute the conformance corpus, and issue a verdict that either substantiates or downgrades the declared round-trip class.",
+      "inputs": [
+        "Candidate projection payload",
+        "Source assertion revisions",
+        "Round-trip comparator",
+        "Conformance corpus revision"
+      ],
+      "outputs": [
+        "Round-trip conformance verdict",
+        "Per-case outcome list",
+        "Filter idempotence result",
+        "Claim downgrade recommendation"
+      ],
+      "preconditions": [
+        "A parser exists for the target format in the profile",
+        "The comparator and its pre-comparison canonicalization are declared",
+        "The corpus covers multi-target, conditional, open-interval and non-asserted cases or records the coverage gap"
+      ],
+      "effects": [
+        "Substantiates or refutes the declared round-trip class with evidence",
+        "Recommends a claim downgrade when a previously lossless profile fails",
+        "Does not itself alter the published claim; the downgrade decision is executed by the profile owner"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-014",
+        "SRC-021"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-record-run",
+      "name": "Record projection run",
+      "description": "Write the immutable run record binding source assertion revisions, profile and binding revisions, executing agent, validity time, observation time and generation time, produced candidate digests, loss report and round-trip verdict.",
+      "inputs": [
+        "Projection run identifier",
+        "Derived-from references",
+        "Executing agent identifier",
+        "Produced artifact digests",
+        "Loss report and verdict references"
+      ],
+      "outputs": [
+        "Projection run record",
+        "Derivation link set",
+        "Write-target allowlist evidence"
+      ],
+      "preconditions": [
+        "A run identifier has been issued by the authoritative run register",
+        "Generation time and, where different, observation time are available with an explicit offset",
+        "The produced digests match the canonical byte sequences"
+      ],
+      "effects": [
+        "Creates an append-only, immutable run record",
+        "Establishes derivation links from projection to source assertion revision",
+        "Records that no publication and no endpoint mutation occurred during the run"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-022",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-classify-compatibility",
+      "name": "Classify profile change compatibility",
+      "description": "Compare two projection profile revisions, express the difference as an ordered all-or-nothing operation list with precondition tests, and assign a compatibility class based on whether existing consumer behaviour would break.",
+      "inputs": [
+        "Prior profile revision",
+        "Proposed profile revision",
+        "Known consumer behaviour list"
+      ],
+      "outputs": [
+        "Compatibility class",
+        "Profile change set",
+        "Breaking change description",
+        "Updated supported version list"
+      ],
+      "preconditions": [
+        "Both revisions are retrievable in canonical form",
+        "The consumer behaviour list identifies which fields and orderings consumers rely on",
+        "The prior revision's declared round-trip class and loss set are known"
+      ],
+      "effects": [
+        "Assigns a backward-incompatible class whenever a consumer-visible removal, rename, reordering or semantic narrowing is detected",
+        "Produces a mechanically applicable change set with precondition tests",
+        "Yields a candidate compatibility declaration; the release decision remains with the profile owner"
+      ],
+      "source_refs": [
+        "SRC-024",
+        "SRC-005",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "dep-proj-fn-package-candidate",
+      "name": "Package candidate projection for handoff",
+      "description": "Bundle the canonical serialization, published-form rendering, loss report, round-trip verdict, run record and compatibility declaration into a single candidate package and hand it to the publication owner, without exposing it to consumers.",
+      "inputs": [
+        "Canonical byte sequence",
+        "Published-form rendering",
+        "Loss report",
+        "Round-trip verdict",
+        "Compatibility declaration"
+      ],
+      "outputs": [
+        "Candidate projection package",
+        "Package manifest with component digests",
+        "Handoff reference to the publication owner"
+      ],
+      "preconditions": [
+        "No unresolved blocking loss condition exists",
+        "A round-trip verdict exists for the profile revision",
+        "A compatibility declaration exists for the profile version"
+      ],
+      "effects": [
+        "Stores the package in candidate storage with restricted access",
+        "Transfers the publication decision to the owner named by the adopting Dimension",
+        "Performs no serving, no endpoint mutation and no consumer notification"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-019",
+        "SRC-024"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Dependency / Impact assertion-core (typed relation, endpoint roles, conditions, confidence, lifecycle)",
+      "relation": "REFERENCE",
+      "purpose": "Obtain the assertion identifier, revision, relation type, direction, endpoint roles, completeness qualifier and validity interval to be projected. This area carries only the reference, the carrier binding and the projection-specific parameters; the assertion's own admission, retraction and state transitions remain in the core area.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Host domain models that record dependency or impact assertions about their own subjects",
+      "relation": "MIX-IN",
+      "purpose": "Supply projection-operation contracts to any host model that must render its dependency or impact assertions into an external carrier, without the host redefining canonicalization, loss reporting or compatibility classification.",
+      "required": false,
+      "source_refs": [
+        "SRC-008",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "SPDX 3.0.1 Core profile Relationship and RelationshipCompleteness vocabularies",
+      "relation": "ALIGN",
+      "purpose": "Bind local relation types, direction and completeness semantics to an externally governed relationship vocabulary as an alignment. Term definitions, versioning and change control stay with the issuing body; no conformance is claimed without cited test evidence.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "ECMA-424 CycloneDX Bill of Materials Standard",
+      "relation": "ALIGN",
+      "purpose": "Provide a second, independently governed domain carrier for component dependency information so that no single consortium format is treated as canonical. Only the mapping and its gaps are carried locally.",
+      "required": false,
+      "source_refs": [
+        "SRC-023"
+      ]
+    },
+    {
+      "target": "Provenance and derivation model aligned to PROV-O",
+      "relation": "ALIGN",
+      "purpose": "Express that a projection was derived from a source assertion revision by an activity attributed to an agent, using established derivation and generation predicates. Qualified-influence machinery, agent responsibility and provenance lifecycle remain with the provenance model.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Publication and release-approval model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Hand a candidate projection package to the owner who decides publication. This model carries the handoff reference and the compatibility declaration only; approval decisions, approver identity, release records and any resulting audit trail are owned by the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-024"
+      ]
+    },
+    {
+      "target": "Access-control and authorization model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Carry the sensitivity marking, audience code and redaction flag that a downstream authoriser needs. Evaluating authorisation, enforcing it at an interface and recording the access event are owned by the target model.",
+      "required": true,
+      "source_refs": [
+        "SRC-019",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Namespace and identifier governance registry of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Resolve prefixes, namespace IRIs and the authoritative identifier scheme used to identify assertions, profiles and binding maps. Namespace allocation and retirement remain with the registry.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "Generic serialization and canonicalization contract for Vercy artifacts",
+      "relation": "EXTEND",
+      "purpose": "Specialize a generic artifact serialization contract with the dependency-specific concerns of direction, endpoint roles, completeness qualifiers and n-ary or conditional degradation. Generic identity precedence, timestamp rules and conflict handling are not duplicated here.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Storage and interface projections (Git repository, document store, HTTP API, MCP server)",
+      "relation": "REFERENCE",
+      "purpose": "Name the concrete carriers whose native addressing, type fidelity, validator and versioning rules a projection must respect. Transport, connection lifecycle, indexing and administration are owned by those models and are not modelled here.",
+      "required": false,
+      "source_refs": [
+        "SRC-021",
+        "SRC-020",
+        "SRC-019",
+        "SRC-008"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name a single accountable owner for each projection profile who may change its capability verdicts, round-trip class claim and compatibility declaration, and who is distinct from the agent that executes generation runs.",
+        "Operate an authoritative register that issues projection run identifiers and profile identifiers, and declare its identifier scheme before the first run.",
+        "Publish the recognised domain-standard bindings and their claim levels, and record at least one independently governed alternative so no single carrier becomes canonical by default.",
+        "Designate the owner who decides publication and endpoint mutation, and confirm in writing that this model's functions hold no such authority.",
+        "Declare the deprecation window and removal authority for superseded projection profile versions."
+      ],
+      "namespace_guidance": "Local identifiers use lower-kebab-case under the `dep-proj-` prefix and are stable for the life of the model. Externally visible identifiers resolve under a namespace allocated by the adopting Dimension's namespace registry; prefixes bound in a projection must name their governing organisation. Terms with no counterpart in a recognised external vocabulary are emitted under a clearly local namespace and must never be emitted under a standard prefix. No identifier may embed a date, a release name or a storage path.",
+      "registry_links": [
+        "Projection profile register (profile identifier, version, owner, round-trip class, supported version list)",
+        "Capability matrix register (format code, semantic dimension, verdict, citation, review timestamp)",
+        "Namespace and term binding register (prefix, namespace IRI, governing organisation, revision)",
+        "Projection run register (run identifier, agent, input revisions, produced digests, outcome)",
+        "Problem-type register for loss classes (type IRI, title, severity default, documentation URL)"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonical form is produced by a named, versioned canonicalization rule set with recursive property ordering, no inter-token whitespace and a pinned number serialization; the rule set identifier and version are recorded on every canonical output.",
+        "Every projected collection, including the target-endpoint list, is placed in a declared total order using a stated sort key, a stated collation and a stated tie-break; ordering is never left to insertion order or to a store's natural order.",
+        "Character encoding, line-ending policy and trailing-byte handling are pinned per profile so that repeated generation from identical input yields identical bytes on every platform.",
+        "Canonical form exists for comparison, digest and signature only. The published presentation form may differ, and the transformation from canonical form to published form is named and its reversibility declared.",
+        "Values that cannot be expressed in the target's native value space are wrapped in a declared string encoding rather than silently coerced, and the wrapping is recorded as a loss entry."
+      ],
+      "patch_rules": [
+        "Differences between two profile revisions or two projection payloads are expressed as an ordered operation list over pointer paths, applied all-or-nothing so that a failed operation leaves the target unchanged.",
+        "Every change set includes precondition test operations asserting the expected prior value at each touched path, so that a stale base is detected rather than overwritten.",
+        "Patches apply to projection profiles, binding maps and capability matrices. Patching a published projection in place is prohibited; a corrected projection is a new generation run with a new digest and an explicit supersession link.",
+        "A patch that changes ordering, removes a field, renames a term or narrows a semantic is classified as backward-incompatible regardless of how small the operation list is."
+      ],
+      "compatibility_rules": [
+        "A change that would break existing consumer behaviour requires a major increment of the projection profile version; a backward-compatible addition requires a minor increment; a correction that changes no consumer-visible behaviour requires a patch increment.",
+        "The projection profile version, the underlying format specification version and the version of the described assertion content are three distinct values and are each carried explicitly; conflating them is a defect.",
+        "A reader requesting an unsupported profile version receives an explicit error carrying the list of versions the emitter does support, never a silent downgrade to another version.",
+        "A superseded profile version remains readable for the declared support window after a deprecation notice, with a stated migration path; removal is decided by the profile owner, not by the generating agent.",
+        "Downgrading a declared round-trip class or adding a new loss class to an existing profile is consumer-visible and is treated as backward-incompatible."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the adopting Dimension's system of record for the artifact class (projection profile register, projection run register, artifact register); this identifier takes precedence over every other candidate.",
+        "Governed global identifier or IRI allocated under a namespace controlled by the adopting Dimension's namespace registry, used when no master-system identifier exists.",
+        "UUID or ULID assigned by the adopting Dimension at creation time, used only when neither a master-system identifier nor a governed IRI is available.",
+        "Content digests, Git object hashes, document-store primary keys and API resource paths are carrier-assigned handles and integrity claims. They are recorded as attributes and may be used for comparison and deduplication, but they never displace a higher-priority identifier.",
+        "A date, a version string, a release name, a file path or a natural-language title is never an identifier."
+      ],
+      "timestamp_rule": "All time values are recorded in RFC 3339 format with seconds present and an explicit numeric offset or the literal Z; local times without an offset are rejected. Event time and observation or ingestion time are recorded as separate fields whenever they differ: the assertion's own validity interval (when the dependency held) is distinct from the observation or ingestion timestamp (when that state was seen by the projecting system), which is in turn distinct from the generation timestamp (when the projection bytes were produced). A projection that can carry only one time value must declare which one it carries and record the omission of the others as loss entries. Sub-second precision, where retained, is stated in the profile; where a carrier truncates it, the truncation is a declared loss.",
+      "serial_naming_rule": "Serial artifacts - canonical serializations, loss reports, round-trip verdicts, run records and compatibility declarations - are named by their owning identifier plus a monotonic sequence or version component, never by a timestamp, date stamp or human label. A run-scoped serial artifact takes the run identifier as its name root; a profile-scoped serial artifact takes the profile identifier plus its version identifier. Supersession is expressed as an explicit link from the new instance to the one it replaces; reusing a name for different content is prohibited.",
+      "integrity_rule": "Every stored artifact carries an algorithm-qualified digest computed over its canonical byte sequence, together with the identifier and version of the canonicalization rule set used. A consumer verifies an artifact by recanonicalizing and recomputing the digest; a mismatch invalidates the artifact and must be reported rather than repaired in place. Package manifests list the digest of every component so that a candidate package can be verified as a whole. Digests are integrity claims and comparison handles, not identifiers."
+    },
+    "policies": [
+      "No target format, database, repository or serialization is canonical. The canonical form is a deterministic byte sequence defined by a named rule set, and every concrete carrier - including the document store and the version-control repository - is a projection of it.",
+      "A projection into a format that cannot carry the full assertion semantics is invalid unless it is accompanied by a machine-readable loss report. Silent degradation is a defect, not an acceptable trade-off.",
+      "Projection generation is strictly separated from publication approval and from endpoint mutation. A generation function's effect ends at a stored candidate; it never publishes, never notifies consumers and never writes to the subjects an assertion points at.",
+      "A claim of losslessness or of conformance to an external standard requires cited evidence - a passing corpus verdict or a cited test result. Absent evidence, only alignment may be declared.",
+      "An explicit non-assertion must never be rendered as an absence, and an absence must never be rendered as an explicit negative. Where a carrier cannot distinguish them, the projection declares the ambiguity as a blocking loss for decision-bearing audiences.",
+      "Presentational projections such as rendered documents and human-readable pages are non-authoritative by construction and must carry a visible statement to that effect plus a locator for the authoritative representation."
+    ],
+    "crud": {
+      "read": [
+        "Reading a projection returns the representation selected for the requested format and profile version, together with its profile version, canonical digest, loss report reference and non-authoritative marker where applicable.",
+        "A read must never return an empty result set as a way of signalling a missing subject; a missing profile, version or projection is reported as an explicit error distinguishable from an existing-but-empty result.",
+        "Listing operations are paginated with an opaque cursor and return results in the profile's declared total order so that pagination is stable across pages.",
+        "Readers may request a specific profile version; when the emitter cannot serve it, the response carries the supported version list rather than a substituted version."
+      ],
+      "create": [
+        "A projection is created only by a recorded generation run that binds source assertion revisions, profile revision, binding map revision, executing agent and the three time values.",
+        "Creation is blocked when a loss falls into a declared blocking class, unless an override has been granted by the owner named for that decision outside this model.",
+        "Every created artifact is canonicalized and digested at creation; a candidate package is only assembled once a round-trip verdict and a compatibility declaration exist.",
+        "Creation writes to candidate storage only. It does not expose the artifact to consumers and does not create or modify any dependency endpoint."
+      ],
+      "update": [
+        "Published projections are immutable. A correction is a new generation run producing a new artifact with a new digest and an explicit supersession link to the artifact it replaces.",
+        "Projection profiles, binding maps and capability matrices are updated by all-or-nothing patches carrying precondition tests, and every update is classified for compatibility before it takes effect.",
+        "Updating a capability verdict, adding a loss class or downgrading a round-trip class is consumer-visible and triggers a compatibility declaration.",
+        "Run records are append-only; an erroneous run is annotated with a correcting record rather than edited."
+      ],
+      "delete": [
+        "This model's own records - run records, loss reports, round-trip verdicts, canonical serializations and compatibility declarations - are retained for at least the declared support window of the profile version they describe, and are never hard-deleted while any published projection still references them.",
+        "Withdrawal of a published projection is performed by tombstone: the artifact identifier and digest remain resolvable with a withdrawn state, a withdrawal reason and a pointer to the superseding artifact or to the authoritative source; the identifier is never reissued for different content.",
+        "Erasure of the underlying dependency or impact assertion content, and any legal-basis or subject-rights driven deletion, is outside this model's boundary. Execution is owned by the adopting Dimension's retention and disposition policy together with the assertion-core area that holds the source content; this model reacts by withdrawing derived projections and recording the withdrawal, and it does not decide erasure.",
+        "Deletion of a projection stored in an external carrier (repository, document store or served endpoint) is executed by that carrier's own model under its retention rules; this model records only the withdrawal instruction, its issuing owner and its outcome reference, and never performs the endpoint mutation itself.",
+        "Candidate packages that are never approved for publication are disposed of after the declared candidate-retention period, while their run records and loss reports are retained so that the non-publication decision remains explicable."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Projection profile owner",
+        "responsibilities": [
+          "Approve capability verdicts, mandated workaround patterns and the declared round-trip class for a profile",
+          "Assign the compatibility class to every profile change and issue the compatibility declaration",
+          "Decide deprecation and removal of superseded profile versions within the declared window",
+          "Grant or refuse overrides for blocking loss conditions"
+        ]
+      },
+      {
+        "name": "Projection generation agent",
+        "responsibilities": [
+          "Execute resolve, render, canonicalize, loss-report, round-trip and packaging functions against a resolved profile",
+          "Write immutable run records with separated validity, observation and generation times",
+          "Refuse to emit when a blocking loss condition is unresolved",
+          "Operate strictly within the write-target allowlist, performing no publication and no endpoint mutation"
+        ]
+      },
+      {
+        "name": "Binding and alignment steward",
+        "responsibilities": [
+          "Maintain prefix, namespace and term binding maps and their revisions",
+          "Record mapping gaps and conflicts between recognised domain standards without resolving them by fiat",
+          "Keep claim levels honest by distinguishing alignment from evidenced conformance",
+          "Review cited specification clauses and versions on a stated cycle"
+        ]
+      },
+      {
+        "name": "Conformance verifier",
+        "responsibilities": [
+          "Maintain the round-trip corpus and its coverage of multi-target, conditional, open-interval and non-asserted cases",
+          "Execute conformance runs and issue verdicts with per-case outcomes",
+          "Test filter idempotence and report non-idempotent steps",
+          "Recommend round-trip class downgrades when evidence no longer supports a claim"
+        ]
+      },
+      {
+        "name": "Publication owner (external)",
+        "responsibilities": [
+          "Receive candidate packages and decide whether a projection is published",
+          "Own the release record and any audit trail arising from publication",
+          "Authorise the removal of a published projection and instruct withdrawal",
+          "Confirm that generation agents hold no publication authority"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Read access to a projection is denied unless the requester's granted scopes cover both the projection profile and the sensitivity marking of the underlying assertion set; write access to profiles, binding maps and capability matrices is restricted to the named profile owner and binding steward. Access decisions are evaluated and enforced by the adopting Dimension's authorization model; this model supplies the sensitivity marking, audience code and redaction flag as inputs and does not itself evaluate, enforce or log the decision.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Candidate packages and unapproved projections are visible only to the generation agent, the profile owner and the publication owner until a publication decision is recorded.",
+        "Loss reports must be readable by every audience that can read the projection they describe; withholding the loss report while serving the projection is prohibited.",
+        "Where the assertion set includes endpoints with a higher sensitivity marking than the projection audience, the profile must define a redaction pattern and record each redaction as a loss entry rather than emitting a partial projection silently.",
+        "Round-trip corpora containing representative real endpoints inherit the highest sensitivity marking among the cases they embed and are not published with the profile.",
+        "Emergency read of a withdrawn projection for incident reconstruction is permitted only through the tombstone record, which reveals state, reason and supersession pointer but not the withdrawn content."
+      ],
+      "audit_requirements": [
+        "Every generation run, compatibility classification and withdrawal instruction is recorded with the acting agent, the delegating owner and an RFC 3339 timestamp with seconds and offset.",
+        "The write-target allowlist and any rejected write attempt are recorded on the run record as evidence that generation did not publish or mutate endpoints.",
+        "Overrides of a blocking loss condition record the requesting agent, the deciding owner, the loss class and the justification.",
+        "Audit records about access to projections are created and held by the adopting Dimension's access and audit model; this model contributes run-level evidence and holds no audit-trail semantics of its own."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Model ID and registry ID",
+        "Profile register URL",
+        "Capability matrix URL",
+        "Loss problem-type register URL",
+        "Canonicalization rule set identifier and version",
+        "Supported projection profile versions",
+        "Owner and publication-owner contacts",
+        "Boundary statement naming what this model does not own (publication approval, endpoint mutation, impact evaluation, access enforcement, audit trail)"
+      ],
+      "read_order": [
+        "AGENTS.md - identify the model, its type, and the URLs for specification, storage type, interface and processes, and read the boundary statement before acting",
+        "Specification URL - read the scope, exclusions and boundary notes, then the projection invariants and the capability matrix",
+        "Capability matrix and loss problem-type register - establish what the requested target format can and cannot carry before requesting any rendering",
+        "Profile register - resolve the projection profile, its version, its declared round-trip class and its supported version list",
+        "Storage type URL - learn how canonical serializations, run records and reports are held and addressed in this deployment",
+        "Interface URL - learn how to request a projection, how versions are negotiated and how unsupported-version errors are returned",
+        "Processes URL - follow the generation, verification, packaging and handoff sequence, and stop at the handoff; do not attempt publication or endpoint mutation"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This submission covers only the assigned bounded split area - projection-operation contracts for WM-XCT-037 Dependency / Impact - across two bundles, five layers and nine findings. Structure is grounded primarily in normative specifications from independent bodies (SPDX/Linux Foundation, IETF/RFC Editor, W3C, WHATWG, Ecma International, OpenAPI Initiative) plus first-party protocol and product documentation for MCP, MongoDB and Git. Every structural node cites at least one source; nodes resting only on first-party or informational sources are marked in the checklist. It does not claim conformance to any cited standard, and it deliberately excludes assertion semantics, publication approval, endpoint mutation, impact evaluation, access enforcement and audit-trail ownership.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Assertion identifier, revision, direction and endpoint-role carriage are required invariants (dep-proj-assertion-identity-carry, SRC-001). Identity precedence places the authoritative master-system identifier first and demotes content digests, Git hashes and store primary keys to carrier handles (SRC-022). No identifier may embed a date."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Profile revision lifecycle, deprecation windows, supersession links and immutability of published projections are covered (dep-proj-version-compatibility, SRC-024, SRC-018). The lifecycle of the underlying assertion is explicitly out of scope and referenced to the assertion-core area."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Direction, one source endpoint with one-or-many targets, relation-type mapping and n-ary degradation patterns are grounded in SRC-001, SRC-009 and SRC-010. Composition links declare which neighbours own what, with three REFERENCE links marked required."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Validity interval, observation/ingestion time and generation time are carried as three separate values (SRC-001 startTime/endTime, SRC-012 derivation). The timestamp rule mandates RFC 3339 with seconds and an explicit offset or Z and rejects offsetless local times; carriers that hold only one time value must declare which and report the rest as loss."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Run records bind source revisions, profile and binding revisions, executing agent and times, aligned to PROV-O derivation predicates as an alignment only (SRC-012). Capability verdicts require a specification clause citation and a review timestamp."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five roles separate profile ownership, generation, binding stewardship, conformance verification and the external publication owner. Owner-package requirements demand that the generation agent be distinct from the profile owner and hold no publication authority."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Round-trip conformance verdicts with declared comparators, a corpus covering multi-target, conditional, open-interval and non-asserted cases, filter idempotence testing (SRC-021), and invariant checks before storage. A losslessness claim requires a passing verdict."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default-deny read scoped over bundle, layer, finding and artifact, with five named exceptions including the rule that a loss report must be readable by every audience that can read the projection. Evaluation and enforcement are explicitly delegated to the adopting Dimension's authorization model."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "crud.delete states a retention floor tied to the profile support window, a tombstone rule that preserves identifier and digest with a withdrawn state, a prohibition on identifier reuse, and an explicit statement that erasure of underlying content and carrier-side deletion are executed by the adopting Dimension's retention policy and the carrier's own model."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Per-format capability matrix, namespace and term binding maps, two independently governed domain-standard alignments (SPDX and ECMA-424/CycloneDX), three-axis version distinction (SRC-017) and explicit unsupported-version error behaviour (SRC-018, SRC-008)."
+      },
+      {
+        "dimension": "expressivity and loss",
+        "status": "covered",
+        "notes": "Mandatory machine-readable loss reports with stable problem-type identifiers, severity, recovery locators and blocking thresholds (SRC-007). Grounded in cited expressivity ceilings: indirect-only n-ary in RDF (SRC-009), atomic-or-list cells in tabular data (SRC-013), presentation-detail discard in YAML (SRC-014), relaxed-mode type loss in document stores (SRC-020)."
+      },
+      {
+        "dimension": "determinism and ordering",
+        "status": "covered",
+        "notes": "Named canonicalization rule set with recursive property ordering, whitespace suppression and pinned number serialization (SRC-004), declared total order and collation for every collection, and pinned encoding and line-ending policy (SRC-021)."
+      },
+      {
+        "dimension": "separation of duties",
+        "status": "covered",
+        "notes": "Generation, publication approval and endpoint mutation are separated by policy, by function preconditions and effects, by the write-target allowlist recorded on each run, and by an out_of_scope entry plus boundary note naming the external publication owner."
+      },
+      {
+        "dimension": "security",
+        "status": "gap",
+        "notes": "Signature and key-management semantics for signed projections are not modelled. The integrity rule stops at digest verification; who may sign a canonical serialization, with which key, and how signatures are rotated or revoked is left to an unspecified signing model that this split area does not name."
+      },
+      {
+        "dimension": "measurement",
+        "status": "not-applicable",
+        "notes": "This area produces no quantitative measurements of the subject. The only numeric values are loss occurrence counts and corpus case counts, which are covered under validation rather than as a measurement discipline with units and uncertainty."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Projection contracts carry no geospatial semantics. Data-residency constraints on where a projection may be stored are a legitimate concern but belong to the adopting Dimension's storage and jurisdiction models, not to the format-neutral projection contract."
+      }
+    ],
+    "known_omissions": [
+      "Signing, key management and revocation for canonical serializations are not modelled; only digest-based integrity is specified.",
+      "Streaming and incremental projection of very large dependency graphs is not addressed; every contract here assumes a bounded assertion set canonicalized as a whole.",
+      "Selection semantics - which assertions belong in a given projection, including transitive closure depth and cycle handling - are deliberately left to the assertion-core area, though the boundary between selection and rendering is not fully sharp.",
+      "Localisation and natural-language rendering of relation types in presentational projections is unspecified.",
+      "Concrete CycloneDX field-level bindings (ref, dependsOn, provides) could not be verified against the specification text directly; ECMA-424 is cited at standard level only, so the CycloneDX binding is a declared alignment target rather than a verified field mapping.",
+      "Performance, caching and freshness semantics for served projections are only touched via HTTP validators and are not modelled as a first-class concern.",
+      "No treatment of projections that intentionally aggregate or anonymise many assertions into a summary, where loss is the purpose rather than a defect."
+    ],
+    "conflicts": [
+      "RFC 8785 is an Informational Independent Submission with no IETF standards standing, yet it is the most widely implemented deterministic JSON canonicalization. The model cites it as a rule set that must be named and versioned rather than as a normative requirement.",
+      "RFC 4180 explicitly states that CSV has never been formally documented and that implementations vary widely, so a CSV projection cannot be validated against a single normative grammar; the model requires an explicit dialect declaration instead.",
+      "SPDX 3.0.1 defines four parallel serializations and a canonical serialization notion but makes no statement about round-tripping or information loss between them, so the loss-report requirement here goes beyond the cited standard rather than deriving from it.",
+      "SPDX models direction as exactly one `from` and one-or-many `to`, while RDF 1.2 states that relations over more than two entities can only be expressed indirectly; a faithful RDF projection therefore requires reification or a relation class and cannot be a direct edge.",
+      "JSON-LD 1.1 enumerates constructs without RDF equivalents (@json literals, blank node predicates, @list ordering), so a JSON-LD projection is not automatically a lossless RDF projection even though both are cited as semantic carriers.",
+      "RDF 1.2 Concepts is a Candidate Recommendation Snapshot rather than a Recommendation, so its triple-term and reifier constructs are cited as a stabilising but not yet final basis for uncertainty and non-assertion encoding.",
+      "MCP versions on a date-stamped scheme incremented only on backwards-incompatible change, whereas semantic versioning increments a numeric major component; a projection profile served over MCP must therefore carry both its own semantic version and the protocol version, which the three-axis rule accommodates but does not reconcile.",
+      "WHATWG microdata declares properties unordered except among same-named properties, which conflicts with the requirement for a declared total order over target-endpoint lists; HTML projections must therefore rely on same-name grouping or accept an ordering loss entry."
+    ],
+    "regional_assumptions": [
+      "Time values are assumed to be recordable with an explicit UTC offset; deployments in jurisdictions or systems that store wall-clock time without an offset will fail the timestamp rule and must add offset capture before adopting.",
+      "Data-residency and cross-border transfer constraints on where candidate packages and published projections may be stored are assumed to be handled by the adopting Dimension's storage and jurisdiction models, not by this contract.",
+      "Erasure obligations arising from privacy regimes are assumed to be owned and executed elsewhere; this model can only withdraw derived projections and record the withdrawal, which may be insufficient where a regime requires demonstrable destruction of derived copies.",
+      "The supply-chain domain standards cited (SPDX, CycloneDX/ECMA-424) reflect software and hardware dependency practice; adopting Dimensions in other domains may find no comparable governed carrier and will fall back to alignment gaps.",
+      "Collation is assumed to be code-unit based and locale-independent; deployments requiring locale-sensitive ordering for presentational projections must declare that as a separate presentation order and keep the canonical order unchanged."
+    ],
+    "adversarial_checks": [
+      "Ownership creep test: every finding and function was re-read against the boundary notes. Naming an HTTP or MCP interface does not grant enforcement or audit ownership; naming a publication owner does not grant approval authority. dep-proj-fn-package-candidate ends at a handoff, dep-proj-fn-verify-roundtrip only recommends a downgrade, and dep-proj-fn-emit-loss-report blocks but does not override. Audit-trail semantics are explicitly assigned to the external access and audit model in access.audit_requirements.",
+      "Impact-evaluation temptation test: an impact model invites modelling blast-radius computation and propagation. That was rejected - no finding, function or data element computes, ranks or propagates impact. The model only renders assertions that already exist, and evaluation is listed in out_of_scope.",
+      "Canonical-carrier bias test: the structure was checked for privileging JSON, Git or a document store. Canonical form is defined as a rule-set-produced byte sequence rather than as any named format; MongoDB, Git, HTTP and MCP appear only as projection targets with cited native constraints, and two independently governed domain carriers are recognised so neither becomes default-canonical.",
+      "Unsupported-structure test: an appealing 'projection quality score' and a 'preferred format ranking' were considered and rejected because no cited source supports either, and both would smuggle evaluation authority into a rendering contract. The CycloneDX field-level binding was likewise demoted to a declared alignment because the field text could not be verified.",
+      "Silent-success test: each read and create rule was checked for a path where a consumer receives a plausible-looking projection with no signal of degradation. The empty-result prohibition (SRC-019), the mandatory loss report, the lossless claim flag that must be false when any loss entry exists, and the rule that a loss report must be readable by every audience that can read the projection together close the obvious paths; the residual risk is a carrier that cannot attach a sidecar at all, which is handled as a blocking loss.",
+      "Identity-collision test: content digests, Git object hashes and store primary keys were checked for creeping into identifier positions. They are confined to attributes and comparison handles; serial naming uses monotonic sequence or version components and never timestamps; identifier reuse after withdrawal is explicitly prohibited.",
+      "Split-duplication test: findings were compared against the adjacent assertion-core surface. Relation typing, condition semantics, confidence derivation and assertion state transitions appear only as referenced inputs or as out_of_scope entries, never as locally owned structure."
+    ]
+  }
+}

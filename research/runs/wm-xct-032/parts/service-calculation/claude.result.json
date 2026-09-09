@@ -1,0 +1,1650 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-032",
+    "model_id": "WM-XCT-032",
+    "name": "Currency / Monetary Value",
+    "entry_kind": "mixin",
+    "purpose": "Provide a reusable mixin that binds an exact amount to a currency, a measurement basis, a valuation instant and a declared precision, and that governs how monetary values are validated, quantised, valued or converted, reconciled, exported and redacted reproducibly.",
+    "scope_statement": "WM-XCT-032 defines the format-neutral semantics of a monetary value carried inside any host record: the exact decimal amount, the currency identifier and its status in the ISO 4217 register, the declared scale and rounding policy, the measurement basis, and the valuation/effective instant. It further defines the calculation, reconciliation and projection operation semantics that make monetary values comparable and reproducible: admissibility validation, quantisation and residual handling, valuation and conversion against an externally supplied rate binding with full derivation lineage, reconciliation against a declared tolerance, and lossy or redacted export. Every derived value preserves the original amount and currency. Functions in this model calculate or report only; they never acquire rates, move money, post to a ledger, persist records, authorise disclosure or enforce policy.",
+    "in_scope": [
+      "Monetary value structure: exact decimal amount, ISO 4217 currency identifier, declared scale, measurement basis, valuation instant.",
+      "Admissibility validation of a monetary value against a caller-pinned profile (allowed currency set, digit limits, required attributes).",
+      "Quantisation semantics: target scale, rounding mode, tie-breaking, residual computation and residual allocation across a set.",
+      "Valuation and conversion computation from an externally supplied rate binding, including base/quote direction, rate chains and intermediate scale.",
+      "Derivation lineage that preserves the original amount and currency and makes any derived value recomputable.",
+      "Reconciliation of a set of monetary values against a declared tolerance, with attribution of unexplained difference.",
+      "Projection of monetary values into target representations, including explicitly lossy, rounded, banded or redacted exports.",
+      "An explicit outcome taxonomy for missing, stale, ambiguous or non-exchangeable rates, unsupported currencies, invalid inverses, precision loss, out-of-tolerance reconciliation and lossy export."
+    ],
+    "out_of_scope": [
+      "Acquisition, publication, licensing or quality assurance of exchange rates and market data.",
+      "Payment initiation, clearing, settlement and any movement of funds.",
+      "Accounting recognition, ledger posting, presentation-currency translation of a full reporting entity, and disclosure drafting.",
+      "Persistence, storage engines, indexing and query interfaces.",
+      "Authorisation decisions, policy evaluation, enforcement and audit-trail construction.",
+      "Interest, discounting, day-count conventions, present value and hedge accounting.",
+      "Definition or maintenance of the currency register itself, including code assignment and withdrawal.",
+      "Tax computation and jurisdiction-specific statutory rate mandates."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Currency register / ISO 4217 maintenance agency",
+        "distinction": "This model references currency codes, numeric codes, minor units and code status by identifier and register version; it does not assign, amend or republish currency codes, and it treats register amendments (for example the 2026 Bulgarian lev to euro change) as external facts to be resolved, not owned.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "Exchange-rate source / market data service",
+        "distinction": "Rate acquisition, publication timing and fitness-for-purpose are owned by the rate publisher. This model consumes a rate binding as an input and records provenance; it never fetches, caches as authoritative, or asserts that a published reference rate is suitable for transaction pricing.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Accounting and financial reporting model",
+        "distinction": "Which rate an entity must apply, how exchange differences are recognised, and how a reporting entity is translated into a presentation currency are accounting-standard decisions. This model carries the measurement basis and reference-time selector as parameters and computes the arithmetic; it does not choose the accounting policy or post its effects.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Payment message and scheme model",
+        "distinction": "Message-level field constraints, scheme currency restrictions and settlement semantics belong to the payment standard and scheme. This model aligns its validation profile to such constraints when the caller pins one, but does not model messages, instructions or settlement.",
+        "source_refs": [
+          "SRC-010",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Policy decision, authorisation and audit services",
+        "distinction": "Redaction, suppression and disclosure require an authorisation decision made elsewhere. This model carries the decision reference and applies the directed transformation; it owns neither the evaluation, the enforcement, nor the audit trail of that decision.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Business reporting fact model (XBRL/OIM)",
+        "distinction": "Reporting frameworks define fact-level units, decimals and calculation networks for whole reports. This model reuses their precision and interval semantics for a single monetary value and its reconciliation set, and does not model taxonomies, contexts, dimensions or filing rules.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Data standards — ISO 4217 currency codes (Maintenance Agency)",
+      "organization": "SIX Group AG",
+      "url": "https://www.six-group.com/en/products-services/financial-information/data-standards.html",
+      "version_or_date": "Current currency code lists (List One, List Two, List Three) with amendment effective 2026-01-01 for BGN/EUR",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Authoritative maintenance agency for ISO 4217 alphabetic codes, numeric codes and minor units, and for the active/historic/fund code lists that determine currency admissibility and code status."
+    },
+    {
+      "id": "SRC-002",
+      "title": "IAS 21 The Effects of Changes in Foreign Exchange Rates",
+      "organization": "IFRS Foundation / International Accounting Standards Board",
+      "url": "https://www.ifrs.org/content/dam/ifrs/publications/html-standards/english/2025/issued/ias21.html",
+      "version_or_date": "2025 issued standards; lack-of-exchangeability amendments effective 1 January 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Normative definitions of spot rate, closing rate, exchange difference and monetary items; rules on which rate applies to monetary versus non-monetary items; criteria for exchangeability and the multiple-rates case."
+    },
+    {
+      "id": "SRC-003",
+      "title": "IFRS 13 Fair Value Measurement",
+      "organization": "IFRS Foundation / International Accounting Standards Board",
+      "url": "https://www.ifrs.org/content/dam/ifrs/publications/html-standards/english/2025/issued/ifrs13.html",
+      "version_or_date": "2025 issued standards; IFRS 13 issued May 2011",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Grounds the measurement-basis and measurement-date attributes, the principal/most advantageous market concept and the observability hierarchy used to classify a rate or price input."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Calculations 1.1",
+      "organization": "XBRL International",
+      "url": "https://www.xbrl.org/Specification/calculation-1.1/REC-2023-02-22/calculation-1.1-REC-2023-02-22.html",
+      "version_or_date": "Recommendation, 22 February 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Normative interval-based definition of calculation consistency derived from declared decimals, distinct round-to-nearest and truncation intervals, duplicate-fact handling and explicit inconsistency error codes — the basis for tolerance semantics in reconciliation."
+    },
+    {
+      "id": "SRC-005",
+      "title": "Precision, Decimals and Units 1.0",
+      "organization": "XBRL International",
+      "url": "https://www.xbrl.org/WGN/precision-decimals-units/WGN-2017-01-11/precision-decimals-units-WGN-2017-01-11.html",
+      "version_or_date": "Working Group Note, 11 January 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Explains that a reported numeric value with declared decimals or precision denotes an interval of plausible source values, the ISO 4217 currency unit namespace for monetary facts, and the risk of aggregating facts with incompatible units or scales."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Euro foreign exchange reference rates",
+      "organization": "European Central Bank",
+      "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
+      "version_or_date": "Continuously published; concertation around 14:10 CET, publication around 16:00 CET on working days",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "A concrete normative rate source: fixed quotation direction (units of foreign currency per euro), a reference time distinct from retrieval time, non-publication on closing days, suspended pairs, and an explicit statement that use for transaction purposes is strongly discouraged."
+    },
+    {
+      "id": "SRC-007",
+      "title": "Treasury Reporting Rates of Exchange",
+      "organization": "U.S. Department of the Treasury, Bureau of the Fiscal Service",
+      "url": "https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange",
+      "version_or_date": "Quarterly dataset; most recent update 2026-08-31; coverage from 2001-03-31",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "A mandated, period-pinned rate regime: a single rate applies for the reporting date and the ensuing three months, amendments are issued when rates move by 10% or more and may apply retroactively within the quarter, with enumerated exceptions — the counterexample to assuming a live spot rate."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Council Regulation (EC) No 1103/97 on certain provisions relating to the introduction of the euro",
+      "organization": "Council of the European Union (via EUR-Lex)",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex:31997R1103",
+      "version_or_date": "17 June 1997, CELEX 31997R1103",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Binding arithmetic rules: conversion rates adopted with six significant figures, no rounding or truncation of the rate, prohibition on inverse rates and on direct bilateral rates, mandatory triangulation through the euro unit with an intermediate value rounded to not less than three decimals, and rounding of converted amounts to the nearest cent or sub-unit."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Converting to the euro",
+      "organization": "European Commission, Directorate-General for Economic and Financial Affairs",
+      "url": "https://economy-finance.ec.europa.eu/euro/enlargement-euro-area/adoption-fixed-euro-conversion-rate/converting-euro_en",
+      "version_or_date": "Current guidance page citing Council Regulation (EC) No 1103/97",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Authority restatement of the six-significant-figure rate rule, the prohibition on truncating or rounding the rate, the ban on direct bilateral conversion, the triangulation procedure and the nearest-cent rounding rule including the exactly-half-way case."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Harmonised ISO 20022 data requirements for enhancing cross-border payments",
+      "organization": "Bank for International Settlements — Committee on Payments and Market Infrastructures",
+      "url": "https://www.bis.org/cpmi/publ/d218.htm",
+      "version_or_date": "17 October 2023; alignment encouraged by end-2027",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Establishes a consistent minimum data set for cross-border transactions in ISO 20022, evidencing that amount and currency semantics must survive end-to-end message projection and that fragmented local profiles are a recognised interoperability problem."
+    },
+    {
+      "id": "SRC-011",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339",
+      "version_or_date": "July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Normative timestamp format with seconds and a mandatory Z or numeric offset, and the explicit rejection of unqualified local time — required for valuation instant, rate reference time and retrieval time."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Handbook on Statistical Disclosure Control — Glossary",
+      "organization": "SDC Center of Excellence (co-financed by Eurostat)",
+      "url": "https://sdctools.github.io/HandbookSDC/07-glossary.html",
+      "version_or_date": "Second edition",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "Defines the recognised protection operations for aggregated (including monetary) tables — primary and secondary suppression, controlled and random rounding, interval publication, dominance rules and information loss — grounding the redacted/lossy export outcome."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Generation of JSON Schema Draft 2020-12 for ISO 20022:2013",
+      "organization": "ISO 20022 Technical Support Group / Registration Management Group",
+      "url": "https://www.iso20022.org/sites/default/files/media/file/ISO_20022_Generation_of_JSON_Schema_Draft_2020_12_for_ISO_20022_2013_10June2025.pdf",
+      "version_or_date": "14 July 2025",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:00:00Z",
+      "relevance": "First-party evidence that ISO 20022 amount and currency datatypes are deliberately projected into multiple schema languages; used only for the general projection-independence claim, since the document body could not be machine-extracted at access time."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "money-svccalc-operations",
+        "name": "Monetary calculation, reconciliation and projection operations",
+        "description": "The operation surface that turns a stored monetary value into a defensible computed, compared or published result: admissibility validation, quantisation, valuation and conversion with lineage, reconciliation against tolerance, and lossy or redacted export.",
+        "rationale": "Monetary correctness fails at the operation boundary, not at the field boundary. Standards fix the code list and the amount shape, but the reproducibility of a derived value depends on which rate, which reference time, which rounding policy and which tolerance were bound — and on whether the original amount and currency survived the derivation. Grouping these as one bundle keeps arithmetic, provenance and outcome semantics under a single contract while leaving rate acquisition, posting, persistence and authorisation to their owners.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-004",
+          "SRC-006",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "money-svccalc-layer-admission",
+            "name": "Admission and quantisation",
+            "description": "Whether a monetary value may enter a calculation at all, and how it is brought to a target scale without silently losing or inventing value.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-005",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "money-svccalc-finding-validate",
+                "name": "Monetary value admissibility",
+                "description": "The checks a monetary value must pass before any downstream calculation: the currency identifier resolves in the referenced register and has a status permitting the requested operation; the amount is an exact decimal rather than a binary floating-point approximation; the declared scale, digit limits and allowed currency set of the caller-pinned profile are satisfied; and the measurement basis and valuation instant are present. Failure produces a typed outcome rather than a coerced value.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svccalc-q-validate-checks",
+                    "text": "Which admissibility checks must a monetary value pass before any downstream calculation is attempted?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "currency identifier resolvable in the referenced register version",
+                      "amount represented as an exact decimal with a declared scale",
+                      "scale not exceeding the profile digit limits",
+                      "measurement basis present",
+                      "valuation instant present with an explicit offset"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-validate-code-status",
+                    "text": "How is an unsupported, historic, fund or non-transactional currency identifier distinguished from an active transactional currency?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "register list membership (current, fund, historic)",
+                      "code status value",
+                      "withdrawal or replacement date",
+                      "successor code reference",
+                      "operations permitted for the status"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-validate-profile",
+                    "text": "Which profile-specific constraints — allowed currency set, maximum total digits, maximum fraction digits and amount bounds — apply to the calling context?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "profile identifier and version",
+                      "allowed currency set",
+                      "maximum total digits",
+                      "maximum fraction digits",
+                      "minimum and maximum admissible amount"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-validate-outcome",
+                    "text": "What outcome is emitted when a value is inadmissible, and does that outcome block the operation or degrade it?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "outcome code from the model taxonomy",
+                      "severity",
+                      "blocking indicator",
+                      "pointer to the offending attribute",
+                      "human-readable reason"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svccalc-de-currency-identifier",
+                    "name": "Currency identifier",
+                    "description": "The identifier of the currency in which the amount is denominated, resolved against a named register version rather than copied.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-amount-exact",
+                    "name": "Exact decimal amount",
+                    "description": "The amount as an exact decimal value with an explicitly declared scale; binary floating-point representation is inadmissible because it cannot represent common minor-unit fractions exactly.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-currency-status",
+                    "name": "Currency status",
+                    "description": "The status of the currency identifier in the referenced register version, distinguishing active, fund, historic and replaced codes and the operations each permits.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-profile-pin",
+                    "name": "Validation profile pin",
+                    "description": "Reference to the caller-pinned validation profile and its version, which supplies allowed currencies, digit limits and amount bounds for the context.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-validation-outcome",
+                    "name": "Validation outcome",
+                    "description": "Typed outcome codes emitted by admissibility evaluation, including unsupported currency, non-transactional code status, scale exceeded and missing measurement basis.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Admissibility evaluation yields a transient predicate result carried inline in the operation response alongside the value it describes. It has no independent identity, no lifecycle and no distribution of its own: the same value re-validated against a different profile yields a different result, so a stored validation object would be misleading rather than authoritative. The durable evidence record, if the adopting Dimension needs one, is created and retained by the referenced audit or records system, whose evidence and audit-trail semantics this model does not own."
+              },
+              {
+                "id": "money-svccalc-finding-quantize",
+                "name": "Quantisation, rounding policy and residual",
+                "description": "How an exact amount is brought to a target scale: the target scale (usually but not always the currency minor unit), the rounding mode and tie-breaking rule, the resulting residual, and how a residual is allocated when a total is split across components so that the parts still sum to the whole. Precision loss is an explicit, declared outcome rather than an invisible side effect.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svccalc-q-quantize-policy",
+                    "text": "What rounding policy — target scale, rounding mode and tie-breaking rule — governs quantisation of this amount?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "target scale",
+                      "rounding mode",
+                      "tie-breaking rule",
+                      "policy profile identifier and version",
+                      "order of quantisation relative to other operations"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-quantize-residual",
+                    "text": "What residual arises from quantisation, and how is it computed, reported or allocated across components?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "residual amount and currency",
+                      "residual sign",
+                      "allocation method for split totals",
+                      "component receiving the residual",
+                      "post-allocation sum check"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-quantize-scale-deviation",
+                    "text": "When may the target scale differ from the currency minor unit, and which authority pins that deviation?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "declared target scale",
+                      "minor unit from the register",
+                      "deviation reason code",
+                      "pinning authority reference",
+                      "scope in which the deviation is valid"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-quantize-precision-loss",
+                    "text": "How is precision loss detected and expressed so that a consumer knows the value is no longer exact?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "exactness indicator",
+                      "declared decimals of the result",
+                      "implied value interval",
+                      "precision-loss outcome code",
+                      "original exact value reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svccalc-de-declared-scale",
+                    "name": "Declared scale",
+                    "description": "The number of fractional digits to which the amount is stated, which may equal the currency minor unit or a pinned deviation from it.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rounding-mode",
+                    "name": "Rounding mode and tie rule",
+                    "description": "The rounding mode applied and the tie-breaking rule used when a value falls exactly half-way, stated explicitly because regimes differ.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-residual",
+                    "name": "Quantisation residual",
+                    "description": "The signed difference between the exact input amount and the quantised result, expressed in the same currency.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-value-interval",
+                    "name": "Implied value interval",
+                    "description": "The interval of plausible source values implied by the declared decimals and rounding mode of a quantised amount, used later for tolerance evaluation.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-exactness-indicator",
+                    "name": "Exactness indicator",
+                    "description": "Whether the stated amount is exact or the product of a lossy quantisation.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svccalc-artifact-rounding-policy-profile",
+                    "name": "Rounding policy profile",
+                    "description": "A declarative, versioned profile stating target scale rules per currency or context, rounding mode, tie-breaking rule, residual allocation method and the order of quantisation relative to conversion. It is referenced by derivations so that a historical result remains reproducible after the policy changes.",
+                    "media_or_form": [
+                      "structured policy record",
+                      "human-readable policy document"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Authoritative identifier issued by the adopting Dimension's policy registry plus an immutable version identifier; where no registry identifier exists, a ULID assigned by the adopting Dimension. The effective-from instant is an attribute, never the identifier.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-artifact-quantisation-record",
+                    "name": "Quantisation record",
+                    "description": "The reportable result of one quantisation: exact input amount and currency, target scale, applied policy profile reference, quantised output, signed residual, exactness indicator and implied value interval.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identifier of the operation invocation supplied by the caller if it has one; otherwise a ULID assigned by the adopting Dimension, bound to the content hash of the input amount, policy reference and output.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "money-svccalc-layer-valuation",
+            "name": "Valuation and conversion",
+            "description": "How a monetary value is restated in another currency or measurement basis using an externally supplied rate binding, and what lineage must travel with the result so it can be reproduced or refuted.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-006",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "money-svccalc-finding-convert",
+                "name": "Rate binding, conversion arithmetic and derivation lineage",
+                "description": "The complete binding needed to make a conversion reproducible: which rate source and publication supplied the rate, the base and quote currencies and quotation direction, the reference time the rate represents versus the instant it was retrieved, any intermediate leg in a rate chain, the measurement basis of the result, the intermediate precision and the point at which quantisation is applied. The derived value always carries the original amount and currency; it never replaces them.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svccalc-q-convert-provenance",
+                    "text": "Which rate source, publication and retrieval act produced the rate used for this derivation?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "rate source identifier or URI",
+                      "publication or dataset version reference",
+                      "publication instant",
+                      "retrieval instant",
+                      "observability classification of the input"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-convert-direction",
+                    "text": "How are base and quote currencies, quotation direction and any intermediate leg expressed so the computation can be reproduced exactly?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "base currency",
+                      "quote currency",
+                      "quotation direction",
+                      "rate value with its own significant figures",
+                      "ordered rate chain legs and pivot currency"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-convert-reference-time",
+                    "text": "Which reference time governs rate selection, and how does it differ from the valuation instant and the retrieval instant?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "rate reference instant",
+                      "valuation or measurement instant",
+                      "retrieval instant",
+                      "reference-time selector (transaction date, measurement date, period-pinned rate)",
+                      "staleness threshold"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-convert-arithmetic",
+                    "text": "What arithmetic rules constrain the computation: multiplication versus division, permissibility of an inverse rate, intermediate scale and the order of quantisation?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "operation applied (multiply or divide)",
+                      "inverse-rate permission flag and its authority",
+                      "significant figures retained in the rate",
+                      "intermediate scale before final quantisation",
+                      "order of quantisation relative to chaining"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svccalc-de-original-value",
+                    "name": "Original amount and currency",
+                    "description": "The unmodified source amount and currency retained on every derived value, so that a derivation can always be re-run or reversed.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rate-source-reference",
+                    "name": "Rate source reference",
+                    "description": "Identifier of the external publisher, dataset and publication instance that supplied the rate, together with any stated fitness-for-purpose limitation.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rate-value",
+                    "name": "Rate value and direction",
+                    "description": "The rate as published, with base currency, quote currency, quotation direction and the significant figures in which it was published.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rate-reference-instant",
+                    "name": "Rate reference instant",
+                    "description": "The instant the rate is deemed to represent, distinct from the instant it was retrieved.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rate-retrieval-instant",
+                    "name": "Rate retrieval instant",
+                    "description": "The instant at which the rate was obtained by the calling system, recorded separately to expose staleness.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-rate-chain",
+                    "name": "Rate chain",
+                    "description": "The ordered sequence of legs, including any pivot currency, when no direct rate exists between base and quote currency.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-measurement-basis",
+                    "name": "Measurement basis",
+                    "description": "The basis on which the value is measured, such as historical cost at transaction date, closing-rate restatement, or a fair value measured at a stated measurement date.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-derivation-outcome",
+                    "name": "Derivation outcome",
+                    "description": "Typed outcome codes for conversion, including rate missing, rate stale beyond threshold, ambiguous rate among several published rates, currency not exchangeable, invalid or prohibited inverse, zero or non-positive rate, and precision loss.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svccalc-artifact-derivation-record",
+                    "name": "Derivation record",
+                    "description": "The self-contained lineage object that accompanies a derived monetary value: original amount and currency, rate binding with direction and chain, rate reference and retrieval instants, measurement basis, applied rounding policy reference, intermediate values, residual, final quantised result and any outcome codes. A third party holding only this record can recompute the result.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system derivation identifier where the calling system issues one; otherwise a ULID assigned by the adopting Dimension, bound to a content hash over original value, rate binding, reference instant and policy reference. The valuation date is an attribute, never the identifier.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-artifact-rate-binding",
+                    "name": "Rate binding",
+                    "description": "The reusable, citable statement of which rate applies for a given currency pair, reference time and policy context, including the source reference, direction, published significant figures, staleness threshold and permitted use. It is consumed as input; this model does not produce or publish rates.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identifier assigned by the external rate publisher or the adopting Dimension's rate catalogue; failing that, a ULID assigned by the adopting Dimension, qualified by the source reference and reference instant as attributes.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "money-svccalc-layer-assurance",
+            "name": "Reconciliation and projection",
+            "description": "How derived and stated monetary values are checked against one another within a declared tolerance, and how they are projected outward — including deliberately lossy, rounded, banded or suppressed forms.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-010",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "money-svccalc-finding-reconcile",
+                "name": "Reconciliation against declared tolerance",
+                "description": "Comparison of a set of monetary values — components against a total, a restated value against an independently stated one, or a computed balance against a reported balance — where comparability requires the same currency, compatible measurement bases and a stated reference time. Tolerance is derived from declared precision intervals, an absolute band or a relative band, and is always declared, never assumed. Outside-tolerance difference is a reportable outcome with attribution, not an error to be absorbed.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-002",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svccalc-q-reconcile-tolerance",
+                    "text": "What tolerance applies to this reconciliation, and is it derived from declared decimals, an absolute band or a relative band?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "tolerance basis",
+                      "tolerance value or interval derivation rule",
+                      "rounding mode assumed by the interval",
+                      "aggregate interval of contributing values",
+                      "comparison verdict"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-reconcile-comparability",
+                    "text": "Which values form the reconciliation set, and on what basis are they comparable to each other?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "member value references and roles",
+                      "common currency",
+                      "measurement basis compatibility statement",
+                      "common reference time or period",
+                      "signed weight of each contribution"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-reconcile-breach",
+                    "text": "What is emitted when the difference falls outside tolerance, and how is the unexplained residual attributed?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "out-of-tolerance outcome code",
+                      "signed difference amount and currency",
+                      "explained portion with cause references",
+                      "unexplained residual",
+                      "attribution to quantisation, rate binding or missing member"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-reconcile-evidence",
+                    "text": "What must accompany a reconciliation result so that an independent party can recompute the same verdict?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "input value references with declared decimals",
+                      "tolerance declaration",
+                      "applied rounding policy reference",
+                      "derivation record references for restated members",
+                      "computed difference and verdict"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svccalc-de-reconciliation-set",
+                    "name": "Reconciliation set",
+                    "description": "The ordered set of member monetary values with their roles and signed weights that participate in a single reconciliation.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-tolerance-declaration",
+                    "name": "Tolerance declaration",
+                    "description": "The declared basis and value of the permitted difference, including whether it is derived from precision intervals, an absolute band or a relative band.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-difference",
+                    "name": "Reconciliation difference",
+                    "description": "The signed difference between the reported and computed totals, expressed in the common currency of the set.",
+                    "value_kind": "quantity",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-reconciliation-verdict",
+                    "name": "Reconciliation verdict",
+                    "description": "The typed verdict of the comparison: consistent within tolerance, outside tolerance, or not evaluable because members are incomparable or incomplete.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-difference-attribution",
+                    "name": "Difference attribution",
+                    "description": "Decomposition of the difference into explained causes such as quantisation residual, differing rate binding or differing measurement basis, plus the unexplained remainder.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svccalc-artifact-reconciliation-statement",
+                    "name": "Reconciliation statement",
+                    "description": "The reportable output of one reconciliation run: the member set with declared decimals, the tolerance declaration and its basis, the computed and reported totals, the signed difference, the verdict and the attribution of the difference. It reports; it does not correct, post or approve.",
+                    "media_or_form": [
+                      "structured record",
+                      "tabular statement"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system run identifier issued by the calling reconciliation process where one exists; otherwise a ULID assigned by the adopting Dimension, with the run sequence number and period as attributes rather than identifier components.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "money-svccalc-finding-export",
+                "name": "Projection, lossy export and redaction",
+                "description": "Projection of a monetary value into a target representation — a message field, a reporting fact, a tabular cell or a display string — and the deliberate degradation of that projection through scaling, banding, rounding or suppression. The projection declares its own losses: whether the exported value is exact, rounded to a coarser scale, an interval, or suppressed; whether it remains reconcilable; and under which external authorisation any redaction was applied.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-010",
+                  "SRC-012",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "money-svccalc-q-export-target",
+                    "text": "Into which target representation is the value projected, and how are amount, currency and precision mapped without changing meaning?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "target representation identifier and version",
+                      "amount field mapping",
+                      "currency field mapping",
+                      "precision or decimals mapping",
+                      "scale factor applied"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-export-redaction",
+                    "text": "Which redaction or generalisation operations are applied to the projected value, and which authorisation decision directed them?",
+                    "kind": "access",
+                    "answer_data": [
+                      "operation applied (suppression, banding, controlled rounding, interval publication)",
+                      "affected cells or attributes",
+                      "authorisation decision reference",
+                      "requesting audience or purpose",
+                      "secondary suppression set"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-export-loss-declaration",
+                    "text": "How does the projection declare that it is lossy, non-reconcilable or partially suppressed?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "lossiness indicator",
+                      "reconcilability indicator",
+                      "declared decimals or interval of the exported value",
+                      "suppression markers",
+                      "information-loss measure"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-q-export-currency",
+                    "text": "How long may a projection be treated as current, and what marks it as superseded by a newer derivation?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "projection creation instant",
+                      "validity horizon or as-of statement",
+                      "superseding projection reference",
+                      "underlying derivation record reference",
+                      "supersession reason"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-svccalc-de-projection-target",
+                    "name": "Projection target",
+                    "description": "Identifier and version of the target representation into which the monetary value is mapped.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-scale-factor",
+                    "name": "Applied scale factor",
+                    "description": "Any presentation scaling applied to the exported amount, such as thousands or millions, recorded so the underlying magnitude remains recoverable.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-redaction-operation",
+                    "name": "Redaction operation",
+                    "description": "The disclosure-protection operation applied to the projected value, such as primary or secondary suppression, controlled or random rounding, or publication as an interval.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-authorisation-reference",
+                    "name": "Authorisation decision reference",
+                    "description": "Reference to the externally made authorisation or disclosure decision that directed the redaction; this model carries the reference and never makes the decision.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-svccalc-de-lossiness-declaration",
+                    "name": "Lossiness declaration",
+                    "description": "Explicit statement of whether the projected value is exact, rounded, banded or suppressed, and whether it can still participate in reconciliation.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-svccalc-artifact-projection-manifest",
+                    "name": "Projection manifest",
+                    "description": "The declaration accompanying an exported set of monetary values: target representation and version, field mappings, applied scale factor, per-value lossiness and reconcilability indicators, redaction operations with their authorisation references, and the derivation records behind any restated value.",
+                    "media_or_form": [
+                      "structured manifest",
+                      "human-readable export note"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Export identifier issued by the master system performing the export where one exists; otherwise a ULID assigned by the adopting Dimension, bound to a content hash of the projected value set. The export date is an attribute, never the identifier.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "money-svccalc-fn-validate-monetary-value",
+      "name": "Validate monetary value",
+      "description": "Evaluate a monetary value for admissibility against a caller-pinned profile and a referenced currency register version, returning typed outcomes without altering the value.",
+      "inputs": [
+        "monetary value with amount, currency identifier, declared scale, measurement basis and valuation instant",
+        "validation profile reference and version",
+        "currency register version reference"
+      ],
+      "outputs": [
+        "admissibility verdict",
+        "ordered list of validation outcome codes with severity and attribute pointers"
+      ],
+      "preconditions": [
+        "Currency register version is resolvable by the caller",
+        "Validation profile, if pinned, is resolvable and versioned",
+        "Amount is presented as an exact decimal with a declared scale"
+      ],
+      "effects": [
+        "Emits a verdict and outcome codes only",
+        "Performs no coercion, normalisation, persistence, posting or enforcement",
+        "Does not resolve or amend the currency register itself"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-quantize-amount",
+      "name": "Quantise amount",
+      "description": "Round an exact amount to a target scale under a referenced rounding policy and report the signed residual and the resulting value interval.",
+      "inputs": [
+        "exact decimal amount and currency identifier",
+        "target scale or a rule for deriving it from the currency minor unit",
+        "rounding policy profile reference and version"
+      ],
+      "outputs": [
+        "quantised amount with declared decimals",
+        "signed residual",
+        "implied value interval",
+        "exactness indicator and precision-loss outcome code where applicable"
+      ],
+      "preconditions": [
+        "Amount is exact and admissible",
+        "Rounding policy profile is resolvable and its version is pinned",
+        "Target scale is either the register minor unit or a pinned deviation with a stated authority"
+      ],
+      "effects": [
+        "Returns a computed value and residual",
+        "Never silently discards the residual: it is reported even when zero",
+        "Performs no persistence or ledger allocation of the residual"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-allocate-residual",
+      "name": "Allocate quantisation residual",
+      "description": "Distribute the residual arising when a quantised total is split into components, so that the quantised components sum exactly to the quantised total.",
+      "inputs": [
+        "quantised total",
+        "component weights or shares",
+        "rounding policy profile reference including the allocation method"
+      ],
+      "outputs": [
+        "quantised component amounts",
+        "allocation trace identifying which components absorbed residual units",
+        "post-allocation sum check result"
+      ],
+      "preconditions": [
+        "All components share one currency and one target scale",
+        "Allocation method is declared in the referenced policy profile",
+        "Total is already quantised"
+      ],
+      "effects": [
+        "Returns component amounts whose sum equals the given total exactly",
+        "Reports the allocation trace for reproduction",
+        "Does not post, settle or persist the allocation"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-convert-value",
+      "name": "Value or convert monetary value",
+      "description": "Restate a monetary value in a target currency or under a target measurement basis using a rate binding supplied by the caller, emitting a complete derivation record.",
+      "inputs": [
+        "source monetary value",
+        "target currency identifier and target measurement basis",
+        "rate binding with source reference, direction, reference instant, retrieval instant and any chain legs",
+        "rounding policy profile reference",
+        "reference-time selector and staleness threshold"
+      ],
+      "outputs": [
+        "derived monetary value carrying the original amount and currency",
+        "derivation record",
+        "derivation outcome codes"
+      ],
+      "preconditions": [
+        "Rate binding is supplied; this function never retrieves a rate",
+        "Rate reference instant and retrieval instant are both present with explicit offsets",
+        "Rate value is non-zero and the quotation direction is stated",
+        "Any inverse or chained computation is permitted by the pinned policy"
+      ],
+      "effects": [
+        "Returns a derived value that never replaces or overwrites the original amount and currency",
+        "Emits explicit outcomes for missing, stale, ambiguous or non-exchangeable rates, prohibited inverse, zero or non-positive rate and precision loss instead of substituting a fallback rate",
+        "Performs no rate acquisition, accounting recognition, posting or persistence"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-006",
+        "SRC-007",
+        "SRC-008",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-reconcile-values",
+      "name": "Reconcile monetary values",
+      "description": "Compare a set of monetary values against a stated total or against one another within a declared tolerance and report the verdict with attribution of any difference.",
+      "inputs": [
+        "reconciliation set with member references, roles and signed weights",
+        "reported total where applicable",
+        "tolerance declaration and its basis",
+        "rounding policy profile reference and derivation record references for restated members"
+      ],
+      "outputs": [
+        "reconciliation verdict",
+        "signed difference with currency",
+        "difference attribution",
+        "reconciliation statement"
+      ],
+      "preconditions": [
+        "All members resolve to one common currency",
+        "Measurement bases are compatible or their incompatibility is declared",
+        "Declared decimals or value intervals are available for each member",
+        "Tolerance is declared explicitly and not inferred silently"
+      ],
+      "effects": [
+        "Reports consistency, inconsistency or non-evaluability",
+        "Never adjusts, plugs or writes back a difference",
+        "Performs no posting, approval or enforcement of a corrective action"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-project-monetary-value",
+      "name": "Project monetary value to target representation",
+      "description": "Map a monetary value and its precision into a named target representation, declaring any scaling or rounding introduced by the projection.",
+      "inputs": [
+        "monetary value with declared decimals and exactness indicator",
+        "target representation identifier and version with its field mapping rules",
+        "scale factor where presentation scaling is requested"
+      ],
+      "outputs": [
+        "projected value in the target representation",
+        "projection manifest entry with lossiness and reconcilability indicators",
+        "interoperability outcome codes for unmapped or narrowed constraints"
+      ],
+      "preconditions": [
+        "Target representation and version are resolvable",
+        "Currency identifier is representable in the target representation",
+        "Declared decimals are known for the source value"
+      ],
+      "effects": [
+        "Emits a projected value and a declaration of losses introduced",
+        "Flags rather than silently truncates when the target permits fewer digits than the source declares",
+        "Performs no transmission, publication, storage or disclosure authorisation"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-010",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "money-svccalc-fn-redact-monetary-value",
+      "name": "Apply authorised redaction to a monetary projection",
+      "description": "Apply an already-authorised disclosure-protection operation — suppression, banding, controlled rounding or interval publication — to a monetary projection and declare the resulting information loss.",
+      "inputs": [
+        "monetary projection or set of projected values",
+        "redaction directive naming the operation, the affected values and the secondary suppression set",
+        "authorisation decision reference issued by an external authority"
+      ],
+      "outputs": [
+        "redacted projection",
+        "updated lossiness and reconcilability declaration",
+        "information-loss statement and redaction outcome codes"
+      ],
+      "preconditions": [
+        "An external authorisation decision reference is present; the function never decides authorisation",
+        "The redaction directive names a defined protection operation",
+        "Any secondary suppression required to protect a primary suppression is supplied in the directive"
+      ],
+      "effects": [
+        "Returns a degraded projection marked as lossy and, where applicable, non-reconcilable",
+        "Never deletes or alters the underlying source value",
+        "Performs no authorisation evaluation, enforcement or audit-trail writing"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-005"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-ECO-004",
+      "relation": "CHILD",
+      "purpose": "Registered parent economic model that supplies the surrounding economic-value context; WM-XCT-032 contributes only the monetary value structure and its calculation, reconciliation and projection semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Host entity, event or agreement models that carry monetary attributes",
+      "relation": "MIX-IN",
+      "purpose": "Attach amount, currency, measurement basis, valuation instant, declared precision and derivation lineage to any host record without the host redefining monetary arithmetic.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Currency register maintained under ISO 4217 by its maintenance agency",
+      "relation": "ALIGN",
+      "purpose": "Resolve currency identifiers, numeric codes, minor units and code status against the governing register version; the register's assignment, amendment and withdrawal lifecycle stays with the maintenance agency.",
+      "required": true,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "External exchange-rate source or market data service",
+      "relation": "REFERENCE",
+      "purpose": "Consume a rate binding as an input and record its source, publication reference, reference instant and retrieval instant; rate acquisition, publication schedules, suspension of pairs and fitness-for-purpose statements remain owned by the publisher.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Accounting policy, recognition and ledger posting model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the measurement basis and reference-time selector that an accounting policy dictates, and hand computed values back for recognition; selection of the applicable rate policy, recognition of exchange differences and posting remain external.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Payment message and scheme profile models",
+      "relation": "ALIGN",
+      "purpose": "Constrain validation profiles to scheme and message-level currency and digit limits when a caller pins one, and preserve amount and currency meaning end to end across message projections.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "Business reporting fact model (XBRL / Open Information Model)",
+      "relation": "ALIGN",
+      "purpose": "Reuse declared-decimals, value-interval and calculation-consistency semantics for quantisation and reconciliation tolerance; taxonomies, contexts, dimensional models and filing rules remain in the reporting framework.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Authorisation, disclosure-control and policy decision service",
+      "relation": "REFERENCE",
+      "purpose": "Receive an authorisation decision reference and a redaction directive as inputs to a redaction operation; evaluation, enforcement and the audit trail of the decision are owned entirely by that service.",
+      "required": true,
+      "source_refs": [
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Temporal representation model based on RFC 3339",
+      "relation": "ALIGN",
+      "purpose": "Express valuation instant, rate reference instant, retrieval instant and projection instant with seconds and an explicit offset or Z, so that staleness and supersession are computable.",
+      "required": true,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Currency-regime and jurisdictional conversion rule sets",
+      "relation": "EXTEND",
+      "purpose": "Specialise only the monetary computation parameters that a jurisdictional regime fixes — significant figures retained in a rate, permissibility of inverse rates, mandatory pivot currency, intermediate rounding depth and final rounding rule — without duplicating the regime's own legal authority, applicability or enforcement machinery.",
+      "required": false,
+      "source_refs": [
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Records retention, storage and audit record systems",
+      "relation": "REFERENCE",
+      "purpose": "Delegate persistence, retention scheduling, legal hold, erasure execution and audit-trail construction for monetary records and derivation lineage; this model defines disposition semantics only.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must name one owner for monetary semantics who approves rounding policy profiles, tolerance defaults and the admissible measurement-basis vocabulary.",
+        "The adopting Dimension must pin, per context, the currency register version, the validation profile and the rate sources considered admissible, and must record why each rate source is admissible for that context.",
+        "The adopting Dimension must supply the identifier issuance scheme for derivation records, reconciliation statements and projection manifests where no master-system identifier exists, and must supply the retention schedule that governs them.",
+        "The adopting Dimension must declare which jurisdictional conversion regime, if any, binds a given context, since regimes differ on inverse rates, pivot currencies and rounding."
+      ],
+      "namespace_guidance": "Model-local identifiers use the money-svccalc- prefix and lower-kebab-case, and carry no date-like component. Currency identifiers, rate source identifiers, authorisation decision references and target representation identifiers are always foreign references qualified by the issuing authority and its version; they are never minted or re-issued inside this model. Where the adopting Dimension needs a global IRI, it mints one in its own governed namespace and binds it to the master-system identifier rather than overloading a currency code or a date.",
+      "registry_links": [
+        "Registry entry vr.wm-xct-032 (WM-XCT-032, mixin) with parent WM-ECO-004.",
+        "Adopting-Dimension registry of rounding policy profiles, validation profiles and admissible rate sources, each versioned and effective-dated as attributes."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Amounts are canonicalised as exact decimals with an explicit scale; trailing zeros are significant and are preserved because they express declared precision, and binary floating-point forms are never canonical.",
+        "Currency is canonicalised as the alphabetic identifier from the referenced register version, with the numeric code and minor unit resolved by reference rather than copied into the record.",
+        "All instants — valuation, rate reference, retrieval, projection — are canonicalised to RFC 3339 with seconds and an explicit offset or Z, retaining the original offset rather than normalising every value to UTC.",
+        "A derived value is canonicalised as the pair of the retained original value and its derivation record; a derived amount presented without its lineage is not a canonical form.",
+        "Rate values are canonicalised at the significant figures in which they were published; they are never pre-rounded, truncated or inverted during canonicalisation."
+      ],
+      "patch_rules": [
+        "Monetary values are corrected by supersession: a new value referencing the superseded one, never an in-place edit of amount, currency, rate binding or reference instant.",
+        "A change to a rounding policy profile or a tolerance declaration creates a new version; existing derivation records and reconciliation statements keep pointing at the version under which they were computed.",
+        "A patch that alters declared scale, rounding mode, rate source, quotation direction or measurement basis invalidates every downstream derived value that cites it; those values must be recomputed and re-emitted, not silently reinterpreted.",
+        "Adding an outcome code to the taxonomy is a compatible patch; changing the meaning of an existing outcome code is not and requires a new code."
+      ],
+      "compatibility_rules": [
+        "Consumers must treat an unknown outcome code as blocking unless the emitting profile explicitly marks it non-blocking, so that new failure modes are never read as success.",
+        "A projection target that supports fewer fraction digits than the source declares must be reported as a lossy projection; narrowing is never a silent compatibility resolution.",
+        "A currency identifier that has become historic or replaced in a newer register version remains valid for values whose valuation instant precedes the change; readers resolve status against the register version cited by the value.",
+        "Reconciliation results are comparable only across runs that cite the same tolerance basis and the same rounding policy version."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "The authoritative master-system identifier issued by the system of record for the artifact — the calling system's derivation, run or export identifier — takes precedence whenever one exists.",
+        "A governed global identifier or IRI minted in the adopting Dimension's namespace, used when the master system exposes no identifier but the artifact must be cited externally.",
+        "A UUID or ULID assigned by the adopting Dimension, bound to a content hash of the artifact's determining inputs, used only when neither of the above exists.",
+        "No identifier may be derived from a valuation date, reporting period or export date; such values are attributes, and a date is never an identifier."
+      ],
+      "timestamp_rule": "All time values use RFC 3339 with seconds and an explicit numeric offset or Z; unqualified local time is rejected. Event time and observation or ingestion time are recorded separately whenever they can differ: the valuation or measurement instant and the rate reference instant are event times, while the rate retrieval instant, the computation instant and the export instant are observation or ingestion times. A derivation record that reports only one of these is incomplete, because staleness is defined as the interval between the rate reference instant and the valuation instant, and reproducibility depends on the retrieval instant.",
+      "serial_naming_rule": "Serial artifacts — rounding policy profiles and reconciliation statements — are named by a stable base identifier plus a monotonically increasing version or run sequence number, for example a policy identifier with version v3 or a reconciliation run identifier with sequence 007. The effective-from instant, reporting period and run date are attributes of the serial member and never appear in the identifier. Superseded members remain resolvable so that historical derivations stay reproducible.",
+      "integrity_rule": "Every artifact carries a content hash over its determining inputs — for a derivation record, the original amount and currency, the rate binding, the reference and retrieval instants and the rounding policy version. Any change to a determining input yields a new artifact with a new hash rather than a mutation. A derived monetary value transmitted without a resolvable derivation record reference, or a projection transmitted without its lossiness declaration, is treated as unverified."
+    },
+    "policies": [
+      "Original amount and currency are preserved on every derived value; derivation never overwrites its source.",
+      "Rate acquisition, payment execution, accounting posting, persistence, disclosure authorisation and policy enforcement are performed by external systems; functions in this model calculate or report only.",
+      "Every quantisation, conversion, reconciliation and projection states its governing parameters — policy version, rate binding, tolerance basis, target representation — so that any result can be independently recomputed or refuted.",
+      "Degraded conditions are reported as typed outcomes, never resolved by substituting a default rate, a default scale or a plugged difference.",
+      "Precision and lossiness are declared, not inferred: a consumer must be able to tell from the value itself whether it is exact, rounded, banded or suppressed."
+    ],
+    "crud": {
+      "read": [
+        "Read a monetary value together with its declared scale, exactness indicator, measurement basis and valuation instant; reading an amount without its currency identifier is not a valid read.",
+        "Resolve currency metadata, rate bindings and authorisation decisions by reference to their owning systems and register versions; this model holds references, not copies of those registers.",
+        "Read a derived value only together with its derivation record reference, so that the reader can establish reproducibility."
+      ],
+      "create": [
+        "Create a monetary value only when amount, currency identifier, declared scale, measurement basis and valuation instant are all present and admissible.",
+        "Create a derived value only as a new record that retains the original amount and currency and cites a complete derivation record; never by mutating the source.",
+        "Create a reconciliation statement or projection manifest only with an explicit tolerance declaration or lossiness declaration respectively."
+      ],
+      "update": [
+        "Amount, currency identifier, rate binding and reference instants are immutable once emitted; correction is by supersession with a reference to the superseded record and a stated reason.",
+        "Policy profiles and tolerance declarations are updated by issuing a new version; prior versions remain resolvable so earlier results stay reproducible.",
+        "Outcome codes attached to a result may be enriched with additional explanation but never removed to make a failed computation appear successful."
+      ],
+      "delete": [
+        "This model operates no store and executes no deletion. It specifies disposition semantics only: a monetary value or derivation record is retired by a tombstone retaining the record identifier, the currency identifier, the valuation instant, the superseding record reference and a disposition reason, while amount, rate binding and lineage payload are dropped.",
+        "Execution of retention, legal hold, disposition and physical erasure is owned by the adopting Dimension's records-retention policy and by the referenced storage, accounting and audit systems; where the monetary value is embedded in a host record, the host model's retention rule governs and this model's tombstone is subordinate to it.",
+        "A tombstoned derivation record makes every value citing it non-reproducible; consumers must treat such a value as unverified rather than as verified-and-deleted.",
+        "Redaction, suppression and lossy export are disclosure operations, not deletion: they never destroy the source value, and any request to destroy it is routed to the owning storage system."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Monetary semantics steward",
+        "responsibilities": [
+          "Owns the definitions of amount, currency binding, measurement basis, valuation instant and declared precision.",
+          "Approves changes to the outcome taxonomy and to the meaning of exactness and reconcilability indicators."
+        ]
+      },
+      {
+        "name": "Rounding and precision policy owner",
+        "responsibilities": [
+          "Issues and versions rounding policy profiles, including target-scale deviations from the register minor unit and residual allocation methods.",
+          "Records the authority for any deviation and the scope in which it is valid."
+        ]
+      },
+      {
+        "name": "Rate binding curator",
+        "responsibilities": [
+          "Maintains the catalogue of admissible external rate sources per context, with quotation direction, reference-time semantics, staleness thresholds and stated use limitations.",
+          "Does not acquire, publish or warrant rates; records the publisher's own fitness-for-purpose statements verbatim."
+        ]
+      },
+      {
+        "name": "Reconciliation reviewer",
+        "responsibilities": [
+          "Sets and approves tolerance declarations and their basis per reconciliation context.",
+          "Reviews out-of-tolerance outcomes and routes unexplained differences to the owning accounting or operations process without adjusting values in this model."
+        ]
+      },
+      {
+        "name": "Projection and disclosure liaison",
+        "responsibilities": [
+          "Maintains mappings to target representations and their digit and currency constraints.",
+          "Relays authorisation decision references and redaction directives from the owning authorisation service and verifies that resulting projections declare their information loss."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Read access to monetary structure, computation parameters and outcome semantics is granted to any agent authorised to read the host record; access to exact amounts, derivation records and rate bindings follows the host record's classification, because a derived value can disclose its source. Write access is restricted to the named owner roles, and any redaction is applied only under an external authorisation decision reference.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "A projection may expose banded, rounded or suppressed amounts to a wider audience than the exact value, provided the projection manifest declares the operation, the authorisation reference and the resulting information loss.",
+        "Derivation records may be shared with an external reviewer for reproduction while the underlying host record stays restricted, provided the record's own amounts are redacted under the same authorisation.",
+        "Rate bindings sourced from a licensed publisher may be restricted more tightly than the values derived from them; in that case the derivation record cites the binding by reference rather than reproducing the rate value.",
+        "Emergency read of exact amounts for an out-of-tolerance investigation is granted by the adopting Dimension's access policy, not by this model."
+      ],
+      "audit_requirements": [
+        "Every emitted derivation record, reconciliation statement and projection manifest must be attributable to the invoking identity and computation instant by the calling system; this model supplies the attributable content but does not construct or hold the audit trail.",
+        "Redaction operations must be traceable to an external authorisation decision reference; a redacted projection without such a reference is treated as unauthorised by the consuming system.",
+        "Supersession events must be recoverable by the owning store so that a historical result can be re-derived under the policy version in force at the time.",
+        "Recording, retention and inspection of these audit records are executed by the referenced audit and records systems under the adopting Dimension's policy."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Name and Type to confirm this is the WM-XCT-032 monetary mixin and not a host or payment model.",
+        "Follow Specification URL for scope, boundaries and the outcome taxonomy before attempting any computation.",
+        "Follow Storage type URL to learn how monetary values, derivation records and manifests are projected in this deployment, remembering that storage form is a projection and not the semantics.",
+        "Follow Interface URL for the callable calculation, reconciliation and projection operations and their preconditions.",
+        "Follow Processes URL for the adopting Dimension's pinned policy profiles, admissible rate sources, tolerance defaults and retention rules before emitting any derived value."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model specifies the calculation, reconciliation and projection operation semantics of a monetary value — admissibility validation, quantisation with residual handling, valuation and conversion from an externally supplied rate binding with full derivation lineage, reconciliation against a declared tolerance, and lossy or redacted export — grounded in ISO 4217 register governance, IAS 21 and IFRS 13 measurement definitions, XBRL precision and calculation-consistency semantics, EU conversion and rounding law, and two independent public-authority rate regimes. It claims alignment with, not conformance to, those standards, and it deliberately excludes rate acquisition, payment, posting, persistence, authorisation and audit.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority names the master-system identifier first, then a governed IRI, then a Dimension-assigned UUID or ULID bound to a content hash; dates are explicitly barred from identifiers. Currency identifiers are foreign references resolved against a cited register version."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Monetary values and derivation records are immutable and corrected by supersession; policy profiles and reconciliation statements are serial and versioned. Currency code status transitions are consumed from the register, not owned."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Derived value to original value, derived value to derivation record, derivation record to rate binding and policy version, reconciliation set membership with signed weights, and projection to underlying derivation are all modelled explicitly."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Valuation instant and rate reference instant (event times) are separated from retrieval, computation and export instants (observation times), all in RFC 3339 with seconds and explicit offset. Staleness is defined as an interval between these."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Rate source, publication reference, reference instant, retrieval instant, chain legs and observability classification are mandatory on any derivation; the derivation record is self-contained enough for third-party recomputation."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five owner roles are named, and every external concern — rate publication, accounting policy, authorisation, persistence, audit — is assigned to a composition target rather than modelled locally."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Admissibility validation, quantisation exactness checks, reconciliation tolerance evaluation and projection constraint checks are all specified with typed outcomes; unknown outcome codes default to blocking."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default rule ties monetary access to the host record's classification, with four scopes and explicit exceptions for banded projections, external review of derivation records and licensed rate values. Authorisation decisions themselves are external."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Disposition semantics (tombstone contents, subordination to the host model's retention rule, redaction as non-deletion) are specified, while execution of retention, legal hold and erasure is explicitly assigned to the adopting Dimension's policy and the referenced storage systems."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Projection to named target representations with field mappings and declared narrowing, alignment to ISO 4217, ISO 20022 profiles and XBRL precision semantics, and an explicit rule that narrowing is reported rather than silently applied."
+      },
+      {
+        "dimension": "rounding and precision",
+        "status": "covered",
+        "notes": "Target scale, rounding mode, tie-breaking rule, residual computation, residual allocation and implied value intervals are modelled; EU rules on significant figures and intermediate rounding depth are treated as a regime specialisation rather than a universal default."
+      },
+      {
+        "dimension": "arithmetic reproducibility",
+        "status": "covered",
+        "notes": "Exact decimal representation, retained rate significant figures, declared multiply-versus-divide operation, chain legs and quantisation order together make any derived value recomputable from its record."
+      },
+      {
+        "dimension": "outcome and exception taxonomy",
+        "status": "covered",
+        "notes": "Missing, stale, ambiguous and non-exchangeable rates, unsupported currency or code status, prohibited or invalid inverse, zero or non-positive rate, precision loss, out-of-tolerance reconciliation and lossy or suppressed export are all typed outcomes with severity and blocking indicators."
+      },
+      {
+        "dimension": "disclosure and redaction",
+        "status": "covered",
+        "notes": "Suppression, secondary suppression, controlled and random rounding and interval publication are modelled as declared operations applied only under an external authorisation reference, with an information-loss statement and a reconcilability indicator."
+      },
+      {
+        "dimension": "jurisdictional accounting variance",
+        "status": "gap",
+        "notes": "Hyperinflationary restatement, hedge-accounting measurement, statutory tax rates and entity-level presentation-currency translation are not modelled here and are not fully resolvable from the sources gathered; they are held as an accounting-model concern pending evidence."
+      },
+      {
+        "dimension": "non-ISO-4217 units of account",
+        "status": "gap",
+        "notes": "Crypto-assets, central bank digital currency units, loyalty points and commodity units of account lack a governing identifier register equivalent to ISO 4217; the model can carry them only via an explicitly named alternative register, which is not specified here."
+      },
+      {
+        "dimension": "measurement basis",
+        "status": "covered",
+        "notes": "Historical cost at transaction date, closing-rate restatement and fair value at a measurement date are carried as an explicit attribute with an observability classification for the input, grounded in IAS 21 and IFRS 13."
+      },
+      {
+        "dimension": "security",
+        "status": "not-applicable",
+        "notes": "Cryptographic protection, transport security and key management belong to the storage and interface projections and to the adopting Dimension's security model; this model contributes only the content hash used for integrity of its own artifacts."
+      }
+    ],
+    "known_omissions": [
+      "Hyperinflationary economy restatement and the interaction between restatement and translation are not modelled.",
+      "Interest, discounting, day-count conventions and present-value computation are excluded even though they produce monetary values.",
+      "Multi-currency netting, offsetting and settlement-risk computations are excluded.",
+      "Bid/ask/mid rate selection, spreads and dealer margin are not modelled as first-class parameters; they are treated as attributes of an externally supplied rate binding.",
+      "Historical redenomination factors for currencies replaced at a fixed ratio are referenced only through the register's successor code, not modelled as a conversion regime in their own right.",
+      "The precise ISO 20022 amount digit constraints could not be verified from a machine-extractable primary source at access time, so no specific total-digit or fraction-digit limit is asserted as normative here.",
+      "Tax and customs valuation rate mandates, which frequently differ from both accounting and reporting rates, are not enumerated."
+    ],
+    "conflicts": [
+      "EU law prohibits deriving an inverse rate for euro conversion, while the ECB publishes reference rates only with the euro as base currency; systems needing a non-euro base pair must either use a different source or accept a computation the euro regime forbids in its own scope. The model therefore makes inverse permissibility an explicit pinned parameter rather than a default.",
+      "IAS 21 requires the spot rate at the transaction date, whereas the U.S. Treasury regime mandates a single published rate for the reporting date and the ensuing three months, with amendments only when rates move by 10% or more. The same underlying transaction can legitimately carry different converted values under the two regimes.",
+      "XBRL 2.1 calculation checking effectively requires reported rounded figures to add up exactly, whereas Calculations 1.1 defines consistency by overlap of rounding intervals. A reconciliation verdict is therefore only meaningful once the tolerance basis is declared.",
+      "ISO 4217 minor units differ from the digit allowances of message profiles: a scheme profile may restrict a currency to two fractional digits while a message datatype allows more and the register defines a different minor unit for other currencies. Validation must be profile-pinned rather than register-only.",
+      "IAS 21 provides for estimating a rate when a currency is not exchangeable, which conflicts operationally with regimes that require an officially published rate; the model reports non-exchangeability as an outcome and refuses to substitute an estimate on its own authority."
+    ],
+    "regional_assumptions": [
+      "The six-significant-figure, no-inverse-rate and triangulation rules are specific to euro conversion under EU law and apply only to the euro and the national currency units it replaced; they are not a global default.",
+      "ECB reference rates are euro-based, published on TARGET working days only, explicitly discouraged for transaction purposes, and include suspended pairs; any deployment relying on them inherits those limits.",
+      "Treasury Reporting Rates of Exchange bind U.S. federal agencies and carry enumerated exceptions for collections, refunds and inter-currency conversions; they are not a general-purpose commercial rate source.",
+      "The 2026 transition of Bulgaria to the euro illustrates that register status and fixed conversion ratios are time-dependent; any validation must cite the register version in force at the valuation instant.",
+      "Statistical disclosure control terminology and thresholds follow European practice; other statistical authorities use different dominance rules and rounding bases."
+    ],
+    "adversarial_checks": [
+      "Checked every function against the ownership contract: none acquires a rate, moves money, posts to a ledger, persists a record, authorises disclosure, enforces a policy or writes an audit trail. The redaction function was specifically constrained to require an externally issued authorisation decision reference and to perform no evaluation of it.",
+      "Searched for counterexamples to a universal two-decimal assumption and found zero-decimal and three-decimal currencies in the register, a five-fraction-digit allowance in message datatypes and a two-decimal scheme restriction. The model therefore treats target scale as a pinned parameter with an explicit deviation authority rather than deriving it silently from the minor unit.",
+      "Tested whether the attractive shortcut of deriving an inverse rate could be presented as canonical; it could not, because EU law prohibits it within its scope while the only euro-base public source makes it operationally tempting. The conflict is recorded and the behaviour is made an explicit parameter with an emitted outcome when prohibited.",
+      "Tested whether a single tolerance constant could be presented as canonical for reconciliation; it could not, because interval-based and exact-sum consistency definitions coexist in the same standards family. Tolerance is therefore always declared with its basis, and a reconciliation without a declared basis is non-evaluable.",
+      "Checked whether the model was quietly claiming ownership of evidence and audit semantics through its validation output; it was, so the validation finding was reduced to inline transient results with the durable evidence record explicitly assigned to the external audit and records systems.",
+      "Checked whether redaction could be mistaken for deletion and closed the gap by stating that suppression never destroys the source value and that destruction requests are routed to the owning storage system."
+    ]
+  }
+}
