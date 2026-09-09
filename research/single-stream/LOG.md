@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-018
+
+Published Governance Body / Committee with reviewable-draft assurance:
+7 sources, 6 bundles, 12 layers/findings, 36 questions, 12 artifacts and 6
+record functions. Mandate, membership, meetings and decision authority remain
+distinct; no universal quorum or legal-validity execution is claimed.
+Both providers timed out once; Codex fallback and frozen same-agent audit are
+explicit. Validation, both site projections, exact live spec digest, API search
+and resolution, deploy/migration and full SEO/AEO/GEO checks passed.
+Backup: /data/web/backups/ver.cy/20260910-010141-catalogue-194.
+193 valid/live completed, 208 remaining; next sequence 194 WM-ORG-019.
+Evidence: ../runs/wm-org-018/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-015
 
 Published Supplier / Partner Relationship with reviewable-draft assurance:
