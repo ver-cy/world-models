@@ -1,5 +1,18 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-013
+
+Published Stakeholder / Interest, reviewable-draft: 6 primary sources, 6 bundles,
+12 layers/findings, 36 questions, 12 artifacts and 6 proposed record operations.
+Interest, impact, influence, rights, representation and consent remain distinct;
+no outreach or personal profiling is authorized. Both provider attempts timed out
+once. Codex fallback, validation and frozen no-tools self-audit passed with all
+independent-review, source and runtime holds visible. Both site projections and
+Bitrix migration completed; live HTTP/digest/search/resolve and full SEO/AEO/GEO
+checks passed. Backup /data/web/backups/ver.cy/20260909-235839-catalogue-191.
+190 valid/live completed, 211 remaining; next sequence 191 WM-ORG-014.
+Evidence: ../runs/wm-org-013/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-012
 
 Published Inter-organizational Relationship as reviewable-draft: 7 sources,
