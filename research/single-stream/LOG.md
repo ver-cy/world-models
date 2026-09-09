@@ -1,5 +1,20 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-012
+
+Published Inter-organizational Relationship as reviewable-draft: 7 sources,
+6 bundles, 12 layers/findings, 36 authored questions, 12 artifacts and 6 proposed
+functions. Consolidation, ownership, partnership and supply remain distinct;
+kind-specific graph rules and attributed evidence prevent universal inference.
+Both external attempts timed out once. Codex fallback validated, frozen no-tools
+self-audit found no critical conflict; independent-review and source/runtime
+holds stay visible. Both site projections built, Bitrix migration updated 403
+models and 1180 external records. Live HTTP, exact digest, search/resolve and
+full server SEO/AEO/GEO checks passed. Backup:
+/data/web/backups/ver.cy/20260909-233646-catalogue-190.
+189 valid/live completed, 212 remaining; next sequence 190 WM-ORG-013.
+Evidence: ../runs/wm-org-012/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-011
 
 Published Business Establishment / Branch, version 0.3.0-research.1, with
