@@ -1,5 +1,21 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-OBJ-019
+
+Published Component Type / Engineering BOM as reviewable-draft: 9 primary
+sources, 6 bundles, 12 layers/findings, 36 authored questions, 12 artifacts and
+6 proposed functions. Schema and semantic validation pass; frozen Codex
+no-tools self-audit found no critical conflicts. Claude and Grok each timed
+out once; independent-review, source-depth and executable-conformance holds
+remain visible. Primary/mirror package hashes agree. Bitrix migration reported
+403 models and 1180 interoperability records. Fresh HTTP, exact-byte digest,
+search/resolve, canonical, structured metadata and full server SEO/AEO/GEO
+checks pass. Backup: /data/web/backups/ver.cy/20260909-221016-catalogue-187.
+Queue: 186 valid/live-completed subject models, 215 remaining; next sequence
+187 WM-OBJ-020. Evidence: ../runs/wm-obj-019/publication-checks.md.
+
+## Earlier completions
+
 | UTC date | Phase | Result | Notes |
 | --- | --- | --- | --- |
 | 2026-09-06 | six-stream audit | complete | Canonical branch had 90 valid models. Former stream 01 had one already integrated valid result; stream 03 had two additional valid results; streams 02, 04, 05 and 06 had no completed result. |
