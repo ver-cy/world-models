@@ -1,5 +1,20 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-OBJ-020
+
+Published Inventory Stock Position as reviewable-draft: 10 primary sources,
+6 bundles, 12 layers/findings, 36 authored questions, 12 artifacts and 6 proposed
+functions. Stock grain, owner/custodian, measure semantics, reservations,
+snapshot time, counts, reconciliation and action authority remain distinct.
+Both external attempts timed out once; Codex fallback and separate frozen
+no-tools self-audit passed with no critical conflict. Source and runtime holds
+remain explicit. Both site projections built; critical package hashes agree.
+Bitrix updated 403 models and 1180 external records. HTTP, exact spec digest,
+search/resolve, metadata and full server SEO/AEO/GEO checks passed. Backup:
+/data/web/backups/ver.cy/20260909-224330-catalogue-188. Queue: 187 valid/live,
+214 remaining; next sequence 188 WM-ORG-011. Evidence:
+../runs/wm-obj-020/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-OBJ-019
 
 Published Component Type / Engineering BOM as reviewable-draft: 9 primary
