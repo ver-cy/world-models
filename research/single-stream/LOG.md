@@ -1,5 +1,17 @@
 # Canonical single-stream log
 
+## Latest completion: 2026-09-09 WM-ORG-019
+
+Published Organization Policy with reviewable-draft assurance: 6 primary sources,
+6 bundles, 12 layers/findings, 36 questions, 12 artifacts and 6 record functions.
+Approval, issue, effect and review remain distinct. Policy text cannot override
+agent authority; no legal judgment, enforcement or lossless compiler is claimed.
+Both providers timed out once; Codex fallback and same-agent audit are visible.
+Validation, both projections, Bitrix migration, exact live digest/API and full
+SEO/AEO/GEO passed. Backup: /data/web/backups/ver.cy/20260910-012641-catalogue-195.
+194 valid/live completed, 207 remaining; next sequence 195 WM-PER-011.
+Evidence: ../runs/wm-org-019/publication-checks.md.
+
 ## Latest completion: 2026-09-09 WM-ORG-018
 
 Published Governance Body / Committee with reviewable-draft assurance:
