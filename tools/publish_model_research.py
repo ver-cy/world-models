@@ -369,6 +369,7 @@ def main() -> int:
         "provider_mode": adjudication.get("provider_mode", "dual-provider"),
         "providers": active,
         "waived_providers": waived,
+        "runtime_requires": sorted({item["target"] for item in result["composition"] if item.get("required")}),
     }
     write_json(target / "publication.json", publication)
     agents = f"""# {model['name']}
