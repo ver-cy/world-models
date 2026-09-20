@@ -1,0 +1,2253 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-037",
+    "model_id": "WM-XCT-037",
+    "name": "Dependency / Impact",
+    "entry_kind": "mixin",
+    "purpose": "Define the format-neutral command contracts by which a typed dependency or downstream-impact statement is declared, validated, reviewed, approved, activated, revised, corrected, superseded, retired and refreshed by observation, so that an agent can mutate such statements safely, repeatably and with preserved history without owning the surrounding graph, policy, audit or execution machinery.",
+    "scope_statement": "This is one bounded split area of WM-XCT-037. It covers only the mutation surface: which commands exist, who may issue them, what must be true before they are admitted, what they may and may not change, how repeated or concurrent submissions behave, how historical identity is preserved, how correction is distinguished from supersession, and what result, failure and event signals a command produces. The dependency graph structure itself, impact computation, discovery tooling, access decisions, audit storage and any downstream action remain outside and are reached only by composition links.",
+    "in_scope": [
+      "Command catalogue and permitted state transitions for a dependency or impact statement (declare, validate, review, approve, activate, revise, correct, supersede, retire, observation-update)",
+      "Admission contract per command: actor reference, authorization decision reference, subject binding, required inputs, preconditions and invariants that must hold",
+      "Safe-retry semantics: idempotency scope, request fingerprinting, replay window and replay outcome",
+      "Optimistic concurrency: version preconditions, conflict outcomes and the atomicity unit for multi-statement commands",
+      "Immutable version identity and the semantic difference between revision, correction of an erroneous record, supersession and retirement",
+      "Observation-update semantics for machine-asserted dependency facts, including separation of the time the condition held from the time the observation was completed or ingested",
+      "Result payload, failure representation and emitted change-event envelope semantics",
+      "Containment rules that stop a command mutating externally owned endpoint records or triggering dependent actions"
+    ],
+    "out_of_scope": [
+      "The dependency edge and impact-assessment payload structure, edge typing, criticality scoring and blast-radius computation, which belong to the companion structural split area",
+      "Package, artifact or version resolution, dependency discovery, scanning and SBOM generation",
+      "Deployment, patching, remediation, rollback or any corrective execution triggered by a dependency change",
+      "Notification delivery, subscription management, event transport, retry and ordering guarantees",
+      "Access-control evaluation and enforcement: decision rendering by a policy decision point and enforcement by a policy enforcement point",
+      "Audit-record content, storage, immutability and retention of audit evidence",
+      "Physical deletion, disposition scheduling and legal-hold execution for retained records",
+      "Actor authentication, credential issuance and organizational party mastering",
+      "Storage and interface projections (JSON, YAML, Git, MCP, MongoDB, HTTP), which are bindings of these semantics rather than the semantics themselves",
+      "Workflow orchestration engines, task queues and case management beyond the recorded state of a single statement"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Companion structural split area of WM-XCT-037 (dependency edge and impact assessment)",
+        "distinction": "That area owns what a dependency statement is - endpoints, relationship type, lifecycle scope, completeness and impact fields. This area owns only how such a statement legitimately changes over time. Command payload shapes are composed from there, never redefined here.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Authorization / policy decision model (PDP, PAP, PIP, PEP separation)",
+        "distinction": "Commands carry a reference to an authorization decision and the deciding authority. Rendering Permit/Deny/Indeterminate/NotApplicable, resolving attributes, and enforcing the decision stay with the policy model; this model fails closed on a non-permit reference but never evaluates policy.",
+        "source_refs": [
+          "SRC-016"
+        ]
+      },
+      {
+        "neighbor": "Audit-trail and evidence record model",
+        "distinction": "Each state-changing command emits an audit hook with correlation identifiers and version tokens. The audit model owns record content, immutability, storage and retention of audit evidence; this model stores no audit trail of its own and claims no audit authority.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Event notification and delivery infrastructure",
+        "distinction": "This area defines which events must be emitted and what identifies them; subscription, transport binding, delivery guarantees, ordering and retry belong to the messaging layer.",
+        "source_refs": [
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Dependency discovery, package resolution and SBOM tooling",
+        "distinction": "An observation-update records what an observer reported about a dependency; how the observation was produced, which resolver or scanner ran, and how versions were resolved are owned by the tooling and referenced as an observing agent and procedure.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Remediation, deployment and change-execution workflow",
+        "distinction": "Approving or activating a dependency statement asserts that the statement is fit to be relied on; it is not an authorization to deploy, patch or remediate. No command in this area initiates a dependent action.",
+        "source_refs": [
+          "SRC-016",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Adopting-Dimension retention and disposition policy",
+        "distinction": "This area states what must survive as immutable history and defines a tombstone shape; scheduling and executing destruction, and holding or releasing legal holds, are owned by the retention policy or records-management model.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-007"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "STD 97, June 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:41:00Z",
+      "relevance": "Normative definitions of safe and idempotent methods (9.2.1, 9.2.2: repeating a request has the same intended effect as a single one), conditional requests and preconditions (13.1, If-Match with ETag validators against the lost-update problem), and the 409 Conflict / 412 Precondition Failed outcome semantics reused here as interface-neutral command semantics."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 9457: Problem Details for HTTP APIs",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9457.html",
+      "version_or_date": "Standards Track, July 2023 (obsoletes RFC 7807)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:44:00Z",
+      "relevance": "Machine-readable failure representation: type, title, status, detail, instance plus extension members, and the requirement to vet error content so failures do not leak exploitable detail. Anchors the failure half of the command result contract."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 6902: JavaScript Object Notation (JSON) Patch",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc6902.html",
+      "version_or_date": "Standards Track, April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:02:00Z",
+      "relevance": "Atomic partial-update semantics: the whole patch fails if any operation fails, and the test operation expresses a precondition. Anchors patch rules and the all-or-nothing application of a revision."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 8785: JSON Canonicalization Scheme (JCS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html",
+      "version_or_date": "Informational, June 2020",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:03:00Z",
+      "relevance": "Deterministic serialization for hashing and signing (lexicographic UTF-16 property ordering, ECMAScript number serialization). Used for request fingerprints that decide whether a repeated command is a replay, and for artifact integrity hashes."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "Standards Track, July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:04:00Z",
+      "relevance": "Timestamp grammar requiring seconds and an explicit offset (Z or numeric), with '-00:00' reserved for an unknown local offset. Anchors the model's timestamp rule for command, decision, effective and observation times."
+    },
+    {
+      "id": "SRC-006",
+      "title": "CloudEvents Specification, Version 1.0.2",
+      "organization": "Cloud Native Computing Foundation (CNCF) Serverless Working Group",
+      "url": "https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md",
+      "version_or_date": "v1.0.2",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T08:42:00Z",
+      "relevance": "Event envelope semantics: required id, source, specversion, type; optional subject and time; the rule that producers MUST ensure source+id is unique per distinct event; time MUST follow RFC 3339 and may be occurrence time or a consistent producer algorithm. Anchors emitted-event identity and the caveat about producer-chosen time."
+    },
+    {
+      "id": "SRC-007",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:43:00Z",
+      "relevance": "Activity, Agent, wasAssociatedWith, qualifiedAssociation, wasGeneratedBy, wasAttributedTo, wasRevisionOf, wasInvalidatedBy and invalidatedAtTime give a standards-backed vocabulary for modelling a mutation command as an activity with responsible agents, generated versions and invalidation."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Semantic Sensor Network Ontology (SSN/SOSA)",
+      "organization": "World Wide Web Consortium (W3C) and Open Geospatial Consortium (OGC)",
+      "url": "https://www.w3.org/TR/vocab-ssn/",
+      "version_or_date": "W3C Recommendation, 19 October 2017 (errata 08 December 2017)",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:45:00Z",
+      "relevance": "sosa:phenomenonTime (time the result applies to the feature of interest) versus sosa:resultTime (instant the observation activity completed), plus madeBySensor, observedProperty and hasFeatureOfInterest. Anchors observation-update time separation and observer attribution."
+    },
+    {
+      "id": "SRC-009",
+      "title": "SPDX Specification v3.0.1 - Core model, Relationship class",
+      "organization": "The Linux Foundation (SPDX project)",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Relationship/",
+      "version_or_date": "v3.0.1",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:46:00Z",
+      "relevance": "A dependency relationship is a first-class Element with its own spdxId and creationInfo, carrying from (1..1), to (1..*), relationshipType (1..1), completeness (0..1), startTime and endTime; NoneElement and NoAssertionElement express asserted absence versus uncertainty. Anchors the subject payload composed into commands and the absence/uncertainty distinction used by observation-update."
+    },
+    {
+      "id": "SRC-010",
+      "title": "SPDX Specification v3.0.1 - LifecycleScopeType vocabulary",
+      "organization": "The Linux Foundation (SPDX project)",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/LifecycleScopeType/",
+      "version_or_date": "v3.0.1",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:47:00Z",
+      "relevance": "build, design, development, runtime, test and other lifecycle scopes, with the statement that dependency relationships have different implications depending on context (a build dependency differs from an operational one). Anchors lifecycle scope as a required declare input rather than an inferred value."
+    },
+    {
+      "id": "SRC-011",
+      "title": "HL7 FHIR Release 5 - RESTful API (managing resource contention, conditional create, versioning)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/http.html",
+      "version_or_date": "FHIR R5 (v5.0.0), 26 March 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:48:00Z",
+      "relevance": "Weak ETag derived from versionId with If-Match for version-aware update and 412 (or 409) on mismatch; conditional create via If-None-Exist returning 200 on one match instead of duplicating and 412 on multiple matches; version-specific retrieval by (id, versionId); servers may require preconditions. Anchors concurrency, idempotent declare and immutable version identity."
+    },
+    {
+      "id": "SRC-012",
+      "title": "HL7 FHIR Release 5 - Observation resource (status codes; effective versus issued)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/observation.html",
+      "version_or_date": "FHIR R5 (v5.0.0)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:49:00Z",
+      "relevance": "A required status vocabulary that separates amended and corrected from cancelled and entered-in-error, and the effective[x] (when the observed value is asserted true) versus issued (when this version was made available) distinction. Anchors correction-versus-supersession and event-versus-ingestion time."
+    },
+    {
+      "id": "SRC-013",
+      "title": "HL7 FHIR Release 5 - ArtifactAssessment resource",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/artifactassessment.html",
+      "version_or_date": "FHIR R5 (v5.0.0), maturity level 1, Trial Use",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T08:52:00Z",
+      "relevance": "A separable assessment about another record, with workflowStatus (submitted, triaged, waiting-for-input, resolved-no-change, resolved-change-required, deferred, duplicate, applied, published, entered-in-error), disposition (unresolved, not-persuasive, persuasive, persuasive-with-modification, not-persuasive-with-modification) and artifactReference/Canonical/Uri. Anchors the review and approval record as a distinct artifact whose attribution differs from the statement."
+    },
+    {
+      "id": "SRC-014",
+      "title": "HL7 FHIR Release 5 - OperationOutcome resource",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/operationoutcome.html",
+      "version_or_date": "FHIR R5 (v5.0.0), Normative since v4.0.0",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:53:00Z",
+      "relevance": "A structured collection of issues with severity (fatal, error, warning, information, success), an issue type code and an expression locating the offending element. Anchors the validation outcome report and the blocking-versus-advisory distinction."
+    },
+    {
+      "id": "SRC-015",
+      "title": "HL7 FHIR Release 5 - PublicationStatus value set",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/valueset-publication-status.html",
+      "version_or_date": "FHIR R5 (v5.0.0), normative, required binding",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:54:00Z",
+      "relevance": "draft (under development, not ready for normal use), active (ready for normal use), retired (withdrawn or superseded, should no longer be used) and unknown. A standards-backed minimum lifecycle spine that the command state machine specializes without redefining."
+    },
+    {
+      "id": "SRC-016",
+      "title": "eXtensible Access Control Markup Language (XACML) Version 3.0, Core Specification",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html",
+      "version_or_date": "OASIS Standard, 22 January 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T08:55:00Z",
+      "relevance": "Separation of policy enforcement point, policy decision point, policy administration point and policy information point, with the PDP rendering Permit, Deny, Indeterminate or NotApplicable plus obligations and the PEP enforcing it. Justifies carrying an authorization decision reference while disclaiming evaluation and enforcement."
+    },
+    {
+      "id": "SRC-017",
+      "title": "The Idempotency-Key HTTP Header Field (draft-ietf-httpapi-idempotency-key-header-07)",
+      "organization": "Internet Engineering Task Force (IETF) HTTPAPI Working Group",
+      "url": "https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-07",
+      "version_or_date": "Internet-Draft revision 07, 15 October 2025; expired, not published as an RFC",
+      "source_type": "standard",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-05T08:50:00Z",
+      "relevance": "Evidence that a client-supplied idempotency key for non-idempotent operations is common practice but has no stable normative status; used only to show the gap, with the binding requirements taken from RFC 9110 idempotency and conditional requests instead."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "dep-mut-bundle-command-surface",
+        "name": "Command surface and admission contract",
+        "description": "What mutation commands exist for a dependency or impact statement, which transitions each one is allowed to make, who may issue them under which authority, and what must be supplied and true before a command is admitted.",
+        "rationale": "A dependency statement is an assertion with a publication lifecycle (draft, active, retired) whose relationships are first-class records with their own creation metadata; before any change semantics can be specified, the permitted command set, the authority that gates promotion and the admission preconditions must be fixed, otherwise every downstream guarantee about history and effects is unenforceable.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-013",
+          "SRC-015",
+          "SRC-016"
+        ],
+        "layers": [
+          {
+            "id": "dep-mut-layer-command-catalogue",
+            "name": "Command catalogue and authority gates",
+            "description": "The closed set of mutation commands, the state transitions each produces, and the review and approval gates that control promotion from a draft assertion to an active one.",
+            "source_refs": [
+              "SRC-013",
+              "SRC-015",
+              "SRC-016"
+            ],
+            "findings": [
+              {
+                "id": "dep-mut-find-command-inventory",
+                "name": "Command inventory and permitted state transitions",
+                "description": "Enumerates the mutation commands defined for a dependency or impact statement (declare, validate, review, approve, activate, revise, correct, supersede, retire, observation-update), the lifecycle state each produces on the subject statement, which state-and-command pairs are legal, and how content-affecting commands are distinguished from workflow-only ones. The state spine is a specialization of the draft/active/retired/unknown publication vocabulary; refinement states such as in-review and approved are adopting-Dimension additions and are marked as such rather than claimed as standard.",
+                "source_refs": [
+                  "SRC-015",
+                  "SRC-013",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-command-set",
+                    "text": "Which mutation commands are defined for a dependency or impact statement, and which lifecycle state does each one produce?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Closed list of command type codes",
+                      "Resulting state code per command",
+                      "Marker for commands that produce no state change"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-transition-matrix",
+                    "text": "Which state-and-command pairs are permitted, and which transitions must be rejected as invalid rather than silently ignored?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Transition triples of from-state, command type and to-state",
+                      "Rejection outcome code for an illegal transition",
+                      "Terminal states from which no further content change is allowed"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-content-vs-workflow",
+                    "text": "How is a command that changes asserted meaning distinguished from one that only moves workflow state?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Version-producing flag per command",
+                      "Content-affecting versus workflow-affecting classification",
+                      "List of fields whose change forces a new version"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-agent-eligible-commands",
+                    "text": "Which commands may be issued by an automated agent without human review, and which require a human authority?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Permitted actor class per command",
+                      "Observation-managed flag on the statement",
+                      "Reference to the authority model that resolves actor competence"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-command-type",
+                    "name": "Command type",
+                    "description": "Canonical verb identifying the mutation command being invoked, drawn from the closed catalogue published with the contract version.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-statement-state",
+                    "name": "Statement lifecycle state",
+                    "description": "Current lifecycle state of the dependency or impact statement, specializing draft, active, retired and unknown with any adopting-Dimension refinement states.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-transition-rule",
+                    "name": "Permitted transition rule",
+                    "description": "Declared triple of originating state, command type and resulting state, together with the outcome code emitted when the pair is not permitted.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-version-producing-flag",
+                    "name": "Version-producing flag",
+                    "description": "Whether invoking this command creates a new immutable version of the statement rather than only recording workflow progress.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The command catalogue and its transition matrix are declarative contract data published with the model specification, not per-instance records. They are read as configuration by any conforming implementation; every instance-level trace of a transition is carried by the command record, approval record and version history entry declared in other findings, so minting a separate artifact here would duplicate identity and invite drift between the specification and its instances."
+              },
+              {
+                "id": "dep-mut-find-authority-gate",
+                "name": "Review, approval and activation authority gate",
+                "description": "The contract for the review, approve and activate commands: what a review disposition may say, which authority reference an approval must carry, when the approver must differ from the declarer, and how an emergency bypass is recorded. The disposition recorded here is a judgement about the fitness of the dependency statement, deliberately separate from any access-control decision, which is referenced from the authorization model and never rendered here.",
+                "source_refs": [
+                  "SRC-013",
+                  "SRC-016",
+                  "SRC-015",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-review-disposition",
+                    "text": "What disposition values may a review record carry, and which of them permit the statement to proceed to approval?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Review workflow status code",
+                      "Disposition code such as persuasive or not-persuasive",
+                      "Flag stating whether the disposition unblocks approval"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-approval-authority",
+                    "text": "Which authority reference must an approval record carry, and how is the approver's competence over this statement established?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Approver party reference",
+                      "Authority or role reference under which approval is given",
+                      "Reference to the external authorization decision consulted",
+                      "Scope expression stating which statements the authority covers"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-separation-of-duties",
+                    "text": "Under what conditions must the approver differ from the declarer, and how is that separation evidenced?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Separation-of-duties requirement flag",
+                      "Declarer party reference compared with approver party reference",
+                      "Outcome code emitted when the constraint is violated"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-break-glass-approval",
+                    "text": "How is an emergency or break-glass approval recorded so that retrospective review is guaranteed?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Exception code and justification text",
+                      "Granting authority reference",
+                      "Retrospective review due marker",
+                      "Timestamp of the exception grant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-review-disposition",
+                    "name": "Review disposition",
+                    "description": "Judgement recorded by a reviewer about the dependency statement, using a disposition vocabulary aligned with artifact assessment dispositions.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-approver-authority-ref",
+                    "name": "Approver authority reference",
+                    "description": "Reference to the role, mandate or delegation under which the approving party acted, resolved in the party or authority model rather than defined here.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-authorization-decision-ref",
+                    "name": "Authorization decision reference",
+                    "description": "Pointer to the decision rendered by an external policy decision point for this command, including the decision value and the policy identifier it was rendered against.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-016"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-exception-grant",
+                    "name": "Gate exception grant",
+                    "description": "Record of a bypass of the normal review or approval gate, carrying an exception code, justification, granting authority and a retrospective-review obligation marker.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-approval-record",
+                    "name": "Review and approval decision record",
+                    "description": "A separable record asserting a review or approval judgement about a named version of a dependency or impact statement, carrying disposition, approver party and authority references, the consulted authorization decision reference, any exception grant, and the decision timestamp. It is separable precisely because its attribution and management rights differ from those of the statement it judges.",
+                    "media_or_form": [
+                      "structured decision record",
+                      "signed attestation",
+                      "workflow assessment entry"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system decision identifier issued by the governing workflow or registry; if none exists, a governed IRI minted in the adopting Dimension's namespace; otherwise a ULID. The record always cites the exact statement version token it judges, and a decision date is never used as identity.",
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-011",
+                      "SRC-016"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-mut-layer-admission-contract",
+            "name": "Admission contract: envelope and validation",
+            "description": "What every state-changing command must carry to be admitted, and how the validate command reports whether a statement and a proposed change satisfy the invariants owned elsewhere.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-007",
+              "SRC-014",
+              "SRC-005"
+            ],
+            "findings": [
+              {
+                "id": "dep-mut-find-command-envelope",
+                "name": "Command envelope and admission preconditions",
+                "description": "The interface-neutral envelope that accompanies every mutation command: command identity, acting agent and submitting software, subject statement binding, authorization decision reference, audit hook reference, required inputs per command type, and the timestamps that must be captured. Endpoint references named in a declare command must resolve, but resolving them is a read against the endpoint's owning model; the command never creates or alters an endpoint record.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-005",
+                  "SRC-016",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-command-identity",
+                    "text": "Which identifier identifies a mutation command instance, and what is used when no master-system identifier exists?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Master-system command identifier",
+                      "Governed IRI fallback",
+                      "UUID or ULID fallback assigned by the adopting Dimension"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-mandatory-envelope",
+                    "text": "Which envelope fields must every state-changing command carry before it can be admitted?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Actor party reference",
+                      "Subject statement reference and expected version token",
+                      "Authorization decision reference",
+                      "Command type and contract version identifier"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-agent-provenance",
+                    "text": "How are the acting agent, the software that submitted the command, and the consulted authorization decision recorded as provenance?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Association of the command activity with a responsible agent and a role",
+                      "Software agent reference for automated submission",
+                      "Delegation or on-behalf-of chain",
+                      "Authorization decision reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-command-timestamps",
+                    "text": "Which timestamps must a command record, and how are submission, decision and effective times kept apart?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Submission or ingestion timestamp",
+                      "Decision timestamp for gated commands",
+                      "Effective-from value asserted for the statement",
+                      "All values as RFC 3339 with seconds and explicit offset"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-command-id",
+                    "name": "Command identifier",
+                    "description": "Stable identifier of a single command instance, used to correlate its outcome record, version history entry, emitted events and audit hook.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-actor-ref",
+                    "name": "Acting agent reference",
+                    "description": "Reference to the human or software agent responsible for the command, optionally qualified with the role in which it acted and any on-behalf-of delegation.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-subject-ref",
+                    "name": "Subject statement reference",
+                    "description": "Reference to the dependency or impact statement the command acts on, plus the endpoint references the statement names, all resolved read-only against their owning models.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-submitted-at",
+                    "name": "Command submission time",
+                    "description": "Time at which the command was received for processing, recorded separately from any effective time the command asserts about the dependency itself.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-audit-hook-ref",
+                    "name": "Audit hook reference",
+                    "description": "Correlation reference passed to the external audit model so the command can be reconciled with an audit record that this model neither writes nor retains.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-lifecycle-scope-input",
+                    "name": "Declared lifecycle scope input",
+                    "description": "Lifecycle context supplied with a declare or revise command (for example build, runtime or test), because a build dependency and an operational dependency carry different implications.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-command-record",
+                    "name": "Mutation command record",
+                    "description": "The immutable record of one submitted command: identity, command type, contract version, actor and software agent references, subject binding and expected version token, supplied inputs, authorization decision reference, audit hook reference, submission timestamp and terminal outcome pointer.",
+                    "media_or_form": [
+                      "structured command record",
+                      "append-only journal entry",
+                      "signed request envelope"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Prefer the authoritative master-system command identifier from the system of record for the mutation; otherwise a governed IRI; otherwise a UUID or ULID. A client-supplied idempotency key and the request fingerprint are correlation and replay-detection values, never the record identity, and no timestamp is ever used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-017"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-mut-find-validation-contract",
+                "name": "Validation contract and outcome reporting",
+                "description": "The contract for the validate command: which classes of check run (envelope completeness, reference resolvability, transition legality, and the statement invariants defined by the structural area and referenced schemas), which findings block a transition and which are advisory, and what the outcome record must contain to be reproducible. Validation evaluates invariants owned elsewhere; this contract owns only when validation runs, what its outcome contains and whether an outcome blocks.",
+                "source_refs": [
+                  "SRC-014",
+                  "SRC-002",
+                  "SRC-009",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-validation-classes",
+                    "text": "Which classes of check does the validate command run, and which of them block a transition rather than warn?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Check class identifier",
+                      "Severity level from fatal to information",
+                      "Blocking versus advisory flag per severity"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-validation-reproducibility",
+                    "text": "What does a validation outcome record contain so that a failure is reproducible against a specific statement version?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Evaluated statement identifier and version token",
+                      "Expression or path locating each offending element",
+                      "Identifier and version of the rule set applied",
+                      "Timestamp of evaluation"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-invariant-ownership",
+                    "text": "Who owns the invariant definitions that validation evaluates, and how are they referenced rather than restated here?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Reference to the owning structural model or schema",
+                      "Rule set version pin",
+                      "Statement that no rule text is stored locally"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-unresolved-and-noassertion",
+                    "text": "How are advisory findings, unresolved references and explicit no-assertion values reported without blocking the command?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Advisory issue codes",
+                      "Unresolved reference marker",
+                      "Distinction between asserted absence and no assertion",
+                      "Completeness qualifier on the statement"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-issue-severity",
+                    "name": "Validation issue severity",
+                    "description": "Severity assigned to a single validation finding, using a fatal, error, warning, information and success scale.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-issue-code",
+                    "name": "Validation issue code",
+                    "description": "Machine-readable type of the validation finding, enabling a caller to distinguish a structural problem from a conflict, an unresolved reference or a policy-gate failure.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-issue-location",
+                    "name": "Validation issue location",
+                    "description": "Expression identifying the element within the evaluated statement or command envelope that produced the finding.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-ruleset-ref",
+                    "name": "Applied rule set reference",
+                    "description": "Version-pinned reference to the externally owned profile, schema or invariant set that validation evaluated.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-completeness-qualifier",
+                    "name": "Completeness qualifier",
+                    "description": "Qualifier stating whether the set of related endpoints asserted by the statement is complete, incomplete, explicitly none, or not asserted.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-validation-report",
+                    "name": "Validation outcome report",
+                    "description": "A structured list of validation findings produced by one validate invocation, each with severity, issue code and location, bound to the evaluated statement version, the applied rule set version and the invoking command identifier.",
+                    "media_or_form": [
+                      "structured outcome record",
+                      "issue list attached to a command record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the master-system outcome identifier where the executing registry issues one; otherwise a ULID. The report always carries the invoking command identifier and the evaluated statement version token so that identity, subject and evidence remain separable.",
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dep-mut-bundle-execution-semantics",
+        "name": "Execution guarantees, history and effects",
+        "description": "How commands behave under repetition and concurrency, how immutable history is preserved across revision, correction, supersession and retirement, how machine observations refresh a statement, and what a command is allowed to return, emit and touch.",
+        "rationale": "Dependency statements are frequently written by retrying clients and concurrent automated observers, and are relied on for downstream impact reasoning; without explicit replay, conflict, history and containment guarantees, a mutation contract silently permits duplicate assertions, lost updates, rewritten history and unintended side effects on records this model does not own.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-011",
+          "SRC-007",
+          "SRC-008",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "dep-mut-layer-safe-application",
+            "name": "Safe repetition and concurrent application",
+            "description": "Replay detection for repeated submissions and precondition-based conflict detection for concurrent ones, including the atomicity unit when a command spans several statements.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-011",
+              "SRC-003",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "dep-mut-find-idempotency-replay",
+                "name": "Idempotency scope, fingerprinting and replay behaviour",
+                "description": "Defines when a repeated command is a replay that must return the original result rather than create a second statement, how the request fingerprint is computed over a canonical form, which envelope fields are excluded from the fingerprint, how long a key is honoured, and what happens when the same key arrives with different content. Declare is made effectively idempotent by a uniqueness criterion in the same style as a conditional create; review, approve, activate, supersede and retire are naturally idempotent because a repeated invocation leaves the intended state unchanged.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-011",
+                  "SRC-004",
+                  "SRC-017"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-replay-definition",
+                    "text": "What makes a repeated submission of the same command a replay rather than a new mutation?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Idempotency key value",
+                      "Matching request fingerprint",
+                      "Uniqueness criterion identifying an equivalent existing statement",
+                      "Replay outcome code distinguishing created from matched"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-fingerprint-computation",
+                    "text": "How is the request fingerprint computed, and which envelope fields are excluded from it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Canonicalization scheme applied before hashing",
+                      "Hash algorithm identifier",
+                      "Excluded volatile fields such as receipt time and transport metadata"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-replay-window",
+                    "text": "For how long is a replayed key honoured, and what happens after that window expires?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Replay window duration",
+                      "Expiry behaviour code",
+                      "Timestamp of first acceptance in RFC 3339 with offset"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-key-conflict",
+                    "text": "What must happen when the same idempotency key arrives with a different payload?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Fingerprint mismatch outcome code",
+                      "Problem type reference returned to the caller",
+                      "Assertion that no partial change is applied"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-idempotency-key",
+                    "name": "Idempotency key",
+                    "description": "Client-generated value used to recognize retries of the same command; a correlation value only, never the identity of the resulting record.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-017",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-request-fingerprint",
+                    "name": "Request fingerprint",
+                    "description": "Hash over the canonical serialization of the command's semantic content, used to decide whether a repeated key represents the same intended effect.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-replay-window",
+                    "name": "Replay window",
+                    "description": "Declared period during which a previously seen idempotency key is honoured as a replay rather than treated as a new command.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-017"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-replay-outcome",
+                    "name": "Replay outcome",
+                    "description": "Result classification telling the caller whether the command created a new record, matched an existing equivalent one, or was refused because the key was reused with different content.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Idempotency is a property of the command contract and is materialized entirely as fields on the mutation command record already declared in the admission layer: the key, the fingerprint, the first-acceptance time and the replay outcome. Introducing a separate replay-ledger artifact would create a second identity for the same command instance and would push a purely operational implementation structure into a format-neutral semantic model; deduplication indexes are a storage projection, not context."
+              },
+              {
+                "id": "dep-mut-find-concurrency-atomicity",
+                "name": "Version preconditions, conflict outcomes and atomicity",
+                "description": "Requires every version-producing command to carry an expected-version precondition so that a concurrent writer cannot be overwritten unnoticed, defines how a precondition failure is reported distinctly from an illegal-transition conflict, fixes the atomicity unit when one command touches several statements, and states how these interface-neutral preconditions bind to a concrete protocol.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-011",
+                  "SRC-003",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-version-precondition",
+                    "text": "Which precondition must a version-producing command carry so that a lost update is impossible?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Expected current version token",
+                      "Behaviour when the precondition is absent",
+                      "Outcome code when the token does not match"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-conflict-classification",
+                    "text": "How is a precondition failure distinguished from a state-machine conflict in the outcome?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Distinct outcome codes for stale version and illegal transition",
+                      "Current state and current version token returned to the caller",
+                      "Retry guidance flag"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-atomicity-unit",
+                    "text": "When one command touches several statements, what is the atomicity unit and what is rolled back on partial failure?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Declared atomicity mode such as all-or-nothing or per-statement",
+                      "Rollback scope description",
+                      "Partial-failure outcome list keyed by statement identifier"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-precondition-binding",
+                    "text": "How do these preconditions bind to a concrete interface without the model itself depending on that interface?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Mapping of the expected-version token to a protocol validator",
+                      "Mapping of conflict outcomes to protocol status signals",
+                      "Statement that the binding is declared by the interface layer"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-expected-version-token",
+                    "name": "Expected version token",
+                    "description": "Opaque token identifying the statement version the caller believes is current; the command is refused if it no longer matches.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-current-version-token",
+                    "name": "Current version token",
+                    "description": "Opaque token identifying the version actually current at evaluation time, returned to the caller on both success and conflict.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-conflict-outcome",
+                    "name": "Conflict outcome",
+                    "description": "Classification of a refused command as a stale-version precondition failure, an illegal transition, or a competing concurrent command.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-atomicity-mode",
+                    "name": "Atomicity mode",
+                    "description": "Declared scope of all-or-nothing application when a single command carries changes to more than one statement or more than one field.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Concurrency control produces no record of its own: the expected version token is an envelope field of the command record, the current token is a property of the version history entry, and a refusal is reported through the validation or failure outcome already declared elsewhere. Declaring a separate lock or transaction artifact would model an implementation mechanism rather than context, and would imply this model owns an execution engine it explicitly does not."
+              }
+            ]
+          },
+          {
+            "id": "dep-mut-layer-history-and-currency",
+            "name": "Immutable history and assertion currency",
+            "description": "How versions are preserved and linked across revision, correction, supersession and retirement, and how machine observations keep a statement current without rewriting what was previously asserted.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-011",
+              "SRC-012",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "dep-mut-find-revision-supersession",
+                "name": "Immutable version identity, correction and supersession",
+                "description": "Fixes the identity of a historical version as the pair of statement identifier and version token, forbids reuse of a token, and separates three distinct acts: revision, which asserts a changed but legitimately new state of affairs; correction, which marks an earlier version as erroneous without denying that it was recorded; and supersession, which closes one statement's currency in favour of a successor. Retirement ends applicability without asserting error. In all cases prior content remains readable and is never overwritten.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-version-identity",
+                    "text": "What identifies a specific historical version of a statement, and why can that identity never be reused?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Statement identifier",
+                      "Version token unique within the statement",
+                      "Rule forbidding reuse after retirement or correction"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-correction-vs-revision",
+                    "text": "How does a correction of an erroneous record differ from a revision and from a supersession in what each asserts about the past?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Change-nature code covering revision, correction, supersession and retirement",
+                      "Erroneous-record marker on the affected version",
+                      "Derivation link from the new version to the prior one",
+                      "Statement of what each act claims about the earlier assertion"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-validity-interval",
+                    "text": "Which validity interval does supersession close, and how is that different from the record's transaction time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective-from and effective-to of the asserted dependency",
+                      "Record creation and invalidation times",
+                      "Rule that the two timelines are recorded independently"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-history-retention",
+                    "text": "What must remain readable after retirement, and what may never be overwritten by a later change?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Set of fields preserved for every historical version",
+                      "Prohibition on in-place overwrite",
+                      "Reference to the external retention policy that governs destruction"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-supersession-link",
+                    "text": "How is the link from a superseded statement to its successor represented so that both directions are traversable?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Superseded-by reference on the predecessor",
+                      "Supersedes reference on the successor",
+                      "Reason code for the supersession"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-version-token",
+                    "name": "Statement version token",
+                    "description": "Opaque, non-reusable token that, together with the statement identifier, identifies exactly one immutable historical version.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-previous-version-ref",
+                    "name": "Previous version reference",
+                    "description": "Derivation link from a version to the version it was produced from, expressing revision rather than independent creation.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-change-nature",
+                    "name": "Change nature",
+                    "description": "Classification of what a version-producing act asserts: revision of a legitimately changed fact, correction of an erroneous record, supersession by a successor, or retirement of applicability.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-007",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-superseded-by-ref",
+                    "name": "Superseded-by reference",
+                    "description": "Reference from a statement whose currency has ended to the successor statement that replaces it.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-validity-interval",
+                    "name": "Asserted validity interval",
+                    "description": "Start and end of the period for which the dependency or impact is asserted to hold, recorded separately from the times at which records were created or invalidated.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-erroneous-marker",
+                    "name": "Entered-in-error marker",
+                    "description": "Marker stating that a specific version should never have been asserted, preserved alongside the original content rather than replacing it.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-version-history-entry",
+                    "name": "Statement version history entry",
+                    "description": "An immutable entry recording one version of a dependency or impact statement: version token, producing command identifier, change nature, previous-version and superseded-by links, asserted validity interval, record creation and invalidation times, and any entered-in-error marker.",
+                    "media_or_form": [
+                      "append-only version record",
+                      "immutable history entry",
+                      "content-addressed snapshot"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identity is the pair of the statement's authoritative master-system identifier and its version token; where the statement has no master-system identifier, a governed IRI or a ULID is used for the statement and the token remains a monotonic, opaque, never-reused sequence within it. Version tokens are not dates.",
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-007",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-mut-find-observation-update",
+                "name": "Observation-update command for machine-asserted dependency facts",
+                "description": "The contract for refreshing a statement from automated observation: which observer, procedure and confidence must accompany the update, how the time the dependency condition held is kept separate from the time the observation completed or was ingested, how an observer expresses that a dependency is no longer present as opposed to unknown, and when an observation may change a statement directly rather than being attached as competing evidence to a human-declared one.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-012",
+                  "SRC-009",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-observer-attribution",
+                    "text": "Which observer, procedure and confidence values must an observation-update carry to be usable as evidence?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Observer or sensing agent reference",
+                      "Procedure or scan method reference",
+                      "Confidence or reliability value",
+                      "Observed property identifier"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-observation-times",
+                    "text": "How are the time the dependency condition held and the time the observation was completed or ingested recorded separately?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Phenomenon time of the observed condition",
+                      "Result time when the observation completed",
+                      "Ingestion time when the update was received",
+                      "All values in RFC 3339 with seconds and explicit offset"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-observed-absence",
+                    "text": "How does an observation that no longer sees a dependency express absence rather than ignorance?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Explicit asserted-none value",
+                      "Explicit no-assertion value",
+                      "Coverage or scope statement of what the observer could see"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-observation-precedence",
+                    "text": "When does an observation-update supersede a human-declared statement, and when must it only be attached as competing evidence?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Observation-managed flag on the statement",
+                      "Precedence rule between asserted and observed statements",
+                      "Marker that the statement now carries unreconciled competing evidence",
+                      "Reference to the approval gate that remains unbypassed"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-observer-ref",
+                    "name": "Observer reference",
+                    "description": "Reference to the sensor, scanner or agent that made the observation, resolved in the tooling or party model rather than defined here.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-phenomenon-time",
+                    "name": "Phenomenon time",
+                    "description": "Time or interval to which the observed dependency condition applies, as distinct from when the observation was carried out.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-result-time",
+                    "name": "Result time",
+                    "description": "Instant at which the observing activity was completed, recorded independently of the phenomenon time and of the ingestion time of the command.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-observed-presence",
+                    "name": "Observed presence value",
+                    "description": "Whether the observer saw the dependency as present, explicitly absent, or could make no assertion about it.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-observation-confidence",
+                    "name": "Observation confidence",
+                    "description": "Reported confidence or reliability of the observation, used by precedence rules rather than by any computation owned here.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-observation-statement",
+                    "name": "Observation-update statement record",
+                    "description": "A record of one machine observation about a dependency statement: observer and procedure references, observed presence value, confidence, phenomenon time, result time, ingestion time, coverage scope, and the resulting statement version if the observation was allowed to change it.",
+                    "media_or_form": [
+                      "structured observation record",
+                      "sensor or scanner report entry",
+                      "evidence attachment to a statement version"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identity is the observer source identifier combined with the observation identifier issued by that observer, which must be unique per source; where the observer issues no identifier, the adopting Dimension assigns a ULID. Phenomenon or result time is evidence, never identity.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-006",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-mut-layer-effects-and-containment",
+            "name": "Command effects, signals and containment",
+            "description": "What a command returns, how it reports failure, which events it must emit, and the hard limits on what it may change or set in motion.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-006",
+              "SRC-016",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "dep-mut-find-effect-contract",
+                "name": "Result, failure, emitted events and side-effect containment",
+                "description": "Specifies the success result a caller receives (resulting state, new version token, produced record references), the structured failure representation that distinguishes retryable conditions from ones requiring a corrected request without leaking exploitable detail, the change events that must be emitted with an envelope whose identity is unique per producer, and the containment rules: a command may create or modify only records this model owns plus the named statement, and may never create, modify or delete an endpoint record, evaluate or enforce a policy, write audit evidence, or trigger resolution, deployment, remediation or notification delivery.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-016",
+                  "SRC-009",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-mut-q-emitted-events",
+                    "text": "Which change events must a command emit, and which envelope attributes make an event uniquely identifiable and correlatable?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Event type per command outcome",
+                      "Producer source identifier and event identifier unique within it",
+                      "Subject reference naming the affected statement",
+                      "Event time and correlation identifier"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-success-result",
+                    "text": "What does a successful command return so that a caller can act without re-reading the statement?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Resulting lifecycle state",
+                      "New current version token",
+                      "References to records produced such as outcome and history entries",
+                      "Replay or created indicator"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-failure-representation",
+                    "text": "How are failures represented so a caller can tell a retryable condition from one that requires a corrected request?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Problem type identifier and short title",
+                      "Instance reference for this occurrence",
+                      "Retryable flag or guidance",
+                      "Rule against embedding sensitive internal detail"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-forbidden-mutations",
+                    "text": "Which records outside this model's boundary must a command never create, modify or delete?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "List of externally owned record classes such as endpoints, policies and audit records",
+                      "Read-only resolution rule for referenced endpoints",
+                      "Outcome code when a command attempts an out-of-boundary write"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-q-forbidden-actions",
+                    "text": "Which downstream actions must a command never trigger directly, and how is that separation expressed in the effect list?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Prohibited action list covering resolution, deployment, remediation and notification delivery",
+                      "Statement that emitted events are signals rather than instructions",
+                      "Reference to the model that owns each prohibited action"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-mut-de-result-status",
+                    "name": "Command result status",
+                    "description": "Terminal outcome of a command instance: accepted, matched as a replay, refused on precondition, refused on validation, or refused on authorization reference.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-014",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-problem-type",
+                    "name": "Problem type reference",
+                    "description": "Stable identifier of the failure category, resolvable to human-readable documentation and accompanied by an occurrence-specific instance reference.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-event-type",
+                    "name": "Emitted event type",
+                    "description": "Type value describing the change signal emitted for a command outcome, minted in the adopting Dimension's own namespace.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-event-source",
+                    "name": "Emitted event source",
+                    "description": "Producer identifier that, combined with the event identifier, must be unique for each distinct emitted event.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-mut-de-correlation-id",
+                    "name": "Correlation identifier",
+                    "description": "Shared value linking the command record, the emitted events and the external audit hook so that a single mutation can be reconstructed across boundaries.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-mut-art-change-event",
+                    "name": "Emitted change-event envelope",
+                    "description": "The envelope of a signal emitted when a dependency or impact statement changes state: event identifier and producer source, event type, subject reference to the affected statement, event time, correlation identifier and the resulting version token. It announces that a change occurred and never instructs a consumer to act.",
+                    "media_or_form": [
+                      "structured event envelope",
+                      "message payload",
+                      "change-feed entry"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identity is the producer source identifier combined with an event identifier that the producer must keep unique for each distinct event; the subject reference and version token identify what changed, and the event time is never used as identity. Delivery identifiers assigned by transport are out of scope.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "dep-mut-fn-declare",
+      "name": "Declare dependency or impact statement",
+      "description": "Create a new dependency or impact statement in draft state from asserted inputs, without creating or altering the endpoint records it names.",
+      "inputs": [
+        "Source and target endpoint references",
+        "Relationship or impact type",
+        "Lifecycle scope and completeness qualifier",
+        "Assertion basis and supporting evidence references",
+        "Actor reference and authorization decision reference",
+        "Optional idempotency key and request fingerprint"
+      ],
+      "outputs": [
+        "Statement identifier and first version token",
+        "Draft lifecycle state",
+        "Created-or-matched replay outcome",
+        "Declared event"
+      ],
+      "preconditions": [
+        "All named endpoint references resolve read-only in their owning models",
+        "Actor reference resolves and the authorization decision reference is a permit",
+        "No equivalent statement already exists under the declared uniqueness criterion, or the request is a valid replay"
+      ],
+      "effects": [
+        "Creates one immutable first version in draft state",
+        "Records the producing command and provenance association",
+        "Emits a declared event; performs no resolution, deployment or notification"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-011",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-validate",
+      "name": "Validate statement or proposed change",
+      "description": "Evaluate envelope completeness, reference resolvability, transition legality and externally owned statement invariants against a named version, and return a structured outcome.",
+      "inputs": [
+        "Statement identifier and version token, or a proposed change payload",
+        "Rule set or profile reference with version pin",
+        "Actor reference"
+      ],
+      "outputs": [
+        "Validation outcome report with severities, issue codes and locations",
+        "Blocking indicator for the intended transition"
+      ],
+      "preconditions": [
+        "The named statement version exists",
+        "The referenced rule set resolves at the pinned version"
+      ],
+      "effects": [
+        "Produces or updates a validation outcome report bound to the evaluated version",
+        "Changes no statement content and produces no new statement version",
+        "Does not author or amend the invariants it evaluates"
+      ],
+      "source_refs": [
+        "SRC-014",
+        "SRC-009",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-review",
+      "name": "Record review of a statement",
+      "description": "Attach a reviewer's disposition to a named statement version as a separable assessment record, moving workflow state without changing asserted content.",
+      "inputs": [
+        "Statement identifier and version token",
+        "Reviewer party reference and role",
+        "Disposition and comment",
+        "Authorization decision reference"
+      ],
+      "outputs": [
+        "Review record identifier",
+        "Updated workflow status",
+        "Reviewed event"
+      ],
+      "preconditions": [
+        "The statement is in a state from which review is permitted",
+        "The reviewer reference resolves and the authorization decision reference is a permit"
+      ],
+      "effects": [
+        "Creates a review record whose attribution is separate from the statement",
+        "Updates workflow status only; no new statement version is produced",
+        "Emits a reviewed event"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-016",
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-approve",
+      "name": "Approve a statement version",
+      "description": "Record an authority's approval of a named statement version, satisfying the gate that activation requires.",
+      "inputs": [
+        "Statement identifier and version token",
+        "Approver party reference and authority reference",
+        "Authorization decision reference",
+        "Optional exception grant for a break-glass approval"
+      ],
+      "outputs": [
+        "Approval record identifier",
+        "Approved workflow status",
+        "Approved event"
+      ],
+      "preconditions": [
+        "Blocking validation findings are absent or explicitly waived with a recorded exception",
+        "Where separation of duties applies, the approver differs from the declarer",
+        "The authority reference covers the scope of this statement"
+      ],
+      "effects": [
+        "Creates an approval record citing the exact version token",
+        "Marks the version as approved without activating it",
+        "Grants no authorization to deploy, remediate or otherwise act on the dependency"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-016",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-activate",
+      "name": "Activate an approved statement",
+      "description": "Promote an approved statement version to the active state so that it is ready for normal use by downstream consumers.",
+      "inputs": [
+        "Statement identifier and version token",
+        "Expected current version token",
+        "Effective-from value",
+        "Actor reference and authorization decision reference"
+      ],
+      "outputs": [
+        "Active lifecycle state",
+        "Current version token",
+        "Activated event"
+      ],
+      "preconditions": [
+        "An approval record exists for exactly this version token",
+        "The expected version token matches the current version",
+        "The effective-from value is a complete RFC 3339 timestamp"
+      ],
+      "effects": [
+        "Sets the statement state to active and opens the asserted validity interval",
+        "Is idempotent: repeating it on an already active version leaves state unchanged",
+        "Emits an activated event as a signal only"
+      ],
+      "source_refs": [
+        "SRC-015",
+        "SRC-011",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-revise",
+      "name": "Revise an active statement",
+      "description": "Produce a new immutable version reflecting a legitimately changed dependency or impact, preserving the prior version and its derivation link.",
+      "inputs": [
+        "Statement identifier and expected current version token",
+        "Changed fields or an atomic patch with test preconditions",
+        "Reason for change",
+        "Actor reference and authorization decision reference"
+      ],
+      "outputs": [
+        "New version token",
+        "Derivation link to the prior version",
+        "Revised event"
+      ],
+      "preconditions": [
+        "The expected version token matches the current version",
+        "The change is content-affecting rather than a workflow-only update",
+        "The patch applies in full or not at all"
+      ],
+      "effects": [
+        "Creates a new version recorded as a revision of its predecessor",
+        "Leaves the predecessor readable and unmodified",
+        "May reset the statement to a state requiring re-approval where the contract declares it"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-011",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-correct",
+      "name": "Correct an erroneous version",
+      "description": "Mark a version as one that should never have been asserted and record the corrected content, without denying that the erroneous version was recorded.",
+      "inputs": [
+        "Statement identifier and the version token being corrected",
+        "Correction reason and evidence reference",
+        "Corrected content",
+        "Actor reference and authorization decision reference"
+      ],
+      "outputs": [
+        "Corrected version token",
+        "Entered-in-error marker on the affected version",
+        "Corrected event"
+      ],
+      "preconditions": [
+        "The version being corrected exists and is not already marked erroneous",
+        "The correction is distinguishable from a revision by an explicit change-nature value"
+      ],
+      "effects": [
+        "Adds a new version and an erroneous-record marker on the earlier one",
+        "Never overwrites or obscures previously recorded content",
+        "Does not alter the asserted validity interval of unaffected versions"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-007",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-supersede",
+      "name": "Supersede a statement with a successor",
+      "description": "End the currency of one statement in favour of a named successor and record the link in both directions.",
+      "inputs": [
+        "Predecessor statement identifier and current version token",
+        "Successor statement reference",
+        "Supersession reason",
+        "Effective-to value for the predecessor",
+        "Actor reference and authorization decision reference"
+      ],
+      "outputs": [
+        "Superseded lifecycle state on the predecessor",
+        "Supersedes and superseded-by links",
+        "Superseded event"
+      ],
+      "preconditions": [
+        "The successor statement exists and is at least approved",
+        "The predecessor is currently active",
+        "The effective-to value is not earlier than the predecessor's effective-from"
+      ],
+      "effects": [
+        "Closes the predecessor's asserted validity interval and marks it withdrawn in favour of the successor",
+        "Preserves the full history of both statements",
+        "Emits a superseded event without instructing any consumer to migrate"
+      ],
+      "source_refs": [
+        "SRC-015",
+        "SRC-009",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-retire",
+      "name": "Retire a statement",
+      "description": "End the applicability of a statement that is no longer to be used, without asserting that it was ever erroneous and without deleting anything.",
+      "inputs": [
+        "Statement identifier and expected current version token",
+        "Retirement reason",
+        "Effective-to value",
+        "Actor reference and authorization decision reference"
+      ],
+      "outputs": [
+        "Retired lifecycle state",
+        "Terminal version token",
+        "Retired event"
+      ],
+      "preconditions": [
+        "The expected version token matches the current version",
+        "The statement is not already retired, or the repeat is treated as a no-change idempotent call"
+      ],
+      "effects": [
+        "Sets the statement to retired and closes its validity interval",
+        "Succeeds on the local statement even when a referenced endpoint no longer exists, and never modifies that endpoint",
+        "Triggers no destruction: disposition remains with the external retention policy"
+      ],
+      "source_refs": [
+        "SRC-015",
+        "SRC-011",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "dep-mut-fn-observation-update",
+      "name": "Apply an observation update",
+      "description": "Refresh a statement from an automated observation, recording observer, presence value and both observation times, and applying it as a change only where the statement is registered as observation-managed.",
+      "inputs": [
+        "Statement identifier or uniqueness criterion for a new observed statement",
+        "Observer and procedure references",
+        "Observed presence value and confidence",
+        "Phenomenon time and result time",
+        "Optional idempotency key"
+      ],
+      "outputs": [
+        "Observation record identifier",
+        "Updated currency marker or a new statement version where permitted",
+        "Competing-evidence marker where the statement is human-declared",
+        "Observed event"
+      ],
+      "preconditions": [
+        "Observer reference resolves and the observation carries both phenomenon and result times",
+        "The statement is observation-managed, or the update is attached as evidence only",
+        "The observation is not a duplicate of one already recorded for the same source and observation identifier"
+      ],
+      "effects": [
+        "Records the observation and its times without overwriting earlier observations",
+        "Updates statement currency only within the precedence rules declared by the contract",
+        "Never bypasses an approval gate and never initiates a scan, resolution or remediation"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-012",
+        "SRC-009",
+        "SRC-006"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-037 dependency edge and impact-assessment structure (companion split area)",
+      "relation": "COMPOSE",
+      "purpose": "Commands take their subject payload - endpoints, relationship or impact type, lifecycle scope, completeness and impact fields - from the structural area. This area contributes only command, transition, history and effect semantics and restates none of that structure.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension authorization and policy-decision model (PDP/PEP separation)",
+      "relation": "REFERENCE",
+      "purpose": "Carry an authorization decision reference, the deciding authority and the policy identifier on each state-changing command, and fail closed on anything other than a permit. Decision rendering, attribute resolution, obligations and enforcement remain owned by the policy model.",
+      "required": true,
+      "source_refs": [
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "Audit-trail and evidence record model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Emit an audit hook carrying command identifier, actor reference, prior and resulting version tokens and correlation identifier. Audit record content, immutability, storage and retention of audit evidence belong entirely to that model.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "W3C PROV-O provenance vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Map a command to an activity associated with responsible agents, the produced version to generation, revision to derivation, and retirement or correction to invalidation, so provenance is exportable. PROV-O owns its vocabulary; no conformance is claimed.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "CloudEvents v1.0.2 event envelope",
+      "relation": "ALIGN",
+      "purpose": "Bind emitted change signals to the context attributes id, source, type, subject and time, honouring the uniqueness of source plus id. Transport bindings, subscription, delivery guarantees, ordering and retry stay outside.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "SPDX 3.0.1 Core Relationship vocabulary and lifecycle scopes",
+      "relation": "ALIGN",
+      "purpose": "Project declared dependency statements to and from relationship elements with relationship type, completeness and lifecycle scope, including the asserted-none versus no-assertion distinction. SPDX owns that vocabulary and has no approval lifecycle of its own.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "HTTP interface binding based on RFC 9110 conditional requests",
+      "relation": "REFERENCE",
+      "purpose": "Where the model is exposed over HTTP, the expected-version token binds to a validator supplied in a precondition header and conflict outcomes bind to the corresponding status signals. The binding is declared by the interface layer; the model stays protocol-neutral.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension retention, disposition and records-management policy",
+      "relation": "REFERENCE",
+      "purpose": "This area declares what must survive as immutable history and the shape of a tombstone; scheduling and executing destruction, legal holds and their release are owned and performed by the retention policy.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Party, actor and observing-agent identity model",
+      "relation": "REFERENCE",
+      "purpose": "Declarers, reviewers, approvers and automated observers are identified by reference only; authentication, credential issuance and organizational mastering are owned by the party model.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "Endpoint models for the source and target of a dependency (systems, components, packages, assets)",
+      "relation": "REFERENCE",
+      "purpose": "Endpoint references are resolved read-only to check existence at admission time. No command in this area may create, modify, retire or delete an endpoint record, and endpoint lifecycles are never mirrored here.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-016"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension names one owning package and a named steward accountable for the command catalogue, the state machine and every contract version bump.",
+        "The owning package declares, by explicit reference, which authorization model, audit model, retention policy and endpoint models the commands depend on, since none of them is owned here; a deployment with any of these unresolved is non-conforming.",
+        "The owning package publishes the command catalogue, transition matrix, precondition set and emitted event types as versioned specification data carrying an explicit contract version identifier.",
+        "The owning package registers the producer source identifier used in emitted event envelopes and guarantees event identifier uniqueness within it."
+      ],
+      "namespace_guidance": "Command types, lifecycle state codes, change-nature codes, issue codes and event types are minted in an HTTPS IRI namespace the adopting Dimension controls, with the contract version reachable from the base. Do not mint local codes inside the SPDX, FHIR, PROV or CloudEvents namespaces and do not reuse their identifiers for locally redefined meanings; alignment is expressed as a documented mapping with a version pin, never by borrowing an identifier.",
+      "registry_links": [
+        "Register this split area under registry entry vr.wm-xct-037 (WM-XCT-037) at nav path NAV.XCT.DEP, marked as the mutation-contract area, with a COMPOSE link to the companion structural area.",
+        "Record external alignments (SPDX 3.0.1, PROV-O, CloudEvents 1.0.2, FHIR R5 vocabularies) as ALIGN entries with pinned versions and a mapping document reference, so that a later version change is detectable as a registry event.",
+        "Record the referenced authorization, audit, retention and party models as REFERENCE entries, naming the owner of each so boundary ownership is auditable from the registry alone."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Compute request fingerprints and artifact integrity hashes over a JCS canonical serialization: lexicographic property ordering by UTF-16 code units, no insignificant whitespace, UTF-8 output.",
+        "Normalize all timestamps to RFC 3339 with seconds and an explicit offset before hashing, and exclude volatile envelope fields (receipt time, transport metadata, delivery identifiers) from the fingerprint so that a genuine retry still matches.",
+        "Compare code values case-sensitively and resolve references to their canonical identifier form before canonicalization, so that two spellings of the same reference do not produce different fingerprints."
+      ],
+      "patch_rules": [
+        "Express partial changes as an atomic patch: if any operation fails, no operation is applied and no version is produced.",
+        "Carry the expected-version precondition as a test operation inside the patch itself, so that concurrency control travels with the change rather than depending on the transport.",
+        "A patch may target only fields of the statement named by the command and records owned by this model; a patch path that reaches an endpoint record, a policy, or an audit record is rejected as an out-of-boundary write.",
+        "A patch that changes what the statement asserts is a revision and produces a new version; only an explicit correction command may attach an entered-in-error marker, and neither may overwrite prior content."
+      ],
+      "compatibility_rules": [
+        "Adding a command type, a refinement state, an issue code or an event type is a minor contract change; consumers must ignore unknown extension members rather than fail.",
+        "Removing or renaming a command, narrowing the transition matrix, adding a mandatory precondition or changing the meaning of an existing code is breaking and requires a new major contract version with both versions resolvable during migration.",
+        "Version tokens, statement identifiers and emitted event identifiers must remain stable and resolvable across contract versions; a contract upgrade never rewrites history.",
+        "Alignment mappings to external vocabularies are pinned by version; an upstream version change is a mapping change, never an implicit re-interpretation of stored data."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record for the artifact - for example the change or workflow identifier issued by the owning registry for a command or approval record, or the observation identifier issued by the observing system.",
+        "Governed global identifier or IRI minted in a namespace the adopting Dimension controls, used when no master system issues an identifier but the artifact must be citable across systems.",
+        "UUID or ULID assigned by the adopting Dimension as a last resort, recorded together with the scope in which it is unique.",
+        "Correlation and concurrency values - client idempotency keys, request fingerprints, expected and current version tokens, correlation identifiers - are never record identity; a date or timestamp is never an identifier."
+      ],
+      "timestamp_rule": "All time values are RFC 3339 date-times with seconds present and an explicit numeric offset or Z; '-00:00' is used only to signal an unknown local offset. Event time and observation or ingestion time are recorded separately whenever they differ: the time the dependency condition or decision held (asserted effective-from and effective-to, phenomenon time, decision time) is distinct from the time the system learned of it (command submission or ingestion time, observation result time, record creation time). A command must never derive one from the other, and neither may be used as an identifier.",
+      "serial_naming_rule": "Serial artifacts are named `<statement-identifier>/<artifact-kind>/<sequence>` where the sequence is monotonic and opaque within the statement - a version token for history entries, a producer-unique event identifier for events, a per-source observation identifier for observation records. Sequences are never dates, never reused after retirement, correction or supersession, and never renumbered when history is exported.",
+      "integrity_rule": "Every stored artifact carries a JCS-based content hash over its canonical form together with the identifier of the command that produced it and the version token it concerns. Historical records are append-only: a later correction adds a new record and marks the earlier one, and no change may obscure previously recorded content. A hash mismatch marks the artifact as unusable evidence and is reported as a validation finding rather than repaired in place."
+    },
+    "policies": [
+      "A mutation command may create or modify only records owned by this model and the dependency or impact statement it names; it must never create, modify, retire or delete the source or target endpoint records, a policy, or an audit record.",
+      "No command performs or requests package resolution, deployment, remediation, rollback or notification delivery. Approval or activation of a statement asserts that the statement is fit to rely on; it is never an authorization to act on the dependency, and emitted events are signals rather than instructions.",
+      "Every state-changing command carries an actor reference, an authorization decision reference and an audit hook reference. The model records these references and fails closed when the decision reference is anything other than a permit; it neither renders the decision nor stores the audit evidence.",
+      "Human-declared and machine-observed statements follow distinct paths. An observation-update may change a statement directly only where that statement is registered as observation-managed; otherwise it is attached as competing evidence and must never promote a statement past an approval gate.",
+      "History is append-only. Retirement, supersession and correction are the only ways to end or amend an assertion, and none of them removes prior content from the record."
+    ],
+    "crud": {
+      "read": [
+        "Reading command, approval, validation, observation and event records never changes statement state and produces no version; any historical version must be retrievable by the pair of statement identifier and version token.",
+        "Read scope may differ per record class - an approval record or an exception justification may be narrower than the statement itself - and the narrowing is decided and enforced by the referenced authorization model, not here.",
+        "A reader must be able to distinguish the currently active version, superseded versions, retired statements and versions marked entered-in-error without inferring it from timestamps."
+      ],
+      "create": [
+        "Only declare, review, approve, activate, revise, correct, supersede, retire and observation-update create records; each creation captures the command identifier, actor reference, authorization decision reference, and both the asserted event time and the ingestion time.",
+        "Creation is idempotent within the declared replay window: a repeated command carrying the same idempotency key and a matching request fingerprint returns the original result and creates nothing new, while the same key with a different fingerprint is refused without partial effect.",
+        "A declare command that matches an existing equivalent statement under the declared uniqueness criterion returns that statement as matched rather than creating a duplicate."
+      ],
+      "update": [
+        "Command records, validation reports, approval records, observation records and emitted events are append-only; correcting any of them means adding a new record that references the earlier one.",
+        "Any update to a statement's asserted content is version-producing, requires a matching expected-version precondition, and fails with a distinct stale-version outcome when the token no longer matches - separately from an illegal-transition outcome.",
+        "Field-level updates apply atomically with the precondition carried inside the change; a partially applied update is never a valid result.",
+        "Workflow-only updates (review disposition, approval status) change no asserted content and produce no new version."
+      ],
+      "delete": [
+        "This model performs no hard delete as a business operation: retire ends applicability, supersede transfers currency, correction marks an erroneous version, and every prior version remains readable. Deletion is not a lifecycle state.",
+        "Physical destruction of this model's own records is executed only under the adopting Dimension's retention and disposition policy or a referenced records-management model, which owns schedules, legal holds and their release; this model neither schedules nor executes destruction and asserts no hold authority.",
+        "When destruction is executed externally, this model retains a tombstone carrying the statement identifier, terminal version token, terminal lifecycle state, change-nature code, the disposition-authority reference and the RFC 3339 disposition timestamp with explicit offset, and no reconstructable payload; dangling references resolve to the tombstone rather than to nothing.",
+        "Deleting or expiring an emitted event record does not retract the event: retraction is a new compensating event. Whatever audit evidence must survive destruction is governed by the referenced audit model, which owns its own retention."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Statement declarer",
+        "responsibilities": [
+          "Issue declare and revise commands with complete endpoint references, relationship or impact type, lifecycle scope and assertion basis.",
+          "Supply an idempotency key for retryable submissions and resolve fingerprint mismatches rather than reissuing under a new key.",
+          "Respond to blocking validation findings by correcting the submission instead of requesting a gate exception."
+        ]
+      },
+      {
+        "name": "Review and approval authority",
+        "responsibilities": [
+          "Record a disposition against an exact statement version and approve only versions whose blocking findings are resolved or explicitly waived.",
+          "Confirm that the authority reference cited covers the scope of the statement and that separation-of-duties constraints are satisfied.",
+          "Justify and mark any break-glass approval so that retrospective review is guaranteed."
+        ]
+      },
+      {
+        "name": "Automated observer agent",
+        "responsibilities": [
+          "Submit observation-updates carrying observer and procedure references, observed presence value, confidence, phenomenon time and result time.",
+          "Assert absence explicitly rather than omitting an observation, and declare the coverage limits of what could be observed.",
+          "Never attempt to promote a statement past an approval gate and never initiate scans, resolution or remediation through a command."
+        ]
+      },
+      {
+        "name": "Mutation contract steward",
+        "responsibilities": [
+          "Own the command catalogue, transition matrix, precondition set and contract versioning, and classify each change as minor or breaking.",
+          "Maintain pinned alignment mappings to external vocabularies and detect upstream version drift.",
+          "Audit the boundary continuously: any command, effect or artifact that begins to evaluate policy, enforce access, store audit evidence or trigger downstream action is a defect to be removed."
+        ]
+      },
+      {
+        "name": "Interface and storage binding operator",
+        "responsibilities": [
+          "Map expected-version preconditions, conflict outcomes and failure representations onto the deployed protocol and declare that mapping explicitly.",
+          "Guarantee append-only persistence of version history, tombstones and emitted-event identity in the chosen store.",
+          "Keep delivery concerns - subscription, ordering, retry - outside the model's semantics while preserving producer-source and event-identifier uniqueness."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default: no state-changing command is admitted without a resolvable actor reference and an authorization decision reference that resolves to a permit from the external decision point. An Indeterminate, NotApplicable, missing or unresolvable decision is treated as a denial. This model records references and fails closed; it never evaluates policy and never enforces access.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Break-glass declaration or approval may bypass the normal review gate only where the command records an exception code, a justification, the granting authority reference and a retrospective-review obligation; the statement remains flagged until that review is recorded.",
+        "Registered observation-managed statements accept observation-updates from automated observers without human review, but only within the precedence rules declared by the contract and never across an approval gate.",
+        "Approval records, exception justifications and validation details may be readable to a narrower audience than the statement itself; the narrowing decision and any redaction are executed by the referenced authorization model, not here.",
+        "A retire command remains admissible when a referenced endpoint has become unresolvable, so that a stale statement can always be closed without touching the endpoint's owning model."
+      ],
+      "audit_requirements": [
+        "Every state-changing command emits an audit hook containing the command identifier, command type, actor and authority references, subject statement identifier, prior and resulting version tokens, the authorization decision reference, and RFC 3339 timestamps for both submission and effect; the referenced audit model owns that record's content, immutability, storage and retention.",
+        "Audit hooks and emitted change events share a correlation identifier so that one mutation can be reconstructed across the command, event and audit boundaries without this model storing audit evidence.",
+        "Refusals are hookable events too: a rejected command records its outcome code and problem type without embedding sensitive payload or internal implementation detail.",
+        "The model asserts no audit-trail completeness guarantee of its own; any such guarantee is a property of the audit model and must be verified there."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Contract version",
+        "Owning package and steward",
+        "Referenced authorization, audit and retention models"
+      ],
+      "read_order": [
+        "AGENTS.md first: resolve Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL, plus the pinned contract version, before attempting any command.",
+        "Specification: the command catalogue, transition matrix, precondition set, change-nature vocabulary and emitted event types for that contract version.",
+        "Processes: admission, review and approval, correction versus supersession, and observation precedence procedures, including which authorization, audit and retention models are referenced and therefore not owned here.",
+        "Interface: how expected-version preconditions, conflict outcomes and failure representations bind to the deployed protocol.",
+        "Storage type: how append-only version history, tombstones and event identity are persisted, and how historical versions are retrieved by statement identifier and version token."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This pass specifies the mutation-operation contract surface of WM-XCT-037 only: the command catalogue and transitions, admission and validation contracts, replay and concurrency guarantees, immutable version history with an explicit correction-versus-supersession distinction, observation-update semantics, and the result, failure, event and containment rules. Command, concurrency, failure and event semantics are grounded in IETF, CNCF, W3C, HL7, OASIS and SPDX primary sources; the review-and-approval gate and the refinement states between draft and active are adopting-Dimension constructs supported only by analogy to an artifact-assessment pattern and are marked as such. Nothing here models the dependency graph, impact computation, policy evaluation, audit storage, retention execution or any downstream action.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Command, approval, validation, history, observation and event artifacts each declare an identity strategy under the master-system, governed-IRI, UUID/ULID priority; idempotency keys, fingerprints and version tokens are explicitly excluded from identity, and no identifier is date-derived."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Draft, active and retired are taken from a normative publication-status vocabulary; in-review and approved are declared as adopting-Dimension refinements. Transitions are enumerated as explicit triples with a rejection outcome for illegal pairs."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Derivation links between versions, bidirectional supersedes/superseded-by links, subject bindings from command to statement, and read-only endpoint references. The dependency relationship's own typing is composed from the structural area, not restated."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 with seconds and explicit offset throughout; asserted validity interval, decision time, submission/ingestion time, phenomenon time and result time are kept as separate elements, with an explicit prohibition on deriving one from another."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Each command maps to an activity associated with responsible agents; produced versions are generated, revisions are derivations, and retirement or correction is invalidation. Software agents and delegation chains are recorded."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Owner package requirements, a named steward role, and explicit REFERENCE links naming the owners of policy decisions, audit evidence, retention execution, endpoints and party identity. Every out-of-boundary concept is placed in composition, out_of_scope or boundary_notes."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "A validate command with severity-graded, locatable issues bound to an evaluated version and a pinned rule set; the invariant definitions themselves remain owned by the structural area and referenced schemas."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny-by-default admission with a required authorization decision reference and fail-closed on non-permit, four declared scopes, and named exceptions. Decision rendering and enforcement are explicitly disclaimed and delegated."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "No hard delete as a business operation; retire, supersede and correct are the only endings. Destruction is executed by the adopting Dimension's retention policy, with a defined tombstone shape carrying disposition authority and an RFC 3339 disposition timestamp."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to SPDX relationships and lifecycle scopes, PROV-O provenance, CloudEvents envelopes, FHIR status and outcome vocabularies, and an HTTP conditional-request binding - all version-pinned mappings, with no conformance claimed."
+      },
+      {
+        "dimension": "idempotency and retry",
+        "status": "covered",
+        "notes": "Replay defined by key plus canonical fingerprint with a declared window and an explicit mismatch refusal; declare is made effectively idempotent by a uniqueness criterion, and the gated commands are idempotent by construction."
+      },
+      {
+        "dimension": "concurrency and conflict",
+        "status": "covered",
+        "notes": "Expected-version preconditions on every version-producing command, distinct outcomes for stale version versus illegal transition, and a declared atomicity unit for multi-statement changes."
+      },
+      {
+        "dimension": "authority and approval",
+        "status": "gap",
+        "notes": "The review/approve/activate gate, disposition vocabulary and separation-of-duties constraint are grounded only in an analogous artifact-assessment resource at trial-use maturity. Change-control corroboration from NIST SP 800-53 CM-3/CM-4, ISO/IEC 20000 or ITIL could not be verified live in this pass, so the gate is a candidate structure rather than a canonical one."
+      },
+      {
+        "dimension": "side-effect containment",
+        "status": "covered",
+        "notes": "Explicit prohibitions on mutating endpoint, policy or audit records and on triggering resolution, deployment, remediation or notification, reinforced by patch path restrictions and a policy statement that emitted events are signals, not instructions."
+      },
+      {
+        "dimension": "measurement and evidence quality",
+        "status": "covered",
+        "notes": "Observation confidence, coverage scope, and the asserted-absence versus no-assertion distinction taken from SPDX None/NoAssertion and observation vocabularies; impact scoring and any computation over these values are out of scope."
+      },
+      {
+        "dimension": "event emission",
+        "status": "covered",
+        "notes": "Event type, producer source with per-source unique identifier, subject reference, event time and correlation identifier are specified; delivery, subscription, ordering and retry are excluded by an explicit boundary note."
+      },
+      {
+        "dimension": "security and confidentiality of failure data",
+        "status": "covered",
+        "notes": "Failure representation follows the problem-details discipline of vetting error content, with an explicit rule against embedding sensitive payload or internal detail in refusal outcomes."
+      },
+      {
+        "dimension": "privacy",
+        "status": "not-applicable",
+        "notes": "Dependency and impact statements between systems or components carry no personal data by construction; where actor references resolve to identified people, the party and authorization models own the privacy treatment, and this model stores references only."
+      }
+    ],
+    "known_omissions": [
+      "No verified alignment to formal change-control frameworks (NIST SP 800-53 CM-3 and CM-4, ISO/IEC 20000, ITIL) - the source text could not be retrieved live in this pass, so the approval gate rests on an analogous assessment pattern rather than a change-management standard.",
+      "No electronic-signature contract: signature manifestation, signature-to-record binding and non-repudiation for approvals are referenced as an external concern rather than modelled, because the applicable regime is jurisdiction-specific.",
+      "Bulk and cascade mutation (retiring a statement and everything transitively dependent on it) is deliberately not specified; the atomicity mode is declared but transitive closure belongs to the structural and traversal areas.",
+      "Reconciliation of competing evidence - how a human declaration and a contradicting observation are resolved into one current assertion - is left as a declared precedence rule without a merge algorithm.",
+      "Late-arriving and out-of-order observations are surfaced as a question and an adversarial check, but no default ordering discipline is prescribed.",
+      "Schema evolution of the statement payload itself (migrating stored historical versions across structural changes) is governed by the structural area's compatibility rules, not here.",
+      "No quantitative service expectations (throughput, replay-window defaults, retention periods) are asserted; these are adopting-Dimension parameters."
+    ],
+    "conflicts": [
+      "Client-supplied idempotency keys are widespread practice but have no stable normative basis: the IETF draft that would standardize the header expired at revision 07 without becoming an RFC. The model therefore treats the key as a local contract parameter and takes its binding guarantees from RFC 9110 idempotency and conditional requests instead.",
+      "Version-conflict signalling is not uniform: FHIR permits both 409 Conflict and 412 Precondition Failed for the same class of failure, so any interface binding must choose one and declare it; the model keeps stale-version and illegal-transition as distinct semantic outcomes regardless of the chosen status code.",
+      "SPDX models a relationship as an asserted element with creation metadata but has no state machine, no approval gate and no supersession semantics. The lifecycle defined here is an addition layered on top of that vocabulary, not SPDX conformance, and round-tripping loses the workflow states.",
+      "PROV-O's wasRevisionOf does not distinguish a correction of an erroneous record from a legitimate revision. The distinction is imported from a clinical status vocabulary (amended, corrected, entered-in-error) and is therefore not interoperable by default; exporters must carry the change-nature code explicitly.",
+      "CloudEvents allows a producer to set the time attribute either to the actual occurrence time or by a consistent algorithm, so the envelope alone cannot carry the event-time versus ingestion-time distinction; both times must travel in the event data, not only in the envelope.",
+      "The publication-status vocabulary treats retired as covering both withdrawn and superseded, whereas this model separates retirement from supersession because they assert different things about currency; mapping to that vocabulary is therefore lossy in one direction."
+    ],
+    "regional_assumptions": [
+      "No jurisdiction-specific electronic-records regime is assumed. Where one applies (for example a validated-systems or records-integrity regime), the adopting Dimension's audit and retention models must add signature manifestation, signature-to-record linking and audit-trail retention obligations; this model provides the hooks but asserts none of them.",
+      "Approval expectations, including whether separation of duties is mandatory, vary by sector and regulator; four-eyes is modelled as a configurable constraint with an explicit violation outcome rather than as a default.",
+      "All times are recorded with explicit offsets; local civil-time rules, daylight-saving transitions and non-Gregorian calendars are outside the model, and '-00:00' is reserved for a genuinely unknown local offset.",
+      "Data-residency and cross-border constraints on where command, approval and observation records may be stored are storage-projection concerns owned by the adopting Dimension, not by these semantics."
+    ],
+    "adversarial_checks": [
+      "Replay the same declare command twice with the same idempotency key but different payloads: the contract must refuse the second on fingerprint mismatch with no partial effect, rather than creating a second statement or silently overwriting the first.",
+      "Issue an approve command whose authorization decision reference resolves to Deny, Indeterminate or nothing at all: admission must fail closed in all three cases; a design that treats a missing decision as permissive is a boundary violation.",
+      "Issue a correct command against a version that has already been superseded: history must afterwards show the corrected version, the entered-in-error marker, and the intact supersession chain, and the correction must not resurrect the superseded statement as current.",
+      "Submit an observation-update whose phenomenon time precedes the phenomenon time already recorded: the contract must classify it as late-arriving evidence or refuse it as out of order, and must never silently overwrite the more recent observation.",
+      "Retire a statement whose target endpoint reference no longer resolves: retirement must succeed on the local statement while making no attempt to create, modify or delete the endpoint record.",
+      "Grep every function, effect and artifact in this model for policy evaluation, access enforcement, audit-record writing, package resolution, deployment or notification delivery: any hit indicates ownership of a target model's semantics and must be moved to a composition link or an out-of-scope entry.",
+      "Attempt an atomic multi-statement revision in which one statement's version precondition is stale: either all statements are left unchanged or the declared per-statement mode is honoured with an explicit per-statement outcome list - a silent partial application falsifies the atomicity claim.",
+      "Re-import an exported history after a contract major-version upgrade: statement identifiers, version tokens and event identifiers must resolve unchanged, proving that upgrading the contract never rewrites history."
+    ]
+  }
+}

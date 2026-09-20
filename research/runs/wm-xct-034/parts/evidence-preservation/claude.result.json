@@ -1,0 +1,2783 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Attach, to any signed or sealed subject, the durable context that lets an agent understand what was signed, by whom, under which method, when this can be proven, and on what evidence a verification verdict rests and can be independently replayed later.",
+    "scope_statement": "WM-XCT-034 is a mixin that carries signature and proof context for a subject owned by another model. It covers the proof object and its binding to signed data; the signer or sealer as bound by the credential; the signing method, algorithm and container profile; trusted time as evidence distinct from signer-claimed time; verification evidence sufficient for independent replay; and the durability of that evidence over decades. It is format-neutral: ASN.1, XML, JSON, PDF containers, Git objects, MCP resources and database rows are projections. It does not operate certification authorities, time-stamping authorities, transparency logs, archives or audit systems, and it does not evaluate, enforce or decide; it records what an accepted external application produced and what a later party needs in order to reach the same result.",
+    "in_scope": [
+      "The proof object itself: immutable bytes, format and profile, placement relative to the signed data, and the digest binding it to that data.",
+      "The signer or sealer as bound by the proof: credential, certificate or key identifier asserted, and the subject attributes a relying party must be shown.",
+      "The signing method: signature and digest algorithms and parameters, canonicalization and transforms, claimed signature policy or commitment, container profile and level.",
+      "Trusted time as evidence: time-stamp request imprint, token identity, authority and policy reference, nonce, accuracy, and the ordered relation to signature generation and to each validation.",
+      "Verification evidence sufficient for independent replay: signature input digest, certification-path and revocation snapshot with freshness, trust configuration, algorithm policy, verifier identification, validation instant, verdict and reasons.",
+      "Durability of evidence: embedded versus external evidence packaging, renewal by new time-stamps or evidence records, algorithm and key expiry, evidence-chain continuity, optional corroboration references, and recorded anomalies and supersessions."
+    ],
+    "out_of_scope": [
+      "Operation of certification authorities, time-stamping authorities, trusted lists and transparency logs, including issuance, supervision, merge delay and status publication.",
+      "Signature creation, signing-key generation and custody, and attestation of a signature-creation device or of sole control.",
+      "Signer authentication and authorisation, and the business meaning or legal effect of the signed transaction.",
+      "Execution of retention, legal hold and destruction, and the audit trail of access to these records.",
+      "Archive storage mechanics, blockchain anchoring services, notarial services, and case or evidence management workflows.",
+      "The runtime signature-validation application itself: its internal algorithms, decision engine and enforcement behaviour."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Certification authority, trusted list and trust-service supervision",
+        "distinction": "This model carries authority identifiers, certificate references, policy pointers and a trusted-list state digest as parameters of one validation. Issuance, supervision, qualification lifecycle and status publication remain with the trust-service registry; reproducing those records here would create a divergent second master copy.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-011",
+          "SRC-015"
+        ]
+      },
+      {
+        "neighbor": "Time-stamping authority operation",
+        "distinction": "The model records the token, its imprint binding, accuracy and policy reference as evidence. Clock synchronisation, UTC traceability, time-stamping unit key management and TSA audit are the authority's own operations and are referenced, never restated as local facts.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-012",
+          "SRC-015"
+        ]
+      },
+      {
+        "neighbor": "Transparency log operation",
+        "distinction": "Inclusion and consistency proof references and signed checkpoints are optional corroboration of publication. Log operation, merge delay, gossip, monitoring and the log's own audit semantics belong to the log model; a log entry never establishes signer identity or the truth of the signed content.",
+        "source_refs": [
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Records retention, legal hold and archive storage",
+        "distinction": "This model asserts immutability and a minimum-evidence floor and defines a tombstone shape. Deciding and executing retention, hold and destruction, and operating archive storage, belong to the adopting Dimension's retention and archive models.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-015"
+        ]
+      },
+      {
+        "neighbor": "Signature creation and signing-key custody",
+        "distinction": "Everything from key generation to the moment a signature value exists is out of scope; the model begins at the produced proof object and its bindings.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Audit, logging and case management",
+        "distinction": "Access events, break-glass reads and rejected writes are emitted to the Dimension's audit or logging model. This model does not define audit-record structure, audit retention, audit immutability or any evaluation over audit trails.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-015"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3161.html",
+      "version_or_date": "RFC 3161, August 2001",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:05:00Z",
+      "relevance": "Normative structure of TimeStampReq (messageImprint, reqPolicy, nonce, certReq) and TSTInfo (policy, serialNumber, genTime, accuracy, ordering, nonce, tsa), including the rule that ordering is only strict when accuracy intervals do not overlap."
+    },
+    {
+      "id": "SRC-002",
+      "title": "ESSCertIDv2 Update for RFC 3161",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc5816.html",
+      "version_or_date": "RFC 5816, November 2010",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:12:00Z",
+      "relevance": "Requires a TSA certificate identifier (ESSCertID or ESSCertIDv2) as a signerInfo attribute and mandates SigningCertificateV2 for any hash algorithm other than SHA-1; grounds algorithm agility in token-to-key binding."
+    },
+    {
+      "id": "SRC-003",
+      "title": "Evidence Record Syntax (ERS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc4998.html",
+      "version_or_date": "RFC 4998, August 2007",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:18:00Z",
+      "relevance": "EvidenceRecord, ArchiveTimeStamp, ArchiveTimeStampChain and ArchiveTimeStampSequence; reduced hash trees; time-stamp renewal versus hash-tree renewal; and the recommendation for redundant evidence records under different algorithms and authorities."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Extensible Markup Language Evidence Record Syntax (XMLERS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc6283.html",
+      "version_or_date": "RFC 6283, July 2011",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:24:00Z",
+      "relevance": "XML projection of evidence records with an explicit CanonicalizationMethod per chain, CryptographicInformationList for certificates and revocation data, and the same two renewal strategies; demonstrates container independence of the evidence semantics."
+    },
+    {
+      "id": "SRC-005",
+      "title": "X.509 Internet Public Key Infrastructure Online Certificate Status Protocol - OCSP",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc6960.html",
+      "version_or_date": "RFC 6960, June 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:31:00Z",
+      "relevance": "Defines producedAt, thisUpdate, nextUpdate, revocationTime and revocationReason, the nonce binding, and the acknowledged replay exposure of pre-produced responses; the basis for revocation freshness evidence."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc5280.html",
+      "version_or_date": "RFC 5280, May 2008",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:37:00Z",
+      "relevance": "Section 6 path validation inputs (prospective path, current date/time, trust anchor information, initial policy set and constraint flags) and CRL thisUpdate/nextUpdate; establishes that a verdict is meaningless without its validation time and trust anchors."
+    },
+    {
+      "id": "SRC-007",
+      "title": "CMS Advanced Electronic Signatures (CAdES)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc5126.html",
+      "version_or_date": "RFC 5126, March 2008",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:44:00Z",
+      "relevance": "Signature forms BES/EPES/T/C/X/A, validation-data attributes, grace period, arbitration model, and the explicit distinction that signing-time is a signer claim while a time-stamp token is proof of existence."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Certificate Transparency Version 2.0",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9162.html",
+      "version_or_date": "RFC 9162, December 2021",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T08:50:00Z",
+      "relevance": "Merkle tree, signed tree head/checkpoint, inclusion and consistency proofs, log identity and maximum merge delay, and the security position that logs enable detection of misissuance but do not themselves prove legitimacy."
+    },
+    {
+      "id": "SRC-009",
+      "title": "ETSI EN 319 102-1 Electronic Signatures and Infrastructures (ESI); Procedures for Creation and Validation of AdES Digital Signatures; Part 1: Creation and Validation",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31910201/01.04.01_60/en_31910201v010401p.pdf",
+      "version_or_date": "V1.4.1, June 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:02:00Z",
+      "relevance": "Validation model: signature validation application, validation constraints, proof of existence, validation time and best-signature-time, the status indications TOTAL-PASSED / TOTAL-FAILED / INDETERMINATE with sub-indications, and validation of basic, time-stamped and long-term signatures."
+    },
+    {
+      "id": "SRC-010",
+      "title": "ETSI TS 119 102-2 Electronic Signatures and Infrastructures (ESI); Procedures for Creation and Validation of AdES Digital Signatures; Part 2: Signature Validation Report",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_ts/119100_119199/11910202/01.04.01_60/ts_11910202v010401p.pdf",
+      "version_or_date": "V1.4.1, June 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:08:00Z",
+      "relevance": "Interchange structure for a validation report: validation objects, proof-of-existence entries, signer information, validation constraints evaluation, status with indication and sub-indication, and a signature over the report itself."
+    },
+    {
+      "id": "SRC-011",
+      "title": "DSS Documentation - Digital Signature Service (eSignature building block)",
+      "organization": "European Commission, Directorate-General for Digital Services",
+      "url": "https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html",
+      "version_or_date": "Accessed 2026-09-04 (current release documentation)",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:15:00Z",
+      "relevance": "Reference implementation of EN 319 102-1: enumerated sub-indications, baseline levels B-B/B-T/B-LT/B-LTA, content/signature/archive time-stamp roles as proof of existence, past signature validation when a certificate is revoked after signing, revocation-freshness and cryptographic-sunset constraints, and trusted-list driven trust anchors."
+    },
+    {
+      "id": "SRC-012",
+      "title": "NIST Special Publication 800-102, Recommendation for Digital Signature Timeliness",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-102.pdf",
+      "version_or_date": "September 2009",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:22:00Z",
+      "relevance": "Independent authority for the claimed-time versus trusted-time distinction, the role and verification requirements of a Trusted Timestamp Authority, and the use of contemporaneous tokens to preserve signatures across later key compromise."
+    },
+    {
+      "id": "SRC-013",
+      "title": "XML Signature Syntax and Processing Version 1.1",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmldsig-core1/",
+      "version_or_date": "W3C Recommendation, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:29:00Z",
+      "relevance": "Reference/Transforms/DigestMethod/DigestValue model, two-step reference then signature validation, and the explicit rationale that canonicalization is what makes a digest input reproducible across implementations."
+    },
+    {
+      "id": "SRC-014",
+      "title": "ETSI EN 319 142-1 Electronic Signatures and Infrastructures (ESI); PAdES digital signatures; Part 1: Building blocks and PAdES baseline signatures",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31914201/01.02.01_60/en_31914201v010201p.pdf",
+      "version_or_date": "V1.2.1, January 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:36:00Z",
+      "relevance": "Container-specific projection of long-term evidence in PDF: Document Security Store for validation material, document time-stamps for archival, and the advice against relying on the VRI dictionary because DSS entries already reference the same material."
+    },
+    {
+      "id": "SRC-015",
+      "title": "Regulation (EU) No 910/2014 (eIDAS), Articles 32, 34 and 42",
+      "organization": "European Union (text as published on legislation.gov.uk, The National Archives)",
+      "url": "https://www.legislation.gov.uk/eur/2014/910/article/42",
+      "version_or_date": "Regulation of 23 July 2014; retained-EU-law text accessed 2026-09-04",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:44:00Z",
+      "relevance": "Article 32 requires the validation system to give the relying party the correct result and to let it detect security-relevant issues; Article 34 requires preservation to extend trustworthiness beyond the technological validity period; Article 42 requires time binding that precludes undetectable change and an accurate time source linked to UTC."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-evid-bundle-trusted-time",
+        "name": "Trusted time as evidence",
+        "description": "Independently issued temporal evidence for a signature or proof: what was submitted for time-stamping, what the returned token asserts, which authority and policy stand behind it, and how the resulting instants may and may not be ordered against signer-claimed time.",
+        "rationale": "A signature alone cannot say when it was made. RFC 5126 and NIST SP 800-102 separate a signer-claimed signing-time from a proof of existence, and eIDAS Article 42 requires binding of date and time to data so that undetectable change is precluded, with an accurate source linked to UTC. Trusted time therefore has to be its own bundle rather than an attribute of the signature.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-007",
+          "SRC-012",
+          "SRC-015"
+        ],
+        "layers": [
+          {
+            "id": "sig-evid-layer-timestamp-evidence",
+            "name": "Time-stamp request and token evidence",
+            "description": "The imprint that binds a token to a specific object, and the immutable token that fixes an instant with a serial number, accuracy bounds and a policy claim.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-timestamp-imprint-binding",
+                "name": "Time-stamp request and message-imprint binding",
+                "description": "The hash algorithm and imprint value submitted for time-stamping, the requested policy, the nonce and certificate-request flag, and above all an unambiguous statement of which object the imprint covers: the signature value, the signed data, or a prior evidence element. Without this statement a token proves the existence of an unknown digest.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-imprint-subject",
+                    "text": "Which exact byte sequence was hashed to form the message imprint, and is it the signature value, the signed data or a prior evidence element?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Imprint subject class (signature-value, signed-data, prior-evidence, evidence-record)",
+                      "Stable reference to the covered artefact",
+                      "Byte-range or element-extraction rule applied before hashing"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-imprint-algorithm",
+                    "text": "Which hash algorithm identifier and digest length formed the imprint, and was that algorithm acceptable under the algorithm policy in force when the request was made?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Hash algorithm object identifier or URI",
+                      "Digest length in octets",
+                      "Algorithm policy identifier and its status for that algorithm at request time"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-imprint-nonce",
+                    "text": "Was a nonce supplied in the request, and does the returned token echo that identical value?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Nonce value as sent",
+                      "Nonce value as returned",
+                      "Match result and, where absent, the recorded replay-exposure note"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-imprint-policy-request",
+                    "text": "Was a specific authority policy requested, and did the issued token assert that same policy?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Requested policy identifier",
+                      "Asserted policy identifier in the token",
+                      "Divergence flag and handling decision"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-imprint-algorithm",
+                    "name": "Imprint hash algorithm",
+                    "description": "Identifier of the hash algorithm used to compute the message imprint submitted to the time authority.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-imprint-digest",
+                    "name": "Imprint digest value",
+                    "description": "The digest octets submitted as the message imprint; its length must match the declared algorithm.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-imprint-subject-ref",
+                    "name": "Imprint subject reference",
+                    "description": "Stable reference to the object whose digest was submitted, together with the class of that object.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-request-nonce",
+                    "name": "Request nonce",
+                    "description": "Large random value supplied to bind request and response and to detect replay.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-requested-policy",
+                    "name": "Requested policy identifier",
+                    "description": "Policy the requester asked the authority to apply when producing the token.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-cert-req-flag",
+                    "name": "Certificate request flag",
+                    "description": "Whether the requester asked the authority to include its signing certificate in the response.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-timestamp-request",
+                    "name": "Time-stamp request record",
+                    "description": "The request as submitted, or a protocol-neutral descriptor of it, retained so that a later party can confirm what was actually presented for time-stamping and check the nonce echo.",
+                    "media_or_form": [
+                      "DER-encoded TimeStampReq",
+                      "protocol-neutral request descriptor with algorithm, digest, policy and nonce",
+                      "transport log entry carrying the request payload"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Authoritative master-system identifier assigned by the requesting system where one exists; otherwise a governed IRI in the adopting Dimension namespace; otherwise a ULID recorded together with the imprint digest. The submission instant is never used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-timestamp-token-identity",
+                "name": "Time-stamp token identity, generation time and accuracy",
+                "description": "The token exactly as issued: serial number, asserted generation time, accuracy bounds, ordering flag, echoed nonce, authority hint, policy identifier and the certificate identifier binding it to a time-stamping unit key. These bytes are the proof; everything else in the model is commentary on them.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-012",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-token-serial",
+                    "text": "What is the token serial number, and which issuing-authority namespace makes that serial unique?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Token serial number as an integer of up to 160 bits",
+                      "Issuing authority name or identifier that scopes the serial",
+                      "Composite key formed from authority and serial"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-token-gentime",
+                    "text": "What generation time does the token assert, and with what stated accuracy bounds?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Generation time normalised to RFC 3339 with seconds and explicit offset",
+                      "Original GeneralizedTime value retained verbatim",
+                      "Accuracy in seconds, milliseconds and microseconds, defaulting to zero where a component is absent"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-token-ordering",
+                    "text": "Is the ordering flag asserted, and may two tokens from this authority be strictly ordered when their accuracy intervals overlap?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Ordering flag value or its absence",
+                      "Computed accuracy intervals for the compared tokens",
+                      "Orderability verdict: strictly ordered, unordered, or ordered only by authority assertion"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-token-cert-binding",
+                    "text": "Which certificate identifier binds the token to the time-stamping unit key, and is it the legacy or the version-2 form?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "ESSCertID or ESSCertIDv2 value and its hash algorithm",
+                      "Reference to the time-stamping unit certificate",
+                      "Note where only a SHA-1 based identifier is available"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-token-status",
+                    "text": "Was the response status a granted issuance, and is any failure information recorded?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Status value (granted, granted with modifications, or a rejection)",
+                      "Free-text status string where provided",
+                      "Failure information bits where the request was refused"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-token-serial",
+                    "name": "Token serial number",
+                    "description": "Integer uniquely identifying the token within the issuing authority's namespace.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-token-gentime",
+                    "name": "Token generation time",
+                    "description": "Instant the authority asserts the token was created, normalised to RFC 3339 with seconds and an explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-token-accuracy",
+                    "name": "Token accuracy bound",
+                    "description": "Stated deviation of the generation time from the authority's reference time source.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-token-ordering-flag",
+                    "name": "Token ordering flag",
+                    "description": "Authority assertion that its tokens are always strictly ordered irrespective of accuracy overlap.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-token-policy",
+                    "name": "Asserted policy identifier",
+                    "description": "Policy under which the authority states the token was issued.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-token-cert-identifier",
+                    "name": "Time-stamping unit certificate identifier",
+                    "description": "Certificate identifier attribute binding the token signature to a specific authority key.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-timestamp-token",
+                    "name": "Time-stamp token",
+                    "description": "The immutable issued token retained byte-identically, in whatever encoding it arrived, as the primary carrier of trusted time for the bound object.",
+                    "media_or_form": [
+                      "DER-encoded RFC 3161 TimeStampToken as CMS SignedData",
+                      "XML time-stamp token element",
+                      "base64 token embedded in a signature container or document time-stamp revision"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Authoritative master-system identifier is the issuing authority identifier plus the token serial number. Where the authority cannot be resolved, a governed IRI is used; only if neither exists is a ULID minted by the adopting Dimension, always stored with the token digest. Generation time is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-evid-layer-time-assurance",
+            "name": "Time authority reference and temporal ordering",
+            "description": "The authority and policy standing behind trusted time, and the ordering assertions that can defensibly be drawn between claimed, proven and observed instants.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-007",
+              "SRC-012",
+              "SRC-015"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-time-authority-reference",
+                "name": "Time authority reference, policy and time-source assurance",
+                "description": "Which authority issued the trusted time, under which published policy and qualification status, and what assurance of traceability to Coordinated Universal Time that policy claims. Carried strictly as resolvable references plus the subject-specific binding.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-011",
+                  "SRC-012",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-authority-identity",
+                    "text": "Which authority identifier, certificate and published policy document govern the token relied on here?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Authority identifier as asserted in the token and as resolved externally",
+                      "Reference to the authority certificate",
+                      "Resolvable pointer and version of the published policy or practice statement"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-authority-utc",
+                    "text": "What traceability to Coordinated Universal Time does the authority's policy claim for tokens of this class?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Stated time-source traceability claim and its scope",
+                      "Reference to the clause of the policy making the claim",
+                      "Whether the claim was verified independently or accepted on reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-authority-qualification",
+                    "text": "Was the authority supervised or qualified under a named trust framework at the moment the token was generated, and according to which list?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Qualification or supervision status value",
+                      "Identifier and snapshot digest of the list consulted",
+                      "Instant at which the status was observed"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-authority-compromise-path",
+                    "text": "If the authority is later found compromised or its policy is withdrawn, which recorded reference lets a verifier locate that determination?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Reference to the status or incident source for this authority",
+                      "Classes of token affected by such a determination",
+                      "Pointer to the supersession assertion recorded when the determination arrives"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-authority-identifier",
+                    "name": "Time authority identifier",
+                    "description": "Identifier of the authority in its own issuing namespace, as asserted and as independently resolved.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-authority-policy-ref",
+                    "name": "Authority policy reference",
+                    "description": "Resolvable pointer plus version to the policy or practice statement under which the token was issued.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-authority-qualification",
+                    "name": "Authority qualification status",
+                    "description": "Supervision or qualification status observed for the authority under a named framework, with the instant of observation.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-authority-utc-claim",
+                    "name": "UTC traceability claim",
+                    "description": "The authority's stated linkage of its time source to Coordinated Universal Time, recorded as a referenced claim rather than a verified fact.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-015",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-authority-status-source",
+                    "name": "Authority status source reference",
+                    "description": "Pointer to the external register or list that owns this authority's status lifecycle.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-015"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The authority, its certificate chain, its published policy and its supervision status are issued, versioned and withdrawn by trust-service and supervision registries that this model does not operate. Materialising them as local artefacts would create a second master copy that silently drifts from the register of record and would invite an agent to treat a stale local copy as authoritative. What this finding legitimately holds is purely inline reference data: identifiers, resolvable pointers with versions, the observed status and its observation instant, and the binding of that authority to one specific token."
+              },
+              {
+                "id": "sig-evid-temporal-ordering",
+                "name": "Ordered relation between claimed, proven and observed instants",
+                "description": "The defensible ordering among signer-claimed signing time, each proof of existence, revocation and compromise instants, and each validation instant, together with the accuracy and clock-uncertainty bounds that make some pairs unorderable.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-claimed-versus-proven",
+                    "text": "How does the signer-claimed signing time relate to the earliest proof of existence recorded for the same signature?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Claimed signing time as asserted, marked as a claim",
+                      "Earliest proof-of-existence instant and the token establishing it",
+                      "Signed interval between them and any implausibility flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-best-signature-time",
+                    "text": "What is the earliest defensible proof-of-existence instant for this signature, and which evidence element establishes it?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Best-signature-time value",
+                      "Reference to the establishing token or evidence record",
+                      "Whether the value is upper-bounded by accuracy and by how much"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-unorderable-pairs",
+                    "text": "Which pairs of recorded instants cannot be strictly ordered because their accuracy or uncertainty intervals overlap?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Pairs of instants compared",
+                      "Overlapping interval extents",
+                      "Resulting orderability verdict per pair"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-poe-mechanism",
+                    "text": "Is any proof of existence established by a mechanism other than a time-stamp token, such as a time-mark held by a service provider or an archive time-stamp over an evidence chain?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Proof-of-existence mechanism class",
+                      "Reference to the record or audit source that carries it",
+                      "Assurance note where the mechanism depends on a provider's own records"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-event-versus-observation",
+                    "text": "Which recorded instants are event times asserted by an external party and which are observation or ingestion times recorded by this model?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Per-instant classification as event time or observation time",
+                      "Recording actor or system for each observation time",
+                      "Divergence where an event time was received long after it occurred"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-claimed-signing-time",
+                    "name": "Claimed signing time",
+                    "description": "Signer-asserted signing instant, retained as an unproven claim and never promoted to a proof of existence.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-best-signature-time",
+                    "name": "Best signature time",
+                    "description": "Earliest instant at which the signature is proven to have existed, derived from the recorded proof set.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-poe-entry",
+                    "name": "Proof-of-existence entry",
+                    "description": "One derived assertion that a named object existed at or before a given instant, with the evidence element that supports it.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-ordering-assertion",
+                    "name": "Ordering assertion",
+                    "description": "A pairwise assertion that one recorded instant precedes another, qualified by the bounds that permit or forbid the assertion.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-uncertainty-interval",
+                    "name": "Clock uncertainty interval",
+                    "description": "Bound within which a recorded instant may deviate, from stated accuracy or from a documented clock-quality assumption.",
+                    "value_kind": "duration",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-observation-time",
+                    "name": "Observation time",
+                    "description": "Instant at which this model observed or ingested the evidence, always recorded separately from the asserted event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are derived relational assertions computed over proof artefacts that are already declared elsewhere in the model; they carry no bytes of their own. Freezing them into an artefact would fossilise a derivation that legitimately changes whenever a further proof of existence, a revocation record or a compromise determination arrives, and a frozen ordering table would be easy to mistake for independent evidence. Keeping them inline forces every ordering claim to be recomputed from the retained proofs, which is exactly the property an independent replayer needs."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-evid-bundle-validation-evidence",
+        "name": "Replayable validation evidence",
+        "description": "Everything a party who was not present at validation needs in order to reach the same conclusion: what the signature covered, which certificates and revocation data were used and how fresh they were, which trust anchors and algorithm constraints applied, which tool produced the verdict, at which instant, and with what indication and reasons.",
+        "rationale": "eIDAS Article 32(2) requires the validating system to give the relying party the correct result and to let it detect security-relevant issues; RFC 5280 makes the validation date/time and trust anchors explicit inputs to path validation; and ETSI EN 319 102-1 with TS 119 102-2 turns the outcome into an indication, a sub-indication and the set of validation objects each conclusion depended on. A verdict without those inputs is not evidence.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-009",
+          "SRC-010",
+          "SRC-015"
+        ],
+        "layers": [
+          {
+            "id": "sig-evid-layer-validation-input",
+            "name": "Validation inputs and configuration snapshot",
+            "description": "The reconstructable material of a validation: the signature input digest and its transform chain, the certification path and revocation snapshot with freshness fields, and the trust and algorithm constraints in force.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-011",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-signed-input-digest",
+                "name": "Signature input identification and digest",
+                "description": "What the signature actually covers: the digest algorithm and value, the transform or canonicalization chain that produced the hashed octets, whether content is embedded, detached or absent, and the stable reference to the signed object in the system that owns it.",
+                "source_refs": [
+                  "SRC-013",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-input-digest",
+                    "text": "Which digest algorithm and digest value represent the signature input, and over which transformed octet stream were they computed?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Digest algorithm identifier",
+                      "Digest value octets",
+                      "Description of the octet stream actually hashed, including byte ranges where applicable"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-input-transforms",
+                    "text": "Which transforms or canonicalization steps must be replayed in order to regenerate an identical digest input?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Ordered list of transform and canonicalization algorithm identifiers",
+                      "Parameters supplied to each step",
+                      "Known implementation divergences recorded for any step"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-input-attachment",
+                    "text": "Is the signed content embedded with the signature, detached and referenced, or absent, and what happens to replay when a referenced object cannot be retrieved?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Attachment mode value",
+                      "Retrieval reference and its resolution status",
+                      "Fallback position: digest-only verification retained, with the reduced assurance stated"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-input-object-identity",
+                    "text": "Which stable reference identifies the signed data object in the model that owns it, and does that reference pin a specific version?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Owning model or system identifier",
+                      "Object identifier and version or revision pin",
+                      "Digest recorded against that version at signing time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-input-digest-algorithm",
+                    "name": "Signature input digest algorithm",
+                    "description": "Algorithm used to digest the signature input.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-input-digest-value",
+                    "name": "Signature input digest value",
+                    "description": "Digest octets over the transformed input, the value a replay must reproduce exactly.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-transform-chain",
+                    "name": "Transform chain",
+                    "description": "Ordered transform and canonicalization identifiers with parameters, required for a reproducible digest input.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-attachment-mode",
+                    "name": "Content attachment mode",
+                    "description": "Whether signed content is enveloped, enveloping, detached with a resolvable reference, or absent.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-signed-object-ref",
+                    "name": "Signed data object reference",
+                    "description": "Version-pinned reference to the signed object held by the owning content model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-signed-input-manifest",
+                    "name": "Signed-input digest manifest",
+                    "description": "The retained description of every reference, transform and digest that together define the signature input, sufficient to rebuild the hashed octets without access to the original signing application.",
+                    "media_or_form": [
+                      "reference, transform and digest manifest in any serialisation",
+                      "CMS signed-attribute set carrying content-type and message-digest",
+                      "XMLDSIG SignedInfo reference list with transforms",
+                      "PDF byte-range descriptor for a document signature"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the master-system identifier of the signature record that owns it where the signing or custody system assigns one; otherwise by a governed IRI; otherwise by a ULID stored with the manifest digest and the signature-input digest it describes.",
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-007",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-path-revocation-snapshot",
+                "name": "Certification path and revocation-status snapshot with freshness",
+                "description": "The certificates, certificate revocation lists and status responses actually used for one validation, captured with their own time fields and responder identities so that a later party can reconstruct the status picture that was available, rather than the one available today.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-path-composition",
+                    "text": "Which certificates form the prospective certification path, and are they retained by value or only by reference with a digest?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Ordered certificate list from trust anchor to end entity",
+                      "Storage mode per certificate: value or reference plus digest",
+                      "Gaps where an intermediate could not be obtained"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-revocation-freshness-fields",
+                    "text": "For each revocation source used, what are its production, this-update and next-update instants and its responder or issuer identity?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Revocation source type and identifier",
+                      "Production, this-update and next-update instants normalised to RFC 3339",
+                      "Responder or issuer identity and the key or name by which it was identified"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-freshness-constraint",
+                    "text": "Was each revocation response fresh enough under the freshness constraint applied at the validation instant, and was a nonce or only a cached response available?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Freshness constraint expressed as a maximum age or a next-update rule",
+                      "Per-source freshness verdict",
+                      "Nonce presence and, where absent, the recorded pre-produced-response replay caveat"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-revocation-versus-poe",
+                    "text": "If a certificate was revoked, what revocation instant and reason were recorded, and how does that instant compare with the proof of existence for the signature?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Revocation instant and reason code",
+                      "Best-signature-time compared against the revocation instant",
+                      "Resulting position: proven before revocation, proven after, or indeterminate for want of proof"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-path-certificates",
+                    "name": "Certification path certificate set",
+                    "description": "The certificates relied on, ordered from trust anchor to end entity, stored by value or by reference with digest.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-revocation-source",
+                    "name": "Revocation source entry",
+                    "description": "One retained revocation list or status response with its type, identifier and responder or issuer identity.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-revocation-time-fields",
+                    "name": "Revocation source time fields",
+                    "description": "Production, this-update and next-update instants of a revocation source, retained verbatim and normalised.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-certificate-status",
+                    "name": "Certificate status value",
+                    "description": "Status determined for a certificate from the retained source: good, revoked or unknown.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-revocation-instant",
+                    "name": "Revocation instant and reason",
+                    "description": "Instant at which a certificate was revoked or suspended, with the recorded reason code.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-validation-material-set",
+                    "name": "Validation material set",
+                    "description": "The retained bytes of certificates, revocation lists and status responses used for one validation, held so that revocation state can be re-derived without depending on responders that may later be unavailable.",
+                    "media_or_form": [
+                      "DER certificates, CRLs and status responses",
+                      "CAdES certificate-values and revocation-values attributes",
+                      "XAdES validation-data properties",
+                      "PDF Document Security Store entries",
+                      "external validation-material package"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Each contained element keeps its own master-system identifier (issuer plus certificate serial number; issuer plus this-update for a revocation list; responder plus production instant for a status response). The set as a whole takes a governed IRI or, failing that, a ULID recorded with the set digest.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006",
+                      "SRC-011",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-validation-constraints",
+                "name": "Trust configuration and algorithm constraint snapshot",
+                "description": "The trust anchors supplied to path validation, the state of the list or store they came from, the cryptographic suites treated as acceptable with their sunset instants, and the freshness, path and policy constraints applied. Retained so a replay can be run under either the original or a current constraint set and the difference attributed.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-trust-anchors",
+                    "text": "Which trust anchors were supplied to path validation, and from which list or trust-store state were they taken?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Trust anchor set with identifiers and key digests",
+                      "Identifier, version and digest of the list or store snapshot",
+                      "Instant at which the snapshot was captured"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-crypto-constraints",
+                    "text": "Which cryptographic suites were treated as acceptable, and what sunset instant applied to each at the validation instant?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Suite identifiers with acceptable, deprecated or disallowed status",
+                      "Sunset instant per suite",
+                      "Minimum key sizes or parameter bounds applied"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-constraint-criticality",
+                    "text": "Which freshness, path-length and policy constraints were applied, and which of them were mandatory rather than advisory?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Constraint list with parameters",
+                      "Criticality per constraint",
+                      "Identifier and version of the governing validation policy"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-constraint-attribution",
+                    "text": "Can a replay distinguish a failure under the original constraint set from a failure that appears only under a stricter current constraint set?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Verdict under the recorded historical constraint set",
+                      "Verdict under the current constraint set",
+                      "Attribution statement naming the constraint responsible for any difference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-trust-anchor-set",
+                    "name": "Trust anchor set",
+                    "description": "Trust anchors supplied as an input to path validation, with identifiers and public-key digests.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-trust-store-snapshot",
+                    "name": "Trust store snapshot reference",
+                    "description": "Version-pinned pointer and digest for the externally owned list or store from which anchors were taken.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-crypto-constraint",
+                    "name": "Cryptographic suite constraint",
+                    "description": "One algorithm or parameter constraint with its status and, where applicable, its sunset instant.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-constraint-criticality",
+                    "name": "Constraint criticality",
+                    "description": "Whether a given constraint failure forces a failed verdict or only a warning.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-validation-policy-id",
+                    "name": "Validation policy identifier",
+                    "description": "Identifier and version of the policy that assembled this constraint set.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-constraint-snapshot",
+                    "name": "Validation constraint snapshot",
+                    "description": "The constraint set as it stood for one validation, retained as a versioned document or serialisation, with a pointer and digest for any externally owned list rather than a copy of it.",
+                    "media_or_form": [
+                      "validation policy document with version",
+                      "serialised constraint set",
+                      "trust-store or list state pointer with digest"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the policy in the system that publishes it, where one exists; otherwise a governed IRI for the policy plus version; otherwise a ULID recorded with the digest of the serialised constraint set.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-evid-layer-validation-outcome",
+            "name": "Validation outcome and replay determinism",
+            "description": "The recorded result of a validation performed by an external application, and the contract stating what must be retained together for an independent party to reproduce it.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-010",
+              "SRC-011",
+              "SRC-015"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-validation-verdict",
+                "name": "Validation verdict, sub-indications and dependency references",
+                "description": "The outcome an accepted external validation application returned: main indication, sub-indication, per-constraint results, the validation objects each conclusion depended on, the validation instant, and the report carrying them. The model records this outcome; it does not evaluate, decide or enforce.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-verdict-indication",
+                    "text": "What main indication and sub-indication did the validating application return for this signature?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Main indication value such as passed, failed or indeterminate",
+                      "Sub-indication value, preserved verbatim even when unrecognised",
+                      "Human-readable reason text as returned"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-verdict-dependencies",
+                    "text": "Which specific validation objects did each conclusion depend on, and are all of them retained?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Per-conclusion list of dependent object references",
+                      "Retention status of each dependency: retained by value, by reference, or missing",
+                      "Replayability flag derived from the missing set"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-verdict-report-format",
+                    "text": "Which validation report format and version carry the verdict, and is the report itself signed or sealed?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Report format identifier and version",
+                      "Whether a report signature or seal is present and by whom",
+                      "Mapping notes where a proprietary report was normalised into the interchange form"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-verdict-time-basis",
+                    "text": "Was the result determined at a validation time other than the moment the report was produced, and which instant governs the conclusion?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Validation instant used as the path-validation reference time",
+                      "Report production instant",
+                      "Statement of which instant governs and why they differ"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-verdict-relying-party",
+                    "text": "What must be shown to a relying party for this result to be actionable, including signatory identification and any pseudonym or qualification flag?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Signatory identifying data as presented",
+                      "Pseudonym indicator where the certificate uses one",
+                      "Qualification or assurance flags and any security-relevant issues surfaced"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-main-indication",
+                    "name": "Main indication",
+                    "description": "Top-level outcome of the validation as returned by the validating application.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-sub-indication",
+                    "name": "Sub-indication",
+                    "description": "Refining outcome code explaining why the main indication was reached; unknown values are preserved verbatim.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-validation-instant",
+                    "name": "Validation instant",
+                    "description": "Reference instant used as the current date and time input to path validation for this outcome.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-report-production-time",
+                    "name": "Report production time",
+                    "description": "Instant at which the validating application produced the report, recorded separately from the validation instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-constraint-result",
+                    "name": "Constraint evaluation result",
+                    "description": "Outcome of one evaluated constraint, with its identifier and the objects it consumed.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-dependent-object-ref",
+                    "name": "Dependent validation object reference",
+                    "description": "Reference from a conclusion to a validation object it relied on, with the digest of that object.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-validation-report",
+                    "name": "Signature validation report",
+                    "description": "The retained report or verdict record as produced, carrying indications, reasons, validation objects and proof-of-existence entries, kept immutable so that a later contradictory result becomes a new record rather than an edit.",
+                    "media_or_form": [
+                      "interchange validation report in the ETSI TS 119 102-2 structure",
+                      "implementation-specific simple or detailed report",
+                      "format-neutral verdict record with indication, reasons and dependency references"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system identifier assigned by the validating application where one exists; otherwise a governed IRI in the adopting Dimension namespace; otherwise a ULID. Reports for one signature form an ordered series keyed by validation instant plus verifier identity, but the instant alone is never the identifier.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-verifier-replay-determinism",
+                "name": "Verifier identification and replay determinism",
+                "description": "Which product, version, build and named configuration produced a recorded verdict, which inputs must be replayed unchanged, which parts of a replay still depend on network retrieval, and how a divergent replay result is recorded without touching the earlier record.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-verifier-identity",
+                    "text": "Which validating product, version and build produced this outcome, and under which named configuration was it run?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Product identifier, version string and build fingerprint",
+                      "Configuration or profile name with its version",
+                      "Reference to the accepted-validator registry entry authorising its use"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-replay-invariants",
+                    "text": "Which inputs must be replayed unchanged for the verdict to be reproducible, and which may legitimately vary?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Invariant input list: proof bytes, input digest manifest, validation material, constraint snapshot, validation instant",
+                      "Permitted-variation list such as verifier build or transport",
+                      "Named replay contract identifier and version"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-replay-network-dependency",
+                    "text": "Which parts of a replay depend on live network retrieval rather than on retained evidence?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Per-input source classification: retained locally or fetched at replay",
+                      "Consequence if each remote source becomes unavailable",
+                      "Remediation action such as capturing the missing element before it disappears"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-replay-divergence",
+                    "text": "When a replay reaches a different verdict from the recorded one, how is the divergence captured without altering the earlier record?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "New verdict record with its own validation instant and constraint snapshot",
+                      "Divergence note naming the differing input or constraint",
+                      "Reference to any supersession assertion raised as a result"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-verifier-product",
+                    "name": "Verifier product identifier",
+                    "description": "Identifier of the validating application that produced a recorded outcome.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-verifier-version",
+                    "name": "Verifier version and build",
+                    "description": "Version string and build fingerprint of the validating application at the time of the outcome.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-verifier-configuration-ref",
+                    "name": "Verifier configuration reference",
+                    "description": "Pointer to the named, versioned configuration under which the application was run.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-replay-contract",
+                    "name": "Replay contract identifier",
+                    "description": "Identifier and version of the declared set of inputs that must be retained together for reproducibility.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-network-dependency-flag",
+                    "name": "Network dependency flag",
+                    "description": "Whether a given replay input must be fetched remotely rather than read from retained evidence.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Verifier identity, version and configuration are descriptive parameters of a verdict that is already declared as an immutable artefact in the sibling finding, and the replay contract is a statement about which of the model's existing artefacts must be retained together. Minting a further artefact here would duplicate the validation report's payload and create two descriptions of a single immutable event that could drift apart. Keeping this finding inline makes the replay contract a property of the evidence set rather than another object competing to be the record of truth."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-evid-bundle-durability",
+        "name": "Evidence durability, corroboration and degradation",
+        "description": "How proof survives the weakening of the cryptography that protects it, how optional external corroboration is recorded without overclaiming, and how anomalies and reinterpretations are captured as new assertions rather than as edits.",
+        "rationale": "RFC 4998 and RFC 6283 define renewal by new time-stamps or by hash-tree rebuild precisely because algorithms and keys expire; eIDAS Article 34 requires preservation that extends trustworthiness beyond the technological validity period; and RFC 9162 makes clear that a transparency log detects misissuance but does not establish legitimacy. Durability, corroboration and degradation therefore need explicit structure and explicit limits.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-008",
+          "SRC-015"
+        ],
+        "layers": [
+          {
+            "id": "sig-evid-layer-preservation",
+            "name": "Evidence packaging and renewal",
+            "description": "Where durable evidence lives relative to the signature container, and how its chain is kept unbroken across algorithm and key expiry.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-007",
+              "SRC-014"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-evidence-packaging",
+                "name": "Evidence embedding versus external evidence package",
+                "description": "Whether durable evidence is carried inside the signature container, held beside it as a detached evidence record, or both, and what binds an external package to the exact signature and input it covers when the subject is re-containerised.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-011",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-packaging-mode",
+                    "text": "Is durable evidence embedded in the signature container, held as a detached evidence record, or maintained in both places at once?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Packaging mode value",
+                      "Locations holding evidence for this subject",
+                      "Reconciliation rule where embedded and external evidence disagree"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-claimed-level-substantiation",
+                    "text": "Which container profile and level does the embedded evidence claim, and is that claim substantiated by the elements actually present?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Claimed profile and level identifier",
+                      "Inventory of elements present against those the level requires",
+                      "Substantiated, over-claimed or under-claimed verdict"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-package-binding",
+                    "text": "If evidence is external, what binding ties the package to the exact signature and signed input it covers?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Digest of the covered signature and of the signature input",
+                      "Covered-object reference list with version pins",
+                      "Statement of what breaks the binding, such as re-encoding the container"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-packaging-portability",
+                    "text": "How is the same evidence expressed when the subject moves between container formats or into a database projection?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Per-format expression of each evidence element",
+                      "Elements with no equivalent in the target format and their fallback",
+                      "Invariants that must survive the move, principally digests and proof bytes"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-packaging-mode",
+                    "name": "Evidence packaging mode",
+                    "description": "Whether evidence is embedded, external, or duplicated in both locations.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-container-profile",
+                    "name": "Container profile and level",
+                    "description": "Profile and long-term level claimed by the signature container carrying the evidence.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-011",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-package-binding-digest",
+                    "name": "Package binding digest",
+                    "description": "Digest that ties an external evidence package to the exact signature and input it covers.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-covered-object-ref",
+                    "name": "Covered object reference",
+                    "description": "Version-pinned reference to each object the evidence package covers.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-evidence-package",
+                    "name": "Durable evidence package",
+                    "description": "The retained long-term evidence for a subject, in whichever carrier it exists, held so that no single container format is required for the evidence to remain meaningful.",
+                    "media_or_form": [
+                      "ASN.1 evidence record per RFC 4998",
+                      "XML evidence record per RFC 6283",
+                      "CAdES or XAdES long-term and archive properties",
+                      "PDF Document Security Store with document time-stamp revisions",
+                      "format-neutral evidence package index with digests and pointers"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier assigned by the preservation system of record where one exists; otherwise a governed IRI for the package; otherwise a ULID stored with the package digest and the digests of every covered object.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-renewal-continuity",
+                "name": "Evidence renewal and chain continuity",
+                "description": "How evidence is kept effective as algorithms and keys weaken: renewal by a new time-stamp over prior evidence when only the authority key is at issue, or hash-tree renewal over the full sequence when the digest algorithm itself is at issue, together with the continuity of the chain and the detection of gaps.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-015"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-renewal-kind",
+                    "text": "Was the most recent renewal a time-stamp renewal over prior evidence or a hash-tree renewal under a new digest algorithm?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Renewal kind value",
+                      "Trigger recorded for it, such as key compromise or algorithm weakening",
+                      "New digest algorithm where the tree was rebuilt"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-renewal-deadline",
+                    "text": "By which instant is the next renewal due, and which algorithm or key expiry drives that deadline?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Next renewal due instant",
+                      "Driving expiry: authority certificate, signature algorithm or digest algorithm",
+                      "Reference to the algorithm policy entry setting the sunset"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-chain-continuity",
+                    "text": "Is the chain from the first proof of existence to the most recent renewal unbroken, and where exactly does any gap fall?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Ordered chain of archive time-stamps or renewal records",
+                      "Continuity verdict",
+                      "Location and duration of any gap and the evidence affected"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-redundant-chains",
+                    "text": "Which redundant evidence chains exist under different digest algorithms or different authorities for this subject?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "List of independent chains with their algorithms and authorities",
+                      "Degree of independence, including shared authority or shared algorithm",
+                      "Note where only one chain exists and the resulting single point of failure"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-missed-renewal",
+                    "text": "If a renewal is missed until after the protecting algorithm has already weakened, what is recorded and what assurance remains?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Missed-deadline record with the affected interval",
+                      "Residual assurance statement naming what is still provable",
+                      "Compensating action such as adding a redundant chain or capturing external corroboration"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-renewal-kind",
+                    "name": "Renewal kind",
+                    "description": "Whether a renewal re-time-stamped prior evidence or rebuilt the hash tree under a new digest algorithm.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-renewal-instant",
+                    "name": "Renewal instant",
+                    "description": "Instant at which a renewal was effected, taken from the renewing time-stamp rather than from local clock.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-next-renewal-due",
+                    "name": "Next renewal due instant",
+                    "description": "Deadline by which the evidence must be renewed to stay continuous, derived from algorithm and key expiry.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-chain-continuity-status",
+                    "name": "Chain continuity status",
+                    "description": "Whether the evidence chain is unbroken from the first proof of existence to the latest renewal.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-redundant-chain-ref",
+                    "name": "Redundant chain reference",
+                    "description": "Reference to an independent evidence chain using a different algorithm or authority.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-renewal-record",
+                    "name": "Evidence renewal record",
+                    "description": "The retained record of one renewal: the new archive time-stamp or document time-stamp, the reduced hash tree or equivalent linkage, and the identification of everything the renewal covers.",
+                    "media_or_form": [
+                      "archive time-stamp entry within a chain or sequence",
+                      "document time-stamp revision appended to a container",
+                      "renewal event record with covered-object digests and linkage data"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system identifier is the renewing authority identifier plus the renewing token serial number. Renewal records form an ordered series within a chain; the chain position is recorded and gaps are represented explicitly rather than closed by renumbering.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-evid-layer-corroboration-anomaly",
+            "name": "External corroboration and evidence degradation",
+            "description": "Optional publication corroboration recorded with explicit limits, and the anomalies, compromises and reinterpretations that change what retained evidence means.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-008",
+              "SRC-009",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "sig-evid-transparency-corroboration",
+                "name": "Transparency-log corroboration references",
+                "description": "Inclusion and consistency proof references, log identity, entry locator and signed checkpoints, recorded as optional corroboration that something was published at a point in a verifiable append-only structure — and explicitly not as proof of signer identity, authorisation or the truth of the signed content.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-log-entry-locator",
+                    "text": "Which log identity, entry index and tree size does the recorded inclusion proof refer to?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Log identifier in its governed namespace",
+                      "Entry index and tree size at which the proof was taken",
+                      "Leaf input digest that the proof reconstructs to the root"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-log-checkpoint",
+                    "text": "Which signed checkpoint or signed tree head was current when the proof was captured, and which key signed it?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Checkpoint or tree head value with its timestamp and tree size",
+                      "Signing key identifier and verification result",
+                      "Consistency proof linking it to any previously recorded checkpoint"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-corroboration-limits",
+                    "text": "What does this corroboration deliberately not establish about the signer or the signed content?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Explicit negative scope statement retained with the record",
+                      "Claims that remain dependent on certification path and revocation evidence",
+                      "Warning text surfaced to any agent reading the corroboration alone"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-log-failure",
+                    "text": "If the log is later shown to be inconsistent, is decommissioned, or its key is withdrawn, what remains provable from the retained evidence?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Residual proof set independent of the log",
+                      "Recorded status of the log and pointer to the determination",
+                      "Supersession assertion downgrading the corroboration"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-log-identifier",
+                    "name": "Log identifier",
+                    "description": "Governed identifier of the append-only log the corroboration refers to.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-inclusion-proof-ref",
+                    "name": "Inclusion proof reference",
+                    "description": "Reference to a proof that a specific leaf is present in a specific tree state.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-consistency-proof-ref",
+                    "name": "Consistency proof reference",
+                    "description": "Reference to a proof that a later tree state extends an earlier one without modification.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-checkpoint-ref",
+                    "name": "Signed checkpoint reference",
+                    "description": "Signed tree head or checkpoint against which the proofs were verified, with its tree size and timestamp.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-corroboration-scope",
+                    "name": "Corroboration scope statement",
+                    "description": "Mandatory statement of what the corroboration does and does not establish, stored with the reference itself.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-corroboration-reference",
+                    "name": "Transparency corroboration reference set",
+                    "description": "The retained proof references and checkpoint copies that corroborate publication, kept small and pointer-based so that the log itself remains the system of record for entries and tree state.",
+                    "media_or_form": [
+                      "inclusion and consistency proof reference record",
+                      "copy of a signed tree head or checkpoint",
+                      "log entry locator with leaf digest"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier is the log identifier plus entry index where the log assigns one; otherwise a governed IRI for the proof reference set; otherwise a ULID stored with the leaf digest and checkpoint digest.",
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-evid-anomaly-supersession",
+                "name": "Evidence anomalies, degradation and supersession assertions",
+                "description": "Conditions that damage or change the meaning of retained evidence — unavailable or retracted status responders, expired certificates, keys revoked or compromised after signing, a compromised time authority, digest-algorithm collision migration, orphaned signed content and clock uncertainty — recorded as new append-only assertions that supersede an earlier interpretation while leaving every earlier record byte-identical.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-evid-q-anomaly-class",
+                    "text": "Which anomaly class applies here, and which prior evidence records does it affect?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Anomaly class such as responder unavailable, status retracted, certificate expired, key revoked after proof, authority compromised, digest algorithm broken, content orphaned, clock unreliable",
+                      "References to every affected evidence record",
+                      "Scope: one signature, one authority's tokens, or a whole algorithm class"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-supersession-integrity",
+                    "text": "Which superseding assertion replaces the interpretation of an earlier record, and does that earlier record remain byte-identical?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Superseding assertion identifier and its content",
+                      "Digest of the affected record before and after, demonstrating identity",
+                      "Chain of superseding assertions where more than one applies"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-revoked-after-proof",
+                    "text": "Was a key revoked or found compromised after the proof of existence, and does the retained evidence still support validity at that earlier instant?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Revocation or compromise instant and its source",
+                      "Best-signature-time compared against that instant",
+                      "Resulting position, including the case where the compromise is stated to predate the proof"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-collision-migration",
+                    "text": "If a digest algorithm protecting this evidence becomes collision-prone, what migration was performed and what residual risk remains?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Migration action and the instant it completed",
+                      "Digests recorded under the new algorithm alongside the historical ones",
+                      "Residual risk statement covering the interval before migration"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-q-anomaly-retention",
+                    "text": "How long must the affected proof bytes and prior validation records be retained after a supersession assertion, and who decides that?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retention floor derived from the replay contract and the last renewal deadline",
+                      "Any active hold and its reference",
+                      "Named external retention or legal-hold model that owns the decision and its execution"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-evid-de-anomaly-class",
+                    "name": "Anomaly class",
+                    "description": "Classification of the condition affecting retained evidence.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-affected-record-ref",
+                    "name": "Affected record reference",
+                    "description": "Reference plus digest for every evidence record whose interpretation the anomaly changes.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-supersession-assertion",
+                    "name": "Supersession assertion",
+                    "description": "Append-only statement that a later interpretation replaces an earlier one, naming the affected records and the reason.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-assertion-observation-time",
+                    "name": "Assertion observation time",
+                    "description": "Instant at which the anomaly was observed and the assertion recorded, distinct from the instant the underlying event occurred.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-residual-assurance",
+                    "name": "Residual assurance statement",
+                    "description": "What remains provable after the anomaly, stated explicitly rather than left to inference.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-evid-de-external-determination-ref",
+                    "name": "External determination reference",
+                    "description": "Pointer to the external authority determination that establishes a compromise, retraction or withdrawal.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-evid-art-supersession-assertion",
+                    "name": "Supersession or invalidation assertion",
+                    "description": "An append-only record asserting that the interpretation of named evidence has changed, carrying the affected record digests, the reason, the observation instant and any external determination reference. It never modifies the records it names.",
+                    "media_or_form": [
+                      "append-only assertion record in any serialisation",
+                      "signed statement over the affected record identifiers and digests",
+                      "chained assertion entry referencing a prior assertion"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system identifier assigned by the asserting system where one exists; otherwise a governed IRI; otherwise a ULID. Assertions over one subject form an ordered series keyed by the assertion sequence, never by observation date, and each entry carries the digest of the assertion it follows.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-evid-fn-record-proof",
+      "name": "Record proof bytes with an explicit binding",
+      "description": "Admit a proof artefact into the evidence set together with a statement of what it covers, its digests and the separation of event time from ingestion time.",
+      "inputs": [
+        "Proof artefact bytes exactly as received",
+        "Declared binding: covered object reference and the digest that ties them",
+        "Acquisition source and ingestion instant"
+      ],
+      "outputs": [
+        "Immutable proof record with identifiers, digests and both time classes",
+        "Rejection with a stated reason where the binding cannot be established"
+      ],
+      "preconditions": [
+        "A digest algorithm acceptable under the current algorithm policy is available",
+        "The covered object is resolvable by version-pinned reference or its digest is supplied"
+      ],
+      "effects": [
+        "Appends an immutable record and never overwrites an existing one",
+        "Registers digests for later integrity re-checking",
+        "Records the asserted event time and the ingestion time as separate values"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-record-time-evidence",
+      "name": "Record trusted-time evidence",
+      "description": "Attach an independently issued proof of existence to a covered object, verifying the imprint and nonce echo before admission and deriving only those orderings the accuracy bounds permit.",
+      "inputs": [
+        "Time-stamp token or equivalent proof of existence",
+        "Request imprint and nonce where available",
+        "Authority and policy reference"
+      ],
+      "outputs": [
+        "Trusted-time evidence record with generation time, accuracy and serial",
+        "Ordering assertions qualified by accuracy intervals",
+        "Updated best-signature-time for the covered object"
+      ],
+      "preconditions": [
+        "The token message imprint matches a recorded digest of the covered object",
+        "Any nonce present in the request is echoed identically in the token",
+        "The token status is a granted issuance"
+      ],
+      "effects": [
+        "Establishes a proof-of-existence instant for the covered object",
+        "Leaves any signer-claimed time recorded as an unproven claim",
+        "Refuses to assert strict ordering between instants whose accuracy intervals overlap"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-assemble-validation-material",
+      "name": "Assemble a certification path and revocation snapshot",
+      "description": "Collect the certificates and revocation data relied on for a validation and freeze them with their own time fields, so revocation state can later be re-derived without live responders.",
+      "inputs": [
+        "Signing certificate and any discovered intermediates",
+        "Revocation lists and status responses retrieved",
+        "Freshness constraint in force and the validation instant"
+      ],
+      "outputs": [
+        "Validation material set with per-element time fields and responder identities",
+        "Per-source freshness verdict",
+        "Gap list naming any element that could not be obtained"
+      ],
+      "preconditions": [
+        "A validation instant has been fixed",
+        "Each retrieved element is retained byte-identically before any interpretation"
+      ],
+      "effects": [
+        "Creates a snapshot that survives responder withdrawal",
+        "Records the pre-produced-response caveat where no nonce was used",
+        "Marks the snapshot incomplete rather than valid when an element is missing"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-record-verdict",
+      "name": "Record an externally produced validation outcome",
+      "description": "Store the indication, sub-indication, reasons and dependency references returned by an accepted validation application. This function records an outcome; it performs no evaluation, no decision and no enforcement.",
+      "inputs": [
+        "Validation report or verdict from an accepted validation application",
+        "Validation instant and constraint snapshot reference",
+        "Verifier product, version, build and configuration"
+      ],
+      "outputs": [
+        "Immutable verdict record with dependency references and both time values",
+        "Replayability flag derived from missing dependencies"
+      ],
+      "preconditions": [
+        "The producing application is listed in the accepted-validator registry",
+        "Every object the verdict depends on is retained by value or referenced with a digest"
+      ],
+      "effects": [
+        "Appends a dated observation that never alters an earlier verdict",
+        "Preserves unrecognised sub-indication values verbatim rather than discarding them",
+        "Marks the verdict non-replayable where a dependency is absent"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-export-replay-package",
+      "name": "Export a self-contained replay package",
+      "description": "Emit the invariant inputs named by the replay contract in a chosen projection, so an independent party can re-run the validation without access to this system.",
+      "inputs": [
+        "Subject signature identifier",
+        "Replay contract identifier and version",
+        "Target projection or container format"
+      ],
+      "outputs": [
+        "Replay package containing proof bytes, input manifest, validation material, constraint snapshot and recorded verdicts",
+        "Manifest of digests for every included element",
+        "Explicit list of elements that must still be fetched remotely"
+      ],
+      "preconditions": [
+        "Every invariant named by the replay contract is retained or referenced with a digest",
+        "The target projection can carry the digests without re-encoding proof bytes"
+      ],
+      "effects": [
+        "Produces an export without mutating any source record",
+        "Fails closed and reports the shortfall where an invariant is missing",
+        "Preserves proof bytes byte-identically across the projection"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-record-renewal",
+      "name": "Record an evidence renewal",
+      "description": "Register a renewal of durable evidence, distinguishing a new time-stamp over prior evidence from a rebuild under a new digest algorithm, and recompute chain continuity.",
+      "inputs": [
+        "Renewing time-stamp or archive time-stamp",
+        "Renewal kind and the trigger that prompted it",
+        "Set of objects the renewal covers"
+      ],
+      "outputs": [
+        "Renewal record placed in its chain position",
+        "Updated chain continuity status and next renewal due instant",
+        "Gap report where the chain is broken"
+      ],
+      "preconditions": [
+        "The renewing token verifies against the material it covers",
+        "For a hash-tree rebuild, the original data and all prior evidence are available"
+      ],
+      "effects": [
+        "Extends the evidence chain without altering earlier entries",
+        "Adds digests under the new algorithm alongside historical ones",
+        "Represents any gap explicitly rather than closing it by renumbering"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-attach-corroboration",
+      "name": "Attach a transparency corroboration reference",
+      "description": "Record inclusion and consistency proof references and a signed checkpoint as optional corroboration of publication, always accompanied by its negative scope statement.",
+      "inputs": [
+        "Log identifier, entry locator and leaf digest",
+        "Inclusion or consistency proof material",
+        "Signed checkpoint or tree head current at capture"
+      ],
+      "outputs": [
+        "Corroboration reference record with verification result",
+        "Mandatory scope statement of what the corroboration does not establish"
+      ],
+      "preconditions": [
+        "The proof verifies against the supplied checkpoint",
+        "The checkpoint signature verifies under a recorded log key"
+      ],
+      "effects": [
+        "Adds corroboration without altering any validation verdict",
+        "Never contributes to signer identification or content-truth claims",
+        "Leaves log operation, monitoring and merge behaviour with the log model"
+      ],
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-assert-supersession",
+      "name": "Assert supersession or invalidation over prior evidence",
+      "description": "Record that the interpretation of named evidence has changed, leaving every named record byte-identical and unmodified.",
+      "inputs": [
+        "Anomaly class and the triggering observation or external determination",
+        "References and digests of every affected record",
+        "Residual assurance statement"
+      ],
+      "outputs": [
+        "Append-only supersession assertion linked to the affected records",
+        "Updated interpretation flags on reads of those records"
+      ],
+      "preconditions": [
+        "Each affected record is present and its stored digest still matches",
+        "Where the anomaly rests on an external determination, that determination is referenced rather than restated"
+      ],
+      "effects": [
+        "Changes interpretation without changing bytes",
+        "Chains to any prior assertion over the same subject",
+        "Records the observation instant separately from the underlying event instant"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-005",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "sig-evid-fn-report-evidence-gaps",
+      "name": "Report replay-sufficiency gaps",
+      "description": "Inspect an evidence set against its declared replay contract and renewal deadlines and report shortfalls. The function reports; it does not enforce, escalate or dispose.",
+      "inputs": [
+        "Subject signature identifier",
+        "Replay contract identifier and version",
+        "Current algorithm policy and renewal deadlines"
+      ],
+      "outputs": [
+        "Gap report naming missing invariants, stale revocation data and overdue renewals",
+        "Per-gap consequence statement for replayability"
+      ],
+      "preconditions": [
+        "A replay contract has been declared for the subject",
+        "The algorithm policy is resolvable at the requested version"
+      ],
+      "effects": [
+        "Produces a read-only assessment with no change to evidence",
+        "Distinguishes a gap in evidence from an invalid signature",
+        "Feeds remediation to the owning roles without taking any enforcement action"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-009",
+        "SRC-011"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006 (registered parent of WM-XCT-034)",
+      "relation": "CHILD",
+      "purpose": "Signature and proof evidence is a subordinate part of the enclosing cryptographic-attestation context registered as the parent. Standards treat validation data as belonging to the electronic signature rather than standing alone, so this model nests rather than competes; the parent supplies the enclosing subject and its own identity and lifecycle.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Subject entity models carrying signed artefacts (documents, credentials, records, messages) in the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "As a mixin this model attaches proof and validation evidence to any signed subject without redefining that subject's identity, classification or lifecycle. The subject model remains the system of record for the object; this model records only what proves and validates the signature over it.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Trust-service registry model covering certification and time-stamping authorities, trusted lists and supervision status",
+      "relation": "REFERENCE",
+      "purpose": "Carry authority identifiers, certificate references, policy pointers, a trusted-list state digest and the observed qualification status as parameters of a specific validation. Issuance, supervision, status publication and authority lifecycle stay with the target; this model must not reproduce or re-derive them.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-011",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "Transparency-log model covering append-only log operation, checkpoints and monitoring",
+      "relation": "REFERENCE",
+      "purpose": "Carry log identity, entry locator and proof references as optional corroboration of publication, with a mandatory negative scope statement. Log operation, merge delay, gossip, monitoring and the log's own audit semantics remain with the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Signed content and document model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Bind evidence to the signed data object by version-pinned reference plus digest, so that replay can proceed on digests alone when content is detached or unavailable. The content model owns that object's versioning, storage and lifecycle.",
+      "required": true,
+      "source_refs": [
+        "SRC-013",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Retention, disposition and legal-hold model of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Deletion, hold and disposition over proof bytes and validation records are decided and executed under the target model. This model contributes only the immutability constraint, the minimum-evidence retention floor and the tombstone shape, and never asserts that a disposition was lawfully executed.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "ETSI EN 319 102-1 and ETSI TS 119 102-2 signature validation and validation-report model",
+      "relation": "ALIGN",
+      "purpose": "Align indications, sub-indications, validation objects, validation time and proof-of-existence semantics so that verdict records interchange cleanly. This is an alignment for interoperability, not a conformance claim; no clause-level conformance is asserted here.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "IETF evidence record syntax family (RFC 4998 and RFC 6283)",
+      "relation": "ALIGN",
+      "purpose": "Align renewal kinds, chain and sequence continuity and redundant-chain semantics with archive time-stamp structures, while keeping the model independent of any single container so that embedded and detached evidence are treated alike.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension names one accountable owner and one deputy for signature-evidence records; ownership of the signing key, the certificate, the authority and the signed content stays with their own owners and is never absorbed here.",
+        "The owning package publishes a versioned registry of accepted validation applications and accepted time authorities, and every verdict and every trusted-time record cites the registry entry that authorised its producer.",
+        "The owning package declares a minimum evidence set and a replay contract; a record below that floor is marked incomplete or non-replayable rather than being reported as valid.",
+        "The owning package registers a retention floor, a renewal calendar and an escalation path for evidence that cannot be renewed before its protecting algorithm weakens."
+      ],
+      "namespace_guidance": "Use one namespace per adopting Dimension in the form `<dimension>/signature-evidence/`, with sub-namespaces for proofs, validation records, evidence packages and assertions. External identifiers keep their issuing namespace verbatim: policy object identifiers, issuer plus certificate serial number, authority plus token serial number, log identifiers and report identifiers are never re-minted locally, and any local surrogate is stored beside the external identifier, never in place of it.",
+      "registry_links": [
+        "Trusted-list or trust-store registry used to resolve trust anchors and observe authority qualification status",
+        "Algorithm policy registry recording acceptable suites, minimum parameters and sunset instants",
+        "Local registry of accepted validation applications and accepted time authorities with versions",
+        "Replay-contract registry declaring, per subject class, which inputs must be retained together"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Proof bytes are canonical exactly as received: never re-encode, re-wrap, re-indent or normalise a token, certificate, revocation response, signature or evidence record; store the received octets and derive any presentation form separately.",
+        "Where a digest is computed over structured data, record the canonicalization and transform algorithm identifiers and their parameters alongside the digest; a digest without its transform chain is not replayable and must be flagged as such.",
+        "Times are stored in RFC 3339 with seconds and an explicit numeric offset or Z, converted at ingestion from GeneralizedTime, UTCTime or any source form, with the original lexical value retained verbatim next to the normalised value.",
+        "Identifiers are compared by issuing namespace plus value, never by display string; certificate and token identity is issuer plus serial number, not subject name or file name.",
+        "Codes from external vocabularies, including sub-indication values, are stored verbatim; local mappings are recorded as annotations and never replace the source value."
+      ],
+      "patch_rules": [
+        "Proof bytes, recorded digests, verdicts, validation instants and renewal records are append-only; a correction is a new supersession or invalidation assertion that names the affected records and leaves them byte-identical.",
+        "Additive patches may attach new evidence — a later time-stamp, a fresher revocation response, a renewal record, an additional digest under a new algorithm, a corroboration reference — but may never remove, reorder or rewrite an earlier element.",
+        "Descriptive metadata that is not itself evidence, such as labels, cross-references and local classifications, may be patched in place provided the prior value and the actor are retained as provenance.",
+        "A patch that would make a retained verdict non-replayable must set the replayability flag and record the reason in the same operation."
+      ],
+      "compatibility_rules": [
+        "Adding an optional evidence element, a new corroboration reference or an additional digest is backward compatible; narrowing a cardinality, removing an evidence element, or changing the meaning of a digest, indication or renewal kind is breaking.",
+        "Indication and sub-indication vocabularies extend by addition only; an unknown value is preserved verbatim and treated as indeterminate, never silently dropped or coerced to a known value.",
+        "A projection change between ASN.1, XML, JSON, a PDF container, Git objects, a document store or an interface surface must leave evidence identity, digests and proof bytes unchanged; if a projection cannot carry an element, the export declares the shortfall rather than omitting it silently.",
+        "Algorithm migration is additive: new digests are recorded beside historical ones, and no compatibility break may be used as grounds to discard a historical digest."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier assigned by the system of record that issued or holds the artefact: issuing authority identifier plus time-stamp token serial number, certificate issuer plus serial number, responder identifier plus production instant for a status response, or the validating application's own report identifier.",
+        "Governed global identifier or IRI where no master-system identifier exists: a registered policy object identifier, a governed transparency-log identifier, or a registered namespace IRI for an evidence package.",
+        "UUID or ULID minted by the adopting Dimension, used only where neither of the above exists, and always stored together with the digest of the artefact it names and with the identifier of the covered object.",
+        "A date, a generation time, a validation instant, a version label or a file name is never an identifier. Digests disambiguate but do not identify across algorithm migration, so an artefact identified only by digest carries every historical digest recorded for it."
+      ],
+      "timestamp_rule": "Every recorded instant uses RFC 3339 with seconds precision and an explicit numeric offset or Z; sub-second precision is retained whenever the source supplies it and the original lexical form is kept verbatim. Event time asserted by an external party — signature generation, token generation time, revocation time, response production, this-update and next-update, checkpoint time, renewal time — is recorded separately from observation or ingestion time, meaning the instant at which this model received, captured, re-checked or replayed the evidence, and both are stored whenever they differ. Accuracy or uncertainty bounds are recorded alongside any instant that carries them, and no strict ordering is asserted between two instants whose bounds overlap.",
+      "serial_naming_rule": "Artefacts belonging to an issuer-ordered series — time-stamp tokens, archive time-stamp chain entries, validation reports for one signature, supersession assertions — retain the issuer's own sequence value and are named `<issuer-namespace>:<series>:<sequence>`. A local counter is never substituted for an issuer sequence; where no issuer sequence exists, a local monotonic sequence is used and labelled as local. Gaps in a series are recorded explicitly as gaps and are never closed by renumbering or backfilling.",
+      "integrity_rule": "Every artefact is stored with at least one digest under a currently acceptable algorithm plus every historical digest previously recorded for it, so that algorithm migration never erases an earlier binding. Digests are re-verified on read of proof bytes and on a scheduled cycle. An artefact whose recomputed digest matches no recorded digest is quarantined as a broken record, reported through the gap-reporting function, and never silently replaced, repaired or re-fetched over the original."
+    },
+    "policies": [
+      "Trusted time counts as evidence only when independently issued; a signer-asserted signing time is retained as a claim and is never promoted to a proof of existence, however plausible it looks.",
+      "A validation verdict is a dated observation, not a permanent property of a signature. Every verdict is stored with its validation instant, constraint snapshot and verifier identification, and a later contradictory verdict is a new record that never overwrites an earlier one.",
+      "A transparency-log entry, inclusion proof or checkpoint corroborates publication only. It never establishes signer identity, authorisation, or the truth or lawfulness of the signed content, and the negative scope statement travels with the reference.",
+      "Completeness is asserted only against a declared replay contract. Where evidence is insufficient, the record is indeterminate — neither valid nor invalid — and the specific shortfall is named.",
+      "This model records and reports; it does not evaluate, enforce or dispose. Evaluation belongs to the external validation application, enforcement to the adopting Dimension's policy machinery, disposition to its retention model, and audit trails to its audit model."
+    ],
+    "crud": {
+      "read": [
+        "Reading proof bytes returns them byte-identically as stored, together with every digest recorded for them and the result of the integrity re-check.",
+        "Reading a verdict must return its validation instant, its constraint snapshot reference and its verifier identification; returning an indication alone is a reporting defect and must be rejected by the interface.",
+        "Superseded records remain readable and are always returned together with the assertions that superseded them; hiding a superseded record is prohibited.",
+        "Reads distinguish evidence gaps from negative findings, so an agent is never able to read a missing dependency as a failed signature."
+      ],
+      "create": [
+        "Creation records the artefact bytes, its source, its ingestion instant and at least one digest in a single atomic step; a partial ingestion is rolled back rather than left as a fragment.",
+        "A trusted-time record is admitted only with its imprint binding recorded, including the hash algorithm and an unambiguous identification of what was hashed, and only if any request nonce is echoed identically.",
+        "A verdict record is created only with references to the validation material set and constraint snapshot that produced it and with the producing application resolved in the accepted-validator registry.",
+        "Creation never mints a local identifier where a master-system or governed identifier is available."
+      ],
+      "update": [
+        "Proof bytes, recorded digests, verdicts, validation instants, renewal records and prior assertions are immutable after creation.",
+        "Permitted updates are strictly additive: further digests under new algorithms, further renewal records, further corroboration references, further supersession assertions, and corrections to non-evidential descriptive metadata with prior values retained.",
+        "Reinterpretation of an earlier record is expressed only as a new assertion naming that record; in-place reinterpretation is prohibited.",
+        "An attempted mutation of immutable content is rejected and emitted as a rejected-write event to the adopting Dimension's logging arrangements; this model neither defines nor owns that log."
+      ],
+      "delete": [
+        "This model destroys nothing of its own accord. Evidence is retained for at least the longest of the declared replay-contract retention floor, the next renewal deadline, and any active hold; while any of those is in force, disposition rights are suspended for every role including the owner.",
+        "Where disposition is authorised, the record is tombstoned rather than erased: identifiers, all recorded digests, the issuing-authority and covered-object references, the creation instant, the disposition instant and the authorising decision reference are retained, while proof bytes and payload are removed.",
+        "Deleting an element on which a retained verdict depends requires that verdict to be flagged non-replayable in the same operation, with the missing dependency named; silent partial deletion is prohibited.",
+        "Execution of deletion, legal hold and disposition is owned by the adopting Dimension's retention, disposition and legal-hold model named in the composition ledger, which also owns the lawfulness determination. This model contributes only the immutability constraint, the minimum-evidence floor and the tombstone shape, and never asserts that a deletion was lawfully executed or that a hold was correctly released."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Signature-evidence owner",
+        "responsibilities": [
+          "Accountable for the completeness and integrity of the evidence set for a defined subject class",
+          "Approves the replay contract, the minimum evidence set and the retention floor",
+          "Refers disposition and hold questions to the retention model rather than deciding them locally"
+        ]
+      },
+      {
+        "name": "Evidence custodian",
+        "responsibilities": [
+          "Ingests proof bytes and validation material atomically with digests and both time classes",
+          "Maintains digest coverage across algorithm migration and runs scheduled integrity re-checks",
+          "Quarantines and reports broken records without repairing or re-fetching over the original"
+        ]
+      },
+      {
+        "name": "Validation operator",
+        "responsibilities": [
+          "Runs validation only through applications listed in the accepted-validator registry",
+          "Records verdicts with validation instant, constraint snapshot and verifier identification",
+          "Records unrecognised sub-indications verbatim and never coerces them to known values"
+        ]
+      },
+      {
+        "name": "Preservation engineer",
+        "responsibilities": [
+          "Maintains the renewal calendar against algorithm and key expiry and executes renewals in time",
+          "Chooses between time-stamp renewal and hash-tree rebuild and records which was used and why",
+          "Establishes redundant evidence chains where a single chain would be a single point of failure"
+        ]
+      },
+      {
+        "name": "Independent replayer",
+        "responsibilities": [
+          "Re-runs validation from the exported replay package without access to the originating system",
+          "Records any divergence as a new verdict and, where warranted, raises a supersession assertion",
+          "Reports which replay steps still depended on network retrieval; audit records themselves remain with the Dimension's audit model"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Evidence is readable by roles with a declared need to verify or preserve it; write access is limited to append-only creation by the evidence custodian, validation operator and preservation engineer; and no role, including the owner, holds mutate or destroy rights over proof bytes, digests or recorded verdicts.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Signed content and certificate subject data may carry personal data. Where the adopting Dimension restricts it, digests, references, indications and verdicts remain visible while the content payload is withheld, so verification remains possible without disclosure.",
+        "A pseudonymous certificate is flagged to the relying party rather than resolved; resolving a pseudonym is an authority decision outside this model and outside any role defined here.",
+        "Under an active legal hold, disposition and tombstoning rights are suspended for all roles until the hold is released by the retention model.",
+        "Break-glass read of a withheld payload requires a named authorising decision reference recorded with the access before the payload is released.",
+        "Export of a replay package to an external party may be restricted where the constraint snapshot or trust-store state is itself confidential; in that case the export carries digests and pointers instead of the confidential body and declares the substitution."
+      ],
+      "audit_requirements": [
+        "Every read of a withheld payload, every break-glass access, every rejected mutation attempt, every export of a replay package and every supersession assertion is emitted with actor, authorisation reference, affected record identifiers and observation instant.",
+        "These events are emitted to the adopting Dimension's audit or logging model, which owns audit-record structure, retention, immutability and any evaluation over the trail; this model neither stores nor interprets audit trails and makes no claim that an audit trail is complete."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner",
+        "Accepted validators and time authorities registry URL",
+        "Algorithm policy URL",
+        "Retention, hold and disposition policy URL",
+        "Replay contract URL"
+      ],
+      "read_order": [
+        "AGENTS.md first, to resolve the model identity, its type as a mixin and the five location fields",
+        "Specification URL, for the boundary, bundles, findings, data elements and the concepts this model explicitly does not own",
+        "Storage type URL, for the chosen projection and the immutability and append-only guarantees the store actually provides",
+        "Interface URL, for the read and append operations, the export surface and the rule that a verdict is never returned without its validation instant, constraint snapshot and verifier identification",
+        "Processes URL, for ingestion, trusted-time recording, verdict recording, renewal, corroboration and supersession procedures",
+        "Algorithm policy URL and the accepted validators and time authorities registry, before recording any new trusted-time record or verdict",
+        "Replay contract URL and the retention, hold and disposition policy, before exporting evidence or proposing any disposition"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This structure covers the durable evidence surface of WM-XCT-034 — trusted time distinct from signer-claimed time, replayable validation evidence, long-term preservation, optional corroboration and evidence degradation — grounded in IETF time-stamping, evidence-record, OCSP, path-validation, CAdES and transparency specifications, in the ETSI validation and validation-report model as implemented by the European Commission's reference service, in NIST guidance on signature timeliness, in W3C canonicalization semantics and in eIDAS validation, preservation and time-stamp requirements. It is not a completeness claim: signature creation, key custody, sole-control attestation and non-PKI proof systems are deliberately outside what is asserted here, and every structural node is traceable to a cited source rather than to convention.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority puts the authoritative master-system identifier first (authority plus token serial, issuer plus certificate serial, responder plus production instant, report identifier), then a governed IRI, then a locally minted UUID or ULID. Dates, generation times and file names are explicitly rejected as identifiers, and digests are treated as disambiguators that must be carried in full history across algorithm migration."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "The lifecycle modelled is that of the evidence, not of the signature or of any external authority: ingestion, renewal deadlines, chain continuity, supersession and tombstoning. Authority qualification lifecycle and certificate lifecycle are referenced to the trust-service registry rather than modelled locally."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Verdict-to-dependency references, imprint-to-covered-object bindings, package-to-signature bindings, redundant chains and assertion chaining are all explicit, each carrying a digest so the relationship survives the loss of one endpoint."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Generation time, accuracy, ordering flag, revocation and production instants, validation instant, report production time, renewal instants and observation times are separated. Ordering is refused where accuracy intervals overlap, and best-signature-time is derived rather than asserted."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every element records its source, its acquisition instant and whether it is held by value or by reference with digest; authority and list state are pointers with version and digest, never local copies."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Owner and deputy are named for evidence records only; key, certificate, authority, content, retention and audit ownership are all pushed to their own models through composition links and boundary notes."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Verdict, sub-indication, per-constraint results, dependency references, verifier identification and the replay contract are modelled as recorded evidence of an external evaluation. The model records outcomes and reports gaps; it never evaluates or enforces."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default read-for-need with append-only write and no mutate or destroy rights; exceptions cover personal data in signed content, pseudonym flagging without resolution, holds, break-glass and confidential constraint snapshots. Audit events are emitted, not owned."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "A retention floor derived from replay contract, renewal deadline and active holds; tombstoning that keeps identifiers, digests and references while removing payload; mandatory non-replayable flagging when a dependency is deleted; and explicit assignment of execution and lawfulness to the adopting Dimension's retention model."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Aligned to the ETSI validation-report structure and to the IETF evidence-record family as alignments rather than conformance claims, with verbatim preservation of external codes, projection-invariance rules for digests and proof bytes, and declared shortfalls where a target format cannot carry an element."
+      },
+      {
+        "dimension": "trusted time",
+        "status": "covered",
+        "notes": "Treated as a first-class bundle with its own imprint binding, token identity, authority reference and ordering discipline, keeping signer-claimed time permanently demoted to a claim."
+      },
+      {
+        "dimension": "cryptographic agility",
+        "status": "covered",
+        "notes": "Algorithm policy with sunset instants, additive digest history, both renewal kinds, redundant chains, and an explicit collision-migration question with a residual-risk statement."
+      },
+      {
+        "dimension": "replay reproducibility",
+        "status": "covered",
+        "notes": "A named replay contract distinguishes invariant from variable inputs, flags network-dependent steps, and requires divergence to be recorded as a new verdict rather than an edit."
+      },
+      {
+        "dimension": "failure and exception handling",
+        "status": "covered",
+        "notes": "Unavailable and retracted responders, expired certificates, revocation and compromise after proof, compromised authorities, orphaned content, clock uncertainty, missed renewals and log failure each have a question and an anomaly class."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Digests, accuracy bounds, uncertainty intervals, freshness ages and tree sizes are the quantities the model carries; all are recorded with the algorithm or unit that produced them."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Geographic location has no bearing on the durability of signature evidence. Jurisdiction affects which trust framework and retention rules apply, and that is carried as a reference to an external policy rather than as a spatial attribute of the evidence."
+      }
+    ],
+    "known_omissions": [
+      "ETSI deliverables were cited from their published deliverable URLs, whose served PDFs were not machine-readable through the research tooling at access time. Their clause-level detail here is corroborated through the European Commission's DSS reference documentation and through the IETF specifications rather than quoted directly, so ETSI-derived structure should be re-verified against the deliverable text before any conformance claim.",
+      "Signature creation, signing-key generation and custody, signature-creation-device attestation and signer authentication are deliberately absent from this structure.",
+      "Remote and server-side signing, including evidence of sole control over a remotely held key, is not modelled; it would need its own findings and probably its own model.",
+      "Non-PKI proof systems — zero-knowledge proofs, threshold and multi-party signatures, post-quantum hybrid schemes and blockchain anchoring — are acknowledged as possible proof carriers but no structure is claimed for them.",
+      "Preservation-service protocol operations, meaning the request and response surface of an external preservation service, are referenced but not modelled.",
+      "Time-mark based proof of existence, permitted by CAdES, appears only as a classification value and has no dedicated finding; systems relying on provider-held audit records for proof of existence will need more structure than this provides.",
+      "Countersignature, multi-signature and signature-ordering evidence within one container is only partly reachable through the ordering finding and would benefit from explicit treatment."
+    ],
+    "conflicts": [
+      "RFC 3161 makes the ordering field optional and false by default, so two tokens from one authority are strictly orderable only when their accuracy intervals do not overlap. Implementations that treat generation time as a total order will disagree with a conformant reading; this model follows the conformant reading and refuses the assertion.",
+      "RFC 6960 permits pre-produced OCSP responses and acknowledges the resulting replay exposure. A freshness rule expressed purely as next-update can therefore accept a response produced before a revocation, so the model records nonce presence and the caveat rather than treating next-update as sufficient.",
+      "RFC 4998 recommends redundant evidence records under different algorithms and different authorities, whereas common container practice maintains a single archive time-stamp chain. A single chain is widespread practice, not a normative sufficiency claim, and the model records the single-point-of-failure note instead of endorsing it.",
+      "ETSI EN 319 142-1 advises against relying on the PDF VRI dictionary because the same material is already referenced from the document security store, yet widely deployed tooling still writes VRI entries. Both may be present and may disagree, so the packaging finding requires an explicit reconciliation rule.",
+      "eIDAS Article 32 expresses validation obligations in legal terms tied to qualified signatures, while EN 319 102-1 expresses outcomes as indications and sub-indications. A passing indication is a technical result and is not by itself a legal determination; the model keeps them as separate recorded facts.",
+      "NIST algorithm-transition practice and European algorithm-suite practice do not always deprecate the same parameters at the same time, so the constraint snapshot must record which policy applied rather than assume a single global schedule."
+    ],
+    "regional_assumptions": [
+      "The eIDAS articles were read from the retained-EU-law text published by legislation.gov.uk. The quoted wording of Articles 32, 34 and 42 matches the EU original in the parts relied on, but the retained version omits paragraphs; the EUR-Lex text governs in EU contexts and should be used for any binding interpretation.",
+      "Trusted-list mechanics assume a supervision-list arrangement of the European kind. Other jurisdictions govern trust stores differently, so the model carries a versioned pointer and state digest rather than assuming any particular list.",
+      "NIST guidance on signature timeliness and algorithm transitions is United States federal policy; adopting Dimensions elsewhere must bind their own algorithm policy and cannot inherit these schedules by default.",
+      "Nothing here presumes any particular legal effect for a signature in any jurisdiction, nor that a qualified status in one framework transfers to another."
+    ],
+    "adversarial_checks": [
+      "Does any node claim ownership of a neighbour's operational semantics? Verdict recording is defined as recording an external application's output with explicit no-evaluation wording; the time-authority finding is deliberately inline-reference-only; corroboration is pointer-based; audit events are emitted, not stored. Each is restated in boundary notes and in the composition ledger.",
+      "Could a transparency-log inclusion proof be read as proof of signer identity? A dedicated definitional question, a mandatory scope-statement data element carried with every reference, and a standing policy all make the negative explicit, matching the RFC 9162 position that logs enable detection of misissuance rather than establish legitimacy.",
+      "Can a verdict or a proof be silently changed or removed? Update rules forbid mutation, correction is by supersession assertion, deletion is tombstone-only with mandatory non-replayable flagging, and rejected mutations are emitted as events. An agent following the interface rules cannot produce a clean-looking history.",
+      "Would evidence still be interpretable after the digest algorithm protecting it is broken? The integrity rule keeps digest history additive, both renewal kinds are modelled, redundant chains are asked about, and the collision-migration question forces a residual-risk statement covering the pre-migration interval.",
+      "Is a date ever load-bearing as an identifier? Identity priority rejects generation times, validation instants and file names, and the serial naming rule forbids substituting a local counter for an issuer sequence or closing a gap by renumbering.",
+      "Can an evidence gap be misread as a negative finding? Read rules require gaps and negative findings to be distinguished, the gap-reporting function separates them explicitly, and the completeness policy forces an indeterminate result rather than a valid or invalid one where evidence is short.",
+      "Does the model quietly duplicate the trust-service registry? The only trust-service data held locally are identifiers, versioned pointers, a state digest and an observed status with its observation instant — enough to reproduce one validation, not enough to act as a second register."
+    ]
+  }
+}

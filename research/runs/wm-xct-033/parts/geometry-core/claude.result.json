@@ -1,0 +1,2520 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-033",
+    "model_id": "WM-XCT-033",
+    "name": "Geometry / Coordinate Reference",
+    "entry_kind": "mixin",
+    "purpose": "Supply a reusable, encoding-neutral geometry and coordinate-reference mixin that lets any host thing carry a well-defined spatial shape: its type, coordinate structure, dimensionality, extent, state, declared quality and the coordinate reference system under which its numbers mean anything.",
+    "scope_statement": "WM-XCT-033 defines the semantics of a geometry value bound to a host thing, together with the coordinate-reference context needed to interpret that value and the declared provenance and quality of any transformation that produced it. Geometry here is mathematical and structural, not a file: WKT, WKB, GeoJSON, GML, database geometry columns and vendor APIs are projections of the value, never its canonical form. The mixin governs how geometry is typed, structured, bounded, asserted valid and disclosed within an adopting Dimension; it does not own the host, the CRS register, the computation engine or any operational evaluation, transformation execution or audit record held by a referenced system.",
+    "in_scope": [
+      "Geometry value semantics independent of any storage format or access interface",
+      "Primitive typing (point, curve, surface) and aggregate/multipart/collection membership",
+      "Coordinate sequences, ordinate ordering, minimum vertex counts, precision and declared spatial resolution",
+      "Topological dimension, coordinate dimension and spatial dimension, including Z and M ordinate handling",
+      "Ring structure: closure, orientation conventions, exterior rings and interior rings (holes)",
+      "Empty, absent, unknown and deliberately suppressed geometry states",
+      "Declared envelopes, extents and derived summary points such as centroids, with their provenance",
+      "Validity, simplicity and repair assertions recorded against a named validity profile",
+      "Declared spatial relations recorded as assertions with their evaluation context",
+      "Binding of the geometry value to a host thing, including role, cardinality and default-geometry designation",
+      "Binding of the geometry value to a referenced CRS, including axis order, longitude-range convention and coordinate-epoch reference for dynamic CRS",
+      "Declared quality, accuracy statement and provenance of coordinates produced by an externally executed coordinate transformation",
+      "Governance of geometry values inside an adopting Dimension: ownership, canonical form, access, disclosure control and retention"
+    ],
+    "out_of_scope": [
+      "Identity, classification and lifecycle of the host feature, place, asset or object that carries the geometry",
+      "The coordinate reference system register itself: CRS and datum definitions, ellipsoid and prime-meridian parameters, deprecation and supersession of CRS codes",
+      "Execution of coordinate operations and derivation of transformation parameters; this model carries only the reference to the operation used and the resulting quality statement",
+      "Geometry computation engines: overlay, buffering, simplification, triangulation, predicate evaluation and topology construction",
+      "Address, gazetteer, postal and place-name semantics",
+      "Cartographic styling, symbolization, generalization for display and map portrayal",
+      "Raster, coverage, point-cloud and gridded data models",
+      "Observation, survey campaign and sensor-measurement semantics that produced the coordinates",
+      "Route, network, linear-referencing and turn-restriction topology semantics",
+      "Selection of a canonical storage format, database schema or API surface",
+      "Audit-trail, enforcement and access-decision records owned by referenced runtime services"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Host feature, place or object model",
+        "distinction": "A Spatial Thing is disjoint from its geometry: the lighthouse is not the polygon. The host owns real-world identity, classification and lifecycle; this mixin owns only the shape value and its binding role, and never asserts that a geometry identifies a thing.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Coordinate reference system register / authority model",
+        "distinction": "Coordinates are only interpretable against a CRS, but the register that defines CRSs, datums and their versions is a separate authority. This model carries a CRS reference by URI plus axis order and coordinate epoch; it does not define, version or deprecate CRSs.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Coordinate operation / transformation service",
+        "distinction": "The referenced service executes transformations and derives parameters. This model records only which operation was referenced, the resulting storage CRS and the declared positional-quality statement carried with the transformed value.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Geometry computation and spatial predicate engine",
+        "distinction": "Relation families (Simple Features, Egenhofer, RCC8, DE-9IM) and validity checks are evaluated by an external engine. This model records the asserted verdict, its profile and evaluation context as reference data, and never owns evaluation, enforcement or the evaluator's audit trail.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Encoding and serialization profile model",
+        "distinction": "WKT, WKB, GeoJSON geometry objects, GML geometry elements, JSON-FG place members and database geometry columns are projections. The encoding profile model owns encoding rules and conformance classes; this model owns which semantics must survive a projection and which are lossy.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Raster, coverage and gridded data model",
+        "distinction": "This mixin covers vector geometry only. Grid geometry, cell alignment and coverage domain semantics belong to the coverage model, even though both reference the same CRS context.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Route, network and linear-referencing model",
+        "distinction": "A LineString here is a shape, not a traversable edge. Connectivity, direction of travel, turn restrictions and measure-based linear referencing along a network belong to the network model; only the M ordinate as a stored value is in scope.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Vertical reference / height system model",
+        "distinction": "The Z ordinate is in scope as a stored spatial ordinate; the vertical datum, geoid model and height-system definition against which Z is meaningful is referenced, not defined here.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-005"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 7946: The GeoJSON Format",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7946.html",
+      "version_or_date": "RFC 7946, August 2016",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Normative source for the seven geometry types, position/coordinate ordering, the two-or-more-element position with optional third altitude element, linear-ring closure and right-hand-rule winding, antimeridian cutting (Sec. 3.1.9), bounding boxes including antimeridian-crossing and pole-containing boxes (Sec. 5), the fixed non-extensible type set (Sec. 7.1), the statement that a line between two positions is a straight Cartesian line, and the WGS 84 default CRS (Sec. 4)."
+    },
+    {
+      "id": "SRC-002",
+      "title": "OGC GeoSPARQL - A Geographic Query Language for RDF Data (22-047r1)",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/22-047r1/22-047r1.html",
+      "version_or_date": "Version 1.1, published 2024-01-29",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Normative separation of geo:Feature from geo:Geometry, and the distinct properties geo:dimension (topological dimension), geo:coordinateDimension and geo:spatialDimension, plus geo:isEmpty, geo:isSimple, geo:hasSerialization, geo:hasSpatialResolution, geo:hasBoundingBox and geo:hasCentroid; also the three declared relation families (Simple Features, Egenhofer, RCC8) and CRS/SRID binding through the geometry literal."
+    },
+    {
+      "id": "SRC-003",
+      "title": "OGC Abstract Specification Topic 2: Referencing by coordinates Corrigendum (18-005r5)",
+      "organization": "Open Geospatial Consortium / ISO TC 211 (consistent with ISO 19111:2019)",
+      "url": "https://docs.ogc.org/as/18-005r5/18-005r5.html",
+      "version_or_date": "Version 5.0.1, 2021-07-02",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Definitions of coordinate reference system, coordinate system, coordinate set and coordinate tuple; the rule that the order of values in a coordinate tuple is identical to the order of the coordinate system axes; and coordinate epoch and dynamic CRS, establishing that coordinates without a CRS (and, for dynamic CRS, without an epoch) are not interpretable."
+    },
+    {
+      "id": "SRC-004",
+      "title": "OGC API - Features - Part 1: Core Corrigendum (17-069r4)",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/17-069r4/17-069r4.html",
+      "version_or_date": "Version 1.0.1, 2022-05-11",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Treats geometry as an optional property of a feature rather than a thing in itself; defines the four- or six-value bbox axis ordering (Requirement 23), the default CRS http://www.opengis.net/def/crs/OGC/1.3/CRS84 with longitude/latitude axis order (Requirement 10), and the convention that a bounding box spanning the antimeridian has a west value larger than its east value."
+    },
+    {
+      "id": "SRC-005",
+      "title": "OGC Features and Geometries JSON (JSON-FG) - Part 1: Core (21-045r1)",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/21-045r1/21-045r1.html",
+      "version_or_date": "Version 1.0.0, 2026-04-30",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Primary evidence that the GeoJSON geometry profile is insufficient for general geometry: adds the coordRefSys member for non-WGS 84 CRSs, the place member for geometries outside the GeoJSON type set, solid types (Polyhedron, MultiPolyhedron, Prism, MultiPrism) and curved types (CircularString, CompoundCurve, CurvePolygon, MultiCurve, MultiSurface), an optional Measures conformance class for M coordinates, a fallback geometry pattern for limited consumers, and axis order per the OGC Axis Order Policy."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Spatial Data on the Web Best Practices",
+      "organization": "World Wide Web Consortium (W3C) / Open Geospatial Consortium",
+      "url": "https://www.w3.org/TR/sdw-bp/",
+      "version_or_date": "W3C Group Draft Note, 19 September 2023 (retrieved edition)",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "States that a Spatial Thing is disjoint from the geometry object and that geometry is a property that may change through resurvey while the Spatial Thing persists; Best Practice 1 (persistent HTTP URIs for Spatial Things), 5 (provide geometries in a usable way), 6 (right level of accuracy, precision and size), 7 (choose CRSs to suit applications), 8 (state how coordinate values are encoded) and 9 (describe relative positioning)."
+    },
+    {
+      "id": "SRC-007",
+      "title": "OGC GeoPackage Encoding Standard (12-128r19)",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/12-128r19/12-128r19.html",
+      "version_or_date": "Version 1.4.0, 2024-02-06",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Concrete evidence that Z and M presence are explicit declared flags (0 absent, 1 present, 2 determined by the SRS), that an empty geometry is a typed value carrying no coordinate data, that an envelope is an optional declared structure with an indicator code and min/max values per ordinate, that each geometry binds to an srs_id, and that CircularString, CompoundCurve, CurvePolygon, PolyhedralSurface, TIN and Triangle are extension types beyond the linear core."
+    },
+    {
+      "id": "SRC-008",
+      "title": "OpenGIS Implementation Specification for Geographic information - Simple feature access - Part 1: Common architecture (06-103r4)",
+      "organization": "Open Geospatial Consortium (adopted as ISO 19125-1)",
+      "url": "https://docs.ogc.org/is/06-103r4/06-103r4.pdf",
+      "version_or_date": "Version 1.2.1, 2011-05-28",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "The base geometry class hierarchy (Geometry with Point, Curve, Surface and GeometryCollection subclasses), each geometric object associated with a spatial reference system, two-dimensional simple features with linear interpolation between vertices, and the simplicity/validity assertions and DE-9IM-derived predicates that GeoSPARQL and GeoPackage normatively reference. Retrieval limitation: only the PDF is published and its text layer was not machine-extractable in this pass, so its content is used here only where corroborated by SRC-002 and SRC-007."
+    },
+    {
+      "id": "SRC-009",
+      "title": "ISO 19107:2019 Geographic information - Spatial schema",
+      "organization": "International Organization for Standardization (ISO/TC 211)",
+      "url": "https://www.iso.org/standard/66175.html",
+      "version_or_date": "Second edition, published 2019 (cancels and replaces ISO 19107:2003)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "The conceptual schema for spatial characteristics of geographic entities covering vector geometry and topology and the associated spatial operations; the abstract layer above simple features from which primitive, aggregate, curve-interpolation and solid concepts derive. Retrieval limitation: the normative text is paywalled and only the catalogue scope statement was retrievable, so no clause-level claim is made from it."
+    },
+    {
+      "id": "SRC-010",
+      "title": "OGC Geography Markup Language (GML) Encoding Standard",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://www.ogc.org/standards/gml/",
+      "version_or_date": "3.2.2 (OGC 07-036r1) with extended schemas 3.3 (OGC 10-129r1)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "Establishes that a mainstream OGC geometry encoding supports curve interpolation beyond straight segments, surface patches and volumetric solids, and binds geometry to a CRS with srsName and dimensionality with srsDimension - the counterexample to treating linear planar simple features as the whole of geometry. Retrieval limitation: only the standards landing page was machine-readable; clause-level detail was not extracted."
+    },
+    {
+      "id": "SRC-011",
+      "title": "OGC API - Features - Part 2: Coordinate Reference Systems by Reference corrigendum (18-058r1)",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/18-058r1/18-058r1.html",
+      "version_or_date": "Version 1.0.1, 2022-05-11",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T00:00:00Z",
+      "relevance": "CRS identification by resolvable URI of the form http://www.opengis.net/def/crs/{authority}/{version}/{code}; the explicit distinction between the storage CRS in which geometries are held and the output CRS requested by a consumer; and the requirement that the CRS actually used for coordinates in a payload be asserted rather than assumed."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "geo-core-bundle-value-structure",
+        "name": "Geometry Value and Structure",
+        "description": "What a geometry value is, what it is bound to, how it is typed and dimensioned, and how its coordinate sequences and ring structures are composed.",
+        "rationale": "Standards consistently model geometry as a typed, CRS-bound value that belongs to a feature rather than as an independent thing; the structural core (type, dimensionality, coordinate sequence, rings) is what every encoding must preserve, so it is the part that must be fixed format-neutrally first.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-006",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "geo-core-layer-identity-binding",
+            "name": "Geometry Identity and Reference Binding",
+            "description": "How a geometry value is identified through its host binding and how it references the coordinate reference system that makes its numbers interpretable.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-006",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-weak-identity",
+                "name": "Host-dependent weak identity of a geometry value",
+                "description": "A geometry has no independent real-world identity. It is a value bound to a host Spatial Thing with a declared role, and is identified through that binding (host identifier plus role plus version) or, where an independent handle is unavoidable, by a digest of its canonical form. The Spatial Thing persists across resurvey while its geometry is replaced, so a geometry identifier must never be presented as the identifier of the thing.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-004",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-weak-identity-handle",
+                    "text": "Does this geometry carry an independent identifier, or is it identified only through its host binding, role and version?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Presence or absence of an independent geometry identifier",
+                      "Composite binding key of host identifier plus geometry role",
+                      "Identifier-issuing authority, if any"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-weak-identity-thing",
+                    "text": "Which Spatial Thing does this geometry represent, and is that thing recorded as distinct from the geometry object itself?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Host thing reference (persistent HTTP URI or master-system identifier)",
+                      "Explicit statement that host and geometry are distinct resources"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-weak-identity-role",
+                    "text": "What binding role and cardinality apply - is this the default geometry, an alternative representation, or a derived generalization?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Geometry role code (default, alternative, generalized, footprint, centroid-surrogate)",
+                      "Cardinality of geometries permitted per host",
+                      "Which single geometry is designated as default"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-weak-identity-fingerprint",
+                    "text": "If content-derived identity is used, which canonical form and digest algorithm produce it, and is it treated as a deduplication handle rather than a public identifier?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Canonicalization rule reference",
+                      "Digest algorithm name",
+                      "Declared use restriction on the digest"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-weak-identity-time",
+                    "text": "Which event time and which observation or ingestion time apply to this geometry value, separately from the host's own validity period?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Event time of the represented spatial state (RFC 3339)",
+                      "Observation or ingestion time of the value (RFC 3339)",
+                      "Reference to the host validity period, not a copy of it"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-host-ref",
+                    "name": "Host binding reference",
+                    "description": "Reference to the Spatial Thing that carries this geometry value.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-geometry-role",
+                    "name": "Geometry role",
+                    "description": "Coded role of this geometry in the host binding, including whether it is the default geometry.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-geometry-local-id",
+                    "name": "Geometry local identifier",
+                    "description": "Optional identifier assigned to the geometry value itself when it must be addressed independently of its host binding.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-content-fingerprint",
+                    "name": "Canonical content digest",
+                    "description": "Digest over the canonicalized geometry form, used as a weak deduplication and change-detection handle only.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-geometry-observed-at",
+                    "name": "Geometry observation time",
+                    "description": "Time at which this geometry value was observed, surveyed or recorded, distinct from the event time of the spatial state it represents.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Identity here is a set of references and coded properties resolved against the host record and the canonicalization rule; there is no separable document or file. Materializing an identity artifact would wrongly imply the geometry is a thing of record in its own right, which the Spatial Thing / geometry disjointness in SRC-006 forbids."
+              },
+              {
+                "id": "geo-core-finding-crs-binding",
+                "name": "Coordinate reference system binding of the geometry value",
+                "description": "Coordinates are uninterpretable without a CRS. Every geometry value carries a resolvable CRS reference, an explicit axis-order statement matching the referenced coordinate system, a longitude-range convention where applicable, and, for a dynamic CRS, a coordinate-epoch reference. The register that defines those CRSs and any transformation between them is external; only the reference, the binding and subject-specific parameters are carried here.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-011",
+                  "SRC-004",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-crs-ref",
+                    "text": "Which resolvable CRS identifier is bound to this geometry, and which authority resolves it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "CRS URI of the form http://www.opengis.net/def/crs/{authority}/{version}/{code}",
+                      "Authority name and version segment",
+                      "Resolution endpoint or register reference"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-crs-axis-order",
+                    "text": "In which axis order are the coordinate tuples stored, and does that order follow the referenced coordinate system axes or an overriding delivery convention?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Axis order statement (for example longitude/latitude or latitude/longitude)",
+                      "Whether the order follows the CRS axis definition or a stated override",
+                      "Axis labels and units of the referenced coordinate system"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-crs-epoch",
+                    "text": "If the referenced CRS is dynamic, which coordinate epoch do these coordinates belong to?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Coordinate epoch as a decimal year",
+                      "Static or dynamic reference-frame indicator",
+                      "Statement that the epoch is not an RFC 3339 timestamp"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-crs-default",
+                    "text": "When no CRS reference is present, which default applies, and is that default asserted in the record or merely assumed by the consumer?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Default CRS identifier applied",
+                      "Flag distinguishing asserted from assumed default",
+                      "Storage CRS versus requested output CRS, where these differ"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-crs-transform-quality",
+                    "text": "If these coordinates resulted from a coordinate transformation, which operation was referenced and what positional-quality statement accompanies the result?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Reference to the coordinate operation used",
+                      "Declared positional accuracy statement with units",
+                      "Source CRS reference of the pre-transformation value"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-crs-ref",
+                    "name": "CRS reference",
+                    "description": "Resolvable identifier of the coordinate reference system under which the coordinate tuples are interpreted.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-axis-order-statement",
+                    "name": "Axis order statement",
+                    "description": "Declared ordering of ordinates within each coordinate tuple relative to the referenced coordinate system axes.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-coordinate-epoch",
+                    "name": "Coordinate epoch",
+                    "description": "Decimal-year epoch to which coordinates in a dynamic CRS are referenced.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-crs-default-assumed",
+                    "name": "Default CRS assumed flag",
+                    "description": "Indicates that no CRS was asserted with the value and a documented default was applied by convention.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-transform-quality-statement",
+                    "name": "Transformation quality statement",
+                    "description": "Declared accuracy or uncertainty of coordinates produced by an externally executed coordinate operation, with a reference to that operation.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The CRS binding is a reference plus a small set of subject-specific parameters (axis order, epoch, quality statement). The CRS definition itself is a record of an external register and must not be copied into this model, so there is no local artifact to materialize without duplicating a target model's content."
+              }
+            ]
+          },
+          {
+            "id": "geo-core-layer-type-system",
+            "name": "Geometry Type System and Dimensionality",
+            "description": "Primitive classes, aggregate and multipart membership, and the three distinct dimension concepts together with Z and M ordinate semantics.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-005",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-primitive-types",
+                "name": "Geometric primitive classes and edge interpolation",
+                "description": "The primitive classes are point (dimension 0), curve (dimension 1) and surface (dimension 2). A curve is defined by an ordered position sequence plus an interpolation rule connecting consecutive positions; the classical simple-feature and GeoJSON profiles assume straight linear interpolation, while richer schemas admit circular arcs, geodesics and other segment types. The interpolation rule is therefore a declared property of the geometry, not an implicit constant.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-008",
+                  "SRC-010",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-primitive-class",
+                    "text": "Which primitive class does this geometry belong to - point, curve or surface - and which concrete type name expresses it?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Primitive class code",
+                      "Concrete type name (Point, LineString, Polygon and equivalents)",
+                      "Type vocabulary reference"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-primitive-interpolation",
+                    "text": "Which interpolation rule connects consecutive positions along a curve or a surface boundary?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Interpolation rule code (linear, circular arc, geodesic, other)",
+                      "Whether the rule is declared or inherited from a profile default"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-primitive-simple-closed",
+                    "text": "Is a self-intersecting curve permitted here, and is a closed curve treated as a ring or merely as a closed line?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Self-intersection permitted flag",
+                      "Closed indicator",
+                      "Ring designation, where the closed curve bounds an area"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-primitive-encoding-fit",
+                    "text": "Which of these primitive types survive projection into the target encoding profile, and which degrade or fail?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Supported type list per encoding profile",
+                      "Degradation or failure behaviour per unsupported type",
+                      "Fallback representation reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-primitive-class",
+                    "name": "Primitive class",
+                    "description": "Coded primitive class of the geometry: point, curve or surface.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-geometry-type-name",
+                    "name": "Geometry type name",
+                    "description": "Concrete declared geometry type name within a named type vocabulary.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-interpolation-rule",
+                    "name": "Interpolation rule",
+                    "description": "Declared rule for interpolating between consecutive positions of a curve or surface boundary.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-is-closed",
+                    "name": "Closed indicator",
+                    "description": "Whether the curve's start and end positions coincide.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Primitive typing and interpolation are scalar declarations attached to the geometry value and resolved against a type vocabulary owned elsewhere. There is no document, file or rendering to hold; the vocabulary itself is a referenced registry rather than an artifact of this finding."
+              },
+              {
+                "id": "geo-core-finding-aggregate-multipart",
+                "name": "Aggregate, multipart and collection membership",
+                "description": "Geometry values may aggregate parts: homogeneous multipart types (multi-point, multi-curve, multi-surface) and heterogeneous collections. Membership semantics must state whether parts are addressable, whether part order carries meaning, whether nesting is permitted, and whether parts are required to be disjoint. A single-part collection and a bare primitive are not interchangeable without an explicit rule.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-008",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-aggregate-kind",
+                    "text": "Is this value a homogeneous multipart aggregate or a heterogeneous geometry collection, and which part types does it admit?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Aggregate kind code",
+                      "Permitted part type list",
+                      "Homogeneity constraint flag"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-aggregate-nesting",
+                    "text": "Are nested collections permitted, and if so to what depth?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Nesting permitted flag",
+                      "Maximum nesting depth",
+                      "Flattening rule when nesting is disallowed"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-aggregate-part-order",
+                    "text": "Are individual parts separately addressable, and is part order semantically meaningful or incidental?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Part addressing scheme (index or part key)",
+                      "Part order significance flag",
+                      "Stability guarantee for part indices across updates"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-aggregate-disjoint",
+                    "text": "Must the parts be mutually disjoint or non-overlapping, and which party asserts that condition?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Disjointness requirement flag",
+                      "Asserting party reference",
+                      "Consequence when the condition is violated"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-aggregate-singleton",
+                    "text": "Is a single-part aggregate normalized to a bare primitive, and does that normalization change the recorded type?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Singleton normalization rule",
+                      "Whether type change is recorded as a replacement",
+                      "Consumers affected by the normalization"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-aggregate-kind",
+                    "name": "Aggregate kind",
+                    "description": "Whether the value is a primitive, a homogeneous multipart aggregate or a heterogeneous collection.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-part-count",
+                    "name": "Part count",
+                    "description": "Number of direct member parts in the aggregate or collection.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-part-order-significant",
+                    "name": "Part order significance",
+                    "description": "Whether the order of member parts carries meaning for consumers.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-nesting-depth",
+                    "name": "Collection nesting depth",
+                    "description": "Maximum depth of nested collections present in the value.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Membership is structural metadata over the same coordinate payload already represented elsewhere in this model; representing it as a separate artifact would duplicate the encoded geometry and create two divergent copies of one value."
+              },
+              {
+                "id": "geo-core-finding-dimension-zm",
+                "name": "Topological dimension, coordinate dimension and Z/M ordinates",
+                "description": "Three dimension concepts must be kept apart: topological dimension (0, 1, 2 or 3 for solids), coordinate dimension (the number of ordinates in each position) and spatial dimension (the count of spatial ordinates only). A third ordinate may be a spatial Z interpreted against a referenced vertical reference, or the ordinate set may include a non-spatial M measure; presence of Z and M is an explicit declared flag, not something inferred from tuple length.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-005",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-dimension-triple",
+                    "text": "What are the topological dimension, coordinate dimension and spatial dimension of this geometry, and do they agree with its declared type?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Topological dimension value",
+                      "Coordinate dimension value",
+                      "Spatial dimension value",
+                      "Consistency verdict against the declared type"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-dimension-z-meaning",
+                    "text": "Is the third ordinate a spatial Z value or a non-spatial measure, and against which vertical reference is Z interpreted?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Z present flag with spatial or measure interpretation",
+                      "Vertical reference or height-system reference",
+                      "Unit of the Z ordinate"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-dimension-partial",
+                    "text": "Must Z and M be present on every position of the value, or may they be partially populated?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Uniform ordinate requirement flag",
+                      "Handling rule for positions with missing Z or M",
+                      "Validation consequence of a mixed ordinate set"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-dimension-m-semantics",
+                    "text": "What measure semantics and unit apply to the M ordinate, and who defines them?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "M measure semantics description",
+                      "Unit of measure code",
+                      "Reference to the defining model, where M is a linear reference"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-dimension-projection-loss",
+                    "text": "How are Z and M carried, dropped or defaulted when the value is projected into an encoding that does not support them?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Per-encoding Z and M support matrix",
+                      "Loss behaviour (drop, reject, substitute)",
+                      "Record of the loss on the projected artifact"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-topological-dimension",
+                    "name": "Topological dimension",
+                    "description": "Dimension of the geometry itself: 0 for points, 1 for curves, 2 for surfaces, 3 for solids.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-coordinate-dimension",
+                    "name": "Coordinate dimension",
+                    "description": "Count of ordinates in each position of the geometry, including any non-spatial measure.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-spatial-dimension",
+                    "name": "Spatial dimension",
+                    "description": "Count of spatial ordinates in each position, excluding any measure ordinate.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-has-z",
+                    "name": "Z ordinate present",
+                    "description": "Declared flag for the presence of a Z ordinate on all positions of the value.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-has-m",
+                    "name": "M ordinate present",
+                    "description": "Declared flag for the presence of a measure ordinate on all positions of the value.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-vertical-reference-ref",
+                    "name": "Vertical reference",
+                    "description": "Reference to the vertical datum or height system against which the Z ordinate is interpreted.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-m-unit",
+                    "name": "Measure unit",
+                    "description": "Unit of measure applying to the M ordinate.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are numeric and boolean declarations that must travel inline with the coordinate payload so that a consumer can parse tuples correctly; separating them into an artifact would allow the declaration and the payload to drift apart, which is precisely the failure mode the explicit Z/M flags in SRC-007 exist to prevent."
+              }
+            ]
+          },
+          {
+            "id": "geo-core-layer-coordinate-structure",
+            "name": "Coordinate Sequences and Ring Structure",
+            "description": "The ordered tuples that carry position, their cardinality and resolution constraints, and the ring structures that bound areas.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-coordinate-sequence",
+                "name": "Coordinate sequences, cardinality and resolution",
+                "description": "A geometry's positions form an ordered sequence of coordinate tuples with a uniform ordinate set. Each declared type imposes a minimum position count; repeated consecutive positions, stored ordinate precision and declared spatial resolution are separate properties that must not be confused with survey accuracy. Any serialized form of this sequence is a projection of the value.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-sequence-minimum",
+                    "text": "What is the minimum number of positions required for the declared geometry type, and does this value meet it?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Minimum position count for the declared type",
+                      "Actual position count",
+                      "Conformance verdict"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-sequence-precision",
+                    "text": "What ordinate precision is stored and what spatial resolution is declared, and are these kept distinct from positional accuracy?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Stored decimal precision per ordinate",
+                      "Declared spatial resolution with unit",
+                      "Explicit statement that precision is not accuracy"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-sequence-duplicates",
+                    "text": "Are repeated consecutive positions permitted in the sequence, and how are they treated on validation and canonicalization?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Duplicate position policy",
+                      "Canonicalization behaviour (retain or collapse)",
+                      "Effect on the recorded position count"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-sequence-encoding",
+                    "text": "Which encoding projection carried this coordinate sequence, and is that projection lossless for the declared ordinate set and precision?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Encoding profile identifier",
+                      "Losslessness verdict for ordinates and precision",
+                      "Digest of the encoded form"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-position-count",
+                    "name": "Position count",
+                    "description": "Total number of coordinate tuples in the geometry value, across all parts and rings.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-ordinate-precision",
+                    "name": "Ordinate precision",
+                    "description": "Number of stored decimal places or the grid step applied to ordinate values.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-spatial-resolution",
+                    "name": "Declared spatial resolution",
+                    "description": "Minimum separation at which distinct positions are meaningful in this value.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-duplicate-positions-allowed",
+                    "name": "Duplicate position policy",
+                    "description": "Whether repeated consecutive positions are permitted in the coordinate sequence.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "geo-core-artifact-encoded-geometry",
+                    "name": "Encoded geometry representation",
+                    "description": "A serialized projection of the geometry value produced for storage or transfer. It is explicitly a projection: the mathematical value defined by this model is canonical, and the encoded form carries a profile reference plus a digest so that loss of ordinates, precision or type fidelity can be detected.",
+                    "media_or_form": [
+                      "well-known text",
+                      "well-known binary",
+                      "JSON geometry object",
+                      "XML geometry element",
+                      "database geometry column value"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the authoritative master-system identifier of the record that stores it where one exists; otherwise by the governed encoding-profile IRI combined with the host binding reference; otherwise by a ULID assigned by the adopting Dimension. A digest over the canonicalized encoding may accompany the identifier for integrity checking but is never used alone as a public identifier, and no date component is used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "geo-core-finding-rings-orientation",
+                "name": "Rings, closure, orientation and interior boundaries",
+                "description": "An area is bounded by rings: a closed, simple curve. Closure may be explicit (a repeated final position) or implied by the encoding. Orientation conventions differ between standards - some require exterior rings counterclockwise and holes clockwise, others impose no orientation - so the model must record whether orientation is normative for the value or only a delivery convention. Interior rings (holes) are associated with exactly one exterior ring and must lie within it.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-008",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-ring-closure",
+                    "text": "Is ring closure represented by an explicit repeated final position, or implied by the encoding rules?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Explicit closure flag",
+                      "Minimum position count for a ring under the chosen convention",
+                      "Behaviour on encountering an unclosed ring"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-ring-orientation",
+                    "text": "Which orientation convention applies to exterior and interior rings, and is that convention normative for this value or only a property of the delivery encoding?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Exterior ring orientation code",
+                      "Interior ring orientation code",
+                      "Normative versus conventional designation with source reference"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-ring-holes",
+                    "text": "How is each interior ring associated with its exterior ring, and may holes be nested, touch the exterior, or split the interior?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Exterior-to-interior ring association structure",
+                      "Nested hole permission flag",
+                      "Rule for touching rings and interior connectivity"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-ring-invalidity",
+                    "text": "Does a reversed or unclosed ring make the geometry invalid, or merely non-canonical and subject to normalization?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Verdict classification (invalid versus non-canonical)",
+                      "Normalization action taken",
+                      "Reference to the validity profile that decides this"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-ring-closure-explicit",
+                    "name": "Explicit ring closure",
+                    "description": "Whether the final position of each ring repeats its first position in the stored value.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-exterior-ring-orientation",
+                    "name": "Exterior ring orientation",
+                    "description": "Declared winding direction of exterior rings in this value.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-interior-ring-count",
+                    "name": "Interior ring count",
+                    "description": "Number of interior rings (holes) present, per surface part.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-orientation-normative",
+                    "name": "Orientation normativity",
+                    "description": "Whether ring orientation is a normative property of the value or a convention of the delivery encoding only.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Ring structure is expressed entirely within the coordinate sequence and a handful of structural flags; the encoded form is already covered by the encoded geometry artifact in the sibling finding, and duplicating it here would produce two artifacts describing one payload."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "geo-core-bundle-state-quality",
+        "name": "Geometry State, Extent and Declared Quality",
+        "description": "Whether a geometry exists at all, what extent summarizes it, and what validity, simplicity and relation assertions are carried with it.",
+        "rationale": "Standards separate a typed empty geometry from an unrecorded one, treat envelopes and centroids as derived summaries, and define validity and topological relations as assessments made against a rule set rather than intrinsic facts; each therefore needs its own recorded state, profile and provenance so consumers can tell an assertion from a computation.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-007",
+          "SRC-004",
+          "SRC-001"
+        ],
+        "layers": [
+          {
+            "id": "geo-core-layer-emptiness-extent",
+            "name": "Presence State and Declared Extent",
+            "description": "Distinguishing empty, absent, unknown and suppressed geometry, and recording envelopes and derived summary points with their provenance.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-007",
+              "SRC-004",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-empty-vs-absent",
+                "name": "Empty, absent, unknown and suppressed geometry",
+                "description": "An empty geometry is a typed value that carries no coordinate data yet retains its type and CRS binding; an absent geometry means no geometry is bound to the host at all, which standards permit for features without spatial properties. Unknown location and deliberately withheld location are further distinct states. Sentinel coordinates such as (0,0) must never stand in for any of these.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-004",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-presence-state",
+                    "text": "Is the geometry empty with a retained type, absent from the host binding, unknown, or deliberately suppressed?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Presence state code",
+                      "Distinguishing evidence for the chosen state",
+                      "Consumer guidance for each state"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-empty-retains",
+                    "text": "Does an empty geometry retain its declared type, CRS binding and ordinate declarations?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Type retention flag",
+                      "CRS retention flag",
+                      "Ordinate declaration retention flag"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-empty-sentinel",
+                    "text": "How are sentinel or placeholder coordinates prevented from being read as a real position?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Prohibited sentinel value list",
+                      "Detection rule for sentinel positions",
+                      "Remediation action when a sentinel is found"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-empty-suppression",
+                    "text": "Where location is generalized or withheld for privacy, safety or security reasons, is that recorded as suppression rather than as absence?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Suppression reason code",
+                      "Generalization applied, if any, with its resolution",
+                      "Reference to the disclosure policy that required it"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-presence-state",
+                    "name": "Presence state",
+                    "description": "Coded state distinguishing empty, absent, unknown and suppressed geometry.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-empty-retains-type",
+                    "name": "Empty value retains type",
+                    "description": "Whether an empty geometry keeps its declared type and CRS binding.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-suppression-reason",
+                    "name": "Suppression reason",
+                    "description": "Coded reason for withholding or generalizing the geometry, recorded distinctly from absence.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Presence state is a single coded property with supporting flags that must be read together with the host binding. There is nothing to materialize: by definition these states describe the absence or withholding of a coordinate payload, so any artifact would be empty or misleading."
+              },
+              {
+                "id": "geo-core-finding-envelope-extent",
+                "name": "Envelope, bounding box and derived summary points",
+                "description": "An envelope is an axis-aligned extent in the geometry's own CRS; a bounding box may instead be expressed in a delivery CRS with its own axis ordering. Both are derived summaries and must carry their derivation provenance and containment guarantee. Extents that cross the antimeridian invert the usual west-east ordering, and pole-containing extents use extreme latitudes; these are recorded conventions, not computations. Centroids and representative points are derived summary geometries under the same rules.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-extent-frame",
+                    "text": "Is the recorded extent an envelope in the geometry's own CRS or a bounding box expressed in a separate delivery CRS?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Extent kind code",
+                      "Extent CRS reference",
+                      "Axis ordering of the extent values"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extent-antimeridian",
+                    "text": "How is an extent that crosses the antimeridian encoded, and how is a pole-containing extent expressed?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Antimeridian-crossing indicator and the west-greater-than-east convention",
+                      "Pole-containing latitude convention",
+                      "Consumer instruction for interpreting inverted extents"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extent-derivation",
+                    "text": "Was the extent computed from the coordinates, declared independently, or inherited from a parent collection?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Derivation method code",
+                      "Reference to the computing agent or declaring party",
+                      "Time at which the extent was derived"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extent-containment",
+                    "text": "Is the extent guaranteed to contain the geometry, or is it an approximation subject to a stated tolerance?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Containment guarantee flag",
+                      "Tolerance value with unit",
+                      "Staleness rule when the geometry changes"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extent-summary-point",
+                    "text": "Which derived summary point is recorded - a mathematical centroid or a guaranteed interior representative point - and can it fall outside the geometry?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Summary point kind code",
+                      "Interior guarantee flag",
+                      "Position of the summary point in the declared CRS"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-envelope-min-tuple",
+                    "name": "Envelope minimum tuple",
+                    "description": "Ordered minimum ordinate values of the axis-aligned extent, following the declared axis order.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-envelope-max-tuple",
+                    "name": "Envelope maximum tuple",
+                    "description": "Ordered maximum ordinate values of the axis-aligned extent, following the declared axis order.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-extent-crs-ref",
+                    "name": "Extent CRS reference",
+                    "description": "CRS in which the extent values are expressed, where it differs from the geometry's own CRS binding.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-extent-crosses-antimeridian",
+                    "name": "Antimeridian crossing indicator",
+                    "description": "Flags that the extent spans the antimeridian so that the west value exceeds the east value.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-extent-derivation",
+                    "name": "Extent derivation method",
+                    "description": "How the extent was obtained: computed, declared or inherited.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-summary-point",
+                    "name": "Derived summary point",
+                    "description": "Centroid or interior representative point recorded as a derived summary geometry.",
+                    "value_kind": "geometry",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Envelopes and summary points are small derived tuples that must stay attached to the value they summarize and be invalidated with it. Holding them as artifacts would create independently addressable copies that can silently outlive the geometry they describe."
+              }
+            ]
+          },
+          {
+            "id": "geo-core-layer-validity-assertions",
+            "name": "Validity and Declared Relations",
+            "description": "Validity, simplicity and topological relations recorded as assertions against a named profile, with evaluation performed elsewhere.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-008",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-validity-simplicity",
+                "name": "Validity, simplicity and repair assertions",
+                "description": "Simplicity (no anomalous self-intersection) and validity (conformance to structural assertions such as ring closure, non-self-intersecting boundaries and correctly nested holes) are verdicts produced against a named rule profile at a stated tolerance. This model records the profile reference, the verdict, when it was assessed and which evaluator produced it; evaluation, repair execution and the evaluator's own audit trail belong to the referenced engine.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-008",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-validity-profile",
+                    "text": "Against which named validity profile and version was this geometry assessed, and what verdict was returned?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Validity profile reference with version",
+                      "Verdict code (valid, invalid, not assessed)",
+                      "Failure reason codes where invalid"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-validity-evaluator",
+                    "text": "Which evaluator produced the verdict, and is the verdict held here only as a reference to that external assessment?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Evaluator reference and version",
+                      "Statement that the assessment record is owned by the evaluator",
+                      "Retrieval reference for the full assessment"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-validity-tolerance",
+                    "text": "What tolerance or snapping distance was applied when assessing coincident and near-coincident positions?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Tolerance value with unit",
+                      "Tolerance basis (CRS units or ground distance)",
+                      "Effect of tolerance on the verdict"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-validity-repair",
+                    "text": "If the geometry was repaired or normalized, what changed and which prior value does the current one supersede?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Repair operation description",
+                      "Reference to the superseded value",
+                      "Party responsible for accepting the repair"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-validity-staleness",
+                    "text": "At what observation time was validity last assessed, and does that assessment still apply to the current coordinate payload?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Assessment time (RFC 3339)",
+                      "Digest of the payload assessed",
+                      "Staleness verdict against the current payload"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-validity-profile-ref",
+                    "name": "Validity profile reference",
+                    "description": "Reference to the named, versioned rule profile against which validity was assessed.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-validity-verdict",
+                    "name": "Validity verdict",
+                    "description": "Coded outcome of the validity assessment, including a not-assessed state.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-simplicity-verdict",
+                    "name": "Simplicity verdict",
+                    "description": "Coded outcome of the simplicity assessment, kept distinct from validity.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-validity-assessed-at",
+                    "name": "Validity assessment time",
+                    "description": "Observation time at which the validity assessment was made.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-validity-evaluator-ref",
+                    "name": "Evaluator reference",
+                    "description": "Reference to the external engine or service that produced the verdict.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "geo-core-artifact-validity-profile",
+                    "name": "Geometry validity profile",
+                    "description": "A versioned declaration naming the structural assertions a geometry must satisfy (ring closure, boundary self-intersection handling, hole nesting, minimum position counts), the tolerance applied, and the dimensional scope covered. It is the reference target of every validity verdict and is published so verdicts remain interpretable over time; it does not contain assessment results.",
+                    "media_or_form": [
+                      "governed profile document",
+                      "machine-readable rule set",
+                      "conformance-class reference"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the authoritative master-system identifier issued by the profile's system of record; failing that, by a governed IRI resolvable within the adopting Dimension's namespace; failing that, by a ULID assigned by the adopting Dimension. Versions are distinguished by an ordinal version suffix, never by a date in the identifier.",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-007",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "geo-core-finding-declared-relations",
+                "name": "Declared spatial relations between geometry values",
+                "description": "Spatial relations may be recorded as assertions of record: a predicate from a named relation family (Simple Features, Egenhofer, RCC8, or a dimensionally extended nine-intersection pattern) between two geometry values, together with the CRS, dimensionality and tolerance under which the assertion holds. Recording an assertion never confers ownership of predicate evaluation, which stays with the referenced engine.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-relation-predicate",
+                    "text": "Which relation family and predicate name is asserted between the two geometry values?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Relation family code (Simple Features, Egenhofer, RCC8, intersection pattern)",
+                      "Predicate name within that family",
+                      "Pattern string, where an intersection matrix is used"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-relation-context",
+                    "text": "Under which CRS, dimensionality and tolerance was the relation asserted?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "CRS reference used for the assertion",
+                      "Dimensional basis of the assertion",
+                      "Tolerance value with unit"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-relation-status",
+                    "text": "Is the relation an asserted fact of record, or a cached result of an external evaluation that may be recomputed and invalidated?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Assertion status code (asserted, cached, derived)",
+                      "Cache invalidation trigger",
+                      "Reference to the evaluation that produced a cached result"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-relation-crs-mismatch",
+                    "text": "Do the two related geometries share a CRS binding, and if not, how is that mismatch declared rather than silently resolved?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "CRS binding of each operand",
+                      "Mismatch declaration",
+                      "Reference to the coordinate operation applied by the external service, if any"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-relation-family",
+                    "name": "Relation family",
+                    "description": "Named family of topological relations from which the predicate is drawn.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-relation-predicate",
+                    "name": "Relation predicate",
+                    "description": "Named predicate asserted between the subject and related geometry values.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-related-geometry-ref",
+                    "name": "Related geometry reference",
+                    "description": "Reference to the second geometry value participating in the asserted relation.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-relation-context",
+                    "name": "Relation evaluation context",
+                    "description": "CRS, dimensionality and tolerance under which the relation assertion is stated to hold.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "A declared relation is a triple of references and codes pointing at two geometry values and a predicate vocabulary; the substantive evaluation record belongs to the external predicate engine, so materializing an artifact here would reproduce a target model's assessment output and claim ownership of evaluation semantics this model must not hold."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "geo-core-bundle-boundary-cases",
+        "name": "Non-Planar and Extended Geometry Boundary Cases",
+        "description": "The cases where the planar, linear, two-dimensional default silently breaks: edge interpretation on a curved earth, the antimeridian and poles, curved segments, surface patches and solids.",
+        "rationale": "The mainstream simple-feature profile assumes two-dimensional features with straight linear interpolation, and GeoJSON further fixes edges as straight Cartesian lines in longitude/latitude space; richer OGC encodings admit circular arcs, geodesics, surface patches and solids. Because these families disagree, the differences must be recorded as explicit declared cases rather than resolved by an implicit planar default.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-010",
+          "SRC-008",
+          "SRC-004"
+        ],
+        "layers": [
+          {
+            "id": "geo-core-layer-non-planar",
+            "name": "Non-Planar Interpretation and Extended Types",
+            "description": "Edge interpretation and wraparound handling, and the curved, patch-based and volumetric types beyond the linear planar core.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-005",
+              "SRC-007",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "geo-core-finding-edge-interpretation",
+                "name": "Planar, geodesic and wraparound edge interpretation",
+                "description": "Whether an edge between two positions is a straight line in the CRS coordinate space or a geodesic on the reference ellipsoid changes the shape on the ground and is not decidable from the coordinates alone. GeoJSON fixes edges as straight Cartesian lines in longitude/latitude and requires antimeridian-crossing geometry to be cut in two; other practice interprets the same tuples spherically. The interpretation, the antimeridian strategy, the longitude-range convention and the polar handling must all be declared.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-edge-interpretation",
+                    "text": "Are edges interpreted as straight lines in the CRS coordinate space or as geodesics on the reference ellipsoid?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Edge interpretation code",
+                      "Source of the rule (profile default or explicit declaration)",
+                      "Consequence for length and area statements"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-edge-antimeridian",
+                    "text": "How does this geometry cross or avoid the antimeridian - by being cut into parts, by longitude values outside the normal range, or by a spherical interpretation?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Antimeridian strategy code",
+                      "Part structure resulting from cutting, if applied",
+                      "Longitude values used and whether they exceed the normal range"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-edge-poles",
+                    "text": "Does the geometry enclose, touch or approach a pole, and which convention expresses that region?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "Pole proximity indicator",
+                      "Convention for expressing pole-containing areas",
+                      "Latitude extremes used"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-edge-conflict",
+                    "text": "Which interpretation prevails when the encoding profile's convention and the declared edge rule disagree?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Precedence rule between declaration and encoding convention",
+                      "Party authorized to decide",
+                      "Record of the resolution applied to this value"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-edge-interpretation",
+                    "name": "Edge interpretation",
+                    "description": "Declared rule for interpreting an edge between two positions: Cartesian in CRS space or geodesic on the ellipsoid.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-antimeridian-strategy",
+                    "name": "Antimeridian strategy",
+                    "description": "Declared handling of geometry that spans the antimeridian.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-longitude-range-convention",
+                    "name": "Longitude range convention",
+                    "description": "Declared longitude value range convention applied to the coordinate sequence.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-polar-handling",
+                    "name": "Polar handling",
+                    "description": "Declared convention for geometry that encloses or touches a pole.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are interpretation declarations that must accompany the coordinate payload wherever it travels; they describe how existing numbers are read rather than adding content, so there is no separable artifact and any detached copy would risk being applied to the wrong value."
+              },
+              {
+                "id": "geo-core-finding-curved-solid-extended",
+                "name": "Curved segments, surface patches and solid geometry",
+                "description": "Beyond linear planar types, OGC encodings admit circular strings, compound curves and curve polygons, patch-based surfaces such as polyhedral surfaces, triangulated networks and triangles, and volumetric solids expressed as polyhedra or prisms bounded by closed shells. Validity assertions written for planar simple features do not fully determine correctness for non-planar surfaces or solids, so the applicable rule set and any fallback linearization must be declared.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-core-q-extended-type",
+                    "text": "Does the geometry use curved segments, a patch-based surface, or a volumetric solid beyond the linear simple-feature types?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Extended type name",
+                      "Curve segment kinds present",
+                      "Patch or shell structure indicator"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extended-solid-shells",
+                    "text": "For a solid, how are its bounding shells declared, and must each shell be closed and consistently orientable?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Exterior shell declaration",
+                      "Interior shell (void) count",
+                      "Closure and orientability requirement per shell"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extended-validity",
+                    "text": "Which validity rules apply to non-planar surfaces and solids, given that planar simple-feature assertions do not fully cover them?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Applicable non-planar validity rule set reference",
+                      "Explicitly unresolved rules recorded as gaps",
+                      "Planarity tolerance for surface patches"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-q-extended-fallback",
+                    "text": "What fallback or linearized representation is offered to consumers that cannot process curved or volumetric geometry, and at what tolerance?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Fallback geometry reference",
+                      "Linearization tolerance with unit",
+                      "Statement that the fallback is lossy and not canonical"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-core-de-extended-type",
+                    "name": "Extended geometry type",
+                    "description": "Name of the curved, patch-based or volumetric type used, where it lies beyond the linear simple-feature core.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-curve-segment-kinds",
+                    "name": "Curve segment kinds",
+                    "description": "Set of segment interpolation kinds present in a compound or curved geometry.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-shell-count",
+                    "name": "Solid shell count",
+                    "description": "Number of bounding shells declared for a solid, distinguishing the exterior shell from interior voids.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-linearization-tolerance",
+                    "name": "Linearization tolerance",
+                    "description": "Maximum permitted deviation when a curved geometry is approximated by linear segments for a fallback representation.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-core-de-fallback-geometry-ref",
+                    "name": "Fallback geometry reference",
+                    "description": "Reference to a simpler, explicitly lossy representation offered alongside the canonical extended geometry.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Extended-type declarations are structural properties of the same geometry value; the encoded projection that carries them is already covered by the encoded geometry artifact, and the non-planar validity rule set is referenced through the validity profile artifact rather than duplicated here."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "geo-core-fn-bind-geometry-to-host",
+      "name": "Bind geometry value to host",
+      "description": "Attach a geometry value to a host Spatial Thing with a declared role and cardinality, establishing the weak identity of the value without asserting any identity for the host.",
+      "inputs": [
+        "Host thing reference",
+        "Geometry value",
+        "Geometry role code",
+        "Default-geometry designation"
+      ],
+      "outputs": [
+        "Host binding record",
+        "Weak identity key for the geometry value"
+      ],
+      "preconditions": [
+        "The host exists and is identified by its own model",
+        "The role code is drawn from a governed role vocabulary",
+        "At most one geometry per host carries the default designation"
+      ],
+      "effects": [
+        "The geometry becomes addressable through the host binding",
+        "No host attribute other than the geometry binding is created or modified"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "geo-core-fn-declare-crs-binding",
+      "name": "Declare CRS binding",
+      "description": "Record the resolvable CRS reference, axis order, longitude-range convention and, for a dynamic CRS, the coordinate epoch under which the coordinate tuples are to be read.",
+      "inputs": [
+        "Geometry value",
+        "CRS reference URI",
+        "Axis order statement",
+        "Coordinate epoch, where the CRS is dynamic"
+      ],
+      "outputs": [
+        "CRS binding record attached to the geometry value"
+      ],
+      "preconditions": [
+        "The CRS reference resolves against an external register that this model does not own",
+        "The axis order is stated explicitly rather than inferred from tuple content"
+      ],
+      "effects": [
+        "Coordinate tuples become interpretable",
+        "No CRS definition, datum parameter or transformation is created or executed here"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-011",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "geo-core-fn-classify-geometry",
+      "name": "Classify geometry type and dimensionality",
+      "description": "Assign the primitive or aggregate type, the interpolation rule, and the topological, coordinate and spatial dimensions together with the Z and M presence flags.",
+      "inputs": [
+        "Coordinate sequence structure",
+        "Declared ordinate set",
+        "Type vocabulary reference"
+      ],
+      "outputs": [
+        "Type declaration",
+        "Dimensionality profile with Z and M flags"
+      ],
+      "preconditions": [
+        "The ordinate set is uniform across all positions, or a partial-population rule is declared",
+        "The type vocabulary is resolvable"
+      ],
+      "effects": [
+        "Consumers can parse tuples and select correct handling",
+        "Any inconsistency between declared type and structure is raised as a classification failure rather than silently corrected"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-007",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "geo-core-fn-record-declared-extent",
+      "name": "Record declared extent",
+      "description": "Store an envelope or bounding box with its CRS, axis ordering, derivation method, containment guarantee and antimeridian or polar convention flags.",
+      "inputs": [
+        "Extent tuples",
+        "Extent CRS reference",
+        "Derivation method",
+        "Containment guarantee and tolerance"
+      ],
+      "outputs": [
+        "Declared extent record with provenance"
+      ],
+      "preconditions": [
+        "The derivation method is stated",
+        "Where the extent crosses the antimeridian, the inverted-ordering convention is flagged"
+      ],
+      "effects": [
+        "The extent is available as a declared summary",
+        "The extent is marked stale when the underlying coordinate payload digest changes; this function does not compute extents"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-001",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "geo-core-fn-record-validity-assertion",
+      "name": "Record validity assertion",
+      "description": "Store an externally produced validity or simplicity verdict against a named profile version, with tolerance, evaluator reference and assessment time.",
+      "inputs": [
+        "Validity profile reference and version",
+        "Verdict and failure reasons",
+        "Tolerance",
+        "Evaluator reference",
+        "Assessment time"
+      ],
+      "outputs": [
+        "Validity assertion record referencing the external assessment"
+      ],
+      "preconditions": [
+        "The verdict was produced by an evaluator outside this model",
+        "The profile version is resolvable"
+      ],
+      "effects": [
+        "The verdict becomes discoverable alongside the geometry value",
+        "No evaluation, repair or enforcement is performed, and no evaluator audit record is reproduced"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-008",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "geo-core-fn-record-declared-relation",
+      "name": "Record declared spatial relation",
+      "description": "Store an asserted topological relation between two geometry values with its relation family, predicate, evaluation context and assertion status.",
+      "inputs": [
+        "Subject geometry reference",
+        "Related geometry reference",
+        "Relation family and predicate",
+        "Evaluation context (CRS, dimensionality, tolerance)",
+        "Assertion status"
+      ],
+      "outputs": [
+        "Declared relation record"
+      ],
+      "preconditions": [
+        "Both operands carry a CRS binding, and any mismatch is declared",
+        "The predicate belongs to the stated relation family"
+      ],
+      "effects": [
+        "The relation is available as reference data",
+        "Cached relations are invalidated when either operand changes; predicate evaluation remains with the external engine"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "geo-core-fn-project-to-encoding",
+      "name": "Project geometry value to an encoding",
+      "description": "Produce or consume a serialized projection of the geometry value under a named encoding profile, reporting which declared semantics the projection cannot carry.",
+      "inputs": [
+        "Geometry value with its declarations",
+        "Target encoding profile reference"
+      ],
+      "outputs": [
+        "Encoded geometry artifact with profile reference and digest",
+        "Loss report listing unsupported ordinates, types or precision"
+      ],
+      "preconditions": [
+        "The encoding profile is named and resolvable",
+        "The canonical form is defined by this model, not by the encoding"
+      ],
+      "effects": [
+        "A projection exists for transfer or storage",
+        "Losses are recorded explicitly; a lossy projection never replaces the canonical value"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-007",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "geo-core-fn-set-presence-state",
+      "name": "Set geometry presence state",
+      "description": "Declare whether a host binding holds an empty typed geometry, no geometry, an unknown location or a deliberately suppressed or generalized location.",
+      "inputs": [
+        "Host binding reference",
+        "Presence state code",
+        "Suppression reason and generalization resolution, where applicable"
+      ],
+      "outputs": [
+        "Presence state record"
+      ],
+      "preconditions": [
+        "Suppression is authorized by a referenced disclosure policy",
+        "No sentinel coordinate is used to represent any of these states"
+      ],
+      "effects": [
+        "Consumers can distinguish empty, absent, unknown and withheld locations",
+        "The disclosure decision itself is made and logged by the referenced policy service, not here"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-004",
+        "SRC-006",
+        "SRC-007"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-010 (parent spatial context model)",
+      "relation": "CHILD",
+      "purpose": "This entry is registered beneath the parent spatial model, which owns the wider spatial-context frame. This entry contributes only geometry value semantics and CRS binding, and inherits scoping decisions from the parent rather than restating them.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "Host feature, place, asset or object model",
+      "relation": "MIX-IN",
+      "purpose": "Geometry is mixed into any host thing as a property with a declared role. The host model owns real-world identity, classification and lifecycle; this mixin supplies the shape value and its binding only.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "Coordinate reference system register / authority model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the resolvable CRS reference, axis-order statement and coordinate-epoch parameter for each geometry value. The register's CRS definitions, datum parameters, versioning and deprecation lifecycle remain entirely with the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Coordinate operation and positional accuracy model",
+      "relation": "REFERENCE",
+      "purpose": "Record which coordinate operation produced a transformed geometry and the resulting positional-quality statement. Parameter derivation, operation selection and transformation execution stay with the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-011",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Geometry computation and spatial predicate evaluation service",
+      "relation": "REFERENCE",
+      "purpose": "Reference the evaluator that produced validity verdicts and relation results, and store the verdict as reference data. Evaluation, overlay, repair execution, enforcement and the evaluator's audit trail are owned by the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Geometry encoding and serialization profile model",
+      "relation": "REFERENCE",
+      "purpose": "Name the encoding profile used for a projection and record its losslessness. Encoding grammar, conformance classes and parser behaviour belong to the target; this model states only which semantics must survive a projection.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Vertical reference and height system model",
+      "relation": "REFERENCE",
+      "purpose": "Reference the vertical datum or height system against which a Z ordinate is interpreted, without defining geoid models or height-system realizations.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "OGC Simple Feature Access Part 1 / ISO 19125-1 geometry model",
+      "relation": "ALIGN",
+      "purpose": "Align primitive typing, aggregate structure, simplicity and validity assertions and topological predicates with the simple-feature architecture, recording where the linear planar assumptions of that model do not hold rather than claiming conformance.",
+      "required": false,
+      "source_refs": [
+        "SRC-008",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "OGC GeoSPARQL 1.1 geometry vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Align the separation of feature from geometry and the distinct topological, coordinate and spatial dimension properties, emptiness, simplicity, spatial resolution and the named relation families.",
+      "required": false,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "IETF RFC 7946 GeoJSON geometry profile",
+      "relation": "ALIGN",
+      "purpose": "Align ring closure, right-hand-rule winding, antimeridian cutting and bounding-box conventions as one named profile, while recording its fixed WGS 84 CRS, straight Cartesian edges and three-ordinate limit as profile constraints rather than universal geometry rules.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "ISO 19111 / OGC Abstract Specification Topic 2 referencing by coordinates",
+      "relation": "ALIGN",
+      "purpose": "Align coordinate tuple, coordinate set, axis order and coordinate epoch terminology so that CRS references carried on a geometry value are interpreted consistently with the referencing standard.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "ISO 19107 spatial schema",
+      "relation": "ALIGN",
+      "purpose": "Align the abstract vector geometry and topology concepts that sit above simple features, including primitives, aggregates, curve interpolation and solids, subject to the recorded paywall limitation on clause-level verification.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name an accountable owner for geometry value governance who is distinct from the owner of the host thing and from the CRS register authority.",
+        "Declare the default CRS binding policy, the default axis-order convention and whether an unasserted CRS is permitted at all.",
+        "Declare the default validity profile and version, and the tolerance basis used when asserting validity or relations.",
+        "Declare the set of supported encoding projections, their losslessness for Z, M, precision and extended types, and which one is used for canonical digesting.",
+        "Declare the disclosure policy that governs generalization or suppression of precise locations, and the referenced service that enforces it."
+      ],
+      "namespace_guidance": "Reuse governed geometry vocabulary rather than minting new type names: geometry types and relation predicates come from the aligned OGC vocabularies, and CRS identifiers are resolvable URIs of the form http://www.opengis.net/def/crs/{authority}/{version}/{code}. Geometry role codes and presence states are namespaced under the adopting Dimension's own namespace because they describe the binding, not the geometry. Local identifiers use lower-kebab-case and never embed dates.",
+      "registry_links": [
+        "Coordinate reference system register resolving CRS URIs and axis definitions",
+        "Validity profile registry holding the versioned rule sets referenced by verdicts",
+        "Encoding profile registry describing supported projections and their loss characteristics",
+        "Relation family and predicate vocabulary registry for declared spatial relations",
+        "Vertical reference and height system registry for interpreting Z ordinates"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "The canonical form of a geometry value is the declared type, the CRS reference with axis-order statement, the dimensionality profile with Z and M flags, and the ordered coordinate tuples in the declared axis order. No encoding syntax is part of the canonical form.",
+        "Ring closure is made explicit in the canonical form by repeating the first position as the last; ring orientation is normalized only where the governing profile declares orientation normative, and the normalization is recorded.",
+        "Ordinate values are written in fixed decimal notation at the declared precision, without exponent notation, with a single leading zero for values below one and no trailing zero padding beyond the declared precision.",
+        "Empty geometry canonicalizes to the declared type with an empty position sequence while retaining its CRS binding; absent geometry has no canonical form because no value exists.",
+        "Derived summaries (envelope, centroid) and assertions (validity, relations) are excluded from the canonical form used for digesting, so that recomputing a summary never changes the value's digest."
+      ],
+      "patch_rules": [
+        "Coordinate changes are applied by replacing a whole addressed coordinate sequence (identified by part index and ring index); vertex-level partial diffs are not accepted unless the part and ring addressing is stable and declared.",
+        "Changing the declared geometry type, the CRS reference, the axis order or the coordinate dimension is a replacement of the value, not a patch, and must carry a reference to the superseded value.",
+        "Adding or removing a Z or M ordinate is a replacement, because it changes how every tuple is parsed.",
+        "A repair or normalization patch must record the acting party, the rule profile applied and a reference to the superseded value; it must not silently rewrite coordinates in place.",
+        "Patching a derived extent or a relation assertion never implies a change to the coordinate payload and must not alter the payload digest."
+      ],
+      "compatibility_rules": [
+        "Adding an optional declared extent, summary point, resolution statement or relation assertion is backward compatible.",
+        "Changing axis order, CRS binding, longitude-range convention or edge interpretation is breaking, because identical tuples then denote different ground positions.",
+        "Adding Z or M is breaking for consumers that pin coordinate dimension; removing Z or M is breaking for consumers that read them.",
+        "Narrowing a collection to a single primitive, or widening a primitive into a collection, is breaking unless a declared singleton normalization rule already covers it.",
+        "Introducing curved segments or solids into a value previously restricted to linear planar types is breaking for consumers without an accepted fallback representation and tolerance."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record that owns the artifact or the host binding",
+        "Governed global identifier or IRI, such as a persistent HTTP URI for the host Spatial Thing or a resolvable profile or CRS IRI",
+        "UUID or ULID assigned by the adopting Dimension where no authoritative or governed identifier exists",
+        "Content digest over the canonical geometry form, permitted only as a weak deduplication and change-detection handle and never published as the identifier of a thing"
+      ],
+      "timestamp_rule": "All recorded time values use RFC 3339 with explicit seconds and an explicit UTC offset or Z; a value without seconds or without an offset is rejected. Event time (when the represented spatial state held, or when the survey or capture occurred) is recorded separately from observation or ingestion time (when the geometry value was received, validated, canonicalized or loaded), and both are stored whenever they differ; neither is derived from the other, and neither is used as an identifier. A coordinate epoch for a dynamic CRS is a decimal year defined by the referencing standard, is not an RFC 3339 timestamp, and is stored in its own field.",
+      "serial_naming_rule": "Serial artifacts such as validity profiles are named <profile-name>-v<major>.<minor> with monotonically increasing ordinals; superseded versions remain resolvable so that historical verdicts stay interpretable. Serial names carry no date component and no environment or vendor suffix.",
+      "integrity_rule": "Every encoded geometry artifact carries its encoding profile reference and a digest over its octets, plus the digest of the canonical value it projects. A digest mismatch invalidates the artifact, not the canonical geometry value; the artifact is quarantined and regenerated from the canonical form rather than trusted or repaired in place."
+    },
+    "policies": [
+      "Geometry is a value bound to a host, never a substitute for the host's identity. No process may treat a geometry identifier or digest as the identifier of the real-world thing.",
+      "No coordinate tuple is accepted or emitted without a resolvable CRS reference and an explicit axis-order statement; where a documented default is applied, the record must flag that the default was assumed rather than asserted.",
+      "Interpretation rules that change ground meaning - edge interpretation, longitude-range convention, antimeridian strategy, orientation normativity - are declared explicitly and never inferred from the coordinate values.",
+      "Validity verdicts, relation results and transformation quality statements are recorded as references to external assessments, with profile and evaluator identified; this model never performs, re-runs or enforces those assessments.",
+      "Empty, absent, unknown and suppressed geometry are four distinct recorded states, and sentinel coordinates are prohibited as substitutes for any of them.",
+      "No serialization is canonical: encodings are projections that must declare their losses, and a lossy projection may never overwrite the canonical value."
+    ],
+    "crud": {
+      "read": [
+        "Reading a geometry value returns the canonical declarations (type, CRS binding, axis order, dimensionality, presence state) together with the coordinate payload; a payload may not be served without them.",
+        "Consumers may request a specific output CRS or encoding projection; the response asserts which CRS and profile were actually used rather than leaving the consumer to assume the storage CRS.",
+        "Reads at full spatial resolution of a suppressed or generalized geometry are refused by default and served only under the referenced disclosure policy.",
+        "Derived summaries and assertions are returned with their derivation method, evaluator reference and staleness state so a consumer can tell an assertion from a computation."
+      ],
+      "create": [
+        "Creation requires a host binding reference, a role code, a declared type, a CRS reference with axis order, and a dimensionality profile with Z and M flags.",
+        "Creation requires an explicit presence state; a value may be created as empty with a retained type, but never with sentinel coordinates.",
+        "Values are canonicalized on creation and the canonical digest is recorded; the originating encoding is retained as an artifact with its profile reference and loss report.",
+        "Creating a geometry never creates, modifies or claims the host thing, a CRS definition, or an evaluation record."
+      ],
+      "update": [
+        "Coordinate updates address a specific part and ring and replace the whole addressed sequence; the canonical digest is recomputed and all dependent extents, summary points and cached relations are marked stale.",
+        "Changes to type, CRS binding, axis order, ordinate set or edge interpretation are recorded as replacements carrying a reference to the superseded value, not as in-place edits.",
+        "Repairs and normalizations record the acting party, the rule profile applied and the substantive change; an automated repair may not be applied silently to a value whose validity profile marks the condition as invalid rather than non-canonical.",
+        "Updating an assertion (validity verdict, declared relation, transformation quality) never alters the coordinate payload or its digest."
+      ],
+      "delete": [
+        "Deleting a geometry value means removing the coordinate payload and its encoded artifacts while retaining a tombstone that records the host binding reference, the geometry role, the canonical digest, the presence state set to deleted, and the deletion event time and observation time in RFC 3339. The tombstone carries no coordinates.",
+        "Deleting a geometry never deletes the host thing, and the host binding is transitioned to an explicit absent or suppressed presence state so that consumers do not read deletion as unknown location.",
+        "Superseded values retained for provenance follow the adopting Dimension's retention schedule; validity profiles referenced by any retained verdict are retained for at least as long as those verdicts, so historical assertions remain interpretable.",
+        "Where precise location is personal or safety-sensitive data, the erasure obligation, its legal basis and the execution of erasure are owned by the adopting Dimension's retention and privacy policy and by the systems of record holding the host and any downstream copies; this model contributes only the deletable payload boundary, the tombstone contract and the suppression state, and it does not execute, schedule or attest erasure in referenced systems.",
+        "Deletion of an encoded artifact alone is a cache eviction, not a deletion of the value; it requires no tombstone and must not change the canonical record."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Geometry value steward",
+        "responsibilities": [
+          "Maintain canonical form, presence state and host bindings for geometry values in scope",
+          "Approve replacements and repairs and ensure superseded values are referenced",
+          "Ensure derived summaries are invalidated when the coordinate payload changes"
+        ]
+      },
+      {
+        "name": "Reference-context liaison",
+        "responsibilities": [
+          "Maintain the CRS binding policy, default CRS and axis-order convention",
+          "Track register changes that affect existing bindings and raise them for review without editing the register",
+          "Record transformation quality statements returned by the coordinate operation service"
+        ]
+      },
+      {
+        "name": "Validity profile owner",
+        "responsibilities": [
+          "Publish and version the validity profile, its tolerance and its dimensional scope",
+          "Retain superseded profile versions so historical verdicts remain interpretable",
+          "Declare which conditions are invalidity and which are merely non-canonical"
+        ]
+      },
+      {
+        "name": "Interoperability custodian",
+        "responsibilities": [
+          "Maintain the supported encoding profile list and its loss characteristics",
+          "Verify round-trip fidelity of ordinates, precision and extended types for each profile",
+          "Publish fallback representations and their linearization tolerances"
+        ]
+      },
+      {
+        "name": "Disclosure controller",
+        "responsibilities": [
+          "Apply the disclosure policy that decides suppression or generalization of precise locations",
+          "Ensure suppression is recorded as suppression rather than as absence",
+          "Set the resolution at which generalized geometry may be released"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Geometry values inherit the access classification of their host thing and are never more open than it; where no host classification is resolvable, access defaults to deny.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Precise locations of natural persons, protected sites, protected species and critical infrastructure are generalized or withheld by default, with the suppression reason and released resolution recorded on the value.",
+        "Bulk export of full-resolution coordinate payloads requires explicit authorization even where individual reads are permitted, because aggregation can re-identify suppressed subjects.",
+        "Validity profiles and encoding profiles are readable more widely than the geometry values they govern, since they contain no coordinates.",
+        "Tombstones are readable to consumers permitted to read the host binding, so that deletion is distinguishable from unknown location without exposing coordinates."
+      ],
+      "audit_requirements": [
+        "Requests for full-resolution geometry over a suppressed or generalized value are logged with requester, purpose and authorization reference by the adopting Dimension's audit service; this model supplies the suppression state and policy reference and does not hold, own or attest the audit trail.",
+        "Every change of CRS binding, axis order, edge interpretation or presence state is attributable to an acting party and carries both event time and observation time in RFC 3339.",
+        "Repairs, normalizations and generalizations record what changed and reference the superseded value, so that a released geometry can always be traced to the value it was derived from."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md - identify the model, its type and the four resolvable URLs before touching any record",
+        "Specification URL - the format-neutral geometry and coordinate reference semantics defined here, including canonical form and presence states",
+        "Storage type URL - how the canonical value is projected into the deployed store, and the loss characteristics of that projection",
+        "Interface URL - how geometry values, extents and assertions are requested, including CRS and encoding negotiation",
+        "Processes URL - binding, classification, assertion recording, projection and deletion or tombstoning procedures",
+        "Referenced registries - CRS register, validity profile registry and encoding profile registry, none of which this model owns"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model covers the format-neutral semantics of a geometry value bound to a host thing: weak identity, CRS binding, primitive and aggregate typing, coordinate sequences, the three dimension concepts with Z and M handling, ring structure, presence states, declared extents, validity and relation assertions, and the non-planar and extended-type boundary cases. It is grounded in OGC, IETF, W3C and ISO sources and deliberately excludes the host, the CRS register, transformation execution and any computation or evaluation engine.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Treated as host-dependent weak identity with an explicit priority order and an explicit prohibition on presenting a geometry identifier or digest as the identity of the Spatial Thing (SRC-006)."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Creation, replacement versus patch, repair with supersession, presence-state transitions and tombstoning are defined for the geometry value only. The host's lifecycle and any evaluator's lifecycle are explicitly left to their owners."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Host binding, CRS reference, related-geometry relations by named family and part membership are all modelled. Predicate evaluation is referenced, not owned (SRC-002)."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Event time and observation/ingestion time are separated in RFC 3339 with seconds and offset; coordinate epoch for dynamic CRS is kept in a distinct decimal-year field (SRC-003)."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Extent derivation method, repair and supersession references, evaluator references and encoding loss reports carry provenance. Survey and observation campaign semantics are out of scope."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "A geometry value steward is named separately from the host owner, the CRS register authority and the validity profile owner, so that no role implies ownership of a referenced model."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Validity and simplicity are recorded as verdicts against a named versioned profile with tolerance and evaluator reference; the profile is the only artifact this model publishes for validation."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Geometry inherits host classification with deny-by-default, and precise-location suppression is recorded as suppression rather than absence at all four scopes."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Payload deletion with a coordinate-free tombstone is defined, artifact eviction is distinguished from value deletion, and erasure execution is explicitly assigned to the adopting Dimension's retention and privacy policy and the systems of record."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Encoding projections are declared lossy or lossless per profile, fallback representations carry a tolerance, and the conflicts between GeoJSON, simple features and richer OGC encodings are recorded rather than harmonized away."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Primitive class, concrete type, aggregate kind and extended type are separate declarations resolved against governed vocabularies rather than inferred from structure."
+      },
+      {
+        "dimension": "spatial edge cases",
+        "status": "covered",
+        "notes": "Antimeridian, poles, longitude-range convention and planar versus geodesic edge interpretation are explicit declared cases in their own bundle, not implicit planar defaults (SRC-001, SRC-004)."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Ordinate precision, declared spatial resolution, tolerance and M measure units are modelled and kept distinct from positional accuracy, which is carried only as a referenced quality statement."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Handled through disclosure control: suppression states, bulk-export restriction and integrity digests on encoded artifacts. Authentication, authorization enforcement and audit storage remain with referenced services."
+      },
+      {
+        "dimension": "non-planar validity",
+        "status": "gap",
+        "notes": "No retrievable primary source settles validity rules for solids and non-planar surfaces. The finding records the applicable rule set as a declared reference and marks unresolved rules as gaps rather than asserting planar rules."
+      }
+    ],
+    "known_omissions": [
+      "ISO 19107:2019 is paywalled; only the catalogue scope statement was retrievable, so no clause-level claim is made from it and the abstract primitive/solid concepts are supported indirectly through OGC sources.",
+      "OGC 06-103r4 is published as PDF only and its text layer was not machine-extractable in this pass; its content is used only where corroborated by GeoSPARQL 1.1 and the GeoPackage Encoding Standard, and the DE-9IM matrix detail is therefore referenced rather than reproduced.",
+      "GML clause-level detail (curve segment interpolation types, solid shell structure, srsDimension semantics) was retrievable only at the standards landing page level; the curved and solid finding is consequently supported mainly by JSON-FG and GeoPackage.",
+      "Topology as a distinct structure (shared edges, node-arc-face complexes, planar graph enforcement) is not modelled; only geometry as a value is in scope.",
+      "Spatial indexing structures, tiling schemes and discrete global grid systems are not modelled, although they consume the extents defined here.",
+      "Positional accuracy models and error ellipses are referenced as quality statements only; their derivation and statistical semantics are not defined.",
+      "M-ordinate semantics vary widely by domain and no single authoritative vocabulary was located; the model records unit and semantics as declarations rather than constraining them.",
+      "Geometry simplification and generalization algorithms are excluded even though generalized geometry appears as a disclosure control output."
+    ],
+    "conflicts": [
+      "RFC 7946 fixes all coordinates to WGS 84 with longitude/latitude order and states that a line between two positions is a straight Cartesian line, while ISO 19111 / OGC Topic 2 and JSON-FG permit arbitrary CRSs with CRS-defined axis order, and geographic practice frequently interprets the same tuples geodesically. The model therefore treats edge interpretation and CRS binding as explicit declarations rather than defaults.",
+      "RFC 7946 requires exterior rings counterclockwise and holes clockwise, while the simple-feature and well-known-binary lineage imposes no ring orientation requirement. Orientation is modelled with an explicit normativity flag instead of a single global rule.",
+      "RFC 7946 advises against positions beyond three elements, while GeoPackage and JSON-FG's Measures conformance class support a fourth measure ordinate. Z and M presence are therefore explicit flags, and projection loss is reported rather than assumed.",
+      "RFC 7946 requires antimeridian-crossing geometry to be cut into two parts, while OGC API - Features accepts a bounding box whose west value exceeds its east value to express the same crossing. Both conventions are recorded as declared strategies.",
+      "GeoSPARQL uses the broader term Spatial Reference System while ISO 19111 / OGC Topic 2 define the narrower Coordinate Reference System; the model binds to the CRS URI form and records the terminological difference rather than treating the terms as identical.",
+      "Validity in the simple-feature tradition is defined for planar two-dimensional geometry, but the same term is applied to solids and non-planar surfaces in richer encodings without an equivalent settled assertion set; this is recorded as an open gap."
+    ],
+    "regional_assumptions": [
+      "No jurisdiction-specific legal regime is assumed. Where precise location is personal data, the applicable erasure and disclosure obligations are set by the adopting Dimension's jurisdiction and are executed by the referenced retention and privacy policy, not here.",
+      "Vertical datums and height systems are national or regional realizations; the Z ordinate is meaningless without an explicit vertical reference, which this model references rather than defaults.",
+      "The longitude-range convention (-180 to 180 versus 0 to 360) is a delivery convention that differs between communities and is recorded per value rather than assumed globally.",
+      "Suppression thresholds and generalization resolutions for sensitive locations are jurisdiction- and sector-specific and must be supplied by the adopting Dimension's disclosure policy.",
+      "Dynamic reference frames and plate-motion-driven coordinate change matter most in tectonically active regions; the coordinate epoch field is required only where the referenced CRS is dynamic."
+    ],
+    "adversarial_checks": [
+      "Checked that no bundle, layer, finding or function claims ownership of evaluation, execution, enforcement or audit-trail semantics. Validity verdicts and declared relations store only profile, verdict, tolerance, evaluator reference and time; the recording functions state explicitly that no evaluation, repair or enforcement is performed and that no evaluator audit record is reproduced.",
+      "Checked that the CRS register is not modelled locally. The CRS finding carries only the reference URI, axis order, longitude-range convention, coordinate epoch and a transformation quality statement; CRS definitions, datum parameters, versioning and deprecation are in out_of_scope and in a REFERENCE composition link.",
+      "Checked that no serialization was made canonical. The only coordinate-bearing artifact is explicitly labelled a projection with a profile reference and loss report, canonicalization rules exclude encoding syntax, and a policy forbids a lossy projection from overwriting the canonical value.",
+      "Checked that the host thing is not duplicated. The identity finding models weak identity and binding role only, asserts host/geometry disjointness, and every function that touches a host is constrained to create or modify nothing but the binding.",
+      "Searched for counterexamples to a planar linear default and found several: straight Cartesian edges in GeoJSON versus geodesic interpretation, antimeridian cutting versus inverted bounding boxes, and curved and solid types in JSON-FG, GeoPackage and GML. These were promoted into a dedicated boundary-case bundle rather than resolved by fiat.",
+      "Rejected attractive but unsupported structure: no local geometry-operation catalogue, no spatial index model, no topology-complex model, no accuracy-derivation model and no map-portrayal layer were added, since each would either duplicate a sibling model or lack primary support.",
+      "Checked the exclusive artifact rule across all thirteen findings: exactly two findings declare artifacts with a null rationale, and the remaining eleven declare an empty artifact array with a substantive rationale explaining why the context is inline or reference data.",
+      "Checked that every identifier is unique, lower-kebab-case, prefixed consistently and free of any date-like component, and that no date is used as an identifier anywhere in the identity priority or serial naming rules."
+    ]
+  }
+}

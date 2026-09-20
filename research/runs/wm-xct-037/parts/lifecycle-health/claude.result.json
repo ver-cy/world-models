@@ -1,0 +1,2190 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-037",
+    "model_id": "WM-XCT-037",
+    "name": "Dependency / Impact",
+    "entry_kind": "mixin",
+    "purpose": "Supply the state, time and health semantics that a typed dependency assertion needs so an agent can tell what was asserted, when it was true, when it was believed, whether it is currently met, and how it was corrected - without owning the endpoints, the observations or the enforcement machinery.",
+    "scope_statement": "This bounded area of WM-XCT-037 governs the lifecycle of the dependency assertion itself (proposal, review, activation, deprecation, supersession, retirement, historical state), the condition/health property derived for that assertion (satisfied, degraded, broken, restored, undetermined), and the two-dimensional time record (effective/valid interval and record/decision time) that permits as-of reconstruction, late-arriving evidence and correction without rewriting history. Assertion identity is deliberately weak and host-dependent: the mixin attaches to a host record and is keyed relative to it. Endpoint administrative and operational state is referenced from its owning master system, never maintained here. Dependency typing, endpoint role structure, criticality weighting and downstream impact propagation belong to sibling areas of the same model and are not restated.",
+    "in_scope": [
+      "Registration lifecycle states of an individual dependency assertion and the permitted transitions between them",
+      "Weak, host-dependent identity keying that survives state, condition and interval change",
+      "Deprecation, supersession chains and readable historical/retired assertions",
+      "Condition (health) vocabulary for the assertion: satisfied, degraded, broken, restored, undetermined, and the declared criteria that map evidence to each value",
+      "Evidence references to externally produced health observations, with phenomenon time and result-availability time held separately",
+      "Effective (valid-time) intervals with explicit boundary conventions and open-ended currency",
+      "Record/decision time, as-of reconstruction across both time dimensions, late observation handling, and correction or annulment that appends rather than overwrites",
+      "Declared preconditions and authority for each lifecycle transition"
+    ],
+    "out_of_scope": [
+      "Monitoring, probing, polling, sampling or alerting of endpoints - observations are referenced, never produced here",
+      "Remediation, repair, incident handling, failover or restoration actions taken in the world",
+      "Maintenance or transition of endpoint administrative/operational state, which is owned by each endpoint's master system",
+      "Runtime evaluation or enforcement of transition guards and condition criteria; this model declares them, an external rule or workflow engine executes them",
+      "Platform-wide audit-trail semantics, log retention and tamper-evidence services",
+      "Dependency typing vocabulary, endpoint role structure, criticality and blast-radius/impact propagation (sibling area of WM-XCT-037)",
+      "Physical deletion or erasure execution, which is owned by the adopting Dimension's retention policy",
+      "Storage projection and query interface choices (JSON, RDF, SQL temporal tables, MCP, MongoDB are projections of these semantics)"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Dependency typing and endpoint structure (sibling area of WM-XCT-037)",
+        "distinction": "The sibling area defines what kind of dependency is asserted, which endpoints fill the dependent and provider roles, and how impact propagates. This area adds only state, time and condition qualifiers over whatever the sibling area has typed; it does not redefine relationship types or lifecycle scope vocabularies such as SPDX LifecycleScopeType, it only references them.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Observation / measurement model (OGC OMS, ISO 19156:2023 aligned)",
+        "distinction": "Observation creation, procedure, sampling feature and result storage are owned by the observation model, which distinguishes phenomenonTime from resultTime. This model carries only evidence references plus those two times as copied qualifiers, and must not claim collection, monitoring or observation-quality assessment semantics.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Endpoint asset/service lifecycle model",
+        "distinction": "Administrative state (locked, shuttingDown, unlocked) and operational state (enabled, disabled, testing) of an endpoint are attributes of the managed entity and are owned by its master system. This model stores a reference, an optionally copied state snapshot and the time that snapshot was read; it never transitions endpoint state and never treats a copied snapshot as authoritative.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Incident, change and remediation process model",
+        "distinction": "A broken or degraded condition may be an input to repair work (the analogue of an underRepair status), but ticketing, change approval, remediation execution and restoration action are external processes. This model records only that the condition value changed and which evidence supported the change.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Registry governance, rule-enforcement and audit services of the adopting Dimension",
+        "distinction": "Registration authority, change-control policy and change controller are named by the adopting Dimension, following registry practice. This model declares which role may make each transition and what must be recorded; it does not own the identity provider, the guard evaluator, the enforcement point or the audit-trail store.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-011"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Relationship - SPDX Specification 3.0.1 (Core model)",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Classes/Relationship/",
+      "version_or_date": "SPDX Specification 3.0.1 (published December 2024)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:10:00Z",
+      "relevance": "Establishes the relationship as a first-class asserted element with from (1..1), to (1..*), relationshipType (1..1), optional startTime and endTime describing relationship validity, and optional completeness. Directly supports treating a dependency assertion as a time-bounded assertion distinct from its endpoints, and supplies the closest normative analogue to an effective interval."
+    },
+    {
+      "id": "SRC-002",
+      "title": "LifecycleScopeType - SPDX Specification 3.0.1",
+      "organization": "The Linux Foundation / SPDX Project",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/LifecycleScopeType/",
+      "version_or_date": "SPDX Specification 3.0.1 (published December 2024)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:10:00Z",
+      "relevance": "Defines build, design, development, runtime, test and other as lifecycle contexts that parameterise a dependency relationship, evidencing that the same dependency can hold in one phase and not another - the basis for scoping an effective interval to a lifecycle phase rather than to wall-clock time alone."
+    },
+    {
+      "id": "SRC-003",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:11:00Z",
+      "relevance": "Supplies normative vocabulary for revision and temporal bounding of things that change: wasRevisionOf for corrections that retain substantial content, specializationOf for host-scoped specialisation, generatedAtTime and invalidatedAtTime to bound existence, and wasInvalidatedBy to name the activity that ended validity."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 7089 - HTTP Framework for Time-Based Access to Resource States (Memento)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://datatracker.ietf.org/doc/html/rfc7089",
+      "version_or_date": "RFC 7089, December 2013, Informational",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:11:00Z",
+      "relevance": "Normative pattern for as-of reconstruction: datetime negotiation via Accept-Datetime, a Memento-Datetime response header that is 'a promise that the resource state reflected in the response will no longer change', plus TimeGate and TimeMap. Grounds the requirement that a cited prior record version must be immutable and that corrections mint new versions."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 4268 - Entity State MIB",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://datatracker.ietf.org/doc/html/rfc4268",
+      "version_or_date": "RFC 4268, November 2005, Proposed Standard",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:12:00Z",
+      "relevance": "Defines EntityAdminState (unknown, locked, shuttingDown, unlocked), EntityOperState (unknown, disabled, enabled, testing), EntityUsageState, EntityAlarmStatus severity bits (critical, major, minor, warning, indeterminate, underRepair) and EntityStandbyStatus, and states that these are a subset of the ISO/OSI states also defined in ITU-T X.731. Establishes that administrative state and operational state are separate axes owned by the managed entity, not by an assertion about it."
+    },
+    {
+      "id": "SRC-006",
+      "title": "ITU-T Recommendation X.731 - Information technology - Open Systems Interconnection - Systems management: State management function",
+      "organization": "International Telecommunication Union, Telecommunication Standardization Sector (ITU-T)",
+      "url": "https://www.itu.int/rec/T-REC-X.731/en",
+      "version_or_date": "X.731 (01/92), with corrigenda and amendments to 2001",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:12:00Z",
+      "relevance": "Origin standard for the state-management model that separates administrative permission to use a resource from its operational capability and usage. Cited as the upstream authority for the endpoint-state boundary; the accessible catalogue entry confirms title and edition only, so detailed enumerations are corroborated through SRC-005."
+    },
+    {
+      "id": "SRC-007",
+      "title": "OGC Abstract Specification Topic 20: Observations, Measurements and Samples (OMS)",
+      "organization": "Open Geospatial Consortium / ISO TC 211",
+      "url": "https://www.ogc.org/standard/om/",
+      "version_or_date": "OGC 20-082r4, version 3.0; published jointly as ISO 19156:2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:13:00Z",
+      "relevance": "Normative separation of phenomenonTime (the time to which the result applies) from resultTime (the time the result became available, typically when the procedure completed), plus optional validTime for the period a result is intended to be used. This is the primary basis for late-observation handling and for refusing to conflate event time with ingestion time."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Resource Observation - HL7 FHIR Release 5",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/R5/observation.html",
+      "version_or_date": "FHIR R5 (v5.0.0)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:13:00Z",
+      "relevance": "Independent corroboration of two-time modelling - effective[x] is 'the time or time-period the observed value is asserted as being true' while issued records when the version was made available after review - and of a status element that is a modifier element carrying registered, preliminary, final, amended and entered-in-error, giving a precedent for annulment distinct from ordinary supersession."
+    },
+    {
+      "id": "SRC-009",
+      "title": "ISO/IEC 11179-6:2023 Information technology - Metadata registries (MDR) - Part 6: Registration",
+      "organization": "International Organization for Standardization / International Electrotechnical Commission",
+      "url": "https://www.iso.org/standard/78916.html",
+      "version_or_date": "ISO/IEC 11179-6:2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:14:00Z",
+      "relevance": "Defines registration status categories governed by a registration authority, with lifecycle categories that progress toward preferred use and then to Superseded (a successor is now preferred) and Retired (no longer recommended for use). Basis for the proposal/review/activation/deprecation/supersession/retirement ladder and for naming a registration authority per transition."
+    },
+    {
+      "id": "SRC-010",
+      "title": "DCMI Metadata Terms",
+      "organization": "Dublin Core Metadata Initiative (DCMI)",
+      "url": "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/",
+      "version_or_date": "Issued 2020-01-20",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:14:00Z",
+      "relevance": "Supplies stable supersession semantics - replaces ('supplanted, displaced, or superseded by the described resource') and isReplacedBy - plus valid ('date, often a range, of validity of a resource'), issued and modified, distinguishing a validity range from record dates."
+    },
+    {
+      "id": "SRC-011",
+      "title": "RFC 8126 / BCP 26 - Guidelines for Writing an IANA Considerations Section in RFCs",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://datatracker.ietf.org/doc/html/rfc8126",
+      "version_or_date": "RFC 8126, BCP 26, June 2017, Best Current Practice",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:15:00Z",
+      "relevance": "Registry governance practice: graduated registration policies from First Come First Served through Expert Review and Specification Required, entry states including Reserved and Unassigned, a mandatory change-control policy and named change controller, and the warning that reclaiming previously assigned values 'can lead to interoperability problems'. Grounds review gating and the prohibition on silently reusing retired keys."
+    },
+    {
+      "id": "SRC-012",
+      "title": "RFC 3339 - Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://datatracker.ietf.org/doc/html/rfc3339",
+      "version_or_date": "RFC 3339, July 2002, Proposed Standard",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:15:00Z",
+      "relevance": "Normative timestamp syntax requiring seconds and a stated numeric offset from UTC or the Z suffix, with -00:00 reserved for a known UTC instant whose local offset is unknown, and permitting second value 60 for leap seconds. Governs every time value in this model."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Time Ontology in OWL",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/owl-time/",
+      "version_or_date": "W3C Candidate Recommendation Draft, 15 November 2022",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-05T09:16:00Z",
+      "relevance": "Supplies interval semantics used for effective intervals: Instant and Interval as TemporalEntity, hasBeginning and hasEnd, ProperInterval where beginning and end differ, and Allen interval relations for expressing non-overlap, meeting and containment constraints between successive intervals."
+    },
+    {
+      "id": "SRC-014",
+      "title": "ISO/IEC 9075-2:2023 Information technology - Database languages SQL - Part 2: Foundation (SQL/Foundation)",
+      "organization": "International Organization for Standardization / International Electrotechnical Commission",
+      "url": "https://www.iso.org/standard/76584.html",
+      "version_or_date": "ISO/IEC 9075-2:2023, sixth edition, June 2023 (temporal features introduced in SQL:2011)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:16:00Z",
+      "relevance": "Normative basis for bitemporal records: application-time period tables carry the period during which a fact holds in the world, system-versioned tables carry the period during which the row was recorded, and system-versioned application-time period tables combine both. Grounds the two-dimensional as-of reconstruction and the append-only correction rule."
+    },
+    {
+      "id": "SRC-015",
+      "title": "ECMA-424 - CycloneDX Bill of Materials Standard",
+      "organization": "Ecma International",
+      "url": "https://ecma-international.org/publications-and-standards/standards/ecma-424/",
+      "version_or_date": "ECMA-424, 2nd edition, December 2025 (CycloneDX v1.7)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-05T09:17:00Z",
+      "relevance": "Independent standardisation of a component/dependency inventory format that explicitly carries lifecycle context alongside metadata and external references, corroborating that dependency statements are captured at a stated lifecycle stage rather than being timeless facts."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "dep-life-assertion-lifecycle-bundle",
+        "name": "Dependency assertion lifecycle and continuity",
+        "description": "Everything needed to know what state a dependency assertion is in, who may move it, how its identity persists across change, how it is deprecated or superseded, and where the assertion's lifecycle stops and the endpoint's own lifecycle begins.",
+        "rationale": "Registry practice treats a recorded assertion as an administered item with a governed status ladder and a named change controller, while state-management standards treat a managed resource's own state as a separate axis owned elsewhere. Conflating the two is the most common modelling failure in dependency records, so the two lifecycles are separated at bundle level.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-011",
+          "SRC-005",
+          "SRC-001"
+        ],
+        "layers": [
+          {
+            "id": "dep-life-registration-layer",
+            "name": "Assertion registration states and transitions",
+            "description": "The controlled state vocabulary an individual dependency assertion may hold, the permitted moves between those states, the preconditions declared for each move, and the authority required.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-011",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "dep-life-state-vocabulary",
+                "name": "Registration lifecycle state vocabulary",
+                "description": "A governed, versioned set of registration states for a single dependency assertion - proposed, in-review, active, deprecated, superseded, retired - with, for each, a definition, whether it is terminal, and whether an assertion in that state may be relied on for downstream decisions. This is the assertion's administrative status only; it says nothing about whether the dependency is currently being met and nothing about the endpoints' own operational state.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-010",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-state-set",
+                    "text": "Which registration states may a dependency assertion hold, and which of them are terminal?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Enumerated state codes with definitions",
+                      "Terminal-state flag per state",
+                      "Ordering or precedence among non-terminal states"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-state-usability",
+                    "text": "What does each state assert about whether the dependency may be relied on for a downstream decision?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Decision-usability classification per state",
+                      "Narrative semantics of each state",
+                      "Explicit statement that usability is independent of current condition"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-state-authority",
+                    "text": "Which registration authority or role may place an assertion into each state?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Authorised role or registration authority reference per state",
+                      "Registration policy strength, from open recording to review-gated",
+                      "Named change controller for the assertion class"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-state-vocab-binding",
+                    "text": "Which version of the state vocabulary governs a given assertion record, and how is a retired term still resolved?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Vocabulary identifier and version",
+                      "Term identifier or IRI per state",
+                      "Deprecated-term resolution rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-registration-state",
+                    "name": "Registration state",
+                    "description": "The current administrative state of the dependency assertion, drawn from the governed state vocabulary.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-state-terminal-flag",
+                    "name": "Terminal state indicator",
+                    "description": "Whether the state admits any outgoing transition other than correction.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-state-vocabulary-ref",
+                    "name": "State vocabulary binding",
+                    "description": "Reference to the identifier and version of the vocabulary release that defines the recorded state code.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-decision-usability",
+                    "name": "Decision usability class",
+                    "description": "Whether an assertion in this state may be used as input to downstream reasoning, may be used with caution, or must not be used.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-life-art-state-vocabulary",
+                    "name": "Assertion lifecycle state vocabulary release",
+                    "description": "The published, versioned term set of registration states with definitions, terminal flags, decision-usability classes and deprecation notes for withdrawn terms.",
+                    "media_or_form": [
+                      "Controlled vocabulary / code list",
+                      "Term definitions with resolvable term identifiers",
+                      "Deprecation and replacement notes per term"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Governed vocabulary identifier issued by the adopting Dimension's registration authority, plus a monotonic version tag. The publication date is metadata on the release and is never part of the identifier.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-life-transition-control",
+                "name": "Permitted transitions, guards and transition events",
+                "description": "The explicit matrix of allowed state pairs, the preconditions declared for each move, the justification and evidence that must accompany a transition request, and the transition event record naming requester, approver and event time. Guards are declared here in a checkable form; their runtime evaluation and any enforcement action are performed by an external rule or workflow engine.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-003",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-transition-matrix",
+                    "text": "Which state transitions are permitted, and which state pairs are explicitly forbidden?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "From-state and to-state pairs with allowed or forbidden marking",
+                      "Reason text for each forbidden pair",
+                      "Whether the matrix is closed, so that unlisted pairs are forbidden by default"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-transition-preconditions",
+                    "text": "What preconditions and supporting evidence must be declared before a transition may be requested?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Guard expression or checklist reference per transition",
+                      "Required evidence reference types",
+                      "Whether the precondition is blocking or advisory"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-transition-event",
+                    "text": "What is recorded when a transition occurs, and who requested it as against who approved it?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Transition event time in RFC 3339 form",
+                      "Requesting actor reference and approving actor reference",
+                      "Resulting state and prior state",
+                      "Free-text justification"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-transition-rejection",
+                    "text": "How is a rejected, withdrawn or expired proposal represented without deleting the proposal record?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Outcome code for rejection, withdrawal or expiry",
+                      "Retention treatment of the unsuccessful proposal",
+                      "Whether the same assertion key may be re-proposed and under what conditions"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-guard-executor",
+                    "text": "Which external component evaluates the declared guards at request time, and what does it return?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Reference to the evaluating rule or workflow service",
+                      "Evaluation outcome codes accepted by this model",
+                      "Statement that this model stores outcomes and never executes evaluation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-transition-from-state",
+                    "name": "Transition source state",
+                    "description": "The registration state held immediately before the transition.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-to-state",
+                    "name": "Transition target state",
+                    "description": "The registration state entered by the transition.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-guard-ref",
+                    "name": "Declared guard reference",
+                    "description": "Reference to the precondition expression or checklist that must hold for the transition, evaluated externally.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-event-time",
+                    "name": "Transition event time",
+                    "description": "The instant at which the transition took effect, recorded separately from the instant the transition was written to the record store.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-actor-ref",
+                    "name": "Transition actor references",
+                    "description": "References to the requesting party and, where the transition is review-gated, the approving authority.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-justification",
+                    "name": "Transition justification",
+                    "description": "Narrative reason recorded with the transition, required for deprecation, retirement and annulment.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-transition-outcome",
+                    "name": "Transition outcome code",
+                    "description": "Whether the requested transition was applied, rejected, withdrawn or expired.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-life-art-transition-table",
+                    "name": "Assertion state transition table",
+                    "description": "The governed matrix of from-state and to-state pairs with allowed or forbidden marking, the guard reference and required approval role for each permitted transition, and the closed-world statement for unlisted pairs.",
+                    "media_or_form": [
+                      "State-transition matrix",
+                      "Guard declaration list with references to externally evaluated expressions",
+                      "Approval-role assignment per transition"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Governed transition-table identifier assigned by the adopting Dimension, plus a monotonic revision number aligned to the state vocabulary version it constrains; publication date is a qualifier, never an identifier.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "dep-life-continuity-layer",
+            "name": "Identity continuity, supersession and historical state",
+            "description": "How an assertion keeps its identity through change, how a replaced assertion is linked to its successor, and how deprecated and retired assertions stay readable for reconstruction rather than being erased.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-009",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "dep-life-weak-identity",
+                "name": "Weak, host-dependent assertion identity",
+                "description": "A dependency assertion has no independent global identity. It is keyed relative to the host record that carries the mixin, together with the dependent and provider endpoint references, the dependency type and any lifecycle scope. Identity survives changes of registration state, condition value and effective interval, all of which are qualifiers of a record version rather than components of the key. Dates and timestamps are never key components.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-009",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-identity-key",
+                    "text": "Which attributes compose the identity key of a dependency assertion within its host record?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Host record reference",
+                      "Ordered list of key attributes with the dependency type and endpoint references",
+                      "Explicit exclusion list naming state, condition and time values as non-key"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-identity-stability",
+                    "text": "Does a change of registration state, condition or effective interval create a new assertion or a new record version of the same assertion?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Change-class to identity-effect mapping",
+                      "Record-version number of the affected assertion",
+                      "Rule stating which attribute changes force a new key"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-identity-host-versioning",
+                    "text": "How is an assertion identified when the host record is itself versioned, replaced or merged?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Host version reference or host lineage reference",
+                      "Carry-forward rule for assertions on a replaced host",
+                      "Merge and split handling for colliding assertion keys"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-identity-surrogate",
+                    "text": "What surrogate identifier may the adopting Dimension assign, and what precedence does it have against an authoritative master-system identifier?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Surrogate identifier value and issuing scheme",
+                      "Authoritative master-system identifier where one exists",
+                      "Precedence rule placing the master-system identifier first"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Identity here is a key-composition rule plus a small set of reference fields carried on the host record. Publishing it as a separate artifact would create a second, competing identity anchor for something the model deliberately declares weak and host-dependent, so the context stays inline as declared key attributes and their exclusions.",
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-host-record-ref",
+                    "name": "Host record reference",
+                    "description": "Reference to the record that carries the dependency mixin and therefore scopes the assertion's identity.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-assertion-key",
+                    "name": "Assertion identity key",
+                    "description": "The composed key of host reference, endpoint references, dependency type and lifecycle scope that identifies the assertion within its host.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-assertion-surrogate-id",
+                    "name": "Dimension-assigned surrogate identifier",
+                    "description": "Optional UUID or ULID minted by the adopting Dimension for addressing convenience; subordinate to any authoritative master-system identifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-record-version-number",
+                    "name": "Record version number",
+                    "description": "Monotonic version counter distinguishing successive record versions of the same assertion identity.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-004"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "dep-life-supersession-chain",
+                "name": "Deprecation, supersession chains and historical state",
+                "description": "How an assertion that is discouraged but still true is distinguished from one that is no longer asserted at all, how a successor assertion is linked to its predecessor, how chains are traversed and kept acyclic, and why retired assertions remain readable instead of being erased. Reuse of a retired assertion key is treated as an interoperability hazard.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-009",
+                  "SRC-003",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-supersession-link",
+                    "text": "Which successor assertion replaces a superseded one, and is the replacement total or partial?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Replaced-by reference on the predecessor",
+                      "Replaces reference on the successor",
+                      "Replacement scope code distinguishing total from partial replacement"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-chain-traversal",
+                    "text": "How far back may a supersession chain be traversed, and how are cycles detected and prevented?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Chain depth limit or unbounded declaration",
+                      "Acyclicity constraint statement",
+                      "Traversal direction supported by the record"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-deprecation-vs-retirement",
+                    "text": "What distinguishes deprecation, where the dependency is discouraged but still holds, from retirement, where it is no longer asserted?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Deprecation reason code",
+                      "Whether the assertion still contributes to downstream reasoning",
+                      "Retirement decision reference and effective moment"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-key-reuse",
+                    "text": "Under what conditions, if any, may a retired assertion key be reused for a different dependency?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Reuse permitted or forbidden flag",
+                      "Quarantine period expressed as a duration, not a date",
+                      "Interoperability risk note recorded with any permitted reuse"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Supersession is expressed entirely as typed references and reason codes between assertion records, and the successor assertion is itself the payload that carries the replacement. Materialising a separate supersession document would duplicate those references and create a third place where the chain could disagree with itself.",
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-replaces-ref",
+                    "name": "Replaces reference",
+                    "description": "Reference from the successor assertion to each assertion it supplants or supersedes.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-replaced-by-ref",
+                    "name": "Replaced-by reference",
+                    "description": "Reference from a superseded assertion to the assertion now preferred for use.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-supersession-scope",
+                    "name": "Supersession scope",
+                    "description": "Whether the successor replaces the predecessor entirely or only for part of its endpoint set or lifecycle scope.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-deprecation-reason",
+                    "name": "Deprecation reason",
+                    "description": "Coded reason the assertion is discouraged while remaining true, for example superseded design, vendor withdrawal or pending replacement.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-retirement-time",
+                    "name": "Retirement event time",
+                    "description": "The instant from which the assertion is no longer asserted, recorded in RFC 3339 form with seconds and an explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-key-reuse-policy",
+                    "name": "Key reuse policy reference",
+                    "description": "Reference to the adopting Dimension's rule on whether a retired assertion key may be reused, and after what quarantine duration.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dep-life-endpoint-boundary-layer",
+            "name": "Endpoint lifecycle boundary",
+            "description": "The explicit separation between the assertion's own lifecycle and the administrative and operational lifecycles of the endpoints it names, which are owned by their master systems.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-006",
+              "SRC-001"
+            ],
+            "findings": [
+              {
+                "id": "dep-life-endpoint-state-reference",
+                "name": "Externally owned endpoint state referenced, not maintained",
+                "description": "The dependent and provider endpoints each have their own administrative state, governing whether use is permitted, and operational state, governing whether the resource is operable. Both are attributes of the managed entity and are owned by its master system. This model holds a reference to the owning system, optionally a copied state snapshot, and the instant that snapshot was read, so that a condition determination can be explained later. It never transitions endpoint state, never polls for it, and never treats a copied snapshot as authoritative after its read time.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-003",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-endpoint-owner",
+                    "text": "Which system is the authoritative owner of each endpoint's administrative and operational state?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Endpoint reference",
+                      "Owning master-system reference",
+                      "Statement of which state axes that system governs"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-endpoint-snapshot",
+                    "text": "Which endpoint state value was used when a condition was determined, and when was that value read?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Copied administrative and operational state values",
+                      "Snapshot read time in RFC 3339 form",
+                      "Reference to the source record or response the value came from"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-endpoint-decommission",
+                    "text": "How does an assertion behave when a referenced endpoint is decommissioned or its state becomes unknown?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Assertion outcome code for a vanished or unknown endpoint",
+                      "Whether the assertion is retired, left active with undetermined condition, or flagged for review",
+                      "Escalation reference to the owning system"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-endpoint-prohibitions",
+                    "text": "What actions on endpoint state are explicitly forbidden to this model?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Prohibition list covering transition, polling, remediation and authoritative caching",
+                      "Snapshot staleness rule expressed as a maximum age duration",
+                      "Named model that owns each forbidden capability"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Endpoint state is a record owned and published by each endpoint's master system. Only a reference, an explicitly non-authoritative copied value and its read time belong here, and producing an artifact would publish a second copy of a record this model has no authority to maintain or correct.",
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-endpoint-ref",
+                    "name": "Endpoint reference",
+                    "description": "Reference to each endpoint named by the assertion in its dependent or provider role.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-endpoint-state-owner-ref",
+                    "name": "Endpoint state owner reference",
+                    "description": "Reference to the master system that authoritatively governs the endpoint's administrative and operational state.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-endpoint-state-snapshot",
+                    "name": "Copied endpoint state snapshot",
+                    "description": "Non-authoritative copy of the endpoint's administrative and operational state values as used in a condition determination.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-endpoint-state-read-time",
+                    "name": "Snapshot read time",
+                    "description": "The instant the copied state value was read from its owning system, distinct from any event time within that system.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-endpoint-snapshot-max-age",
+                    "name": "Snapshot maximum age",
+                    "description": "Declared duration after which a copied endpoint state value must not be used to support a condition determination.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dep-life-health-temporal-bundle",
+        "name": "Dependency condition and temporal reconstruction",
+        "description": "Whether the asserted dependency is currently met, on what declared criteria and evidence, over which effective interval, and how a consumer reconstructs what was believed at any chosen past moment despite late evidence and later corrections.",
+        "rationale": "Observation standards separate the time a result applies to from the time it became available, and temporal database standards separate the period a fact holds in the world from the period a row was recorded. Both separations are required before a health statement about a dependency can be replayed honestly, so condition and time are governed together and kept apart from the administrative lifecycle.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-014",
+          "SRC-004",
+          "SRC-008",
+          "SRC-005"
+        ],
+        "layers": [
+          {
+            "id": "dep-life-health-layer",
+            "name": "Condition determination and its evidence",
+            "description": "The controlled condition vocabulary for the assertion, the declared criteria mapping evidence to each value, and the referenced observations that support a determination.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "dep-life-condition-vocabulary",
+                "name": "Condition values: satisfied, degraded, broken, restored, undetermined",
+                "description": "A controlled vocabulary describing whether the asserted dependency is currently met, partially met, unmet, has returned to met after being unmet, or cannot be determined, together with the declared criteria that map referenced evidence to each value and the severity ordering between them. Condition is a derived property of the assertion, distinct from the assertion's registration state and from any endpoint's operational state.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-condition-values",
+                    "text": "Which condition values may a dependency assertion carry, and how are they ordered by severity?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Enumerated condition codes with definitions",
+                      "Severity rank per code",
+                      "Statement of which codes are mutually exclusive at one instant"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-condition-criteria",
+                    "text": "What declared criteria map referenced evidence to each condition value, including the threshold separating degraded from broken?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Criterion expression or threshold reference per condition value",
+                      "Units and comparison operator where a threshold is numeric",
+                      "Reference to the externally evaluated criterion where evaluation is automated"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-condition-determiner",
+                    "text": "Who or what determined the condition value, and was the determination automated or asserted by a person?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Determining actor or procedure reference",
+                      "Determination mode code for automated or human assertion",
+                      "Approval role where a human assertion overrides an automated one"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-condition-restoration",
+                    "text": "How is restoration distinguished in the record from a dependency that was never broken?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Prior condition value carried with the current determination",
+                      "Reference to the determination that recorded the breakage",
+                      "Duration of the unmet period derived from effective intervals"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-condition-undetermined",
+                    "text": "What is recorded when the condition cannot be determined from available evidence?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Undetermined condition code with a reason code",
+                      "Missing or stale evidence references",
+                      "Confidence or reliability qualifier on the determination"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-condition-value",
+                    "name": "Condition value",
+                    "description": "The current condition of the assertion drawn from the governed condition vocabulary.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-severity-rank",
+                    "name": "Condition severity rank",
+                    "description": "Ordinal severity of the condition value, permitting comparison and worst-case selection across assertions.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-criteria-ref",
+                    "name": "Condition criterion reference",
+                    "description": "Reference to the declared criterion or threshold whose satisfaction yields this condition value, evaluated outside this model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-determined-time",
+                    "name": "Condition determination time",
+                    "description": "The instant the condition value was determined, held separately from the interval over which the condition is asserted to hold.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-determiner-ref",
+                    "name": "Condition determiner reference",
+                    "description": "Reference to the actor, procedure or service that made the determination.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-prior-value",
+                    "name": "Prior condition value",
+                    "description": "The condition value immediately preceding this determination, enabling restoration and degradation to be recognised without recomputing history.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-condition-confidence",
+                    "name": "Determination confidence",
+                    "description": "Coded confidence or reliability qualifier attached to the condition determination.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-life-art-condition-vocabulary",
+                    "name": "Dependency condition vocabulary with criteria bindings",
+                    "description": "The published term set of condition values with definitions, severity ranks, mutual-exclusion rules, and the binding of each value to the declared criteria or thresholds that yield it.",
+                    "media_or_form": [
+                      "Controlled vocabulary / code list",
+                      "Criteria-to-value mapping table",
+                      "Severity ordering declaration"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Governed vocabulary identifier plus monotonic version tag issued by the adopting Dimension; each release cites the criterion references it binds. Release date is metadata, never part of the identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "dep-life-health-observation-record",
+                "name": "Health observations referenced as evidence",
+                "description": "Observations about endpoint or dependency health are produced, stored and quality-assured elsewhere. This finding governs which observations were used as evidence for a determination and how their two times are carried: the phenomenon time to which the result applies, and the result time at which the result became available. Observations that arrive out of order are linked to the determination they should have informed without altering determinations already made.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-003",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-evidence-set",
+                    "text": "Which observations were used as evidence for this condition determination, and where are they held?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Observation references with owning system",
+                      "Observed property and procedure references copied for interpretation",
+                      "Whether the evidence set is complete or partial"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-evidence-two-times",
+                    "text": "What is the phenomenon time of each referenced observation, and when did its result become available to this model?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Phenomenon time per observation",
+                      "Result time per observation",
+                      "Ingestion time at which this model first saw the observation"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-evidence-out-of-order",
+                    "text": "How is an observation whose result arrives after a later determination linked to the determination it should have informed?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Back-link from the late observation to the affected determination",
+                      "Flag marking the affected determination as revisable",
+                      "Whether a corrected determination was issued and its reference"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-evidence-quality",
+                    "text": "What quality or reliability qualifiers must accompany referenced observation evidence?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Reliability or quality code copied from the observation",
+                      "Maximum acceptable evidence age",
+                      "Rule for excluding evidence that fails the quality bar"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-evidence-owner",
+                    "text": "Which model owns collection, sampling, procedure definition and storage of these observations?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Reference to the owning observation model or service",
+                      "Reference resolution mechanism and stability guarantee",
+                      "Statement that this model contributes no observation production capability"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Observations are created and retained by a referenced observation model that owns their procedure, sampling feature and result. This finding contributes only evidence references and copied time and quality qualifiers, so producing an artifact here would republish another model's payload and imply monitoring semantics the boundary notes exclude.",
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-evidence-observation-ref",
+                    "name": "Evidence observation reference",
+                    "description": "Reference to each externally held observation used to support the condition determination.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-observation-phenomenon-time",
+                    "name": "Observation phenomenon time",
+                    "description": "Copied time to which the observation's result applies, as distinct from when the result became available.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-observation-result-time",
+                    "name": "Observation result time",
+                    "description": "Copied time at which the observation result became available, typically when the producing procedure completed.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-evidence-ingest-time",
+                    "name": "Evidence ingestion time",
+                    "description": "The instant this model first became aware of the observation, used to detect late arrival relative to determinations already made.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-evidence-completeness",
+                    "name": "Evidence completeness",
+                    "description": "Whether the referenced evidence set is known exhaustive, known non-exhaustive, or carries no assertion of completeness.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-evidence-reliability",
+                    "name": "Evidence reliability qualifier",
+                    "description": "Copied quality or reliability code accompanying the observation, used to gate its admissibility.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "dep-life-temporal-layer",
+            "name": "Effective intervals, as-of reconstruction and correction",
+            "description": "The two independent time dimensions of the record - the interval over which an assertion or condition holds in the world, and the interval over which the record itself was believed - and the rules that let a consumer replay any past moment and correct a mistake without rewriting history.",
+            "source_refs": [
+              "SRC-014",
+              "SRC-013",
+              "SRC-004",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "dep-life-effective-interval",
+                "name": "Effective intervals of assertions and conditions",
+                "description": "Each assertion and each condition determination carries an effective interval with an inclusive start and an exclusive end, left open where it remains current, optionally narrowed to a lifecycle scope such as build or runtime. Intervals are qualifiers of a record version, never components of identity; successive intervals for the same assertion and the same time dimension must not overlap, and closing an interval is an append, not an edit.",
+                "source_refs": [
+                  "SRC-014",
+                  "SRC-013",
+                  "SRC-001",
+                  "SRC-010",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-interval-bounds",
+                    "text": "What are the effective start and end of this assertion, and is the interval still open?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective-from instant in RFC 3339 form",
+                      "Effective-to instant or an explicit open marker",
+                      "Derived duration where both bounds are known"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-interval-convention",
+                    "text": "Which interval boundary convention applies, and may two intervals for the same assertion overlap?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Boundary convention code, normally closed-open",
+                      "Non-overlap constraint statement per time dimension",
+                      "Gap handling rule where consecutive intervals do not meet"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-interval-scope",
+                    "text": "To which lifecycle scope does the effective interval apply, given that a dependency may hold at build time but not at run time?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Lifecycle scope code referenced from the typing area",
+                      "Whether unscoped means all scopes or unknown scope",
+                      "Per-scope interval set where scopes differ"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-interval-closure",
+                    "text": "How is an interval closed when the assertion stops holding, without deleting or editing the earlier record?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Closing instant and the reason the assertion ceased",
+                      "New record version created by the closure",
+                      "Reference from the closing version to the version it closes"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "An effective interval is two timestamp fields plus a boundary-convention code carried directly on each assertion and condition record. There is no separable document to publish, and materialising one would risk being read as an authoritative anchor for something the model treats strictly as a qualifier.",
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-effective-from",
+                    "name": "Effective from",
+                    "description": "Inclusive instant from which the assertion or condition is asserted to hold in the world.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-effective-to",
+                    "name": "Effective to",
+                    "description": "Exclusive instant at which the assertion or condition ceases to hold; absent while the interval remains open.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-interval-open-flag",
+                    "name": "Open interval indicator",
+                    "description": "Explicit marker that the interval is unbounded on the right, distinguishing currency from an unrecorded end.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-interval-boundary-convention",
+                    "name": "Interval boundary convention",
+                    "description": "Declared inclusivity of the interval bounds, normally closed on the left and open on the right.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-lifecycle-scope",
+                    "name": "Lifecycle scope of the interval",
+                    "description": "Optional narrowing of the interval to a lifecycle phase such as design, build, test or runtime, referenced from the typing area.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-015"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-interval-cease-reason",
+                    "name": "Interval closure reason",
+                    "description": "Coded reason the interval was closed, distinguishing a real-world change from a superseding assertion.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-010"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "dep-life-asof-correction",
+                "name": "As-of reconstruction, late observation and correction without rewriting history",
+                "description": "Two independent time dimensions - the effective interval over which a fact holds and the record interval over which it was believed - allow a consumer to ask what was asserted as of a chosen pair of times. A change in the world extends the effective dimension; a mistake is corrected by appending a new record version that closes the record interval of the erroneous version and, where the earlier statement was never true, annuls it with an explicit reason. Prior record versions are immutable so that a citation to a past state stays stable.",
+                "source_refs": [
+                  "SRC-014",
+                  "SRC-004",
+                  "SRC-008",
+                  "SRC-003",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "dep-life-q-asof-parameters",
+                    "text": "Which pair of times must a consumer supply to reconstruct the assertion set as of a chosen moment?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective-time parameter",
+                      "Record-time parameter with a default of now",
+                      "Result set semantics when only one parameter is supplied"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-correction-vs-change",
+                    "text": "How is a correction of a mistaken record distinguished from a genuine change in the world?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Change-class code separating correction from real-world change",
+                      "Which time dimension is modified in each case",
+                      "Whether the effective interval of the earlier version is preserved unchanged"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-annulment",
+                    "text": "What is recorded when an earlier assertion is annulled as never having been true?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Annulment flag and reason code",
+                      "Reference to the annulled record version",
+                      "Instruction that annulled versions remain readable but must not be used for reasoning"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-version-citation",
+                    "text": "How is a prior record version addressed so that a downstream citation remains stable and resolvable?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Version address composed of assertion key and record-version number",
+                      "Immutability guarantee for a cited version",
+                      "Enumeration of available versions for an assertion"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-q-correction-authority",
+                    "text": "Who may issue a correction or annulment, and what evidence must accompany it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Authorised role for correction and for annulment",
+                      "Required evidence or justification references",
+                      "Whether a second approver is required for annulment"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dep-life-de-record-time-from",
+                    "name": "Record time from",
+                    "description": "Instant from which this record version was the believed statement; the left bound of the record/decision dimension.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-record-time-to",
+                    "name": "Record time to",
+                    "description": "Instant at which this record version ceased to be the believed statement; absent for the current version.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-correction-of-ref",
+                    "name": "Correction-of reference",
+                    "description": "Reference from a corrected version to the record version it revises, without altering that version.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-change-class",
+                    "name": "Change class",
+                    "description": "Whether the new version records a real-world change, a correction of a mistaken record, or an annulment.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-annulled-flag",
+                    "name": "Annulment indicator",
+                    "description": "Marks a record version as entered in error and excluded from reasoning while remaining readable.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-correction-reason",
+                    "name": "Correction reason",
+                    "description": "Coded reason for the correction or annulment, such as wrong endpoint, wrong dependency type or misread evidence.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "dep-life-de-asof-query-parameters",
+                    "name": "As-of reconstruction parameters",
+                    "description": "The effective-time and record-time pair, with any lifecycle-scope filter, that defines a reconstruction request.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "dep-life-art-record-version-series",
+                    "name": "Assertion record-version series",
+                    "description": "The ordered, append-only series of record versions for one assertion identity, each carrying its effective interval, record interval, change class and any correction or annulment reference, so that any past belief state can be reconstructed and cited.",
+                    "media_or_form": [
+                      "Ordered record-version series",
+                      "Time-indexed snapshot set with an enumerable version list",
+                      "Append-only change log of this model's own assertion records"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Series identified by the weak assertion key; each member addressed by that key plus a monotonically increasing record-version number. Record time is a qualifier on the member and never forms part of its address; once published a member is immutable.",
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-004",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "dep-life-fn-propose-assertion",
+      "name": "Propose dependency assertion",
+      "description": "Record a new dependency assertion in the proposed state against a host record, establishing its weak identity key and its initial effective interval without claiming that the dependency has yet been reviewed or accepted.",
+      "inputs": [
+        "Host record reference",
+        "Dependent and provider endpoint references and dependency type from the typing area",
+        "Proposed effective-from instant and optional lifecycle scope",
+        "Proposing actor reference"
+      ],
+      "outputs": [
+        "Assertion record version 1 in the proposed state",
+        "Composed assertion identity key",
+        "Transition event recording the proposal"
+      ],
+      "preconditions": [
+        "The host record exists and admits the dependency mixin",
+        "The endpoint references resolve in their owning master systems",
+        "No active assertion already exists with the same identity key and an overlapping effective interval"
+      ],
+      "effects": [
+        "A new assertion identity is created with record version 1",
+        "The proposal is readable and remains readable even if later rejected",
+        "No endpoint state is read, changed or polled"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-011",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "dep-life-fn-apply-transition",
+      "name": "Apply lifecycle transition",
+      "description": "Move an assertion from one registration state to another where the transition table permits it, recording the transition event, the requesting and approving actors, and the externally returned guard evaluation outcome.",
+      "inputs": [
+        "Assertion identity key",
+        "Target registration state",
+        "Guard evaluation outcome returned by the external rule or workflow service",
+        "Requesting actor reference and, where required, approving actor reference",
+        "Transition event time"
+      ],
+      "outputs": [
+        "New record version carrying the target state",
+        "Transition event record",
+        "Rejection outcome where the transition is refused"
+      ],
+      "preconditions": [
+        "The from-state and to-state pair appears as permitted in the governing transition table",
+        "The declared guards for the transition have been evaluated externally and the outcome supplied",
+        "The acting role is authorised for that transition"
+      ],
+      "effects": [
+        "The prior record version's record interval is closed and a new version opened",
+        "No prior record version is edited or removed",
+        "Transition guards are not evaluated here; only their supplied outcome is stored"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-011",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "dep-life-fn-record-condition",
+      "name": "Record condition determination",
+      "description": "Attach a condition value to an active assertion for a stated effective interval, citing the criteria applied, the evidence observations used with their phenomenon and result times, and the determining actor or procedure.",
+      "inputs": [
+        "Assertion identity key",
+        "Condition value from the governed vocabulary",
+        "Criterion references and evidence observation references",
+        "Condition effective-from instant and determination time",
+        "Determining actor or procedure reference"
+      ],
+      "outputs": [
+        "Condition determination record with its own effective interval",
+        "Prior condition value carried forward for degradation and restoration recognition",
+        "Undetermined determination with a reason where evidence is insufficient or stale"
+      ],
+      "preconditions": [
+        "The assertion is in a state whose decision-usability class permits condition tracking",
+        "Referenced evidence resolves and satisfies the declared maximum age and quality bar",
+        "The condition value exists in the bound vocabulary version"
+      ],
+      "effects": [
+        "A condition determination is appended without altering earlier determinations",
+        "Degradation, breakage and restoration become derivable from consecutive determinations",
+        "No endpoint is probed, monitored or remediated by this function"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "dep-life-fn-close-effective-interval",
+      "name": "Close effective interval",
+      "description": "Set the exclusive right bound of an open effective interval on an assertion or condition determination, recording why it ceased, by appending a new record version rather than editing the open one.",
+      "inputs": [
+        "Assertion identity key or condition determination reference",
+        "Closing instant",
+        "Interval closure reason code",
+        "Acting party reference"
+      ],
+      "outputs": [
+        "New record version with a bounded effective interval",
+        "Reference from the closing version to the version it closes"
+      ],
+      "preconditions": [
+        "The target interval is currently open",
+        "The closing instant is not earlier than the effective-from instant",
+        "Closing does not create an overlap with another interval on the same assertion and time dimension"
+      ],
+      "effects": [
+        "The effective dimension is bounded while the record dimension records when this became known",
+        "The previously open version remains readable and citable",
+        "Closure alone does not retire the assertion; retirement is a separate transition"
+      ],
+      "source_refs": [
+        "SRC-014",
+        "SRC-013",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "dep-life-fn-supersede-assertion",
+      "name": "Supersede assertion",
+      "description": "Link a predecessor assertion to a successor now preferred for use, marking the predecessor superseded, stating whether the replacement is total or partial, and preserving both for reconstruction.",
+      "inputs": [
+        "Predecessor assertion identity key",
+        "Successor assertion identity key",
+        "Supersession scope code",
+        "Deciding authority reference and supersession event time"
+      ],
+      "outputs": [
+        "Replaced-by reference on the predecessor and replaces reference on the successor",
+        "New record versions of both assertions",
+        "Updated registration state of the predecessor"
+      ],
+      "preconditions": [
+        "The successor exists and is not itself superseded",
+        "The resulting chain contains no cycle and respects any declared depth limit",
+        "The deciding role is authorised to declare supersession"
+      ],
+      "effects": [
+        "Chain traversal in both directions becomes possible",
+        "The predecessor stays readable and its historical intervals stay intact",
+        "A retired predecessor's identity key is not released for reuse by this function"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "dep-life-fn-reconstruct-as-of",
+      "name": "Reconstruct assertion set as of a chosen moment",
+      "description": "Return the dependency assertions and condition determinations that were effective at a chosen effective time according to what was believed at a chosen record time, so that a past decision can be replayed exactly.",
+      "inputs": [
+        "Host record reference or assertion identity key",
+        "Effective-time parameter",
+        "Record-time parameter, defaulting to the present",
+        "Optional lifecycle scope filter"
+      ],
+      "outputs": [
+        "Assertion and condition record versions matching both time parameters",
+        "Enumeration of the record versions consulted",
+        "Explicit empty result where nothing was believed effective at that pair of times"
+      ],
+      "preconditions": [
+        "Both supplied instants carry seconds and an explicit offset or Z",
+        "Record versions exist covering the requested record time",
+        "Annulled versions are excluded from reasoning results unless explicitly requested"
+      ],
+      "effects": [
+        "No record is created or altered by reconstruction",
+        "Later-arriving evidence does not change an earlier reconstruction at the same record time",
+        "Cited versions remain immutable so the same query returns the same answer"
+      ],
+      "source_refs": [
+        "SRC-014",
+        "SRC-004",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "dep-life-fn-issue-correction",
+      "name": "Issue correction or annulment",
+      "description": "Append a corrected record version for an assertion or condition determination, or annul a version as never having been true, always by adding to the series and never by editing or removing what was previously published.",
+      "inputs": [
+        "Target record version address",
+        "Change class of correction or annulment",
+        "Correction reason code and supporting evidence references",
+        "Authorised correcting actor reference and, for annulment, approver reference"
+      ],
+      "outputs": [
+        "New record version carrying the corrected content or the annulment marker",
+        "Correction-of reference to the superseded record version",
+        "Unchanged effective interval on the corrected version where only belief changed"
+      ],
+      "preconditions": [
+        "The target version exists and is addressable by assertion key and version number",
+        "The acting role is authorised for correction, and for annulment a second approver is present where required",
+        "A justification is supplied for every annulment"
+      ],
+      "effects": [
+        "The record dimension of the erroneous version is closed while its content stays byte-stable",
+        "Annulled versions remain readable for reconstruction but are excluded from reasoning",
+        "History is never rewritten, so an earlier citation continues to resolve to the same state"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-003",
+        "SRC-014",
+        "SRC-004"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Host subject model adopting the Dependency / Impact mixin",
+      "relation": "MIX-IN",
+      "purpose": "The mixin attaches to a host record and derives its weak identity from it; the host owns its own identity, ownership and lifecycle, and this model adds only assertion state, condition and time qualifiers over that host.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-009",
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "Dependency typing and endpoint structure (sibling area of WM-XCT-037)",
+      "relation": "COMPOSE",
+      "purpose": "The sibling area supplies the dependency type vocabulary, endpoint role structure, criticality and impact propagation; this area supplies state, condition and temporal semantics over those typed assertions. Neither restates the other.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "Endpoint asset or service master model owning administrative and operational state",
+      "relation": "REFERENCE",
+      "purpose": "Carry a reference to the endpoint and to the system that authoritatively owns its administrative and operational state, plus an explicitly non-authoritative snapshot and read time. Endpoint state transitions and endpoint lifecycle remain owned by the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Observation and measurement model aligned to OGC OMS / ISO 19156:2023",
+      "relation": "REFERENCE",
+      "purpose": "Cite observations as evidence for condition determinations and copy their phenomenon time and result time. Observation production, procedure definition, sampling and monitoring remain owned by the target and are not reproduced here.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Rule evaluation and workflow enforcement service of the adopting Dimension",
+      "relation": "REFERENCE",
+      "purpose": "Bind declared transition guards and condition criteria to an external evaluator and store the outcome it returns. Runtime evaluation, enforcement and blocking decisions belong to the target; this model declares and records only.",
+      "required": false,
+      "source_refs": [
+        "SRC-011",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Incident, change and remediation process model",
+      "relation": "REFERENCE",
+      "purpose": "Expose a broken or degraded condition as an input to repair and change processes and accept a back-reference to the resulting work item. Remediation, restoration action and ticketing remain owned by the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "W3C PROV-O provenance vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Map correction to wasRevisionOf, host scoping to specializationOf, and interval bounds to generatedAtTime and invalidatedAtTime. Alignment only; no conformance claim is made and PROV bundles are not adopted as the record model.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "SPDX 3.0.1 Core Relationship profile",
+      "relation": "ALIGN",
+      "purpose": "Map the assertion to a Relationship with from, to, relationshipType, startTime, endTime and completeness for exchange. Alignment is lossy: SPDX carries one validity interval and no record-time dimension, so bitemporal state cannot be projected without loss.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "ISO/IEC 11179-6 registration status model",
+      "relation": "ALIGN",
+      "purpose": "Align the assertion state ladder with registration authority practice, including superseded and retired semantics and a named change controller. Alignment only; the ISO statuses govern registered metadata items, not assertions about running systems.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Adopting Dimension retention, disposition and erasure policy",
+      "relation": "REFERENCE",
+      "purpose": "Delegate retention periods, disposition schedules and any lawful erasure execution for this model's records. This model declares tombstone and readability requirements; it does not execute deletion or own retention law.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-010"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name a registration authority and a single change controller for the assertion state vocabulary, the condition vocabulary and the transition table, and publish who may act in each transition role.",
+        "Declare the retention period and disposition rule for superseded, retired and annulled record versions before the model is activated, since this model refuses to invent retention law.",
+        "Bind every declared guard and condition criterion to an external evaluating service and record that binding, because this model stores outcomes rather than evaluating them.",
+        "Declare the identifier scheme for surrogate assertion identifiers and confirm that any authoritative master-system identifier takes precedence over it.",
+        "State the maximum acceptable age of a copied endpoint state snapshot and of referenced observation evidence."
+      ],
+      "namespace_guidance": "Assertion keys live in the host record's namespace and are never promoted to a Dimension-global namespace, preserving weak identity. Vocabulary terms for registration state and condition live in a Dimension-governed namespace with a version segment, so a retired term still resolves. Endpoint and observation references keep the namespace of their owning master system and are never rewritten into a local namespace.",
+      "registry_links": [
+        "Registry entry vr.wm-xct-037, record plane world-model, nav path NAV.XCT.DEP, entry kind mixin, review state boundary-review-required.",
+        "Sibling area of WM-XCT-037 covering dependency typing, endpoint structure and impact propagation, which this area composes with rather than duplicates.",
+        "Adopting Dimension's registration authority register, naming the change controller for each governed vocabulary released by this model."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "All time values are normalised to RFC 3339 with seconds present and an explicit numeric offset or Z before comparison; -00:00 is preserved and never silently rewritten to Z, because it signals an unknown local offset.",
+        "The assertion identity key is canonicalised by sorting endpoint references by role then by identifier, lower-casing scheme and host portions of references only, and excluding all state, condition and time values.",
+        "Effective and record intervals are canonicalised to a closed-open convention, and an open right bound is represented by absence of the bound plus the explicit open indicator, never by a sentinel far-future timestamp.",
+        "Condition and registration state codes are canonicalised against the bound vocabulary version recorded on the record, not against the latest release."
+      ],
+      "patch_rules": [
+        "A patch never edits a published record version. It appends a new version, closes the record interval of the prior version and states its change class as real-world change, correction or annulment.",
+        "A patch that alters the effective interval of a fact records a real-world change; a patch that alters what was believed about an unchanged fact records a correction. The two must not be combined in one version.",
+        "Annulment sets the annulment marker and reason on a new version and leaves the annulled version's content byte-stable so that earlier citations still resolve.",
+        "Vocabulary patches deprecate terms with a replacement reference rather than removing them, because reclaiming a previously assigned value causes interoperability problems."
+      ],
+      "compatibility_rules": [
+        "Adding a condition value or a registration state is a compatible change only if severity ranking and mutual-exclusion rules are restated in the same release; removing one is always breaking.",
+        "Adding a permitted transition is compatible; removing one or adding a blocking guard is breaking and requires a new transition-table revision with a stated migration for in-flight assertions.",
+        "Projection to SPDX Relationship is declared lossy: the record-time dimension and the annulment marker have no target counterpart and must be carried in an extension or dropped with an explicit note.",
+        "Consumers must tolerate unknown vocabulary terms by treating them as undetermined rather than failing, and must resolve every state and condition code against the version bound on the record."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record for the subject, where one exists - for endpoints this is the identifier minted by the endpoint's owning master system, and it always outranks any locally assigned value.",
+        "Governed global identifier or IRI issued by a named registration authority, such as a vocabulary term IRI or a registered artifact identifier with a version segment.",
+        "UUID or ULID assigned by the adopting Dimension as a surrogate, used only for addressing convenience and always recorded alongside any higher-priority identifier.",
+        "For assertions specifically, the weak composed key of host reference, endpoint references, dependency type and lifecycle scope, which is host-scoped and never promoted to a global identifier.",
+        "A date, timestamp, version label alone or effective interval is never an identifier at any priority level; such values are qualifiers of a record version."
+      ],
+      "timestamp_rule": "Every time value is an RFC 3339 date-time that includes seconds and an explicit numeric UTC offset or the Z suffix; -00:00 is reserved for a known UTC instant whose local offset is unknown and must not be normalised to Z. Event time and observation or ingestion time are recorded in separate fields whenever they can differ: the effective interval and the transition event time record when something happened or held in the world, the observation phenomenon time records the time a result applies to, the observation result time records when that result became available, and the evidence ingestion time and record-time interval record when this model came to believe it. A single timestamp must never be reused across two of these roles, and a second value of 60 is accepted for leap seconds.",
+      "serial_naming_rule": "Serial artifacts are named by their governed artifact identifier plus a monotonically increasing integer version or record-version number, with no date-like component in the name. The vocabulary and transition-table releases increment on any term or matrix change; the assertion record-version series increments per appended version of one assertion identity. Publication and effective dates are carried as metadata fields on the member, never in its name or address.",
+      "integrity_rule": "A published artifact member is immutable once it has been cited: its content must remain byte-stable so that an as-of citation resolves to the same state, matching the guarantee that a dated prior state will no longer change. Each member carries a content digest and a reference to the version it supersedes or corrects. Corrections append a new member; removal of a cited member is prohibited, and any lawful erasure is executed by the adopting Dimension's retention policy, which must leave a tombstone in the series."
+    },
+    "policies": [
+      "Separation of lifecycles is mandatory: an assertion's registration state, its condition value and an endpoint's administrative or operational state are three distinct axes and must never be merged into a single status field, because they have different owners and different change authorities.",
+      "History is append-only. No published record version is edited or deleted to reflect a later understanding; corrections and annulments add versions, and annulled content stays readable while being excluded from reasoning.",
+      "This model declares constraints, guards and criteria but never executes them. Runtime evaluation, enforcement, monitoring, probing and remediation are performed by referenced services, and only their outcomes are recorded here.",
+      "Copied values from other models - endpoint state snapshots, observation times, quality codes - are explicitly non-authoritative, carry a read or ingestion time, and expire against a declared maximum age.",
+      "Time values without seconds or without an explicit offset are rejected at write time rather than being repaired by inference, because a guessed offset silently corrupts as-of reconstruction."
+    ],
+    "crud": {
+      "read": [
+        "Read the current record version of an assertion by its host-scoped key, returning registration state, condition value, both intervals and the bound vocabulary versions.",
+        "Read as of a chosen effective time and record time, returning exactly what was believed effective at that pair and excluding annulled versions unless explicitly requested.",
+        "Enumerate the record-version series of one assertion, including superseded, retired and annulled versions, so that a past decision can be audited by its owner.",
+        "Traverse supersession chains in either direction, with cycle detection, and resolve deprecated vocabulary terms to their replacements."
+      ],
+      "create": [
+        "Create an assertion in the proposed state with record version 1, an effective-from instant and a composed identity key, rejecting any duplicate key whose effective interval would overlap.",
+        "Create a condition determination against an active assertion, citing criteria and evidence with their phenomenon and result times.",
+        "Create a transition event carrying from-state, to-state, event time, requesting and approving actors and the externally supplied guard outcome.",
+        "Create a new vocabulary or transition-table release with an incremented version, never mutating a released version in place."
+      ],
+      "update": [
+        "Update is expressed exclusively as append: a new record version closes the record interval of its predecessor and states its change class.",
+        "Closing an effective interval, changing registration state, changing condition value and issuing a correction each produce a new version and leave the predecessor byte-stable.",
+        "Reference fields pointing at externally owned records may be re-pointed only by appending a version with a correction reason; the target record itself is never modified from here.",
+        "In-place mutation of any published version, including silent timestamp normalisation, is prohibited."
+      ],
+      "delete": [
+        "Logical deletion only. Retiring an assertion sets a terminal registration state and a retirement event time; annulling a record version sets the annulment marker and reason. In both cases the record remains readable for as-of reconstruction and is excluded from forward reasoning.",
+        "Retention: superseded, retired and annulled record versions are retained for the period declared by the adopting Dimension's retention policy, which this model references and does not define. Absent a declared period, records are retained and the model reports the missing policy as a gap rather than choosing a default.",
+        "Physical destruction, expungement and lawful erasure are executed by the adopting Dimension's retention, disposition and erasure policy, not by this model. This model requires that any such execution leave a tombstone carrying the assertion identity key, the record-version range removed, the disposition authority and the disposition time, so that a gap in the version series is detectable rather than invisible.",
+        "Assertion identity keys of retired assertions are not released for reuse by default, since reclaiming previously assigned values causes interoperability problems; any reuse requires an explicit policy decision, a quarantine duration and a recorded risk note.",
+        "Records held in a referenced model - endpoint state, observations, work items - are never deleted through this model; deletion requests are forwarded to the owning model, which decides and executes."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Registration authority",
+        "responsibilities": [
+          "Owns the assertion state vocabulary, the condition vocabulary and the transition table, and approves each release.",
+          "Names the change controller and the roles authorised for each transition.",
+          "Decides supersession and retirement and records the justification."
+        ]
+      },
+      {
+        "name": "Assertion steward",
+        "responsibilities": [
+          "Proposes assertions, maintains their effective intervals and closes them when they stop holding.",
+          "Records condition determinations with their criteria and evidence references.",
+          "Reports assertions whose evidence has expired or whose endpoints no longer resolve."
+        ]
+      },
+      {
+        "name": "Correction approver",
+        "responsibilities": [
+          "Authorises corrections and, where a second approver is required, annulments.",
+          "Verifies that a correction is classed correctly against a real-world change before it is appended.",
+          "Confirms that no published version was edited or removed in the process."
+        ]
+      },
+      {
+        "name": "Boundary custodian",
+        "responsibilities": [
+          "Maintains the references to endpoint master systems, the observation model, the rule evaluation service and the remediation process model.",
+          "Rejects any proposed field or function that would import monitoring, enforcement, remediation or audit-trail semantics into this model.",
+          "Reviews snapshot and evidence maximum-age settings against what the owning models actually guarantee."
+        ]
+      },
+      {
+        "name": "Reconstruction consumer",
+        "responsibilities": [
+          "Issues as-of queries supplying both an effective time and a record time and records which pair was used for a downstream decision.",
+          "Treats unknown vocabulary terms as undetermined rather than failing.",
+          "Cites record versions by key and version number so that the citation stays resolvable."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Read access to lifecycle, condition and temporal context follows the access decision of the host record that carries the mixin, since the assertion has no independent identity; write access is narrower and is granted per transition to the roles named in the transition table. Access decisions are evaluated and enforced by the adopting Dimension's access service, not by this model.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "A condition value may be more sensitive than the assertion itself where it reveals an exploitable weakness in a provider endpoint; such determinations may be restricted below the host record's default without restricting the assertion.",
+        "Copied endpoint state snapshots inherit the more restrictive of this model's rule and the owning master system's rule, and must be withheld when the owning system's classification cannot be resolved.",
+        "Annulled and retired versions remain readable to reconstruction consumers and correction approvers even where the current version has been restricted, so that past decisions stay explicable.",
+        "Vocabulary and transition-table artifacts are published at least as widely as any record that binds them, since a code that cannot be resolved is not interpretable.",
+        "Correction and annulment functions are restricted to named roles regardless of read access to the underlying assertion."
+      ],
+      "audit_requirements": [
+        "Every transition, condition determination, correction and annulment records the acting party, the event time and the record time in this model's own version series; the Dimension-wide audit trail is a separate, externally owned service and this model neither retains nor guarantees it.",
+        "As-of reconstructions performed for a consequential decision record the effective-time and record-time pair used, so the decision can be replayed against the same belief state.",
+        "Any tombstone left by externally executed erasure records the disposition authority and disposition time and is itself readable.",
+        "Access denials and restrictions applied to condition values are reported to the boundary custodian rather than being resolved silently."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Registry ID and model ID",
+        "Change controller and registration authority",
+        "Bound vocabulary versions for registration state and condition",
+        "Boundary prohibitions: no monitoring, no remediation, no guard evaluation, no audit-trail ownership"
+      ],
+      "read_order": [
+        "AGENTS.md at the model root, to establish name, type and the four required URLs before any other file is opened.",
+        "Specification URL, for the scope statement, boundary notes and the weak identity rule, which govern how every later file is interpreted.",
+        "Storage type URL, to learn how the two time dimensions and the append-only version series are projected into the chosen store, since the semantics are storage-neutral.",
+        "Interface URL, for the as-of query parameters and the transition and correction entry points.",
+        "Processes URL, for the transition table, the required approval roles and the referenced evaluation, retention and observation services."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This bounded pass covers the lifecycle and health semantics of dependency assertions for WM-XCT-037: the registration state ladder and its transitions, weak host-dependent identity, deprecation, supersession and historical state, the separation of assertion lifecycle from endpoint lifecycle and from observations, the condition vocabulary spanning satisfaction, degradation, breakage and restoration, and the bitemporal record supporting as-of reconstruction, late observations and correction without rewriting history. Dependency typing, endpoint structure, criticality and impact propagation are deliberately left to the sibling area, and monitoring, remediation, guard evaluation and audit-trail retention are left to referenced models. Completeness is claimed only against the cited sources and the assigned split, not universally.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Weak host-dependent key composed of host reference, endpoint references, dependency type and lifecycle scope; surrogate identifiers subordinated to any authoritative master-system identifier; timestamps and dates explicitly excluded from every key and artifact name."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Proposal, review, activation, deprecation, supersession, retirement and historical readability are modelled as a governed state ladder with a closed transition matrix, guards declared but evaluated externally, and rejection or withdrawal preserved rather than deleted."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Supersession chains with scope and acyclicity constraints, correction-of references between record versions, evidence references to observations, and endpoint references whose state stays externally owned. Dependency type semantics themselves are referred to the sibling area."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Two independent dimensions: effective interval with a declared closed-open convention and explicit open marker, and record interval for belief. Phenomenon time, result time, ingestion time, transition event time and snapshot read time are distinct fields; all values require seconds and an explicit offset or Z."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every determination, transition and correction names its actor or procedure, its evidence and both its event and record times; revision and invalidation are aligned to PROV-O rather than reinvented."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Registration authority and change controller named for vocabularies and transitions; endpoint state ownership assigned to each endpoint's master system; retention, evaluation, monitoring and remediation ownership assigned to referenced models through composition links."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Transition guards, non-overlap constraints on intervals, evidence age and quality gates, closed transition matrix, rejection of timestamps lacking seconds or offset, and annulment as the validation outcome for records that were never true. Execution of these checks is external by design."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Read access inherits the host record's decision because identity is weak; write access is per-transition role. Exceptions cover sensitive condition values, inherited endpoint-snapshot classification and continued readability of annulled versions for reconstruction."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Logical deletion only, with retirement and annulment markers; retention periods and lawful erasure execution delegated to the adopting Dimension's policy; mandatory tombstones so that a removed version range is detectable; key reuse discouraged because reclaiming assigned values harms interoperability."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments declared to SPDX 3.0.1 Relationship, PROV-O and ISO/IEC 11179-6 registration statuses, each with an explicit lossiness or scope caveat; unknown-term tolerance required of consumers; vocabulary version bound on every record."
+      },
+      {
+        "dimension": "health and degradation grading",
+        "status": "gap",
+        "notes": "The satisfied / degraded / broken / restored ordering is a synthesis. Verified primary sources define state on managed entities (RFC 4268 operational state is enabled, disabled, testing; alarm severity gives gradation) and status on records (FHIR status), but none assigns a graded health value to a dependency relationship itself. The threshold between degraded and broken is therefore left to declared, Dimension-owned criteria and is flagged as lacking direct primary support."
+      },
+      {
+        "dimension": "correction and restatement",
+        "status": "covered",
+        "notes": "Change class separates real-world change from correction and annulment; corrections append versions and leave content byte-stable so citations stay resolvable, matching the Memento immutability promise and SQL system-versioning."
+      },
+      {
+        "dimension": "endpoint boundary separation",
+        "status": "covered",
+        "notes": "Endpoint administrative and operational state referenced with an explicit non-authoritative snapshot, read time and maximum age; decommissioned or unknown endpoints handled by an exception path rather than by inventing state."
+      },
+      {
+        "dimension": "evidence and measurement",
+        "status": "covered",
+        "notes": "Evidence references carry phenomenon time, result time, ingestion time, completeness and reliability qualifiers, following the OMS separation; observation production remains outside the boundary."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Location plays no part in assertion lifecycle or condition semantics in this split. Where an endpoint has a location it is an attribute of the endpoint's own model, and deployment topology belongs to the sibling typing area."
+      }
+    ],
+    "known_omissions": [
+      "No quantitative availability or reliability calculus: mean time between failures, uptime percentages and service-level objective arithmetic are deliberately absent, since they belong to a measurement model and would imply monitoring ownership.",
+      "No propagation rule for how a broken provider dependency changes a dependent's condition; transitive impact is the sibling area's concern and would otherwise be modelled twice.",
+      "No conflict-resolution procedure for two determiners asserting different condition values at the same effective instant beyond recording both and marking mutual exclusion; a tie-break policy is left to the adopting Dimension.",
+      "No notification, subscription or event-delivery semantics for condition change; delivery is an interface projection and is deliberately out of the format-neutral model.",
+      "Bulk or set-level lifecycle operations, such as retiring all assertions on a decommissioned host in one governed act, are not modelled and would need a batch transition concept.",
+      "No modelling of planned or scheduled future states, such as a dependency known now to be ending on a future date; the effective dimension supports it mechanically but no governance rule for future-dated activation is given."
+    ],
+    "conflicts": [
+      "SPDX 3.0.1 makes a Relationship a first-class Element with its own SpdxId, implying strong independent identity, whereas this model asserts weak host-dependent identity. Resolution: the SpdxId is a projection surrogate minted at export and is not the identity key; round-tripping through SPDX cannot be assumed to preserve assertion identity.",
+      "SPDX Relationship carries a single startTime and endTime, with no record-time dimension and no annulment marker, so bitemporal state and corrections cannot be projected to SPDX without loss. Conformance to SPDX is therefore not claimed, only a declared lossy alignment.",
+      "ISO/IEC 11179-6 registration statuses govern registered metadata items maintained by a registration authority, not empirical assertions about running systems. Borrowing Superseded and Retired is an alignment; treating this model as an ISO/IEC 11179 conformant registry would be unsupported.",
+      "SQL:2011 system-versioned tables have the DBMS maintain system time automatically. Where the chosen storage projection is not a temporal DBMS, the record-time dimension must be maintained by the application, which weakens the guarantee that record time is tamper-resistant; the model states the requirement but cannot enforce the mechanism.",
+      "Memento's Memento-Datetime is a promise that a dated state will no longer change, which conflicts with any implementation that repairs or re-normalises historical rows. The model resolves this by forbidding in-place normalisation, including of timestamps, on published versions.",
+      "HL7 FHIR treats entered-in-error as a resource status value, mixing annulment into the same field as workflow state. This model deliberately separates the annulment marker from the registration state field, so a direct field-level mapping to FHIR status is not available."
+    ],
+    "regional_assumptions": [
+      "No retention period, statute of limitations or records-management schedule is assumed; all are delegated to the adopting Dimension because they vary by jurisdiction and sector.",
+      "No assumption is made that lawful erasure obligations, such as a right to erasure over personal data embedded in actor references, can be satisfied by logical deletion alone. Where they cannot, the erasure is executed by the retention policy owner and this model requires only a tombstone.",
+      "Local civil time, daylight-saving transitions and business calendars are not modelled; RFC 3339 offsets are required precisely so that a local reading is reconstructible without assuming a region.",
+      "Leap-second handling varies by platform: RFC 3339 permits a second value of 60, but stores that smear or reject it will not round-trip such instants, and no region-wide behaviour is assumed.",
+      "Regulated sectors may require an externally attested, tamper-evident audit trail; this model explicitly does not provide one and assumes such a service exists where it is required."
+    ],
+    "adversarial_checks": [
+      "Searched for a normative standard that assigns a graded health value to a dependency relationship itself rather than to a managed resource. None was found: ITU-T X.731 and RFC 4268 place operational state on the managed entity and FHIR places status on the record, so the degraded value is declared a local synthesis and marked as a coverage gap rather than presented as canonical.",
+      "Tested whether SPDX Relationship startTime and endTime could carry both the effective interval and the record interval. They cannot - there is one interval and no transaction-time dimension - so the alignment is recorded as lossy and no SPDX conformance is claimed.",
+      "Tested whether ISO/IEC 11179-6 registration statuses transfer normatively from registered metadata items to empirical assertions about running systems. They do not, so the state ladder is presented as an alignment with a stated scope difference rather than as an adopted standard.",
+      "Checked whether the Memento immutability promise conflicts with the correction rule. It does for any implementation that edits a dated state, which is why the patch rules forbid in-place mutation including timestamp normalisation, and why corrections must mint a new addressable version.",
+      "Reviewed every bundle, layer, finding and function against the boundary notes and composition links for leaked target-owned semantics. Endpoint state transitions, observation production, guard evaluation, remediation and Dimension-wide audit-trail retention appear only as references, prohibitions or out-of-scope entries; the record-version series was scoped explicitly to this model's own assertion records so that it does not become an audit-trail claim.",
+      "Probed whether a date could enter identity by the back door through serial artifact naming or version addressing. It cannot: version members are addressed by key plus integer version number, and publication, effective and record times are carried only as metadata fields.",
+      "Considered the counterexample of an assertion whose endpoint disappears entirely. Rather than inventing a broken condition, the model routes this to an exception path with an undetermined condition and an escalation to the owning system, since asserting breakage would claim knowledge this model cannot obtain without monitoring."
+    ]
+  }
+}

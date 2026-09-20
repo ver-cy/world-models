@@ -1,0 +1,1726 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-032",
+    "model_id": "WM-XCT-032",
+    "name": "Currency / Monetary Value",
+    "entry_kind": "mixin",
+    "purpose": "Provide an embeddable declaration of a monetary value on a host object: an exact decimal amount bound inseparably to an identified currency, with declared precision and rounding intent, an optional valuation date and conversion reference, and explicit value states, so that an agent can read, validate and reproduce monetary context without inferring any of it.",
+    "scope_statement": "WM-XCT-032 is a mixin that a host object embeds when it needs to state a monetary value. Its boundary covers four concerns. (a) Currency identity: the code used, the authoritative catalogue and published edition it was resolved against, the code's class and status, and references to successor or redenominated codes. (b) Exact amount representation: sign, integer coefficient and decimal scale, canonical lexical form versus display form, zero and negative-zero handling, monetary intervals, and explicit exact, approximate, unknown, missing and not-applicable states. (c) Precision and valuation: the declared scale and rounding intent, the valuation date, and the reference to any conversion applied to reach the stated amount. (d) Governance of the mixin itself: ownership, catalogue pinning and integrity, supersession, and tombstoning of declarations. The model is never a currency master, a price, an account, a ledger entry, a payment, a transaction, a financial instrument or an economic event; it is the monetary field on someone else's object.",
+    "in_scope": [
+      "Inseparable pairing of an exact amount with an identified currency reference on a host object",
+      "Currency code identity by alphabetic and numeric catalogue codes, with the catalogue and its published edition recorded",
+      "Code class and status as published by the catalogue: active, historic, registered fund, testing, precious metal and no-currency codes",
+      "References to successor or redenominated currency codes and to the catalogue amendment that recorded them",
+      "Exact decimal amount as sign, integer coefficient and scale, with canonical lexical form distinguished from display form",
+      "Declared scale, declared rounding intent and the digit bounds a host or profile imposes",
+      "Valuation date and the reference to any conversion applied, expressed as parameters of this declaration",
+      "Explicit value determinacy states and monetary interval endpoints, including explicit absence that is never expressed as zero",
+      "Governance of the mixin: catalogue pinning, integrity verification, supersession and tombstoning of the declaration"
+    ],
+    "out_of_scope": [
+      "Allocation, amendment, withdrawal or reinstatement of currency codes, which belong to the ISO 4217 Maintenance Agency",
+      "Publication, amendment and supersession of exchange-rate series by a treasury, central bank or market data publisher",
+      "Country, jurisdiction, legal-tender status, exchangeability, capital controls or purchasing power, none of which are derivable from a currency code",
+      "Locale formatting: symbols, decimal separators, grouping, cash rounding increments and localized currency names",
+      "Prices, quotes, fees, invoices, accounts, balances, ledger entries, journal postings, payments and settlement",
+      "Financial instruments, cash-flow schedules, valuation methodologies and accounting or tax treatment",
+      "Arithmetic execution, exception signalling and rounding-mode implementation by a numeric runtime",
+      "Enforcement of policy, runtime evaluation of rules and the storage or evaluation of audit trails",
+      "Digital-token or crypto-asset unit identity registers and community or complementary currency registers"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "ISO 4217 currency and funds code register (Maintenance Agency lists)",
+        "distinction": "The register owns allocation, amendment, withdrawal and the published minor-unit values; this mixin only carries a reference to a code plus the list and published edition it was resolved against, and re-states none of the register's lifecycle.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Locale display and formatting data (Unicode CLDR)",
+        "distinction": "Symbols, localized names, grouping, decimal separators and cash rounding increments are presentation owned by locale data; this mixin holds them only as optional labels and never treats a symbol as an identifier.",
+        "source_refs": [
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Financial message and payment models (ISO 20022 amount and currency types)",
+        "distinction": "Message profiles constrain amount digits and currency attributes for a payment instruction; this mixin defines the monetary declaration itself and owns no message, instruction or settlement lifecycle.",
+        "source_refs": [
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Exchange-rate publication series (public-authority reporting rates)",
+        "distinction": "The publisher owns rate identity, effective periods, amendment and supersession; this mixin carries the valuation date and a reference to the rate used, and never republishes or re-derives rates.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Host object that declares the money (price, fee, balance, budget line)",
+        "distinction": "The host owns record identity, record lifecycle and the business meaning of the amount, including what a negative amount signifies; this mixin owns only the shape and integrity of the monetary declaration it contributes.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Numeric arithmetic environment (IEEE 754 decimal formats, general decimal arithmetic)",
+        "distinction": "The arithmetic environment owns operations, rounding-mode execution and exception signalling; this mixin only fixes the abstract number model used to represent the declared amount exactly.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Financial Data Standards - ISO 4217 (Currency codes)",
+      "organization": "SIX Group AG (ISO 4217 Maintenance Agency)",
+      "url": "https://www.six-group.com/en/products-services/financial-information/data-standards.html",
+      "version_or_date": "Accessed September 2026; states the January 2026 List One change for Bulgaria's euro adoption",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:00:00Z",
+      "relevance": "States that SIX is the official ISO 4217 Maintenance Agency and the only recognized authoritative source on currency code designations, and names the three published lists: List One (current currency and funds), List Two (fund codes registered with the agency) and List Three (historic currencies and funds)."
+    },
+    {
+      "id": "SRC-002",
+      "title": "ISO 4217 List One: Current Currency & Funds (XML)",
+      "organization": "SIX Group AG (ISO 4217 Maintenance Agency)",
+      "url": "https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml",
+      "version_or_date": "Published edition attribute Pblshd=2026-01-01",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:02:00Z",
+      "relevance": "Primary machine-readable code list. Root element ISO_4217 carries a Pblshd edition date; each entry carries CtryNm, CcyNm, Ccy (alphabetic), CcyNbr (numeric) and CcyMnrUnts. Evidence that minor units vary (USD 2, JPY 0, BHD 3, CLF 4) and are published as N.A. for precious metals (XAU, XAG, XPT, XPD), the testing code XTS, the no-currency code XXX and XDR."
+    },
+    {
+      "id": "SRC-003",
+      "title": "ISO 4217 List Three: Historic Currencies & Funds (XML)",
+      "organization": "SIX Group AG (ISO 4217 Maintenance Agency)",
+      "url": "https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-three.xml",
+      "version_or_date": "Published edition attribute Pblshd=2026-01-01",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:03:00Z",
+      "relevance": "Primary evidence for withdrawn code identity and withdrawal timing. Historic entries carry CtryNm, CcyNm, Ccy, CcyNbr and WthdrwlDt, with withdrawal dates published at month granularity (for example DEM, FIM and GRD recorded as 2002-03) or as month ranges."
+    },
+    {
+      "id": "SRC-004",
+      "title": "XML Schema Part 2: Datatypes Second Edition - 3.2.3 decimal",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmlschema-2/#decimal",
+      "version_or_date": "W3C Recommendation, 28 October 2004",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:05:00Z",
+      "relevance": "Defines the decimal value space as an integer multiplied by a non-positive power of ten, permits leading and trailing zeroes and an optional sign in the lexical space, defines a canonical representation that forbids a leading plus and requires a decimal point with at least one digit on each side, and defines the totalDigits and fractionDigits constraining facets."
+    },
+    {
+      "id": "SRC-005",
+      "title": "General Decimal Arithmetic Specification - The Arithmetic Model",
+      "organization": "IBM Corporation (Mike Cowlishaw)",
+      "url": "https://speleotrove.com/decimal/damodel.html",
+      "version_or_date": "Version 1.70, 7 April 2009",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:07:00Z",
+      "relevance": "Publicly readable abstract model behind decimal floating-point arithmetic: a finite number is a sign (0 or 1), a zero-or-positive integer coefficient and a signed integer exponent, with value (-1)^sign x coefficient x 10^exponent. It permits numerically equal but visually distinct representations such as 1 and 1.00, and permits a negative zero (a zero coefficient with a non-zero sign)."
+    },
+    {
+      "id": "SRC-006",
+      "title": "IEEE 754-2019 - IEEE Standard for Floating-Point Arithmetic",
+      "organization": "Institute of Electrical and Electronics Engineers (IEEE)",
+      "url": "https://standards.ieee.org/ieee/754/6210/",
+      "version_or_date": "Published 2019-07-22; approved 2019-06-13; active standard",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:09:00Z",
+      "relevance": "Authoritative standard record. Its published scope covers interchange and arithmetic formats and methods for binary and decimal floating-point arithmetic, plus exception conditions and their default handling. Used only for the existence and scope of standardized decimal formats; clause text is behind a paywall and is not quoted."
+    },
+    {
+      "id": "SRC-007",
+      "title": "Unicode Technical Standard #35: Locale Data Markup Language, Part 3 Numbers - Currencies",
+      "organization": "Unicode Consortium",
+      "url": "https://www.unicode.org/reports/tr35/tr35-numbers.html#Currencies",
+      "version_or_date": "UTS #35 version 48.2",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:11:00Z",
+      "relevance": "States that currency values should never be interchanged without a known currency code, warns that the same symbol may be used for multiple currencies and is therefore ambiguous, and defines supplemental currencyData attributes digits, rounding, cashDigits and cashRounding as formatting data. Also notes that CLDR's currency set deliberately diverges from ISO 4217 in both directions."
+    },
+    {
+      "id": "SRC-008",
+      "title": "HL7 FHIR Release 5 - Data Types: Money",
+      "organization": "Health Level Seven International",
+      "url": "https://hl7.org/fhir/datatypes.html#Money",
+      "version_or_date": "FHIR v5.0.0 (R5), 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:13:00Z",
+      "relevance": "A widely implemented monetary datatype consisting of value (decimal, 0..1) and currency (code, 0..1) with a required binding to ISO 4217. It deliberately omits the comparator element present on Quantity, and requires implementations to preserve and respect the precision of a decimal as represented."
+    },
+    {
+      "id": "SRC-009",
+      "title": "HL7 FHIR Release 5 - ValueSet/CodeSystem DataAbsentReason",
+      "organization": "Health Level Seven International",
+      "url": "https://hl7.org/fhir/valueset-data-absent-reason.html",
+      "version_or_date": "FHIR v5.0.0 (R5), released 2023-03-26; code system URI http://terminology.hl7.org/CodeSystem/data-absent-reason",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:15:00Z",
+      "relevance": "A published vocabulary that separates distinct reasons a value is absent - unknown, asked-unknown, temp-unknown, not-asked, asked-declined, masked, not-applicable, unsupported, as-text, error, not-a-number, negative-infinity, positive-infinity, not-performed, not-permitted - demonstrating that absence is an explicit assertion rather than a numeric default."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Generation of JSON Schema Draft 2020-12 for ISO 20022 (Technical Support Group document)",
+      "organization": "ISO 20022 Registration Authority / Technical Support Group",
+      "url": "https://www.iso20022.org/sites/default/files/media/file/ISO_20022_Generation_of_JSON_Schema_Draft_2020_12_for_ISO_20022_2013_10June2025.pdf",
+      "version_or_date": "Draft dated June/July 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:18:00Z",
+      "relevance": "Primary financial-messaging evidence that amount and currency form a single typed pair: ActiveCurrencyAndAmount and ActiveOrHistoricCurrencyAndAmount carry a currency attribute (Ccy) typed by ActiveCurrencyCode or ActiveOrHistoricCurrencyCode, and amounts are constrained by digit and minimum-value facets. It also shows that active and historic currency codes are separate typed vocabularies."
+    },
+    {
+      "id": "SRC-011",
+      "title": "schema.org MonetaryAmount",
+      "organization": "Schema.org Community Group (W3C)",
+      "url": "https://schema.org/MonetaryAmount",
+      "version_or_date": "schema.org version 30.0, 2026-03-19",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-03T09:20:00Z",
+      "relevance": "Defines a monetary value or range with value, currency, minValue, maxValue, validFrom and validThrough, giving primary support for monetary interval endpoints on a host object. It also permits non-ISO currency identifiers such as cryptocurrency tickers and local exchange trading system names, which is a documented divergence from ISO 4217-only vocabularies."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Treasury Reporting Rates of Exchange (dataset documentation)",
+      "organization": "U.S. Department of the Treasury, Bureau of the Fiscal Service",
+      "url": "https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange",
+      "version_or_date": "Dataset last updated 2026-08-31; quarterly series covering 2001-03-31 onward",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:22:00Z",
+      "relevance": "A public-authority currency and rate list that identifies currencies by country and currency description rather than by ISO code, publishes a record date, and issues amended rates with new effective dates when rates deviate materially. Evidence that authoritative currency identity is catalogue-relative and that rate publication and supersession are owned by the publisher."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "money-core-currency-reference-bundle",
+        "name": "Currency Reference Identity",
+        "description": "How the currency component of a monetary declaration is identified: which authoritative catalogue and published edition governs the code, which code forms are used, what class and status the catalogue assigns, and how successor or redenominated codes are referenced without owning their lifecycle.",
+        "rationale": "A monetary amount is meaningless without a currency, and a currency code is only interpretable relative to a named catalogue and a published edition of it. The maintenance agency publishes distinct lists for current, registered-fund and historic entries, publishes minor units that are sometimes not applicable, and publishes withdrawal dates at month granularity. Each of those facts changes how a consuming agent must resolve a code, so currency reference is a separate top-level concern from the numeric amount.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-007",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "money-core-code-identity-layer",
+            "name": "Catalogue Binding and Code Form",
+            "description": "Which catalogue, list and published edition the currency code was resolved against, and which code forms (alphabetic, numeric) carry identity while symbols and localized names remain labels.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "money-core-catalogue-binding",
+                "name": "Authoritative currency catalogue and pinned edition",
+                "description": "A currency code only identifies a currency relative to a named catalogue, a specific list within it and a published edition. The ISO 4217 lists carry an explicit published-edition attribute and are amended over time, so a declaration must record which catalogue, which list and which edition it was resolved against, and must be able to verify the retained snapshot before resolving anything against it.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-catalogue-authority",
+                    "text": "Which authoritative currency catalogue and maintaining authority governs the code used in this declaration?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Catalogue identifier and publisher name",
+                      "Maintenance authority named by the publisher",
+                      "Resolvable catalogue location"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-catalogue-edition",
+                    "text": "Which published edition or snapshot of that catalogue was in force when this declaration was made?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Publisher's edition or published date as published",
+                      "Amendment sequence number if applicable",
+                      "Retrieval timestamp of the retained snapshot"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-catalogue-list",
+                    "text": "Which list within the catalogue supplied the entry: current currencies and funds, registered fund codes, or historic entries?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "List identifier and published list name",
+                      "Entry position or key within the list",
+                      "Whether the same code appears in more than one list"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-catalogue-integrity",
+                    "text": "How is the retained catalogue snapshot verified as unaltered before any code is resolved against it?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Content digest and named algorithm",
+                      "Verification outcome and verification timestamp",
+                      "Quarantine action when verification fails"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-catalogue-divergence",
+                    "text": "What must a consumer do when its own currency register differs from the catalogue named in this declaration?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Declared catalogue identifier carried with the code",
+                      "Mapping status between the two registers",
+                      "Explicit unresolved marker when no mapping exists"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-catalogue-id",
+                    "name": "Currency catalogue identifier",
+                    "description": "Identifier of the catalogue or register that governs the currency code, for example the ISO 4217 code register maintained by its Maintenance Agency.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-catalogue-edition",
+                    "name": "Catalogue published edition",
+                    "description": "The publisher's own edition marker for the list used, such as the published date attribute carried on the ISO 4217 lists. Retained exactly as published, never re-derived.",
+                    "value_kind": "date",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-catalogue-list",
+                    "name": "Catalogue list designator",
+                    "description": "Which list within the catalogue supplied the entry: current currencies and funds, registered fund codes, or historic currencies and funds.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-catalogue-digest",
+                    "name": "Catalogue snapshot digest",
+                    "description": "Content digest of the retained catalogue snapshot together with the algorithm name, used to prove the snapshot resolved against was unaltered.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "money-core-art-catalogue-snapshot",
+                    "name": "Retained currency catalogue snapshot",
+                    "description": "A retained copy of the publisher's currency code list for one published edition, used so that a code resolved at declaration time can be reproduced later even after the publisher amends the list. The adopting Dimension retains it; the publisher continues to own its content and lifecycle.",
+                    "media_or_form": [
+                      "Machine-readable code list as published by the maintenance agency",
+                      "Tabular spreadsheet export of the same list",
+                      "Publisher-independent normalized projection retained alongside the original"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Publisher name plus published list designator plus the publisher's own published-edition marker; a content digest is recorded for integrity. The edition marker orders the series but is never used as the identifier of a declaration.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-core-art-catalogue-amendment",
+                    "name": "Retained catalogue amendment notice",
+                    "description": "A retained copy of a numbered amendment notice issued by the maintenance agency between full list editions, explaining why an entry's status, name or minor unit changed. Held as evidence for a status transition; the amendment's authority and lifecycle remain with the issuing agency.",
+                    "media_or_form": [
+                      "Numbered amendment notice document as issued by the maintenance agency",
+                      "Extracted change record referencing the affected codes"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Issuing agency plus the agency's own amendment sequence number; ordering follows the agency sequence rather than retrieval order, and a content digest is recorded for integrity.",
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "money-core-code-forms",
+                "name": "Alphabetic and numeric code forms; symbols as labels only",
+                "description": "The catalogue publishes both an alphabetic code and a numeric code for an entry, and either may reach this declaration. Display symbols and localized currency names are ambiguous across currencies and must be carried, if at all, as presentation labels that never participate in identity or matching.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-code-forms",
+                    "text": "Which alphabetic code and which numeric code identify the currency, and which form is authoritative for exchange here?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Alphabetic code as published",
+                      "Numeric code as published",
+                      "Which form the declaration treats as primary"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-code-constraints",
+                    "text": "What constraints govern an accepted code token: character set, length, case and permitted normalization?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Accepted lexical pattern",
+                      "Case-normalization rule applied before comparison",
+                      "Rejection outcome for a non-conforming token"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-symbol-role",
+                    "text": "Is any presented currency symbol or localized name recorded strictly as a display label rather than as an identifier?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Label string as presented",
+                      "Locale tag the label belongs to",
+                      "Explicit flag marking the string as non-identifying"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-code-form-consistency",
+                    "text": "How are the alphabetic and numeric forms reconciled when the host supplies only one of them?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Resolution rule applied against the pinned edition",
+                      "Counterpart code returned by the lookup",
+                      "Outcome recorded when the two forms disagree"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-alpha-code",
+                    "name": "Alphabetic currency code",
+                    "description": "The catalogue's alphabetic code for the currency, carried as the primary identifying token of the currency reference.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-numeric-code",
+                    "name": "Numeric currency code",
+                    "description": "The catalogue's numeric code for the same entry, carried when a host system exchanges numeric rather than alphabetic tokens.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-display-label",
+                    "name": "Currency display label",
+                    "description": "An optional symbol or localized currency name shown to a person. Explicitly non-identifying, because the same symbol may denote several currencies.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-label-locale",
+                    "name": "Display label locale",
+                    "description": "The locale a display label belongs to, recorded so that a label is never reused outside the locale that produced it.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Code forms and display labels are short inline field values on the host object plus a reference into the pinned catalogue snapshot declared elsewhere in this model. There is no separately identified, separately retained object here: producing one would duplicate the catalogue snapshot and create a second, competing source of code truth."
+              }
+            ]
+          },
+          {
+            "id": "money-core-code-status-layer",
+            "name": "Code Class, Status and Succession References",
+            "description": "What class and status the catalogue assigns to a code, what that does and does not permit a consumer to infer, and how successor or redenominated codes are referenced as facts published elsewhere.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-010",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "money-core-code-class-status",
+                "name": "Code class, status and published minor unit",
+                "description": "Catalogue entries are not homogeneous: alongside national currencies the register carries registered fund codes, precious-metal codes, a testing code and a code for transactions where no currency is involved, and it publishes minor units as not applicable for several of these. Class and status must be read from the pinned edition, and nothing about jurisdiction, legal tender or exchangeability may be inferred from the code.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-code-class",
+                    "text": "Which class does the code belong to: active national currency, registered fund code, precious metal, testing code, or no-currency code?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Class value derived from the pinned catalogue entry",
+                      "List membership evidencing the class",
+                      "Whether the host permits that class in this field"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-code-status",
+                    "text": "Is the code active or withdrawn according to the pinned catalogue edition rather than according to the current one?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Status value as at the pinned edition",
+                      "Pinned edition marker used for the determination",
+                      "Whether a later edition changes the status"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-minor-unit",
+                    "text": "Which minor-unit value does the catalogue publish for this code, and what happens when it is published as not applicable?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Published minor-unit value where present",
+                      "Flag recording that no minor unit is published",
+                      "Host-declared scale that must then be supplied"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-unresolved-code",
+                    "text": "How is a code absent from the pinned catalogue edition recorded without silently defaulting to any currency?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Unresolved marker on the currency reference",
+                      "Reason code for the failure to resolve",
+                      "Explicit prohibition on substituting a default"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-non-inference",
+                    "text": "What is explicitly not derivable from a currency code, and where is that prohibition recorded?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Enumerated list of prohibited derivations",
+                      "Statement that country, legal tender and exchangeability are not encoded",
+                      "Pointer to the model that does own each excluded fact"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-code-class",
+                    "name": "Currency code class",
+                    "description": "The class the pinned catalogue assigns to the entry: national currency, registered fund code, precious metal, testing code, or no-currency code.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-code-status",
+                    "name": "Currency code status at pinned edition",
+                    "description": "Whether the code was active or historic in the pinned catalogue edition, determined from the list that contained it rather than from current knowledge.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-published-minor-unit",
+                    "name": "Published minor unit",
+                    "description": "The minor-unit value published by the catalogue for the entry, where one is published. Present only as a catalogue fact, not as the declaration's operative scale.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-minor-unit-applicable",
+                    "name": "Minor unit applicability flag",
+                    "description": "Records that the catalogue publishes no applicable minor unit for this entry, which forces the host to declare an explicit scale rather than assume a default.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-code-resolution-state",
+                    "name": "Code resolution state",
+                    "description": "Whether the code resolved against the pinned edition, and if not, the reason. Prevents an unresolved code from being treated as any currency.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Class, status, published minor unit and resolution outcome are derived facts about a single catalogue entry, held inline on the declaration together with a reference to the pinned snapshot that evidences them. Retaining them as a separate object would fork the register, and the register itself is already retained as a declared artifact under the catalogue-binding finding."
+              },
+              {
+                "id": "money-core-succession-reference",
+                "name": "Successor and redenomination references",
+                "description": "When a currency is replaced or redenominated, the catalogue records the withdrawal and the successor arrangement. This declaration may carry a reference to the successor code and to the instrument or amendment that recorded it, so a reader can follow the chain, but it neither owns that transition nor re-expresses a historical amount in the successor currency.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-successor-code",
+                    "text": "Which successor code does the catalogue associate with the withdrawn code used by this declaration?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Predecessor code as declared",
+                      "Successor code reference as published",
+                      "Catalogue evidence supporting the association"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-withdrawal-timing",
+                    "text": "What withdrawal or changeover period does the catalogue publish, and at what granularity is it published?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Withdrawal period exactly as published",
+                      "Granularity of that published value",
+                      "Pinned edition that carried it"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-succession-authority",
+                    "text": "Which body declared the replacement or redenomination, and where is that declaration recorded?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Declaring authority name",
+                      "Reference to the instrument or decision",
+                      "Catalogue amendment identifier that recorded it"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-no-restatement",
+                    "text": "Why must a historical amount stay expressed in its original currency inside this declaration rather than be restated in the successor currency?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Original code and original exact amount",
+                      "Prohibition flag on in-place restatement",
+                      "Pointer to where a converted value would instead be declared"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-successor-ref",
+                    "name": "Successor currency reference",
+                    "description": "A reference to the code that the catalogue records as succeeding a withdrawn code, carried as a pointer only.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-withdrawal-period",
+                    "name": "Published withdrawal period",
+                    "description": "The withdrawal or changeover period exactly as published by the catalogue, which may be a month or a month range rather than an instant, retained verbatim without being widened into a false precise timestamp.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-succession-authority",
+                    "name": "Succession declaring authority reference",
+                    "description": "Reference to the authority and instrument that declared the replacement or redenomination, recorded so that the chain is traceable outside this model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The transition itself is owned by the maintenance agency and by whichever authority declared it; this model carries pointers, not the transition record. Declaring a local artifact here would duplicate the agency's amendment notice, which is already retained under the catalogue-binding finding, and would imply this model governs currency succession."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "money-core-amount-representation-bundle",
+        "name": "Exact Amount Representation and Declaration Integrity",
+        "description": "How the numeric part of a monetary declaration is represented exactly, how its canonical form differs from any display form, how amount and currency stay inseparable on the host object, and how determinacy states and intervals are declared so that absence is never silently expressed as zero.",
+        "rationale": "An exact decimal value space, a canonical lexical form and an explicit scale are all defined by published datatype and arithmetic specifications, and the same specifications show that numerically equal representations can differ visibly and that a signed zero exists. Separately, published monetary datatypes bind amount to currency as one type, published absent-value vocabularies show that absence is a distinct assertion, and published monetary vocabularies show that a monetary value may be an interval. These are representation and integrity concerns distinct from currency identity, so they form their own bundle.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005",
+          "SRC-006",
+          "SRC-008",
+          "SRC-009",
+          "SRC-010",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "money-core-decimal-form-layer",
+            "name": "Exact Decimal Value and Canonical Form",
+            "description": "The abstract number model used for the amount, the digit bounds that constrain it, and the canonical lexical form that distinguishes a stored value from a rendered string.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-006",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "money-core-exact-decimal",
+                "name": "Exact decimal amount as sign, coefficient and scale",
+                "description": "The amount is an exact decimal value: a sign, a non-negative integer coefficient and a scale expressed as a non-positive power of ten. Binary floating point is rejected as the canonical representation because it cannot represent common decimal fractions exactly. Digit bounds on coefficient and scale are declared by the host or profile, and a value that cannot be represented exactly at the declared scale is rejected rather than rounded away.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-decimal-triple",
+                    "text": "What sign, integer coefficient and scale together represent the declared amount exactly?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Sign component",
+                      "Non-negative integer coefficient",
+                      "Scale as a non-positive power of ten"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-encoding-choice",
+                    "text": "Which exact encodings are permitted for the amount, and why is binary floating point excluded from them?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Enumerated permitted encodings",
+                      "Enumerated prohibited encodings",
+                      "Reference to the exactness requirement that excludes binary floating point"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-digit-bounds",
+                    "text": "What total-digit and fraction-digit bounds does the host or profile impose on this amount?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Total-digit bound in force",
+                      "Fraction-digit bound in force",
+                      "Identifier of the profile that set them"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-inexact-rejection",
+                    "text": "How is a supplied value rejected when it cannot be held exactly at the declared scale?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Rejection reason code",
+                      "Offending input token retained for diagnosis",
+                      "Declared scale that the input violated"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-amount-sign",
+                    "name": "Amount sign",
+                    "description": "The sign component of the exact decimal value, kept distinct from the coefficient so that a signed zero remains expressible.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-amount-coefficient",
+                    "name": "Amount coefficient",
+                    "description": "The non-negative integer coefficient of the exact decimal value, which together with the scale reconstructs the amount without loss.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-amount-scale",
+                    "name": "Declared amount scale",
+                    "description": "The number of fraction digits carried by the declaration, declared explicitly rather than inferred from the currency code.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-amount-encoding",
+                    "name": "Amount encoding declaration",
+                    "description": "Which exact encoding carries the amount in a given projection, for example a decimal lexical string or an explicit coefficient-and-scale pair. Binary floating point is not an admissible value.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-digit-bounds",
+                    "name": "Declared digit bounds",
+                    "description": "The total-digit and fraction-digit limits the host or profile imposes on the amount, recorded so that a validator can reject out-of-bound values deterministically.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The exact amount is a small set of scalar fields embedded directly in the host record; it has no independent existence, no separate retention life and no separate identity from the host object that declares it, so representing it as an artifact would fabricate an object that no source or projection recognizes."
+              },
+              {
+                "id": "money-core-lexical-canonical",
+                "name": "Canonical lexical form, trailing zeros and zero handling",
+                "description": "The canonical lexical form of the amount is fixed and distinct from any rendered display string. Because numerically equal decimal representations can differ visibly, the declaration must state whether trailing zeros are significant, and must state how zero and a signed zero are treated, so that round-tripping preserves sign, coefficient and scale.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-canonical-form",
+                    "text": "What is the canonical lexical form of this amount, and how does it differ from any string rendered for display?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Canonical lexical string",
+                      "Rendered display string where one exists",
+                      "Locale that produced the display string"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-trailing-zeros",
+                    "text": "Are trailing zeros significant here, so that a value written with two fraction digits differs from the same value written with one?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Declared scale",
+                      "Significance rule for trailing zeros",
+                      "Policy for choosing among numerically equal representations"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-zero-handling",
+                    "text": "How are zero and a signed negative zero distinguished, normalized or rejected in this declaration?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Representation used for zero",
+                      "Policy on accepting or normalizing a negative zero",
+                      "Normalized output produced"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-round-trip",
+                    "text": "Which round-trip check proves that parsing and re-serializing preserves sign, coefficient and scale?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Input lexical token",
+                      "Re-serialized output token",
+                      "Component-wise equality outcome"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-canonical-amount",
+                    "name": "Canonical amount string",
+                    "description": "The amount in the model's canonical lexical form, with a single agreed treatment of sign, decimal point and zero padding, used for storage, hashing and equality.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-display-string",
+                    "name": "Rendered display string",
+                    "description": "An optional human-facing rendering of the amount. Non-authoritative, locale-dependent, and never used for comparison or storage.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-trailing-zero-significance",
+                    "name": "Trailing-zero significance flag",
+                    "description": "States whether the declared scale is meaningful in itself, so that numerically equal representations with different scales are not treated as identical.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-negative-zero-policy",
+                    "name": "Negative-zero policy",
+                    "description": "The declared policy for a zero coefficient carrying a negative sign: accepted as given, normalized to unsigned zero, or rejected.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Canonical form, significance and zero policy are field-level rules and small inline values on the declaration itself. They are consumed at parse and serialization time and have no retained, separately addressable representation, so an artifact would misrepresent a formatting contract as a stored object."
+              }
+            ]
+          },
+          {
+            "id": "money-core-declaration-layer",
+            "name": "Declaration Integrity, Determinacy and Intervals",
+            "description": "How the monetary declaration holds together as one unit on its host, what the host says a negative amount means, and how determinacy is declared across exact point values, intervals, approximations and explicit absence.",
+            "source_refs": [
+              "SRC-008",
+              "SRC-009",
+              "SRC-010",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "money-core-pair-integrity",
+                "name": "Amount and currency inseparability on the host object",
+                "description": "Amount, currency reference and declared scale form one indivisible declaration: published monetary datatypes bind them into a single type, and a value interchanged without a known currency code is not interpretable. The host object owns the business meaning, including what a negative amount signifies, and projections that split the parts into separate fields must still assert the binding.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-declaration-unit",
+                    "text": "Which fields make up the indivisible declaration, and may any of them be stored or transmitted without the others?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Declaration identifier",
+                      "Enumerated member fields",
+                      "Atomicity rule and the prohibited partial forms"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-host-binding",
+                    "text": "Which host object and field declares this monetary value, and what meaning does the host assign to it?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Host model identifier",
+                      "Host field path where the mixin is embedded",
+                      "Host-stated meaning of the field"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-negative-meaning",
+                    "text": "What does a negative amount signify in this host context, and which signs are permitted at all?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Host-declared sign semantics",
+                      "Permitted sign set for the field",
+                      "Statement that the sign meaning is not derived from the currency"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-projection-integrity",
+                    "text": "How is the binding preserved when a target format splits amount and currency into separate fields?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Target format identifier",
+                      "Field mapping for each member",
+                      "Assertion that reassembly reproduces the declaration"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-declaration-id",
+                    "name": "Monetary declaration identifier",
+                    "description": "Identifier of the monetary declaration instance, assigned by the adopting Dimension only where the host cannot address the declaration through its own record identity and field path.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-host-ref",
+                    "name": "Host object and field reference",
+                    "description": "Reference to the host record and the field path at which this mixin is embedded, establishing who owns the business meaning of the value.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-sign-semantics",
+                    "name": "Host-declared sign semantics",
+                    "description": "What the host says a negative amount means in this field, for example a credit, refund or reduction. Declared, never inferred from the currency or from the model.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-allowed-sign-set",
+                    "name": "Permitted sign set",
+                    "description": "The signs the host field admits, used to reject a negative value where the host permits only non-negative amounts.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding describes an embedding contract between a mixin and its host record: the declaration lives inside the host's own persisted object and inherits the host's identity and lifecycle. There is nothing to retain independently, and creating an artifact would assert a standalone monetary record that this mixin explicitly is not."
+              },
+              {
+                "id": "money-core-value-states",
+                "name": "Declared determinacy: exact point, interval, approximate or explicitly absent",
+                "description": "A monetary field must be able to say what kind of assertion it is making. Published monetary vocabularies support a value or a bounded range, and published absent-value vocabularies distinguish unknown, masked, not-applicable, unsupported and error. The declaration therefore carries an explicit determinacy state, so an absent or unknown value is never silently expressed as zero and an interval is never collapsed to a point.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "money-core-q-determinacy-state",
+                    "text": "Which determinacy state does this declaration assert: exact point value, interval, approximate value, unknown, missing or not applicable?",
+                    "kind": "state",
+                    "answer_data": [
+                      "State value from the declared vocabulary",
+                      "Identifier of the vocabulary used",
+                      "Evidence or source of the state assertion"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-zero-prohibition",
+                    "text": "Which rule forbids expressing an absent, unknown or not-applicable monetary value as zero?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Prohibition rule statement",
+                      "Absent-reason code carried instead of a numeric value",
+                      "Validation outcome when a zero is supplied for an absent value"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-interval-endpoints",
+                    "text": "When an interval is declared, which endpoints are present and is each endpoint inclusive or exclusive?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Lower endpoint declaration or its absence",
+                      "Upper endpoint declaration or its absence",
+                      "Inclusivity flag for each present endpoint"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-interval-consistency",
+                    "text": "How is an interval checked for a shared currency reference and a consistent scale across both endpoints?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Currency reference of each endpoint",
+                      "Declared scale of each endpoint",
+                      "Consistency outcome and failure reason"
+                    ]
+                  },
+                  {
+                    "id": "money-core-q-state-unsupported",
+                    "text": "What must a consumer do when it cannot honour a declared approximate or absent state?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Consumer capability declaration",
+                      "Rejection or degradation outcome chosen",
+                      "Escalation path recorded for the unsupported state"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "money-core-de-value-state",
+                    "name": "Value determinacy state",
+                    "description": "The declared kind of monetary assertion: exact point value, interval, approximate value, or explicitly absent. Required so that no state is inferred from a numeric default.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-absent-reason",
+                    "name": "Absent-value reason",
+                    "description": "When no amount is asserted, the reason for absence drawn from a declared vocabulary distinguishing unknown, masked, not applicable, unsupported and error.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-interval-lower",
+                    "name": "Interval lower endpoint",
+                    "description": "The lower endpoint of a monetary interval, itself a complete monetary declaration carrying its own currency reference and scale.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-interval-upper",
+                    "name": "Interval upper endpoint",
+                    "description": "The upper endpoint of a monetary interval, itself a complete monetary declaration carrying its own currency reference and scale.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "money-core-de-endpoint-inclusivity",
+                    "name": "Endpoint inclusivity",
+                    "description": "Whether each present interval endpoint is inclusive or exclusive, declared rather than assumed.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Determinacy states, absent reasons and interval endpoints are inline field values plus references into a declared code vocabulary that another model or terminology authority publishes. Materializing them as an artifact would either duplicate that external vocabulary or invent a record with no counterpart in any consulted specification."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "money-core-fn-parse-amount",
+      "name": "Parse and normalize an exact decimal amount",
+      "description": "Accepts an amount as a decimal lexical token or as an explicit coefficient-and-scale pair, and produces a normalized sign, coefficient and scale together with the canonical lexical form. Rejects any input that cannot be held exactly at the declared scale; it never rounds silently and never accepts a binary floating-point source as authoritative.",
+      "inputs": [
+        "Amount as a decimal lexical token or as an explicit coefficient-and-scale pair",
+        "Declared scale for the host field",
+        "Total-digit and fraction-digit bounds in force",
+        "Negative-zero policy"
+      ],
+      "outputs": [
+        "Normalized sign, coefficient and scale",
+        "Canonical lexical form of the amount",
+        "Parse and validation diagnostics"
+      ],
+      "preconditions": [
+        "The input is a decimal lexical form or an exact coefficient-and-scale pair, not a binary floating-point value",
+        "The declared scale and digit bounds are supplied by the host or profile",
+        "The negative-zero policy is declared where a signed zero can occur"
+      ],
+      "effects": [
+        "Rejects an input that is not exactly representable at the declared scale and records the reason",
+        "Preserves the declared scale so that trailing-zero significance is not lost",
+        "Produces a canonical form suitable for storage, hashing and equality",
+        "Performs no rounding, no arithmetic and no currency conversion"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-006",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "money-core-fn-validate-currency-ref",
+      "name": "Validate the currency reference against the pinned catalogue edition",
+      "description": "Resolves the declared currency code against the pinned, integrity-verified catalogue snapshot and reports the entry's class, status and published minor unit, or reports the code as unresolved. It reads the catalogue; it never allocates, amends or withdraws a code, and it never substitutes a default currency.",
+      "inputs": [
+        "Alphabetic currency code and optional numeric code",
+        "Catalogue identifier, list designator and pinned published edition",
+        "Integrity digest of the retained catalogue snapshot",
+        "Set of code classes the host field permits"
+      ],
+      "outputs": [
+        "Resolution status for the code",
+        "Resolved code class and status as at the pinned edition",
+        "Published minor unit value or an explicit not-applicable flag",
+        "Mismatch and unresolved diagnostics"
+      ],
+      "preconditions": [
+        "A catalogue snapshot for the declared edition is retained and its digest verifies",
+        "The catalogue and list the code belongs to are declared on the reference",
+        "The host has declared which code classes it accepts"
+      ],
+      "effects": [
+        "Marks an unresolved or class-disallowed code explicitly rather than substituting any currency",
+        "Reports disagreement between the alphabetic and numeric forms without choosing one silently",
+        "Forces an explicit host-declared scale when the catalogue publishes no applicable minor unit",
+        "Makes no change to catalogue content and no assertion about jurisdiction, legal tender or exchangeability"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "money-core-fn-classify-value-state",
+      "name": "Determine the declared value determinacy state",
+      "description": "Inspects a monetary declaration and reports whether it asserts an exact point value, an interval, an approximate value or an explicit absence with a reason, flagging contradictory combinations. Its purpose is to keep an absent or unknown value from collapsing into a numeric zero.",
+      "inputs": [
+        "Monetary declaration payload",
+        "Declared determinacy-state vocabulary",
+        "Declared absent-reason vocabulary",
+        "Interval endpoints where present"
+      ],
+      "outputs": [
+        "Determinacy state code",
+        "Absent reason where the declaration asserts no amount",
+        "Interval endpoint set with inclusivity flags",
+        "Contradiction diagnostics"
+      ],
+      "preconditions": [
+        "The adopting Dimension has declared the determinacy-state and absent-reason vocabularies",
+        "Interval endpoints, where present, each carry a currency reference and a declared scale"
+      ],
+      "effects": [
+        "Rejects a numeric zero offered in place of an absent, unknown or not-applicable value",
+        "Flags a declaration that simultaneously asserts an amount and an absence",
+        "Flags interval endpoints whose currency references or scales disagree",
+        "Assigns no business meaning to the state and takes no action on the host record"
+      ],
+      "source_refs": [
+        "SRC-008",
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "money-core-fn-compare-same-currency",
+      "name": "Compare exact same-currency representations",
+      "description": "Compares two exact point declarations that resolve to the same currency code under the same catalogue, returning an ordering or equality result. Whether the two declarations are policy-compatible for comparison is supplied externally; the function neither judges compatibility nor converts between currencies.",
+      "inputs": [
+        "Two normalized monetary declarations",
+        "Externally supplied policy-compatibility assertion",
+        "Trailing-zero significance policy to apply to equality"
+      ],
+      "outputs": [
+        "Comparison result, or an explicit not-comparable outcome",
+        "Reason code when comparison is refused",
+        "Statement of the equality semantics applied"
+      ],
+      "preconditions": [
+        "Both declarations assert an exact point value rather than an interval, approximation or absence",
+        "Both currency references resolve to the same code under the same catalogue and pinned edition",
+        "A policy-compatibility assertion is supplied by the caller"
+      ],
+      "effects": [
+        "Refuses comparison across differing currency codes or differing catalogues and returns a reason",
+        "Refuses comparison when the external compatibility assertion is missing",
+        "Distinguishes numeric equality from representational identity according to the trailing-zero policy",
+        "Performs no currency conversion, no rate lookup and no arithmetic beyond comparison"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-007",
+        "SRC-008",
+        "SRC-010"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-ECO-004 (parent economic value model in the adopting registry)",
+      "relation": "CHILD",
+      "purpose": "Registers this mixin beneath the economic value parent so that monetary declarations inherit that parent's domain framing. Economic interpretation, valuation theory and economic-event semantics remain with the parent; this model contributes only the monetary field itself.",
+      "required": true,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "ISO 4217 currency and funds code register (List One current, List Two registered funds, List Three historic) maintained by the ISO 4217 Maintenance Agency",
+      "relation": "REFERENCE",
+      "purpose": "Supplies currency code identity, class, status, published minor units and withdrawal periods. This model carries the code, the list, the pinned published edition and a snapshot digest; allocation, amendment, withdrawal and reinstatement of codes remain entirely with the Maintenance Agency.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Host object model declaring a monetary value (price, fee, balance, budget line or equivalent)",
+      "relation": "MIX-IN",
+      "purpose": "Embeds the monetary declaration into a host record. The host owns record identity, record lifecycle, access classification and the business meaning of the value, including what a negative amount signifies; this model owns only the declaration's shape and internal integrity.",
+      "required": true,
+      "source_refs": [
+        "SRC-008",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "IEEE 754-2019 decimal formats and the general decimal arithmetic number model",
+      "relation": "ALIGN",
+      "purpose": "Aligns the abstract representation of the amount to a sign, integer coefficient and exponent, and supports the rejection of binary floating point as canonical. Arithmetic operations, rounding-mode execution and exception signalling remain with the numeric runtime.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "W3C XML Schema decimal datatype (value space, lexical and canonical forms, totalDigits and fractionDigits facets)",
+      "relation": "ALIGN",
+      "purpose": "Aligns the exact decimal value space, the canonical lexical form and the digit-bound facets used to constrain declared amounts. Schema validation execution and document processing remain with the consuming schema processor.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "ISO 20022 amount and currency data types (ActiveCurrencyAndAmount, ActiveOrHistoricCurrencyAndAmount and their currency attribute)",
+      "relation": "ALIGN",
+      "purpose": "Aligns the inseparable amount-plus-currency pairing and the separation of active from historic currency vocabularies for message projections. Message definition, payment instruction lifecycle and settlement processing are not owned here.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Unicode CLDR locale currency display data (symbols, localized names, digits, rounding and cash rounding)",
+      "relation": "REFERENCE",
+      "purpose": "Supplies presentation labels and locale formatting behaviour when a value is rendered. This model carries only optional non-identifying labels with their locale tag; formatting rules, symbol assignment and cash-rounding data remain with the locale data authority.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Absent-value reason vocabulary (published data-absent-reason code system or an equivalent declared by the adopting Dimension)",
+      "relation": "REFERENCE",
+      "purpose": "Supplies the codes that distinguish unknown, masked, not-applicable, unsupported and error absences so that absence is asserted rather than defaulted. Vocabulary maintenance, versioning and code definitions remain with the publishing terminology authority.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Exchange-rate publication model (official reporting or reference rate series published by a treasury, central bank or market data authority)",
+      "relation": "REFERENCE",
+      "purpose": "Where a declared amount resulted from a conversion, this model carries the valuation date and a reference identifying the rate used. Rate publication, effective periods, amendment and supersession remain with the publisher and are never re-derived here.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name an owner accountable for the pinned currency catalogue edition, its refresh cadence and the integrity verification of retained snapshots.",
+        "Declare, for every host field that embeds this mixin, the permitted amount encodings, the declared scale, the total-digit and fraction-digit bounds and the permitted sign set.",
+        "Declare the determinacy-state and absent-reason vocabularies in force, and the host-specific meaning of a negative amount for each embedding field.",
+        "Record which version of this mixin is bound to each host model release, so that a change in digit bounds or sign semantics can be traced to the affected hosts."
+      ],
+      "namespace_guidance": "Mixin fields are namespaced under the host object's own field path, because the declaration has no identity independent of its host. Currency codes carry an explicit catalogue namespace so that a code drawn from an alternative register cannot silently collide with a code from the ISO 4217 register; a bare three-letter token with no declared catalogue is treated as unresolved rather than assumed to be ISO 4217.",
+      "registry_links": [
+        "Registry entry vr.wm-xct-032 (WM-XCT-032) recorded beneath parent WM-ECO-004",
+        "ISO 4217 code register maintained by its Maintenance Agency, with the list designator and published edition recorded on every currency reference",
+        "Adopting-Dimension host-model registry listing every model that embeds this mixin and the field path used",
+        "Adopting-Dimension vocabulary registry recording the determinacy-state and absent-reason code systems in force"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "The canonical amount is the exact decimal in canonical lexical form: no leading plus sign, an explicit decimal point with at least one digit on each side, no leading zeros beyond one, and the declared scale preserved rather than trimmed.",
+        "Alphabetic currency codes are canonicalized to upper case before comparison; a display symbol or localized name is never canonicalized into an identifier.",
+        "The catalogue edition is canonicalized as the publisher's own published-edition marker, retained verbatim; catalogue-published values of coarser granularity, such as a month-level withdrawal period, are retained as published and never padded.",
+        "Field order and projection syntax are not semantic: two declarations with the same sign, coefficient, scale, currency reference, catalogue edition and determinacy state are the same declaration regardless of serialization."
+      ],
+      "patch_rules": [
+        "Amount and currency reference are patched together as one unit; a patch that alters one without restating the other is rejected.",
+        "A change of declared scale is a new declaration that supersedes the previous one, not an in-place edit, because scale carries significance.",
+        "Re-pinning a catalogue edition is recorded as an explicit patch that retains the prior edition marker and snapshot digest, so past resolutions stay reproducible.",
+        "A patch that changes host-declared sign semantics or the permitted sign set must record the host field affected and the effective event time."
+      ],
+      "compatibility_rules": [
+        "Adding an optional determinacy state, absent reason or interval endpoint is backward compatible; consumers that ignore them must still see an unchanged exact point value where one is asserted.",
+        "Narrowing digit bounds, changing the declared scale, changing sign semantics or changing the canonical form is a breaking change and requires a new mixin version.",
+        "A code moving from active to historic in a later catalogue edition does not retroactively invalidate declarations pinned to an earlier edition; consumers evaluate status as at the pinned edition.",
+        "A consumer that cannot represent a declared determinacy state must reject the declaration rather than degrade it to an exact zero."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the currency code and list entry exactly as published by the ISO 4217 Maintenance Agency for the pinned catalogue edition, together with that edition marker.",
+        "Governed global identifier or IRI: a resolvable register or catalogue IRI for the code and edition, or the host record's governed identifier plus field path for the declaration instance, where the adopting Dimension publishes one.",
+        "UUID or ULID assigned by the adopting Dimension for a monetary declaration instance only where no authoritative or governed identifier exists.",
+        "A valuation date, catalogue published-edition date, withdrawal period or any other date is never an identifier; it may order a series but must not key one."
+      ],
+      "timestamp_rule": "All timestamps recorded by this model use RFC 3339 with seconds precision and an explicit UTC offset or Z. Event time and observation time are recorded separately whenever they differ: the event time is when the monetary value became effective for the host, for example the valuation moment, while the observation or ingestion time is when the declaration was captured, when the catalogue snapshot was retrieved, or when the code was resolved. Values published by an external authority at coarser granularity, such as a month-level withdrawal period, are retained verbatim as published values and are never widened into a false RFC 3339 instant.",
+      "serial_naming_rule": "Serial artifacts, namely retained catalogue snapshots and amendment notices, are named by publisher, published list designator and the publisher's own edition or amendment sequence, and are ordered by that publisher sequence rather than by retrieval order. Retrieval timestamps are recorded alongside but never used to sequence the series.",
+      "integrity_rule": "Every retained catalogue snapshot and amendment notice carries a content digest with a named algorithm plus the RFC 3339 retrieval timestamp. A snapshot that fails digest verification is quarantined, and any code that would have been resolved against it is reported as unresolved rather than resolved against an unverified copy."
+    },
+    "policies": [
+      "Binary floating point is never the canonical representation of a monetary amount; only exact decimal representations are admissible.",
+      "A currency code alone never implies country, jurisdiction, legal-tender status, exchangeability, capital-control treatment, purchasing power or accounting treatment.",
+      "An absent, unknown, masked or not-applicable monetary value is never represented as zero, and zero is never used to signal an error.",
+      "Display symbols and localized currency names are labels only; identity comes solely from a catalogue code accompanied by its catalogue and pinned edition.",
+      "Amount and currency are never stored, transmitted or patched independently of one another.",
+      "The declared scale is stated explicitly and is never inferred from the currency code, because the catalogue publishes no applicable minor unit for several code classes."
+    ],
+    "crud": {
+      "read": [
+        "A read returns the amount, the currency reference, the declared scale and the determinacy state together; a partial read that omits the currency reference or the determinacy state is prohibited.",
+        "Any code resolution returned to a caller states the catalogue, list and pinned edition used for the resolution.",
+        "Reading an interval returns both endpoint slots, including an explicitly absent endpoint, together with inclusivity flags."
+      ],
+      "create": [
+        "A declaration is created only with a currency reference plus either an exact amount or an explicit determinacy state carrying an absent reason.",
+        "The catalogue identifier, list designator and published edition in force are pinned at creation and stored with the declaration.",
+        "The declared scale, permitted sign set and host-declared sign semantics are recorded at creation from the owner package rather than inferred.",
+        "Creation records the event time of the value and the ingestion time of the declaration separately when they differ."
+      ],
+      "update": [
+        "Amount and currency reference are updated as a single unit; the prior declaration is superseded rather than mutated in place, with the superseding event time and ingestion time recorded.",
+        "A change of declared scale, encoding or sign semantics creates a superseding declaration and retains the prior one for reproducibility.",
+        "Re-pinning to a newer catalogue edition never rewrites historical declarations; it is recorded as a forward-looking change with the prior edition retained.",
+        "The host object's own record lifecycle governs whether an update is permitted at all; this model does not authorize the change."
+      ],
+      "delete": [
+        "Deleting a monetary declaration removes the embedded amount fields from the host record and leaves a tombstone recording the declaration reference, the currency code, the catalogue and pinned edition, the determinacy state and the RFC 3339 deletion time with offset; the tombstone does not retain the amount.",
+        "Where the amount must be erased but the fact of a monetary field must remain auditable, the currency reference and determinacy state may be retained with an absent reason indicating masked or erased, so that erasure is never mistaken for zero.",
+        "This model owns only the tombstone shape and the rule that erasure is not represented as a numeric value. Retention periods, legal-hold determination, erasure-request handling and physical destruction are executed by the adopting Dimension's records-retention policy and by the host object model that owns the record; this mixin neither schedules nor performs them.",
+        "Retained catalogue snapshots and amendment notices are reference data disposed of under the adopting Dimension's reference-data retention schedule; because they evidence past code resolutions, disposal that would make a pinned resolution unreproducible requires the reference-data steward's approval under that policy, not under this model."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Monetary declaration owner (host model owner)",
+        "responsibilities": [
+          "Declare what the monetary field means on the host object, including the meaning of a negative amount and the permitted sign set",
+          "Approve the declared scale, encoding and digit bounds for each embedding field",
+          "Decide whether the host record permits creation, supersession or deletion of the declaration"
+        ]
+      },
+      {
+        "name": "Currency reference-data steward",
+        "responsibilities": [
+          "Pin, refresh and retain catalogue snapshots and amendment notices, and verify their digests",
+          "Record catalogue, list designator and published edition on every currency reference",
+          "Maintain the register of alternative or non-ISO currency catalogues the Dimension accepts, and the mapping status between them"
+        ]
+      },
+      {
+        "name": "Numeric representation steward",
+        "responsibilities": [
+          "Maintain the canonical lexical form, trailing-zero significance policy and negative-zero policy",
+          "Maintain permitted exact encodings and reject any proposal to adopt binary floating point as canonical",
+          "Review round-trip conformance evidence for each projection in use"
+        ]
+      },
+      {
+        "name": "Interoperability reviewer",
+        "responsibilities": [
+          "Review mappings into and out of external monetary datatypes and message formats, including formats that split amount from currency",
+          "Maintain the conflict register covering registers that diverge from the ISO 4217 code set",
+          "Confirm that a consumer unable to honour a determinacy state rejects rather than degrades the declaration"
+        ]
+      },
+      {
+        "name": "Access and privacy reviewer",
+        "responsibilities": [
+          "Classify monetary values in their host context and confirm the mixin never exposes more than the host permits",
+          "Approve masking patterns that hide an amount while retaining the currency reference and an explicit absent reason",
+          "Specify which facts must be recorded when a catalogue is re-pinned or sign semantics change"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Structural context, meaning bundle, layer and finding definitions and the pinned catalogue reference data, is readable by any agent authorized for the host model. Declared amounts inherit the host object's confidentiality classification and are never more openly readable than the host record that carries them.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "An amount classified as sensitive by the host may be masked while the currency reference and determinacy state remain visible, recorded with an explicit masked absent reason so that masking is never read as zero.",
+        "Retained catalogue snapshots and amendment notices are public reference data and may remain readable to agents that are not permitted to read any host amounts.",
+        "An interval may be exposed where the exact point value is restricted, provided the declaration states that an interval, not an exact value, is being asserted.",
+        "Where a host jurisdiction restricts disclosure of monetary values, the host model's access rule prevails over this default and the mixin exposes only the currency reference."
+      ],
+      "audit_requirements": [
+        "Record actor, event time and ingestion time in RFC 3339 with seconds and an explicit offset for every catalogue re-pin, declared-scale change, sign-semantics change and declaration supersession or tombstone.",
+        "Record the catalogue, list and pinned edition used for every code resolution that is returned to a consumer, so a past resolution can be reproduced.",
+        "Record every refusal produced by validation or comparison together with its reason code, including refusals caused by a missing external compatibility assertion.",
+        "Storage, retention, protection and evaluation of these records are performed by the adopting Dimension's logging and audit systems; this model specifies only which facts must be captured and owns no audit-trail or enforcement semantics."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner or maintainer designated by the adopting Dimension",
+        "Pinned currency catalogue identifier and published edition",
+        "Declared amount encoding, scale policy and digit bounds",
+        "Determinacy-state and absent-reason vocabularies in force"
+      ],
+      "read_order": [
+        "AGENTS.md, to obtain Name, Type and the four contract URLs before any other access",
+        "Specification URL, for the model boundary, exclusions and the rules that a declaration must satisfy",
+        "Storage type URL, for the projection actually in use, since JSON, YAML, Markdown, Git, MCP and document stores are projections and not semantics",
+        "Interface URL, for the access contract and the scopes that apply to bundle, layer, finding and artifact",
+        "Processes URL, for the create, validate, supersede, re-pin and tombstone procedures and for who executes retention and deletion"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model gives a defensible, source-grounded structure for declaring a monetary value on a host object: currency identity bound to a named catalogue and pinned edition, code class and status with explicit non-inference rules, successor references carried but not owned, exact decimal representation with declared scale and canonical form, inseparable amount-currency pairing, and explicit determinacy states including intervals and typed absence. It is grounded in the ISO 4217 Maintenance Agency's published lists, W3C decimal datatype rules, the public decimal arithmetic number model, the IEEE floating-point standard record, Unicode locale currency data, published monetary and absent-value datatypes, financial-messaging amount types and a public-authority currency and rate list. It claims alignment with those sources, not conformance to any of them, and makes no claim of universal or exhaustive completeness.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Currency identity is a code plus catalogue plus pinned edition plus list designator; alphabetic and numeric forms are both carried, and symbols are excluded from identity on explicit CLDR evidence. Declaration identity derives from the host record and field path, with a Dimension-assigned identifier only as a last resort."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "The declaration's own lifecycle is create, supersede and tombstone, with scale changes forced into supersession. Currency code lifecycle is explicitly disclaimed and left with the Maintenance Agency; the host object owns record lifecycle."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Nine composition links cover the parent model, the code register, the host mix-in, decimal and schema alignments, message-type alignment, locale display, absent-value vocabulary and exchange-rate publication, each stating what remains with the target."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Catalogue published edition, retrieval timestamp, valuation event time and ingestion time are all distinguished. Coarse published values such as month-level withdrawal periods are retained verbatim rather than widened into false instants."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every code resolution states the catalogue, list and edition used; snapshots and amendment notices are retained as serial artifacts with digests and publisher-assigned sequence."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "The host owns business meaning and sign semantics; the reference-data steward owns catalogue pinning; the numeric representation steward owns canonical form. The mixin owns only declaration shape and integrity."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Exactness at declared scale, digit bounds, code resolution against the pinned edition, interval endpoint consistency, contradictory-state detection and refusal-with-reason semantics are specified; comparison is refused rather than approximated."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Amounts inherit host classification; masking retains the currency reference with an explicit absent reason; catalogue reference data may be more open than amounts. Audit-record storage and evaluation are delegated, not owned."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstone shape retains declaration reference, currency, edition, determinacy state and deletion timestamp without the amount. Retention periods, legal hold and erasure execution are performed by the adopting Dimension's retention policy and the host model; catalogue snapshot disposal follows the reference-data schedule."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to decimal datatype rules, decimal arithmetic, financial message amount types, locale display data and a web monetary vocabulary, plus explicit handling of registers that diverge from ISO 4217 and of formats that split amount from currency."
+      },
+      {
+        "dimension": "precision and rounding",
+        "status": "covered",
+        "notes": "Declared scale, digit bounds, trailing-zero significance and the prohibition on binary floating point are specified, and the catalogue's published minor unit is captured as a fact rather than as the operative scale. Rounding-mode execution stays with the numeric runtime."
+      },
+      {
+        "dimension": "value states and absence",
+        "status": "covered",
+        "notes": "Exact, approximate, interval, unknown, missing and not-applicable states are declared explicitly against a named vocabulary, with an express prohibition on representing any of them as zero."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Code classes for national currencies, registered funds, precious metals, testing and no-currency codes are read from the pinned catalogue, with an explicit list of prohibited derivations from a code."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Deliberately excluded. A currency code does not encode country, jurisdiction or legal-tender territory, and the catalogue's country-name column is descriptive rather than a jurisdiction assertion; any geographic fact must come from a model that owns it."
+      }
+    ],
+    "known_omissions": [
+      "The normative clause text of ISO 4217:2015 is behind a paywall; the structure rests on the Maintenance Agency's published machine-readable lists and public pages rather than on quoted clauses.",
+      "The clause text of IEEE 754-2019 is behind a paywall; only its published title, date and scope statement are relied on, with the publicly readable general decimal arithmetic model supplying the number model itself.",
+      "List Two, the fund codes registered with the agency, is published in a word-processing format and was not parsed in this pass, so registered fund-code specifics are thinner than those for the current and historic lists.",
+      "Digital-token and crypto-asset unit identity registers were not examined; non-ISO units are handled only through the generic mechanism of a declared alternative catalogue.",
+      "Jurisdiction-specific cash-rounding legislation was not surveyed; cash rounding is treated as locale and jurisdiction data owned elsewhere.",
+      "Unbounded and half-open monetary intervals are supported only through endpoint presence and inclusivity flags; no richer interval algebra was derived from sources.",
+      "No source was found that fixes a single maximum digit count for monetary amounts across domains, so digit bounds are left to the host or profile."
+    ],
+    "conflicts": [
+      "A widely used web vocabulary explicitly permits non-ISO currency identifiers such as cryptocurrency tickers and local exchange trading system names, while financial-messaging and clinical monetary datatypes bind currency to ISO 4217; this model resolves the conflict by requiring the catalogue to be declared rather than assumed.",
+      "Unicode CLDR states that its currency set deliberately diverges from ISO 4217, adding codes in widespread use and omitting some official ones, so CLDR membership is not evidence of ISO 4217 membership.",
+      "The ISO 4217 lists publish no applicable minor unit for precious metals, funds, testing and no-currency codes, while financial-message amount types constrain fraction digits by default; scale must therefore be declared explicitly and not inferred from the code.",
+      "CLDR cash digits and cash rounding differ from catalogue minor units, so no single decimal count is simultaneously authoritative for storage and for cash handling.",
+      "Historic withdrawal dates are published at month granularity or as month ranges, conflicting with the expectation that every recorded time is an RFC 3339 instant.",
+      "A public-authority reporting-rate list identifies currencies by country and currency description rather than by ISO code, showing that authoritative currency identity is catalogue-relative and that cross-register matching requires an explicit mapping."
+    ],
+    "regional_assumptions": [
+      "The catalogue edition observed carries a published-edition marker of 2026-01-01 and already reflects a euro adoption effective that date; every adopter must pin its own edition rather than inherit this observation.",
+      "Minor-unit values published by the catalogue are catalogue facts about code structure, not statements about cash denominations circulating in any jurisdiction.",
+      "Legal-tender status, exchange controls and exchangeability are jurisdictional and time-varying, and are never inferred from a code or from the catalogue's country-name column.",
+      "Locale formatting, including decimal separator, grouping and symbol placement, varies by locale and forms no part of monetary identity or comparison.",
+      "Community, complementary and digital-asset units require an explicitly declared alternative catalogue; treating their tickers as ISO codes would be an error."
+    ],
+    "adversarial_checks": [
+      "Searched for any normative source that treats a currency symbol or localized name as an identifier; the opposite was found, with an explicit warning that the same symbol may denote several currencies, so symbols are modelled strictly as labels.",
+      "Tested whether a currency code alone determines the amount's scale; the register publishes no applicable minor unit for precious metals, registered funds, the testing code and the no-currency code, so a host-declared scale is required and a default of two fraction digits was rejected.",
+      "Tested whether binary floating point could be defended as the canonical representation; the exact decimal value space and the sign, coefficient and exponent number model rule it out, and no consulted source endorses it for monetary storage.",
+      "Tested whether zero could stand for an absent value; a published absent-reason vocabulary distinguishing unknown, masked, not-applicable, unsupported and error shows absence is a separate assertion, so the zero substitution was rejected.",
+      "Tested whether this mixin could own currency code allocation, withdrawal or reinstatement; the Maintenance Agency holds that authority, so succession and redenomination are carried as references and no local lifecycle, evaluation or enforcement machinery was modelled.",
+      "Tested whether comparison implies conversion capability; comparison was deliberately restricted to exact same-currency representations with an externally supplied compatibility assertion, and rate lookup, conversion and rate supersession were left with the rate publisher.",
+      "Tested whether the country column in the code list could support jurisdiction inference; it names entities associated with an entry rather than asserting legal-tender territory, so the spatial dimension was marked not applicable rather than quietly reused.",
+      "Tested whether an artifact could be justified for the amount itself; the amount has no identity or retention life independent of its host record, so only the externally published catalogue snapshot and amendment notice were declared as artifacts."
+    ]
+  }
+}
