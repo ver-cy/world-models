@@ -42,7 +42,7 @@ if (!CModule::IncludeModule('iblock')) {
 }
 
 $payload = json_decode((string) file_get_contents($importPath), true, 512, JSON_THROW_ON_ERROR);
-if (($payload['counts']['models'] ?? 0) !== 406 || ($payload['counts']['interoperability'] ?? 0) !== 1180) {
+if (($payload['counts']['models'] ?? 0) !== 407 || ($payload['counts']['interoperability'] ?? 0) !== 1180) {
     fwrite(STDERR, "Refusing an incomplete import payload\n");
     exit(4);
 }

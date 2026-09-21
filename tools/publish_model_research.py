@@ -169,7 +169,7 @@ def render_question(question: dict[str, Any]) -> str:
     answer_data = "".join(f"<li>{html.escape(str(item))}</li>" for item in question.get("answer_data", []))
     answer = f"<details class=\"answer-shape\"><summary>Expected answer</summary><ul>{answer_data}</ul></details>" if answer_data else ""
     return (
-        f"<li><span>{html.escape(question.get('text', question.get('id', 'Question')))}</span>"
+        f"<li><code>{html.escape(question.get('id', ''))}</code> <span>{html.escape(question.get('text', question.get('id', 'Question')))}</span>"
         f"<small>{html.escape(question.get('kind', ''))}</small>{answer}</li>"
     )
 
@@ -182,12 +182,14 @@ def render_finding(finding: dict[str, Any]) -> str:
         for artifact in finding.get("artifacts", [])
     )
     artifact_block = f"<h5>Artifacts</h5><ul class=\"artifact-list\">{artifacts}</ul>" if artifacts else ""
+    actions = "".join(f"<li>{html.escape(action['description'])}</li>" for action in finding.get("actions", []))
+    action_block = f"<h5>Actions and unknown handling</h5><ul>{actions}</ul>" if actions else ""
     return f"""
       <article class="finding" id="finding-{html.escape(finding['id'])}">
         <div class="finding-head"><code>{html.escape(finding['id'])}</code><h4>{html.escape(finding['name'])}</h4></div>
         <p>{html.escape(finding.get('description', ''))}</p>
         <h5>Questions</h5><ol class="question-list">{questions}</ol>
-        {artifact_block}
+        {artifact_block}{action_block}
       </article>"""
 
 
@@ -457,4 +459,8 @@ restrictive.
 
 
 if __name__ == "__main__":
+    import sys
+    if "--companion-package" in sys.argv:
+        from publish_enterprise_companion import main as publish_companion
+        raise SystemExit(publish_companion())
     raise SystemExit(main())
