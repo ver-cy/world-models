@@ -1,16 +1,16 @@
-# Model Composition Resolution
+# Performance Objective / Review
 
-- Name: Model Composition Resolution
-- Catalogue ID: WM-XCT-040
-- Registry ID: vr.wm-xct-040
-- Type: Published Vercy pattern
-- Version: 0.1.1
-- Specification: https://ver.cy/models/wm-xct-040-model-composition-resolution/spec.yaml
+- Name: Performance Objective / Review
+- Catalogue ID: WM-ORG-017
+- Registry ID: vr.wm-org-017
+- Type: Published Vercy aggregate
+- Version: 0.3.0-research.1
+- Specification: https://ver.cy/models/wm-org-017-performance-objective-review/spec.yaml
 - Storage type: format-independent; select a binding in the page constructor
-- Interface: https://ver.cy/models/wm-xct-040-model-composition-resolution/#template-builder
+- Interface: https://ver.cy/models/wm-org-017-performance-objective-review/#template-builder
 - Processes: https://ver.cy/processes/
 - Model agent protocol: https://ver.cy/model-agent-protocol.md
-- Research evidence: https://ver.cy/enterprise/research/wm-xct-040/
+- Research evidence: https://ver.cy/enterprise/research/wm-org-017/
 
 Read this file first, then `spec.yaml`. Traverse Bundle to Layer to Finding to
 Questions and Artifacts. The specification is published, while its research

@@ -1,6 +1,8 @@
-# Model Composition Resolution / Композиция моделей Измерения
+# Model Composition Resolution
 
-Catalogue identity: WM-XCT-040, registry `vr.wm-xct-040`, version 0.1.0. A reusable contract aggregate above the existing Vercy kernel. It does not own organizations, people, products or their facts. Its subject is one reviewable resolution episode: which exact model releases may be assembled for one Dimension, under which local authority, with which readiness evidence.
+Catalogue identity: WM-XCT-040, registry `vr.wm-xct-040`, version 0.1.1. A reusable contract aggregate above the existing Vercy kernel. It does not own organizations, people, products or their facts. Its subject is one reviewable resolution episode: which exact model releases may be assembled for one Dimension, under which local authority, with which readiness evidence.
+
+Version 0.1.1 publishes English documentation. Executable code, schemas, fixtures and the technical scope reviewed for 0.1.0 remain unchanged.
 
 ## Boundary decision
 

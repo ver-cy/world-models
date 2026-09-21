@@ -16,3 +16,7 @@ For each contour:
 7. Continue the next unfinished entry without routine confirmation. Mark blocked only with a concrete unresolved reason; do useful independent work where available. Keep both external passes required for research completion. If a public draft ships with a missing pass, label that fact and leave the research contour unfinished.
 
 The public program is a sanitized projection. Do not publish the owner's local attachments, internal company analysis, personal paths or system bindings. Public examples are synthetic. Startup, service company, software company, international group, hardware manufacturer, digital platform and AI organization are profiles; they are not claims about Apple, Google or OpenAI internals.
+
+## Public language
+
+The owner requires English at canonical public URLs. Publish Enterprise model pages, specifications, usage instructions and research summaries in English. Localized editions may use explicit language routes. Preserve original provider transcripts, frozen review inputs and immutable released versions in their original language and bytes; label them as historical evidence. Do not overwrite concurrent Enterprise translations by Claude.

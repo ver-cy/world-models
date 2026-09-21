@@ -1,26 +1,26 @@
-# Композиция моделей для нового Измерения компании
+# Compose models for a new company Dimension
 
-WM-XCT-040 Model Composition Resolution, 0.1.0. Общий контракт и эталонная реализация.
+WM-XCT-040 Model Composition Resolution, 0.1.1. A shared contract and reference implementation.
 
-Модель отвечает на вопрос: какие точные версии моделей выбраны для этого Измерения, кто разрешил их использование, какие зависимости обязательны, какие байты проверены и какие данные уже можно записывать. Это один контракт композиции. Он не заменяет ядро Vercy, модели Компании, Юрлица, Подразделения или Сотрудника.
+This model records which exact model releases a Dimension uses, who authorized them, which dependencies are mandatory, which bytes were verified, and which data is ready to be written. It provides one composition contract. It does not replace the Vercy kernel or the Organization, Legal Entity, Organizational Unit and Employee models.
 
-Публикация доступна для использования и дальнейшего рецензирования. Уровень исследования: `reviewable-draft`. Полная корпоративная архитектура и универсальная совместимость не заявляются. Состояние независимых проверок и оставшиеся ограничения находятся в исследовательском досье.
+The publication is available for use and further review. Research assurance remains `reviewable-draft`; complete enterprise architecture and universal compatibility are not claimed. The research dossier records the independent reviews and remaining limitations. Version 0.1.1 publishes English documentation with unchanged executable code and schemas. Technical review evidence refers to the 0.1.0 implementation, not to a new review of this translation.
 
-## Состав
+## Package contents
 
-- `model-spec.md`: граница, типы, связи, состояния, права, время, мастерство данных, миграции.
-- `field-catalog.json`: поля с типами, обязательностью, источниками и владельцами.
-- `whole-object-coverage.json`: пять аспектов для каждого из девяти типов контракта.
-- `composition-plan.schema.json`, `policy.schema.json`: исполняемые схемы JSON Schema 2020-12.
-- `composition.py`: проверка точного состава и создание пакета проверенных файлов.
-- `bootstrap_dimension.py`: создание только нового Измерения через доверенную локальную копию Vercy skill.
-- `crosswalk.json`, `kernel-boundary-decision.json`: сопоставления с существующими моделями и решение о границе.
-- `examples/`: вымышленные сценарии, политики, точные версии и копии опубликованных пакетов.
-- `test-results.json`, `acceptance-results.json`: фактические результаты испытаний.
+- `model-spec.md`: boundaries, types, relationships, states, authority, time, data mastership and migration.
+- `field-catalog.json`: fields, types, requiredness, sources and owners.
+- `whole-object-coverage.json`: five descriptive facets for each of the nine contract types.
+- `composition-plan.schema.json`, `policy.schema.json`: executable JSON Schema 2020-12 schemas.
+- `composition.py`: validation of the exact model selection and staging of verified files.
+- `bootstrap_dimension.py`: creation of a new Dimension using a trusted local Vercy skill.
+- `crosswalk.json`, `kernel-boundary-decision.json`: mappings to existing models and the boundary decision.
+- `examples/`: synthetic scenarios, policies, exact version pins and copies of published packages.
+- `test-results.json`, `acceptance-results.json`: recorded test results.
 
-## Быстрый воспроизводимый пример
+## A reproducible example
 
-Распакуйте полный пакет. Нужны Python 3.12+ и `jsonschema[format-nongpl] >=4,<5`. Путь к Vercy skill задаётся явно: используйте доверенную локальную копию из официального Vercy. Composer сам не скачивает и не исполняет код из пакетов.
+Extract the complete package. Use Python 3.12+ and `jsonschema[format-nongpl] >=4,<5`. Supply the Vercy skill path explicitly, pointing to a trusted local copy from the official Vercy distribution. The composer does not download or execute package code automatically.
 
 ```text
 python -m pip install "jsonschema[format-nongpl]>=4,<5"
@@ -28,9 +28,9 @@ python test_composition.py
 python acceptance.py --skill /trusted/vercy/skills/vercy --report acceptance-local.json
 ```
 
-`acceptance.py` создаёт временные тестовые Измерения и удаляет только свои временные данные после проверки. В нём явно запускается проверенный пример валидатора вложенных данных. Обычный Composer такой код автоматически не запускает.
+`acceptance.py` creates temporary test Dimensions and removes only its own temporary data after verification. It explicitly runs the verified example validator for nested data. The ordinary composer does not run that code automatically.
 
-Чтобы оставить отдельное учебное Измерение:
+To retain a separate tutorial Dimension:
 
 ```text
 python composition.py validate examples/startup/plan.json --assets examples/assets --policy examples/startup/policy.json --lock examples/startup/current.lock
@@ -38,38 +38,38 @@ python composition.py stage examples/startup/plan.json --assets examples/assets 
 python bootstrap_dimension.py --stage /existing-parent/startup-stage --policy examples/startup/policy.json --lock examples/startup/current.lock --skill /trusted/vercy/skills/vercy --target /existing-parent/startup-dimension --name "Synthetic startup" --namespace urn:dimension:synthetic:startup
 ```
 
-Замените пути на свои. Родительский каталог должен существовать, конечные каталоги должны быть новыми. `--namespace` должен точно совпадать с `dimensionId` плана и независимой политики. Bootstrap создаёт структуру и реестры; данные организации вы добавляете отдельно. Проверка `acceptance.py` показывает такой пример.
+Replace the paths with yours. The parent directory must exist; the target directories must be new. `--namespace` must exactly match `dimensionId` in the plan and the independently supplied policy. Bootstrap creates the structure and registries; organization data is added separately. `acceptance.py` demonstrates that next step.
 
-## Использование для своей компании
+## Use with your company
 
-Вымышленные политики из примеров не дают полномочий работать с вашей компанией. Владелец Измерения отдельно задаёт идентификатор, исполнителей, цель, разрешённые модели, источники и срок действия политики. План ссылается на SHA-256 этой политики и исходного lock-файла. Обновление этих документов требует пересчёта соответствующих контрольных сумм.
+The synthetic example policies do not authorize operations on your company. The Dimension owner independently defines its identifier, actors, purpose, allowed models, sources and policy validity period. The plan references the SHA-256 digests of that policy and the starting lock file. Changes to those documents require recalculating their corresponding digests.
 
-Для каждой выбранной модели укажите точную версию, SHA-256 и размер спецификации и AGENTS.md. Разделите обязательные зависимости `requires` и необязательные ссылки `references`. Замкнутый состав включает все обязательные зависимости, объявленные в плане, и исключает лишние относительно этого графа пакеты. Зависимости не извлекаются автоматически из текста спецификаций. Циклы, неоднозначные версии и конфликты пространств имён отклоняются.
+For each selected model, specify its exact version and the SHA-256 digest and size of its specification and AGENTS.md. Separate mandatory dependencies (`requires`) from optional links (`references`). The closure contains every mandatory dependency declared in the plan and excludes packages outside that graph. Dependencies are not extracted automatically from specification prose. Cycles, ambiguous versions and namespace conflicts are rejected.
 
-Режим `semantic-only` позволяет хранить и использовать семантическую спецификацию. Он не объявляет схему фактов готовой. Для `native-binding` отдельно укажите runtime-схему, привязанную к точным байтам спецификации. Для вложенного снимка также нужны закрытая схема данных и отдельный предметный валидатор. Успешная проверка V3 не заменяет проверку содержимого вложенного объекта.
+`semantic-only` stores a semantic specification without claiming that its fact schema is ready. For `native-binding`, explicitly supply a runtime schema bound to the exact specification bytes. A nested snapshot additionally requires a closed data schema and a separate domain validator. Successful V3 validation does not replace validation of the nested object's contents.
 
-Учебные планы имеют ограниченный срок: до конца 2026 года. После истечения можно проверить исторический состав через `validate --at` с датой действия плана. Для нового создания нужна новая действующая политика и новый план; историческая дата не разрешает запись.
+The tutorial plans expire at the end of 2026. After expiry, `validate --at` can check their historical composition at a date when they were valid. New creation requires a new valid policy and plan; a historical validation date does not authorize writes.
 
-## Что подтверждают сценарии
+## What the scenarios demonstrate
 
-| Сценарий | Проверено | Граница |
+| Scenario | Verified behavior | Boundary |
 |---|---|---|
-| Startup | Новый Dimension, Organization, объект и факт имени, V3 | Только имя; не вся схема организации |
-| Group | Organization с данными и Organizational Unit как семантический пакет | Подразделение не получает выдуманную runtime-схему |
-| AI team | Organization и опубликованный пример Performance Case, V3 и отдельный вложенный валидатор | Синтетический пример, не система реальной оценки людей |
+| Startup | New Dimension, Organization, one object and name fact, V3 validation | The name only, not a complete organization schema |
+| Group | Organization data and Organizational Unit as a semantic package | No runtime schema is invented for the unit |
+| AI team | Organization and a published Performance Case example, V3 and separate nested validation | Synthetic example, not a real personnel evaluation system |
 
-Во всех сценариях повторное создание поверх существующего Измерения отклоняется с сохранением данных.
+Every scenario rejects repeated creation over an existing Dimension while preserving its data.
 
-## Миграция и восстановление
+## Migration and recovery
 
-Реализация создаёт только новые Измерения. Для существующего Измерения нужен отдельный план миграции с резервной копией, анализом потерь и преобразованием данных. Автоматическое обновление и понижение версий не поддерживаются.
+This implementation creates new Dimensions only. An existing Dimension requires a separate migration plan covering backup, loss analysis and data conversion. Automatic upgrades and downgrades are not supported.
 
-Обычная ошибка убирает только временный каталог операции и её блокировку. При аварийном завершении процесса сначала проверьте владельца оставшейся блокировки, отсутствие активного процесса и квитанцию. Не удаляйте блокировки вслепую. Переименование каталога служит точкой активации на проверенной локальной файловой системе; распределённая транзакция и устойчивость к потере питания не заявляются.
+An ordinary failure cleans up only the operation's temporary directory and lease. After a process crash, inspect the remaining lease owner, confirm that its process is no longer active, and inspect the receipt before recovery. Do not remove leases blindly. Directory rename is the activation point on the tested local filesystem; distributed transactions and power-loss durability are not claimed.
 
-Контракт не реализует корпоративную IAM, проверку цифровых подписей издателей, ELMM minimum-version selection, исполнение всех правил предметных моделей или изменение действующих Измерений. Эти ограничения не скрываются за отметкой `published`.
+The contract does not implement enterprise IAM, publisher signature verification, ELMM minimum-version selection, execution of every domain rule, or changes to existing Dimensions. The `published` lifecycle status does not remove these limits.
 
-Спецификации принимаются только в формате JSON либо JSON с одной начальной строкой `#`, то есть в используемой Vercy JSON-совместимой форме YAML. Произвольный YAML отклоняется. Три пакета из примеров проверены по байтам с опубликованными версиями ver.cy. Поддерживаемый preset этого адаптера: `commercial-company`.
+Specifications must be JSON or JSON preceded by one leading `#` line: Vercy's JSON-compatible YAML form. General YAML is rejected. The three example packages were compared byte for byte with their published ver.cy versions. This adapter supports the `commercial-company` preset.
 
-Примеры воспроизводимы с текущими планами до 31 декабря 2026 года; далее нужны новые политика и план. Копии семантических спецификаций и AGENTS.md сохраняют источник. Минимальная схема имени Organization создана для этого выпуска; пример Performance использует уже опубликованную эталонную привязку. Наличие вложенной схемы и валидатора обязательно, но их исполнение остаётся отдельным шагом и не выполняется автоматически при создании Измерения. Подтверждение активации относится к Windows и процессам, соблюдающим блокировку.
+The examples are reproducible with their current plans through December 31, 2026; later runs need a new policy and plan. Copied semantic specifications and AGENTS.md files retain their source provenance. The minimal Organization name binding was authored for the initial release; the Performance example uses an existing published reference binding. A nested schema and validator must be present, but running them is a separate step and does not happen automatically during Dimension creation. Activation evidence covers Windows and cooperating processes that honor the lease.
 
-Испытания запускаются обычным Python, без `-O`: оптимизированный режим явно отклоняется. Вложенный валидатор в испытании загружается из установленной копии, а его SHA-256 записывается в отчёт.
+Run tests with ordinary Python, without `-O`; optimized mode is explicitly rejected. The acceptance test loads the nested validator from the installed copy and records its SHA-256 digest in the report.
