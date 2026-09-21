@@ -1,0 +1,5 @@
+# Full-package R2 reconciliation
+
+Claude accepted with limits and identified four documentation/evidence issues. Host-only action wording and custody caveat are now inside spec.json, not only an external adoption note. review.json is explicitly future post-audit bookkeeping. Access-contract comparison consistently uses boundary-reference-no-findings-selected. Earlier adjacent reconnaissance is labeled chronologically and five complete live specifications are byte-compared and parsed again, preserving the separate semantic scope and inherited holds. The harness directly invokes the companion on the actual stored malformed fact. README now limits tool pins to listed assets, and host ownership of maximum validity duration is explicit. No domain engine, code behavior, wire-format or serving right was added.
+
+R2 source files and actual reviews remain frozen. A separately labeled R3 final audit receives the complete corrected package. Prior reviews are not relabeled as reviewing these changed bytes.

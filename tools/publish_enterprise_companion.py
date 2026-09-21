@@ -51,7 +51,7 @@ def main():
     if target.exists():raise ValueError('Immutable release already exists')
     parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     shutil.copyfile(ROOT/'LICENSE',target/'LICENSE')
-    manifest={'format':'vercy-enterprise-companion-publication','runtimeId':mid,'version':version,'status':'published','researchAssurance':'reviewable-draft','contour':a.contour,'contourStatus':'partial','specUrl':'https://ver.cy'+immutable+'spec.json','specDigest':'sha256:'+sha(target/'spec.json'),'pageUrl':'https://ver.cy'+relative,'packageUrl':'https://ver.cy'+immutable+slug+'-'+version+'.zip','semanticFingerprint':None,'review':'review.json','nativeScope':'Three synthetic new Dimensions; own companion identity, optional semantic-only parent, explicit nested validator and trusted previous root required.'}
+    manifest={'format':'vercy-enterprise-companion-publication','runtimeId':mid,'version':version,'status':'published','researchAssurance':'reviewable-draft','contour':a.contour,'contourStatus':'partial','specUrl':'https://ver.cy'+immutable+'spec.json','specDigest':'sha256:'+sha(target/'spec.json'),'pageUrl':'https://ver.cy'+relative,'packageUrl':'https://ver.cy'+immutable+slug+'-'+version+'.zip','semanticFingerprint':None,'review':'review.json','nativeScope':'Three synthetic new Dimensions; own companion identity, explicit nested validation and trusted host state required. Exact binding limits are in bindings/native-v3.md.'}
     if pending:manifest.update(deferredProviderAudits=pending,publicationHolds=review['publicationHolds'])
     dump(target/'profile-manifest.json',manifest)
     body='<nav><a href="/models/?q='+html.escape(a.contour)+'">← Catalogue</a> · <a href="/enterprise/models/'+a.contour.lower()+'/">Research contour</a></nav>'
@@ -59,6 +59,8 @@ def main():
     st=spec['statistics'];body+='<p><strong>'+str(st['bundles'])+' bundles · '+str(st['layers'])+' layers · '+str(st['findings'])+' findings · '+str(st['questions'])+' questions</strong></p>'
     body+='<nav class="actions"><a href="#structure">Explore structure</a><a href="'+immutable+'spec.json">Specification and structure JSON</a><a href="'+immutable+slug+'-'+version+'.zip">Download model package</a><a href="'+immutable+'AGENTS.md">Agent instructions</a><a href="'+immutable+'model-spec.md">Semantic contract</a></nav>'
     if pending:body+='<section class="box"><h2>Independent audit still pending</h2><p>'+html.escape(review['auditSummary'])+'</p><ul>'+''.join('<li>'+html.escape(x)+'</li>' for x in review['publicationHolds'])+'</ul></section>'
+    if review.get('adoptionNotice'):
+        body+='<section class="box"><h2>Required adoption limits</h2><p>'+html.escape(review['adoptionNotice'])+'</p><p><a href="'+immutable+'publication-addendum.md">Publication addendum and exact limits</a></p></section>'
     catalogue=spec.get('catalogue',{})
     adoption=catalogue.get('adoption','Start with a pinned external claim, a file capture, an acquisition activity and an attributed account. Add evidence relationships and purpose-qualified assessments when needed. The package includes three synthetic examples, a closed schema, a reference validator and native installation checks.')
     limits=catalogue.get('limits','Truth, permissions and source independence are never inferred. A trusted host must authenticate actors, hold the latest complete register and invoke the companion validator.')

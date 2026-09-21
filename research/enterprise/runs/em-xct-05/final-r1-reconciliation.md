@@ -1,0 +1,5 @@
+# Full-package R1 reconciliation
+
+Both actual providers accepted with limits. All ten Claude anchors and five Grok local findings were considered. L1 rank is now exact int; L2 adds isolated receipt and envelope negatives; L3 uses distinct constructed snapshots without preserved-history language; L4/L5 align five exact pins and label boundary-only access reading; L6 supplies review and adjacent checks; L7 bounds merge immutability and declares at-rest/CAS duty; L8 clarifies host/action vocabulary without inventing inspect outputs; L9 requires active native storage objects; L10 clarifies three schema versions and candidate URL/fixture lifecycle. Wire format remains permanently vercy-disclosure-research at 0.1.0 by design, not an unsafe alias or silent migration. Optional host transitive ancestry, withdrawal actor evidence and production engines stay explicit future work.
+
+R1 frozen files and prompt remain preserved. This materially corrected final candidate requires a separately labeled R2 audit. No R1 acceptance is relabeled as coverage of changed bytes.
