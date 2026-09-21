@@ -1,0 +1,774 @@
+[
+  {
+    "bundle": "binding-foundation",
+    "layer": "binding-nature",
+    "finding": {
+      "id": "binding-as-reified-assertion",
+      "name": "Binding as a Reified Assertion",
+      "description": "A classification binding is a first-class n-ary assertion (subject, scheme, version, term, role, agent, time, basis), not a bare property value. Reification is required because the same subject-term pair may be asserted repeatedly by different agents, at different times, with different authority and different validity, and each such assertion must remain independently addressable, contestable and retractable.",
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-003"
+      ],
+      "questions": [
+        {
+          "id": "q-binding-def",
+          "text": "What minimum tuple constitutes one binding assertion, and which components are mandatory versus optional?",
+          "kind": "definition",
+          "answer_data": [
+            "Ordered list of required components (subject reference, scheme reference, scheme version, term reference, role)",
+            "Optional components with defaults",
+            "Rule for when a change to a component creates a new binding rather than an update"
+          ]
+        },
+        {
+          "id": "q-binding-vs-value",
+          "text": "When must a coded value be recorded as a full binding record rather than as an inline coded attribute of the subject?",
+          "kind": "decision",
+          "answer_data": [
+            "Decision criteria (contestability, authority, validity window, audit obligation)",
+            "List of slots that mandate full binding records",
+            "Escalation rule for promoting an inline value to a binding record"
+          ]
+        },
+        {
+          "id": "q-binding-multiplicity-same-pair",
+          "text": "May two distinct binding records hold the same subject, scheme and term at the same time, and if so what distinguishes them?",
+          "kind": "identity",
+          "answer_data": [
+            "Uniqueness constraint expression over the natural key",
+            "Distinguishing attributes (asserting agent, role, validity interval, authority)",
+            "Conflict resolution or coexistence policy"
+          ]
+        },
+        {
+          "id": "q-binding-addressability",
+          "text": "How is an individual binding addressed and cited by an external system without dereferencing the subject?",
+          "kind": "interoperability",
+          "answer_data": [
+            "Binding identifier form (IRI, UUID, ULID)",
+            "Resolution endpoint or lookup key",
+            "Citation string format"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-binding-id",
+          "name": "Binding identifier",
+          "description": "Stable identifier for the binding assertion itself, independent of subject and term identifiers.",
+          "value_kind": "identifier",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-008"
+          ]
+        },
+        {
+          "id": "de-subject-ref",
+          "name": "Subject reference",
+          "description": "Reference to the entity, part or aspect being classified.",
+          "value_kind": "reference",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-008",
+            "SRC-011"
+          ]
+        },
+        {
+          "id": "de-term-ref",
+          "name": "Term reference",
+          "description": "Reference to the scheme term applied, by canonical URI and/or notation.",
+          "value_kind": "reference",
+          "cardinality": "1..n",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-003"
+          ]
+        },
+        {
+          "id": "de-binding-record-shape",
+          "name": "Binding record shape",
+          "description": "The reified assertion object carrying all components of one binding.",
+          "value_kind": "object",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-007",
+            "SRC-008"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "art-binding-record",
+          "name": "Binding record",
+          "description": "The canonical serialisation of one reified binding assertion, carrying subject, scheme, version, term, role, provenance, validity and status.",
+          "media_or_form": [
+            "JSON document",
+            "RDF graph (Web Annotation or PROV shape)",
+            "row in a relational or document store",
+            "YAML front matter block"
+          ],
+          "serial": false,
+          "identity_strategy": "Governed IRI minted by the adopting Dimension where a master system exists; otherwise a UUIDv4 or ULID assigned at creation. Never keyed on assertion date.",
+          "source_refs": [
+            "SRC-007",
+            "SRC-008"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  },
+  {
+    "bundle": "binding-foundation",
+    "layer": "binding-identity",
+    "finding": {
+      "id": "scheme-and-term-reference-identity",
+      "name": "Scheme, Version and Term Reference Identity",
+      "description": "A binding must reference the scheme by canonical URI rather than by name, pin the scheme version used at assignment time, and carry the term by its identifier or notation. FHIR requires specified code system URIs to be used in preference to any other identifying mechanism, records Coding.version as the code system version used when choosing the code, and treats Coding.display as a rendering, not identity.",
+      "source_refs": [
+        "SRC-003",
+        "SRC-005",
+        "SRC-001",
+        "SRC-002"
+      ],
+      "questions": [
+        {
+          "id": "q-scheme-uri",
+          "text": "What is the canonical URI of the scheme, and which registry governs it?",
+          "kind": "identity",
+          "answer_data": [
+            "Canonical scheme URI",
+            "Governing registry or publisher reference",
+            "Alternate identifiers such as OIDs with their authority"
+          ]
+        },
+        {
+          "id": "q-version-pin",
+          "text": "Which scheme version was in force when the term was selected, and is the binding version-pinned or version-floating?",
+          "kind": "provenance",
+          "answer_data": [
+            "Scheme version string as published",
+            "Pinning mode (pinned, floating, latest-at-read)",
+            "Version resolution rule when the source omits a version"
+          ]
+        },
+        {
+          "id": "q-term-notation-vs-uri",
+          "text": "Is the term carried by URI, by notation, or by both, and how is a notation resolved to a term?",
+          "kind": "interoperability",
+          "answer_data": [
+            "Term URI",
+            "Notation literal and its notation datatype or pattern",
+            "Resolution procedure and the level at which the notation is unique"
+          ]
+        },
+        {
+          "id": "q-display-drift",
+          "text": "How is a stored display label reconciled when the scheme later changes that label?",
+          "kind": "quality",
+          "answer_data": [
+            "Display label snapshot with capture time",
+            "Reconciliation policy (refresh, retain historical, flag drift)",
+            "Assertion that display is never used for matching"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-scheme-uri",
+          "name": "Scheme canonical URI",
+          "description": "Governed URI identifying the classification scheme or code system.",
+          "value_kind": "identifier",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-005"
+          ]
+        },
+        {
+          "id": "de-scheme-version",
+          "name": "Scheme version",
+          "description": "Version of the scheme in force when the term was selected.",
+          "value_kind": "text",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-002",
+            "SRC-003"
+          ]
+        },
+        {
+          "id": "de-term-notation",
+          "name": "Term notation",
+          "description": "Symbolic code for the term within the scheme, with its notation datatype where declared.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-001",
+            "SRC-006"
+          ]
+        },
+        {
+          "id": "de-display-snapshot",
+          "name": "Display label snapshot",
+          "description": "Human-readable label captured at binding time; never used as an identity or matching key.",
+          "value_kind": "text",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-003"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "These are reference fields on the binding record; the scheme and term objects themselves are owned by the sibling Classification Scheme model and must not be materialised here as authoritative artifacts."
+    }
+  },
+  {
+    "bundle": "binding-specification",
+    "layer": "conformance-obligation",
+    "finding": {
+      "id": "multiplicity-and-completeness",
+      "name": "Multiplicity, Exhaustiveness and Mutual Exclusivity",
+      "description": "How many terms may be bound in a slot and whether the term set must be exhaustive and mutually exclusive. The UNSD guidelines state that mutual exclusivity is mandatory for statistical classifications and that a classification should be exhaustive for the values the variable can take for its primary units; multi-label domains deliberately relax exclusivity and must say so explicitly.",
+      "source_refs": [
+        "SRC-016",
+        "SRC-006",
+        "SRC-002"
+      ],
+      "questions": [
+        {
+          "id": "q-mult-cardinality",
+          "text": "What minimum and maximum number of terms may be bound in this slot?",
+          "kind": "constraint",
+          "answer_data": [
+            "Cardinality expression",
+            "Mandatory-classification flag",
+            "Behaviour when the subject cannot be classified at all"
+          ]
+        },
+        {
+          "id": "q-mult-exclusivity",
+          "text": "Is the term set mutually exclusive at the applicable level, and is multi-labelling permitted?",
+          "kind": "constraint",
+          "answer_data": [
+            "Mutual-exclusivity declaration for the scheme level",
+            "Multi-label permission flag",
+            "Rule forbidding simultaneous ancestor and descendant bindings, if any"
+          ]
+        },
+        {
+          "id": "q-mult-primacy",
+          "text": "When several terms are bound, how is the primary or governing term determined?",
+          "kind": "decision",
+          "answer_data": [
+            "Rank or primacy field semantics",
+            "Tie-breaking rule",
+            "Consumer guidance on which term to use for aggregation"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-slot-cardinality",
+          "name": "Slot cardinality",
+          "description": "Permitted number of bound terms in the slot.",
+          "value_kind": "text",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-002"
+          ]
+        },
+        {
+          "id": "de-exclusivity-flag",
+          "name": "Mutual exclusivity declaration",
+          "description": "Whether the permitted terms are mutually exclusive at the level used.",
+          "value_kind": "boolean",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-016",
+            "SRC-006"
+          ]
+        },
+        {
+          "id": "de-term-rank",
+          "name": "Term rank",
+          "description": "Ordinal or primacy marker distinguishing a governing term from secondary terms in a multi-term binding.",
+          "value_kind": "number",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-003"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Multiplicity and exclusivity are constraint fields of the binding slot profile and rank is a field of the binding record; neither requires a separate artifact."
+    }
+  },
+  {
+    "bundle": "authority-provenance-evidence",
+    "layer": "authority-and-effect",
+    "finding": {
+      "id": "assignment-authority-and-legal-effect",
+      "name": "Assignment Authority and Legal Effect",
+      "description": "Bindings differ sharply in force. An EU Binding Tariff Information decision is binding on all EU customs administrations and on the holder, is generally valid for three years, may be annulled where it was issued on inaccurate or incomplete information, and may be revoked or cease to be valid following nomenclature change, CJEU rulings or WCO decisions. Most bindings carry no such force; the model must record which regime applies rather than assuming one.",
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ],
+      "questions": [
+        {
+          "id": "q-authority-entitlement",
+          "text": "Who is entitled to assert a binding in this slot, and what qualification or delegation is required?",
+          "kind": "authority",
+          "answer_data": [
+            "Authorised role list",
+            "Qualification, accreditation or delegation evidence",
+            "Separation-of-duties rule where review is required"
+          ]
+        },
+        {
+          "id": "q-authority-force",
+          "text": "What force does the binding carry: advisory, internally binding, contractually binding, or legally binding on third parties?",
+          "kind": "authority",
+          "answer_data": [
+            "Force code",
+            "Instrument conferring the force with article reference",
+            "Parties bound and jurisdictional reach"
+          ]
+        },
+        {
+          "id": "q-authority-challenge",
+          "text": "By what route may the binding be challenged, and with what effect on its validity while under challenge?",
+          "kind": "exception",
+          "answer_data": [
+            "Challenge or appeal route and deadline",
+            "Suspensive effect statement",
+            "Outcome states and their consequences"
+          ]
+        },
+        {
+          "id": "q-authority-undo",
+          "text": "What distinguishes annulment, revocation and cessation of validity for this binding?",
+          "kind": "lifecycle",
+          "answer_data": [
+            "Definition and trigger for each undo mode",
+            "Retroactivity of each mode",
+            "Effect on downstream decisions already taken"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-authority-ref",
+          "name": "Authority reference",
+          "description": "The instrument, decision or delegation under which the binding was asserted.",
+          "value_kind": "reference",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-binding-force",
+          "name": "Binding force",
+          "description": "Degree to which the binding constrains parties (advisory, internal, contractual, legal).",
+          "value_kind": "code",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-jurisdiction",
+          "name": "Jurisdictional reach",
+          "description": "Territories, organisations or parties over which the binding has effect.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-undo-mode",
+          "name": "Undo mode",
+          "description": "Whether the binding ended by annulment, revocation, expiry or cessation of validity.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "art-binding-decision",
+          "name": "Classification decision instrument",
+          "description": "The formal decision document conferring legal or administrative force on a binding, naming the holder, the goods or subject, the applied term, the reasons, the validity period and the appeal route.",
+          "media_or_form": [
+            "official decision document",
+            "signed determination",
+            "registry entry in a public decision database"
+          ],
+          "serial": true,
+          "identity_strategy": "Decision reference issued by the deciding authority is the master identifier; the model stores it verbatim and never re-mints it.",
+          "source_refs": [
+            "SRC-009"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  },
+  {
+    "bundle": "time-and-lifecycle",
+    "layer": "temporal-frames",
+    "finding": {
+      "id": "temporal-frames-of-a-binding",
+      "name": "Temporal Frames of a Binding",
+      "description": "At least four distinct times matter and must not be collapsed: the time of the subject state that justifies the term; the time the assertion was made; the time the assertion was observed, ingested or recorded by this system; and the interval over which the binding is asserted to hold. All are recorded in RFC 3339 with seconds and an explicit offset or Z.",
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-009"
+      ],
+      "questions": [
+        {
+          "id": "q-time-frames",
+          "text": "Which temporal frames are recorded for this binding, and what does each mean?",
+          "kind": "temporal",
+          "answer_data": [
+            "Named time fields with definitions",
+            "Which fields are mandatory for the slot",
+            "Rule forbidding reuse of one field for another meaning"
+          ]
+        },
+        {
+          "id": "q-time-validity",
+          "text": "Over what interval does the binding assert that the subject bears the term?",
+          "kind": "temporal",
+          "answer_data": [
+            "Validity start and end in RFC 3339",
+            "Open-ended interval convention",
+            "Default validity where the source supplies none"
+          ]
+        },
+        {
+          "id": "q-time-ingestion",
+          "text": "How is the ingestion or observation time recorded separately from the original assertion time on import?",
+          "kind": "provenance",
+          "answer_data": [
+            "Ingestion timestamp field",
+            "Source assertion timestamp preserved verbatim",
+            "Timezone normalisation rule and original offset retention"
+          ]
+        },
+        {
+          "id": "q-time-retroactive",
+          "text": "May a binding be asserted with retroactive or future validity, and who approves that?",
+          "kind": "constraint",
+          "answer_data": [
+            "Retroactive and prospective permission flags",
+            "Approval requirement",
+            "Effect on already-published downstream aggregates"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-subject-state-time",
+          "name": "Subject state time",
+          "description": "Instant or interval of the subject state that the term characterises.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-007"
+          ]
+        },
+        {
+          "id": "de-valid-from",
+          "name": "Valid from",
+          "description": "RFC 3339 start of the interval over which the binding holds.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-valid-to",
+          "name": "Valid to",
+          "description": "RFC 3339 end of the interval over which the binding holds; absent means open-ended.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-recorded-at",
+          "name": "Recorded at",
+          "description": "RFC 3339 instant at which this system observed or ingested the binding.",
+          "value_kind": "timestamp",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-007",
+            "SRC-008"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Temporal frames are fields on the binding record; separating them into an artifact would fragment the assertion it belongs to."
+    }
+  },
+  {
+    "bundle": "time-and-lifecycle",
+    "layer": "lifecycle-and-change",
+    "finding": {
+      "id": "supersession-correction-and-dispute",
+      "name": "Supersession, Correction and Dispute",
+      "description": "Distinguishing a correction of an erroneous binding from a legitimate reclassification following a genuine change in the subject, and providing a route for a party to contest a binding. GDPR Article 16 gives data subjects the right to rectification of inaccurate personal data, which for a person-classifying binding is a hard requirement rather than a preference.",
+      "source_refs": [
+        "SRC-010",
+        "SRC-009",
+        "SRC-007"
+      ],
+      "questions": [
+        {
+          "id": "q-supersede-kind",
+          "text": "Is this change a correction of an error or a reclassification following a real change in the subject?",
+          "kind": "decision",
+          "answer_data": [
+            "Change kind code",
+            "Effective date of the change and whether it is retroactive",
+            "Whether the prior binding remains historically true"
+          ]
+        },
+        {
+          "id": "q-supersede-chain",
+          "text": "How is the supersession chain recorded so that a consumer can reconstruct the binding history?",
+          "kind": "provenance",
+          "answer_data": [
+            "supersedes and supersededBy references",
+            "Ordering rule for concurrent changes",
+            "Query pattern for as-at reconstruction"
+          ]
+        },
+        {
+          "id": "q-supersede-dispute",
+          "text": "How does an affected party register a dispute, and what does the binding look like while disputed?",
+          "kind": "exception",
+          "answer_data": [
+            "Dispute intake route and required information",
+            "Disputed-state semantics for consumers",
+            "Resolution deadline and outcome recording"
+          ]
+        },
+        {
+          "id": "q-supersede-rectification",
+          "text": "Where the subject is a natural person, how is a rectification request received, decided and propagated?",
+          "kind": "privacy",
+          "answer_data": [
+            "Rectification request handling procedure and legal deadline",
+            "Decision record with reasons",
+            "Downstream recipient notification list"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-supersedes-ref",
+          "name": "Supersedes reference",
+          "description": "Reference to the binding this one replaces.",
+          "value_kind": "reference",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-007"
+          ]
+        },
+        {
+          "id": "de-change-kind",
+          "name": "Change kind",
+          "description": "Whether the replacement is a correction, a reclassification, a migration or a revocation.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009",
+            "SRC-010"
+          ]
+        },
+        {
+          "id": "de-dispute-ref",
+          "name": "Dispute reference",
+          "description": "Reference to an open or resolved dispute or rectification request concerning the binding.",
+          "value_kind": "reference",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "art-binding-change-log",
+          "name": "Binding change log",
+          "description": "Append-only record of every state transition, correction, supersession, dispute and revocation affecting a binding, with actor, reason, timestamp and prior value.",
+          "media_or_form": [
+            "append-only event log",
+            "audit table",
+            "versioned document history"
+          ],
+          "serial": true,
+          "identity_strategy": "Binding identifier plus monotonically increasing sequence number; each entry additionally bears a ULID for global ordering across bindings.",
+          "source_refs": [
+            "SRC-007",
+            "SRC-010"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  },
+  {
+    "bundle": "validation-interop-protection",
+    "layer": "protection",
+    "finding": {
+      "id": "sensitive-binding-access-and-erasure",
+      "name": "Sensitive Binding Access, Retention and Erasure",
+      "description": "A binding can be more sensitive than the subject it describes. Classifying a natural person by health, ethnicity, religion, trade union membership, sex life or criminal convictions engages GDPR Article 9; automated classification of persons is profiling under Article 4(4) and may engage Article 22. Access, retention and erasure must therefore be governed at binding granularity, and erasure must not silently destroy the audit trail that legal or statistical obligations require.",
+      "source_refs": [
+        "SRC-010",
+        "SRC-009",
+        "SRC-007"
+      ],
+      "questions": [
+        {
+          "id": "q-prot-sensitivity",
+          "text": "Does this binding constitute a special category of personal data or otherwise heightened-risk information?",
+          "kind": "privacy",
+          "answer_data": [
+            "Sensitivity determination with the category engaged",
+            "Lawful basis and Article 9 condition relied upon",
+            "Data protection impact assessment reference where required"
+          ]
+        },
+        {
+          "id": "q-prot-access",
+          "text": "Who may read this binding, and is read access narrower than access to the subject record?",
+          "kind": "access",
+          "answer_data": [
+            "Permitted reader roles and purposes",
+            "Field-level masking rules",
+            "Break-glass procedure and its logging requirement"
+          ]
+        },
+        {
+          "id": "q-prot-retention",
+          "text": "How long is the binding retained after it is superseded or revoked, and under what obligation?",
+          "kind": "retention",
+          "answer_data": [
+            "Retention period with the legal or business obligation cited",
+            "Trigger that starts the retention clock",
+            "Disposition action at end of period"
+          ]
+        },
+        {
+          "id": "q-prot-erasure",
+          "text": "When a binding must be erased, what remains, and how is the audit trail preserved without re-identifying the subject?",
+          "kind": "exception",
+          "answer_data": [
+            "Tombstone content specification",
+            "Fields destroyed versus fields retained",
+            "Propagation of erasure to derived bindings and downstream recipients"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-sensitivity-class",
+          "name": "Sensitivity classification",
+          "description": "Sensitivity level and special-category determination for the binding itself.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        },
+        {
+          "id": "de-access-scope",
+          "name": "Access scope",
+          "description": "Roles, purposes and conditions under which the binding may be read.",
+          "value_kind": "object",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        },
+        {
+          "id": "de-retention-rule",
+          "name": "Retention rule",
+          "description": "Retention period and disposition action with the obligation that justifies it.",
+          "value_kind": "object",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-010",
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-erasure-state",
+          "name": "Erasure state",
+          "description": "Whether the binding is live, tombstoned or fully destroyed, with the erasure timestamp.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "art-erasure-tombstone",
+          "name": "Erasure tombstone",
+          "description": "Minimal residual record proving that a binding existed and was erased, holding the binding identifier, erasure authority, RFC 3339 erasure time and propagation status, without the erased content.",
+          "media_or_form": [
+            "tombstone record",
+            "audit log entry",
+            "deletion certificate"
+          ],
+          "serial": false,
+          "identity_strategy": "Retains the original binding identifier as its key so references do not dangle; carries no subject-identifying payload.",
+          "source_refs": [
+            "SRC-010"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  }
+]
