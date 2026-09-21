@@ -168,6 +168,10 @@ def build_command(provider: str, provider_model: str, schema: str, prompt_path: 
             "--tools", "WebSearch,WebFetch",
             "--allowedTools", "WebSearch,WebFetch",
             "--disallowedTools", "Bash,Write,Edit,NotebookEdit,Read,Glob,Grep",
+            # Independent web research must not initialize user MCP integrations
+            # or delegate its supposedly independent study to another model.
+            "--strict-mcp-config",
+            "--mcp-config", '{"mcpServers":{}}',
             "--no-session-persistence",
             "--output-format", "json",
             "--json-schema", schema,

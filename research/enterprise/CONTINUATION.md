@@ -15,3 +15,5 @@ Canonical GitHub push currently fails HTTP 403 (configured account has pull=true
 The catalogue migration guard was updated from 403 to 404 records after confirming 404 unique registry IDs and 1180 interoperability records. Full production SEO/AEO/GEO checks then passed. New catalogue rows need a deliberate guard/count update; never skip the incomplete-payload guard.
 
 Use the existing heartbeat automation, retargeted to this Enterprise task, rather than creating duplicate tasks or parallel publishers. Keep public projections sanitized: provider execution paths, local attachments, real organizational records and secrets never enter /enterprise/.
+
+CLI update later on 2026-09-21: see CLI-REPAIR-2026-09-21.md. The owner's local Claude-to-Codex MCP connection was repaired with a codex exec adapter. Separately, run_model_research.py now isolates Claude research with an empty strict MCP config. A bounded structured source-based CLI probe succeeded. New studies may use that route; the prior WM-ORG-017 timeout remains historical failure evidence and its sole cause is not proven.
