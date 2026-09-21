@@ -1,0 +1,3 @@
+# Native V3 binding
+
+Native ID vr.profile.enterprise-fact-authority@0.1.0 owns authority.register.snapshot and its own spec.json digest. WM-XCT-001 0.3.0-research.1 is semantic-only, binding=null, with an optional exact reference. Parent lifecycle published does not remove reviewable-draft assurance or source holds. Native snapshot rank=0 belongs to the separate synthetic register operator and is storage metadata, never domain source precedence. Acceptance replays all initial rows through admit, checks validate_extension, stores snapshot-r1 and snapshot-r2 with supersedes and prior digest, checks actual stored outcomes, then demonstrates nested-negative and truncation rejection. Native V3 alone does not enforce those checks.

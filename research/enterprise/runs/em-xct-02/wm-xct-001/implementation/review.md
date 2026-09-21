@@ -1,0 +1,37 @@
+# Enterprise Fact Authority 0.1.0 — publication disposition
+
+Disposition: publish bounded reviewable draft
+
+Date: 2026-09-21. This is Codex's reconciliation and publication disposition under the owner's prior authorization, not an approval granted by another AI. The public contract is in English and every instance is synthetic. It is an original, separately identified companion associated with WM-XCT-001 for discovery. It is not a ControlRecord subtype, a new universal WM catalogue row, full EM-XCT-02 completion, or a replacement for the legacy parent.
+
+## Independent evidence and disagreements
+
+Claude and Grok received the same public `shared-boundary.md` for substantive independent studies. Their actual answers, provider-role manifests and hashes are preserved. Claude used its CLI with public research tools; Grok used the owner's browser in Heavy mode. The underlying Grok backend version was not exposed. These studies are distinct from the later frozen, no-tools audits.
+
+The original frozen Claude audit returned **BLOCK**: the proposed native binding incorrectly reused a nonconforming parent identity and assigned storage authority to a domain steward. Grok returned **ACCEPT WITH LIMITS**, including a concern that early conflict/unknown returns lost observation evidence. The original responses and original frozen input have not been rewritten. Grok's initial boundary objection also led to abandoning the subtype claim: the complete parent explicitly excludes control of an abstract predicate.
+
+`remediation-notes.md` disposes every reported finding. The corrected implementation now has its own model identifier, namespace, specification and binding digest; uses a distinct register operator; checks snapshot extension; preserves a retry's original receipt; permits an explicitly authorized successor source writer; guards closure against accountability changes; and retains observation evidence and exact revision pins on unknown and contested outcomes. Source precedence does not grant permission to write. A stewardship role supplies an informational route, not authority.
+
+Both focused follow-up audits returned **ACCEPT WITH LIMITS**. Claude counted all 53 tests and hand-traced about 15; it did not execute them. Grok's large follow-up attachment truncated the test source. This limitation is preserved in its response. A separately hashed plain-text supplement then supplied the complete unchanged test source and `adoption-limits.md`; Grok confirmed the end marker, counted 53 methods and accepted the successor-writer, closure, extension and negative-case dispositions with limits. No provider verdict is represented as an executed test, standards certification or publication authorization.
+
+The 19 files hashed in `followup.manifest.json` remain byte-identical, including code, schema, specification, examples, tests and native acceptance. The subsequently added `adoption-limits.md` is a documentation clarification derived from Claude's final holds; it changes no implementation. Grok reviewed it in the test supplement. This disposition and publication manifests are later editorial evidence.
+
+## Executed validation and the publication gate
+
+The corrected local reference passed **53 tests** with no failures or errors. Three newly composed synthetic Dimensions—startup, group and AI team—each passed two successive admitted snapshots, companion round trips, native V3 envelope validation, deliberate nested-invalid rejection by the companion, and history-truncation rejection. These exercise specific governance patterns, not complete multinational structures or existing-Dimension migrations.
+
+Each native scenario pins the companion as `vr.profile.enterprise-fact-authority@0.1.0`, specification digest `sha256:cf027b56d01f23e39c15ad49a728967e45e7fb8d2b34137b6bb532536f35f582`, with its own binding. WM-XCT-001@0.3.0-research.1 is a semantic-only root with no native binding. The original parent digest is `sha256:a09261ca365d2e82716705a27d5e46cca7faef8fc22d90fcf3b94a53ef729358`. WM-XCT-002 and WM-XCT-012 are documentary semantic references. The native test explicitly selects both roots; it does not prove optional-parent resolution or a separately registered public resolver entry for the custom companion ID.
+
+The prepublication acceptance report uses candidate published-lifecycle metadata because the composer requires it; this is not a live publication claim. Release verification must read back every shipped asset and archived parent byte, compare the public own-spec digest with the frozen digest, compare its contract with Markdown after CRLF normalization, verify parent catalogue/search/resolve, download the ZIP, verify its checksums, and rerun the tests and all three native scenarios. The separate `publication-verification.json` will record these results after deployment. Site SEO/AEO/GEO checks must also pass. Package checksums cover every shipped file; the acceptance report's smaller `sourceDigests` map alone is not a complete attestation.
+
+## Remaining limits and deferred research
+
+Read `adoption-limits.md` with the semantic contract. This release is a trusted-host, in-memory reference. It does not implement identity authentication, source truth, signed policy publication, durable storage, concurrent transactions, a web API or production connector. Native V3 validates the outer snapshot and does not enforce the nested contract. Both companion admission and snapshot-extension checks are required at integration.
+
+The host must hold the latest accepted digest, compare-and-set atomically, validate outer predecessor links, supply trusted time/configuration and sanitize errors. Comparing an old snapshot with itself is a valid replay and is not proof of freshness. The library returns complete ledgers to its trusted host; these must never be returned to write-only callers. Evaluation remains full-register all-or-deny. Real register contents, source identities, stewardship identities and input digests are not inherently public.
+
+Full-term correction is intentionally broad. An authorized correction can explicitly revive a retracted row. Guarded closure cannot cut before a future part's start without a prior correction. These two edges and replay-as-current are documented but do not each have a dedicated unit test; Grok explicitly retained that coverage limit. Shape limits of 10,000 records are not performance evidence. One receipt per second limits this reference. Independent assignment revision streams, definition governance, federated competence and delegation, subject/scope proof, conflict adjudication, domain datatypes, multi-valued facts, fine-grained disclosure and retention/erasure remain future work.
+
+Nine public primary-source approaches are mapped in `source-verification.json` and compared in `research.md`. Direct fetch hashes establish the retrieved pages, not every provider interpretation. NIST detailed clauses, unread/paywalled parent standards and legal/domain claims retain their stated verification limits. Provider claims are not silently promoted to normative authority. All inherited WM-XCT-001/002/012 holds remain open.
+
+The bounded companion is usable as a downloadable, inspectable modelling and reference-validation package. Publication lifecycle is **published** after the live gate, research assurance remains **reviewable-draft**, and the wider contour remains **published-partial**.
