@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import re
 import unicodedata
@@ -303,6 +304,30 @@ def main() -> None:
     ]
     examples = [item for item in catalogue if item.get("id") in {"vercy.aismm", "vercy.plmm"}]
     models.extend(vercy_example(item) for item in examples)
+    # Explicit companion publications have their own identity; they are not
+    # silently aliased to a universal World Model or counted as new WM rows.
+    companions = []
+    for path in sorted(args.models_root.glob("*/catalogue-entry.json")):
+        item = json.loads(path.read_text(encoding="utf-8"))
+        if item.get("entry_kind") != "companion-contract" or item.get("code") != path.parent.name:
+            raise SystemExit(f"invalid companion catalogue entry: {path}")
+        site_root = args.models_root.parent.resolve()
+        for key in ("spec_url", "agents_url"):
+            url = item[key]
+            if not url.startswith("/models/"):
+                raise SystemExit(f"companion {key} must be a local model asset")
+            asset = (site_root / url.lstrip("/")).resolve()
+            if not asset.is_relative_to(args.models_root.resolve()) or not asset.is_file():
+                raise SystemExit(f"missing or unsafe companion {key}: {url}")
+            if key == "spec_url":
+                digest = "sha256:" + hashlib.sha256(asset.read_bytes()).hexdigest()
+                if digest != item.get("spec_digest"):
+                    raise SystemExit(f"companion specification digest mismatch: {path}")
+                spec = json.loads(asset.read_text(encoding="utf-8"))
+                if (spec["metaModel"]["registryId"], spec["metaModel"]["version"]) != (item["registry_id"], item["version"]):
+                    raise SystemExit(f"companion identity/version mismatch: {path}")
+        companions.append(item)
+    models.extend(companions)
     interoperability = [interoperability_record(row) for row in external_rows]
 
     registry_ids = [item["registry_id"] for item in models + interoperability]
@@ -311,7 +336,7 @@ def main() -> None:
     model_codes = [item["code"] for item in models]
     if len(model_codes) != len(set(model_codes)):
         raise SystemExit("duplicate model code in generated import")
-    if len(models) != len(world_rows) + len(examples) or len(interoperability) != len(external_rows):
+    if len(models) != len(world_rows) + len(examples) + len(companions) or len(interoperability) != len(external_rows):
         raise SystemExit(
             f"unexpected registry sizes: models={len(models)}, interoperability={len(interoperability)}"
         )

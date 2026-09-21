@@ -55,8 +55,13 @@ def main() -> None:
     for row in rows:
         slug = row["code"]
         page_slug = slug_from_url(row.get("page_url", "")) or slug
-        spec_path = MODELS / page_slug / "spec.yaml"
-        agents_path = MODELS / page_slug / "AGENTS.md"
+        spec_path = ROOT / (row.get("spec_url") or f"/models/{page_slug}/spec.yaml").lstrip("/")
+        agents_path = ROOT / (row.get("agents_url") or f"/models/{page_slug}/AGENTS.md").lstrip("/")
+        for asset in (spec_path, agents_path):
+            if not asset.resolve().is_relative_to(MODELS.resolve()):
+                raise ValueError(f"model asset outside models: {asset}")
+        if row.get("spec_digest") and sha256(spec_path) != row["spec_digest"]:
+            raise ValueError(f"pinned companion digest mismatch for {row['registry_id']}")
         publication_path = MODELS / page_slug / "publication.json"
         if publication_path.is_file():
             publication = json.loads(publication_path.read_text(encoding="utf-8"))
@@ -107,6 +112,12 @@ def main() -> None:
         }
         if not entry["digest"]:
             entry["installable"] = False
+        if row.get("entry_kind") == "companion-contract":
+            entry["entryKind"] = row["entry_kind"]
+            entry["researchAssurance"] = row["review_state"]
+            entry["structureUrl"] = absolute(row["structure_url"])
+            entry["packageUrl"] = absolute(row["package_url"])
+            entry["installationRequirements"] = row["installation_requirements"]
         entries.append(entry)
 
     by_id = {entry["id"]: entry for entry in entries}
@@ -124,7 +135,7 @@ def main() -> None:
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "catalogue": "https://ver.cy/models/",
         "policy": {
-            "autoInstallable": "published and locally present AGENTS.md/spec.yaml and verified digest and resolved required closure",
+            "autoInstallable": "published and locally present AGENTS.md/specification and verified digest and resolved required closure; companion host requirements remain mandatory",
             "requiredRelations": ["requires"],
             "optionalRelations": ["parent", "contains", "aligned"],
             "draftAndTodo": "never auto-install",
