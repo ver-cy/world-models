@@ -1,0 +1,178 @@
+BUNDLE time-base Time base The physical and computational substrate for locating an instant: named time scales, their epochs and mutual offsets, the governance of leap adjustments, and the rules for representing an instant with declared precision.
+LAYER time-scale-and-epoch Time scale and epoch Named reference scales (UTC, TAI, UT1, GPS time, POSIX/Unix time, terrestrial time), their epochs, their continuity properties and the offsets that relate them.
+FINDING time-scale-definition: A time scale is a governed system for locating instants, characterised by its defining authority, epoch, unit, and whether it is continuous (TAI, GPS) or subject to discontinuities (UTC). Statements are only comparable when the scale is declared; the current relation UTC = TAI - 37 s has been in force since 2017-01-01 and is itself a dated fact.
+FIELDS scale-id identifier 1, scale-epoch timestamp 1, scale-continuity code 1, scale-offset-to-utc quantity 0..n, scale-authority-ref reference 1..n
+Q tsd-q1 Which named time scale does this temporal value use, and is that scale explicitly declared or merely assumed?
+Q tsd-q2 Which body defines and publishes this scale, and through which serial publication is its realisation disseminated?
+Q tsd-q3 Is the scale continuous, or may it contain inserted or removed seconds that break naive arithmetic?
+Q tsd-q4 What is the offset from this scale to UTC at a given instant, and from when is that offset valid?
+Q tsd-q5 Which scale is used for the underlying storage representation, and does it differ from the scale used for display or comparison?
+LAYER leap-adjustment-governance Leap adjustment and UTC governance How leap seconds are decided, announced, tabulated, represented and retired, including the CGPM decision to raise the UT1-UTC tolerance by 2035.
+FINDING leap-second-adjustment: Leap seconds are announced by IERS in serial Bulletin C notices, tabulated in a machine-readable list carrying an explicit expiration, represented in timestamps as second value 60, and are subject to a standing CGPM decision to increase the permitted UT1-UTC difference in or before 2035. A leap table is therefore a perishable artifact, not a constant.
+FIELDS leap-event-instant timestamp 0..n, leap-cumulative-offset quantity 0..n, leap-table-expiry timestamp 1, leap-announcement-ref reference 0..n, leap-handling-policy code 1
+Q lsa-q1 Which body decides a leap adjustment, and by which dated instrument was the most recent decision announced?
+Q lsa-q2 What is the cumulative TAI-UTC value at a given instant, and when does the consulted leap table expire?
+Q lsa-q3 How does this system represent or avoid the 60th second, and is that behaviour declared?
+Q lsa-q4 What happens to stored durations and orderings computed before a leap adjustment took effect?
+Q lsa-q5 How will the planned change to the UT1-UTC tolerance by 2035 affect assumptions currently baked into this Dimension?
+Q lsa-q6 Is the leap table currently in use still valid, and what is done when it has expired?
+LAYER instant-precision-and-resolution Instant representation and precision How a single point in time is written down: the mandated timestamp profile, offset semantics, fractional precision, and the separation of event time from observation time.
+FINDING instant-representation: An instant is recorded using an RFC 3339 date-time with an explicit numeric offset or Z, optionally annotated per RFC 9557 with the originating time zone and calendar. The distinct meanings of Z, +00:00 and -00:00, the declared fractional precision, and the separation of event time from observation or ingestion time are all part of the record's meaning.
+FIELDS instant-value timestamp 1, instant-zone-annotation code 0..1, instant-calendar-annotation code 0..1, instant-precision code 1, observation-instant timestamp 0..1
+Q ir-q1 Does every recorded instant carry an explicit offset or Z, and are unqualified local times rejected at the boundary?
+Q ir-q2 Is the offset a known local offset, an assertion of UTC preference, or a declaration that the local offset is unknown?
+Q ir-q3 What fractional-second precision is stored, and is stored precision distinguished from measured precision?
+Q ir-q4 Are event time and observation or ingestion time recorded separately for this record class?
+Q ir-q5 When an instant is annotated with a time zone, is that annotation critical, and what must happen if it contradicts the offset?
+BUNDLE civil-time-zone Civil time zone The identity, offset history, resolution behaviour and legal basis of civil time zones — the machinery that converts between wall-clock time in a place and an instant.
+LAYER zone-identity-and-registry Zone identity and registry How a time zone is named and identified, the canonical versus alias distinction, the stable CLDR identifier layer, and what must never be used as an identifier.
+FINDING zone-identifier: A civil zone is identified by a tz identifier in Area/Location form, which may be a primary zone or a backward-compatibility link to another zone. CLDR maintains a deliberately more stable identifier layer with documented alias equivalences, because zone names, boundaries, offsets and abbreviations are explicitly not all stable interfaces.
+FIELDS tz-id identifier 1, tz-canonical-flag boolean 1, tz-alias-of reference 0..1, tz-stable-key identifier 0..1, tz-region-ref reference 0..n, tz-metazone reference 0..n
+Q zi-q1 Which identifier scheme is this zone identifier drawn from, and is the value canonical or an alias?
+Q zi-q2 Which stable identifier does this Dimension persist when the upstream registry renames or relinks a zone?
+Q zi-q3 Are zone abbreviations, numeric offsets or country codes ever used to identify a zone in this system?
+Q zi-q4 What happens to stored references when a zone is split, merged or retired upstream?
+Q zi-q5 Which geographic region does this identifier actually cover, and is that coverage authoritative for jurisdictional purposes?
+LAYER offset-rule-and-transition-history Offset rule and transition history The rule and transition structures that give a zone its offset at any instant, including daylight indicators, designations, projections and truncation.
+FINDING offset-transition-record: A zone's behaviour is a sorted series of transitions, each selecting a local time type consisting of a UTC offset, a daylight indicator and a designation. Rules need not alternate between two states, may change more than twice per year, and future behaviour beyond the last explicit transition is governed by a projected rule string or by a stated validity limit.
+FIELDS transition-instant timestamp 0..n, offset-before quantity 0..n, offset-after quantity 0..n, is-daylight boolean 0..n, zone-designation text 0..n, zone-valid-until timestamp 0..1, future-rule-expression text 0..1
+Q otr-q1 What is the complete ordered series of offset transitions for this zone over the period the data must serve?
+Q otr-q2 Until what instant is the zone data explicitly valid, and how is behaviour beyond that point derived?
+Q otr-q3 Was a given transition a historical fact, a scheduled future change, or a prediction from a repeating rule?
+Q otr-q4 Which upstream release supplied this transition series, and has any transition changed between releases?
+Q otr-q5 Is the recorded pre-1970 history evidence-backed or reconstructed, and is that distinction visible to consumers?
+Q otr-q6 Which projection formats must this transition series be emitted in, and are they lossless with respect to each other?
+LAYER local-time-anomaly-resolution Local time anomaly resolution Deterministic handling of wall-clock times that do not exist or occur twice, and of timestamps whose offset contradicts their declared zone.
+FINDING wall-clock-ambiguity-policy: Around a transition, a local wall-clock time may be skipped or may occur twice, and a supplied offset may disagree with the supplied zone. A conforming system must declare a deterministic resolution policy; where a zone annotation is marked critical the inconsistency must be acted upon rather than silently ignored.
+FIELDS gap-policy code 1, overlap-policy code 1, resolved-offset quantity 0..1, conflict-action code 0..1
+Q wcap-q1 When a stated local time falls in a transition gap, is it rejected, shifted forward, or shifted by the gap duration?
+Q wcap-q2 When a stated local time is ambiguous, is the earlier or later occurrence chosen, and can the caller override?
+Q wcap-q3 If the supplied offset contradicts the supplied zone identifier, which wins, and is the annotation critical?
+Q wcap-q4 Is the resolved offset persisted alongside the local time so the resolution is reproducible later?
+Q wcap-q5 How are recurring local-time series handled when a future instance lands in a gap created by a later rule change?
+LAYER zone-legal-authority Zone legal authority and change process The legal instruments and administrative processes by which jurisdictions set standard time and daylight saving arrangements, and the distinction between those instruments and their database mirror.
+FINDING civil-time-decree: Standard time and daylight saving arrangements are set by legal instruments — directives, statutes, regulations and proclamations — with a defined administering authority and change procedure. The tz database mirrors the resulting consensus on the ground and its coordinator explicitly does not set policy, so the legal instrument, not the database entry, is the authority of record.
+FIELDS decree-instrument-id identifier 1, decree-authority reference 1, decree-effective-at timestamp 1, decree-announced-at timestamp 0..1, decree-territory-ref reference 1..n, decree-mirror-release identifier 0..1
+Q ctd-q1 Which authority is legally competent to change standard time or daylight arrangements for this territory?
+Q ctd-q2 By which dated instrument was the current arrangement established, and where was it officially published?
+Q ctd-q3 What is the procedure and evidentiary threshold for changing a boundary or an exemption?
+Q ctd-q4 When does the change take legal effect, and how much notice was given before that instant?
+Q ctd-q5 Who owns the record of this arrangement in the adopting Dimension, and who mirrors it into machine data?
+Q ctd-q6 Is the machine data currently consistent with the legal instrument, and what is done while they diverge?
+BUNDLE calendar-system Calendar system How days are grouped into months, years, eras and weeks, and how those systems are identified, structured and defaulted by territory.
+LAYER calendar-identity-and-structure Calendar identity and structure Registered calendar identifiers, their classification, intercalation and leap-month structure, and their deprecation and alias handling.
+FINDING calendar-system-definition: A calendar system is identified by a registered key from the Unicode calendar registry, which recurrence and timestamp standards reference normatively. The registry distinguishes systems that differ only in determination method — tabular civil, tabular astronomical, Umm al-Qura and sighting-based Hijri variants — and marks deprecated keys with preferred replacements; leap months are denoted by an L suffix in recurrence contexts.
+FIELDS calendar-key code 1, calendar-class code 1, calendar-determination-method code 1, calendar-intercalation-rule text 0..1, calendar-deprecated-alias code 0..n
+Q csd-q1 Which registered calendar key identifies this system, and is that key current or deprecated in favour of another?
+Q csd-q2 Is the system solar, lunar or lunisolar, and does it use intercalary days, intercalary months or both?
+Q csd-q3 Where two keys describe the same tradition but differ in determination method, which one governs this record?
+Q csd-q4 How are leap months represented and ordered when a date or recurrence falls in one?
+Q csd-q5 Which calendar is assumed when none is declared, and is that assumption territory-dependent?
+Q csd-q6 Can this calendar's dates be converted losslessly to and from the proleptic Gregorian representation used for storage?
+LAYER era-and-year-numbering Era and year numbering Eras within a calendar, their boundaries expressed in proleptic Gregorian terms, their ordering and inheritance, and the events that add or redefine them.
+FINDING era-definition: An era is a named span within a calendar system with a mnemonic code, a numeric type for name lookup, and start and end dates expressed as proleptic Gregorian dates; eras are ordered by start date and may be inherited between related calendars. Eras are mutable reference data: a new era can be proclaimed and existing systems must absorb it.
+FIELDS era-code code 1, era-start date 1, era-end date 0..1, era-calendar-ref reference 1, era-year-in-era number 0..1
+Q ed-q1 Which era does a given date fall in, and how is the era boundary expressed unambiguously?
+Q ed-q2 What identifies the era stably — the mnemonic code or the numeric type used for name lookup?
+Q ed-q3 Does this calendar inherit eras from another calendar, and does that inheritance affect ordering?
+Q ed-q4 What process adds a new era, and what is the lead time between proclamation and effect?
+Q ed-q5 Are year numbers within the era counted forward only, and how are dates before the calendar's epoch expressed?
+LAYER week-rules-and-territory-defaults Week rules and territory defaults Territory-scoped week data and calendar preference: first day of week, minimum days in the first week, weekend days, and the ISO week-date system.
+FINDING week-rule-set: First day of week, minimum days in the first week and weekend start and end are territory-scoped supplemental data, and can be overridden by an explicit region key. Week numbering under the ISO rules is itself a distinct registered calendar key, and recurrence rules carry their own week-start parameter that must not be silently inherited from locale.
+FIELDS first-day-of-week code 1, min-days-first-week number 1, weekend-days collection 1..n, week-numbering-system code 1, recurrence-week-start code 0..1
+Q wrs-q1 Which territory's week data governs this computation, and how was that territory determined?
+Q wrs-q2 What are the first day of week, the minimum days in the first week and the weekend days for that territory?
+Q wrs-q3 Does week numbering follow the ISO week-date rules or the territory's own rules, and is that choice declared?
+Q wrs-q4 Is the week-start used in recurrence expansion the same as the locale week-start, and what happens if they differ?
+Q wrs-q5 How is a weekend that is not Saturday and Sunday represented in working-day calculations?
+BUNDLE temporal-value-shapes Temporal value shapes The reusable, embeddable value objects this mix-in offers to every other model: instants, intervals, durations, granularity, indeterminacy and the binding contract that says how a temporal field is to be interpreted.
+LAYER instant-interval-duration Instant, interval and duration The core value shapes and their arithmetic: zero-extent instants, proper intervals, exact versus nominal durations, and period forms.
+FINDING core-temporal-value-shapes: Temporal entities divide into instants of zero extent and intervals with extent, with proper intervals having distinct beginning and end. Periods are expressed either as start and end or as start and duration, and durations split into exact machine quantities and nominal calendar-clock descriptions whose length depends on where they are applied — a distinction that matters at transitions and at month boundaries.
+FIELDS interval-start timestamp 0..1, interval-end timestamp 0..1, duration-value duration 0..1, duration-kind code 0..1, endpoint-inclusivity code 0..1
+Q ctvs-q1 Is this value an instant or an interval, and if an interval, are its endpoints distinct?
+Q ctvs-q2 Is the interval expressed as start and end or as start and duration, and are the endpoints inclusive or exclusive?
+Q ctvs-q3 Is the duration an exact quantity or a nominal calendar description, and which units may it carry?
+Q ctvs-q4 How is a nominal duration added across a zone transition or a short or long month?
+Q ctvs-q5 Can an interval be unbounded at either end, and how is that represented distinctly from a missing value?
+LAYER granularity-and-indeterminacy Granularity and indeterminacy Declared precision, date-only versus date-time values, open-ended and partially known temporal statements, and how uncertainty is surfaced rather than fabricated.
+FINDING temporal-granularity-and-openness: A temporal statement carries a granularity that must be declared rather than inferred from the digits present, ranging from year through fractional second. Date-only values and all-day semantics are distinct from midnight-precision date-times, and an adopting profile must state which granularities and offset forms it supports.
+FIELDS granularity-code code 1, all-day-flag boolean 0..1, bounded-range object 0..1, openness-flag code 0..1
+Q tgo-q1 What granularity does this value actually assert, and is that recorded separately from its serialised form?
+Q tgo-q2 Is this a date-only or all-day value, and is it therefore zone-independent?
+Q tgo-q3 Which granularities and offset forms does this Dimension's adopted profile accept on input and emit on output?
+Q tgo-q4 How is a value that is known only approximately, or only to a bounded range, represented without inventing precision?
+Q tgo-q5 Is comparison between values of different granularity defined, and what does it return when they overlap?
+LAYER temporal-binding-contract Temporal binding contract The per-field declaration of whether a temporal value is floating, zoned or absolute, and which companion fields must accompany it.
+FINDING temporal-binding-declaration: Three bindings exist and must be distinguished per field: a floating local value that occurs at the same wall-clock reading everywhere, a local value bound to a named zone, and an absolute instant with an explicit offset or Z. The binding determines which companion fields are mandatory and which operations are valid, and it is a semantic property of the field, not of its serialisation.
+FIELDS binding-mode code 1, binding-zone-ref reference 0..1, binding-calendar-ref code 0..1, binding-criticality boolean 0..1
+Q tbd-q1 Which binding does this field use, and where is that binding declared for machine consumption?
+Q tbd-q2 Which companion fields are mandatory for this binding — zone identifier, calendar key, granularity, resolved offset?
+Q tbd-q3 Is a floating value ever silently converted to an absolute instant on storage or transport?
+Q tbd-q4 When the value crosses a system boundary, which annotations travel with it and which are critical?
+Q tbd-q5 Which binding should be chosen for a newly modelled field, and on what test?
+BUNDLE recurrence-and-scheduling-rules Recurrence and scheduling rules Rules that generate sets of dates or instants, their exceptions and overrides, and their behaviour under non-Gregorian calendar scales.
+LAYER recurrence-rule-semantics Recurrence rule semantics The structure and evaluation of a recurrence rule: frequency, interval, by-part filters, week start, and the bounds that terminate the set.
+FINDING recurrence-rule: A recurrence rule has a required frequency and optional interval, by-part filters, week start and a terminating count or until value, with count and until mutually exclusive. Expansion is anchored on the series start value, and by-position selection applies after the other filters, so an unanchored or unbounded rule is not evaluable without an explicit expansion window.
+FIELDS recur-frequency code 1, recur-interval number 0..1, recur-by-parts collection 0..n, recur-until timestamp 0..1, recur-count number 0..1, recur-anchor timestamp 1
+Q rr-q1 What frequency, interval and by-part filters define this rule, and in what order are they applied?
+Q rr-q2 What anchors the expansion, and does the anchor itself belong to the generated set?
+Q rr-q3 Is the rule bounded by a count or by an until value, and does the until value match the anchor's value type and binding?
+Q rr-q4 For an unbounded rule, what expansion window is used and who sets it?
+Q rr-q5 Which week start applies, and how does changing it alter the generated set?
+Q rr-q6 When the underlying zone rules change, are previously expanded instances recomputed or frozen?
+LAYER recurrence-exceptions-and-calendar-scale Recurrence exceptions and calendar scale Excluded and added dates, per-occurrence overrides and their identity, and expansion under a non-Gregorian calendar scale with skip behaviour.
+FINDING recurrence-exception-and-rscale: A recurrence set is modified by excluded dates, additional dates and per-occurrence overrides keyed by the occurrence's original value; an override key that matches no generated occurrence yields an extra occurrence rather than an error. When expansion runs on a non-Gregorian scale, an explicit scale parameter selects the calendar and a skip parameter determines the treatment of dates that do not exist in the target year.
+FIELDS excluded-dates collection 0..n, added-dates collection 0..n, occurrence-overrides object 0..n, recurrence-scale code 0..1, skip-behaviour code 0..1, leap-month-marker code 0..1
+Q rer-q1 How is a single occurrence identified so that an override or cancellation can target it unambiguously?
+Q rer-q2 Which dates are excluded and which are added outside the rule, and who authorised each?
+Q rer-q3 Which calendar scale governs expansion, and is it declared explicitly rather than inherited?
+Q rer-q4 What happens when a generated date does not exist in the target year — omit, move backward or move forward?
+Q rer-q5 Do all consuming implementations expand this rule to the same set, and how was that verified?
+Q rer-q6 Are overrides preserved when the base rule is edited, and how are orphaned overrides detected?
+BUNDLE observance-and-working-day Observance and working day Days that carry civil or cultural weight: proclaimed public holidays, religious and cultural observances, and the working-day calendars and date-adjustment conventions built from them.
+LAYER public-holiday-proclamation Public holiday proclamation Holidays declared by a competent authority for a jurisdiction or division, their day-off status, substitute days and publication horizon.
+FINDING public-holiday-instance: A public holiday is a dated instance scoped to a jurisdictional division, carrying a title, the date actually observed, and notes recording substitution where the nominal date falls on a non-working day. Authoritative feeds publish a bounded forward horizon and include one-off holidays, so a holiday set is a per-jurisdiction, per-year assertion rather than a permanent rule.
+FIELDS holiday-title text 1, holiday-observed-date date 1, holiday-nominal-date date 0..1, holiday-division-ref reference 1..n, holiday-day-off-status code 1, holiday-notes text 0..1, holiday-instrument-ref reference 0..1
+Q phi-q1 Which jurisdiction or sub-jurisdictional division does this holiday apply to, and do divisions within the same state differ?
+Q phi-q2 Which authority proclaimed the holiday, and under what instrument?
+Q phi-q3 Is the observed date the nominal date or a substitute, and what rule produced the substitution?
+Q phi-q4 Does the holiday confer a non-working day, and for whom — all employers, public sector only, or specific sectors?
+Q phi-q5 How far forward is the holiday calendar authoritatively published, and what is done beyond that horizon?
+Q phi-q6 How are one-off, rescinded or retroactively declared holidays recorded without corrupting historical calculations?
+LAYER cultural-religious-observance Cultural and religious observance Recurring days of cultural or religious significance, the calendars and methods that determine them, and their variation by community and locality.
+FINDING observance-definition: An observance is a recurring day whose date is determined within a specific calendar system by a specific method — tabular rule, astronomical computation or local observation. The calendar registry itself distinguishes variants of the same tradition by determination method, which is direct evidence that a single canonical date frequently does not exist and that method and community must be recorded alongside the date.
+FIELDS observance-name text 1, observance-calendar-ref code 1, observance-method code 1, observance-tradition text 0..1, observance-confirmation-status code 0..1, observance-movable-flag boolean 1
+Q od-q1 Within which calendar system is this observance computed, and by which determination method?
+Q od-q2 Is the observance fixed in its own calendar, movable, or dependent on observation that cannot be predicted?
+Q od-q3 Which community or authority determines the date, and do communities in the same territory differ?
+Q od-q4 What evidence supports the date asserted for a specific year, and when was it confirmed?
+Q od-q5 Does the observance carry any civil effect, and where does that effect come from?
+Q od-q6 How does the system behave when a provisional date is later corrected?
+LAYER working-day-and-date-adjustment Working day and date adjustment Composition of weekend rules and holiday sets into working-day calendars, and the conventions that move a date off a non-working day.
+FINDING working-day-calendar: A working-day calendar is a composition of a territory's weekend rule and a jurisdiction's holiday set over a stated period, addressed by a named centre. A date-adjustment convention then determines how a date falling on a non-working day is moved; the standard conventions are following, modified following, preceding, modified preceding, nearest, a floating-rate variant, and no adjustment.
+FIELDS centre-code code 1..n, adjustment-convention code 1, non-working-day-set collection 1..n, counting-basis code 1, cutoff-time timestamp 0..1
+Q wdc-q1 Which weekend rule and which holiday sets compose this calendar, and over what period is it valid?
+Q wdc-q2 Which named centre or centres apply, and when several apply, is a date a working day only if it is one in all of them?
+Q wdc-q3 Which adjustment convention applies, and does it respect month boundaries?
+Q wdc-q4 How are day counts and deadlines computed — calendar days, working days, or working days with a cut-off time?
+Q wdc-q5 What happens to previously computed deadlines when a holiday is added or moved after the fact?
+Q wdc-q6 Which reference-data releases were used to build this calendar, so a past computation can be reproduced exactly?
+BUNDLE reference-data-governance Reference data governance and distribution How temporal reference data is versioned, signed, distributed, checked for freshness, and how its known inaccuracies and conflicts are recorded.
+LAYER version-release-and-freshness Version, release and freshness Release identity and cadence, signing, monolithic versus incremental versioning, change detection and expiry of perishable data.
+FINDING reference-data-release: Temporal reference data is released as identified versions on an irregular, event-driven cadence — the zone database is released roughly twenty times a year and releases should be cryptographically signed. Distribution services support monolithic or per-zone versioning with synchronisation tokens and conditional requests, and some datasets carry hard expiry, so pinning a release and proving its freshness is a first-class obligation.
+FIELDS release-identifier identifier 1..n, release-instant timestamp 1..n, adoption-instant timestamp 1..n, integrity-evidence text 1..n, dataset-expiry timestamp 0..n, sync-token text 0..1
+Q rdr-q1 Which release of each reference dataset is currently pinned, and where is the pin recorded?
+Q rdr-q2 Was the release signature or checksum verified before adoption, and by whom?
+Q rdr-q3 How is a change upstream detected, and how quickly must it be adopted?
+Q rdr-q4 Does any pinned dataset carry an expiry, and what is the behaviour after that instant?
+Q rdr-q5 Is versioning monolithic across all zones or independent per zone, and does the consumer handle both?
+Q rdr-q6 Can a historical computation be reproduced by re-pinning the releases it originally used?
+LAYER provenance-conflict-and-quality Provenance, conflict and quality Recording where a temporal fact came from, how reliable it is, where authoritative sources disagree, and how corrections propagate.
+FINDING provenance-and-known-inaccuracy: The maintainers of the primary zone dataset state plainly that many pre-1970 and future timestamps are wrong or misleading, that some entries derive from unreliable sources, and that transitions were often gradual rather than instantaneous. A downstream model must therefore carry an evidence class and known-inaccuracy marker with each fact, and must record where the stability-oriented locale layer and the volatile upstream layer disagree.
+FIELDS evidence-class code 1, known-inaccuracy-flag boolean 1, conflict-record object 0..n, correction-event object 0..n, accountable-role reference 1
+Q pki-q1 What is the evidence class of this temporal fact — legal instrument, authority publication, mirrored consensus, or reconstruction?
+Q pki-q2 Is the fact within a range the upstream maintainer declares unreliable, and is that warning propagated to consumers?
+Q pki-q3 Where two authoritative sources disagree, which one governs here and on what documented basis?
+Q pki-q4 When an upstream correction changes a historical value, what is done with results already published from the old value?
+Q pki-q5 Who is accountable for the accuracy of each class of temporal fact in this Dimension?
+Q pki-q6 Is the provenance chain from legal instrument to mirrored dataset to local record complete and traversable?

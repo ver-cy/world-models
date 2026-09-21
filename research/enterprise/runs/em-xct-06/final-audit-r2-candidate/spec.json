@@ -1,0 +1,754 @@
+{
+  "vercy": "1.0-draft",
+  "metaModel": {
+    "id": "enterprise-monetary-calculation",
+    "registryId": "vr.profile.enterprise-monetary-calculation",
+    "name": "Enterprise Monetary Calculation",
+    "version": "0.1.0",
+    "kind": "companion-contract"
+  },
+  "canonicalUrl": "https://ver.cy/models/enterprise-monetary-calculation/versions/0.1.0/spec.json",
+  "model": {
+    "purpose": "Preserve exact monetary inputs and reproduce a same-currency total under an explicit rounding policy, with residuals and immutable correction evidence.",
+    "scope": "# Enterprise Monetary Calculation \u2014 semantic contract\n\nVersion 0.1.0. Bounded original companion, reviewable draft. One independent type: MonetaryCalculationReceipt. It records a calculation of already asserted exact monetary inputs; it does not create a second monetary master. Install only when the host needs a durable independently addressable calculation receipt. An existing calculation or audit record may use this as a design checklist; no host adapter or automatic identity mapping is specified. Do not duplicate it automatically for every money field.\n\n## Identity, inputs and result\n\nA receipt has an immutable request.id qualified by Dimension. New computation or correction gets a new ID. Same ID with different content is a conflict. IDs use a restricted lowercase URN grammar; no case folding or alias equivalence is inferred. The subject is the externally owned estimate/reconciliation aggregate whose independently established identity and policy justify combining the amounts. It must not be an arbitrary dashboard collection. Input sources identify exact monetary slots, not merely whole documents: assign a distinct qualified source slot ID and revision/digest for every input. Source-slot IDs must be unique inside a request; identical amounts from different slots are legitimate. One source used twice is refused rather than silently double counted.\n\nEach input binds amount lexical string, explicit decimal scale, exact state, currency reference, source pin and valuation context. Its host owns the underlying assertion. Currency equality means the entire catalogue, edition, snapshot digest and code tuple matches. Currency resolution is explicitly host-admitted: this package does not contain an ISO list, fetch a register, prove that a code exists or validate its transaction eligibility. Arbitrary unadmitted inputs must never be relabeled host-admitted by an untrusted caller. Unknown, absent, approximate and interval monetary values are unsupported; preserve them in the host and request missing facts, never map them to zero. Input source truth, exactness and allowed sign are host assertions, not established by decimal syntax.\n\nAll valuation contexts must match exactly: basis pin, UTC valuationAt and amountRole. This is a necessary local compatibility check, not proof that the host permits aggregation. The same currency alone does not establish compatible accounting meaning. No accounting, tax or statutory rule is inferred. Policy carries an explicit authority pin, currency, increment, mode and stage. Its authority and substantive applicability require host resolution. The increment is a positive exact decimal; it is never inferred from a currency code or locale. An increment 0.05 is a mathematical quantizer, not a cash-rounding compliance claim.\n\nDecimals are ASCII lexical strings, no exponent, no grouping, no binary floats, at most 36 total digits and 18 fraction digits. Input trailing zeros and declared scale are preserved verbatim. Negative zero is refused. Zero is allowed only as an explicitly asserted exact value. Integer/Fraction arithmetic has no ambient Decimal context. Five modes: half-even ties to an even integral increment count; half-away-from-zero ties away from zero; toward-zero truncates the integral increment count; floor chooses the lower multiple; ceiling the upper multiple. Negative values follow these mathematical definitions; their business meaning is external.\n\nFor per-item, quantize every input to an integral multiple of the increment and then sum the quantized values. For after-sum, sum exact inputs first and quantize once. There are no other operations. Multiplication of quantity by price, FX, allocation and tolerance judgments are deferred. An upstream exact line amount such as 0.495 is retained as an input, not claimed to have been computed from a physical quantity by this package.\n\nResult stores exactTotal as a reduced rational, roundedTotal at the increment's lexical decimal scale, signed residual = exactTotal minus roundedTotal, ordered step results/residuals and an inexact flag. Inexact means at least one quantization step changed numeric value; it remains true when per-item residuals cancel at the total. Scale-only representation changes do not set inexact. Output negative zero is normalized to unsigned zero by arithmetic; original negative zero inputs are refused. The result is marked calculation-only. No result chooses a master, pays, posts, staffs or grants access.\n\n## Time, correction and evidence\n\nSchema version, external reference revision, receipt identity and host lifecycle are distinct. computedAt and valuationAt are separate instants, strict UTC seconds, Gregorian dates without leap seconds. Future valuationAt is allowed for an estimate; host clock and semantic checks govern plausibility. Source and policy pins are opaque exact references, not automatically fetched or authenticated. A hash proves byte identity only against a trusted expected value, not authorship or truth.\n\nissue(request) computes and seals a new receipt without I/O. validate(receipt) checks closed schema, digest and exact replay; load(wire) additionally rejects duplicate JSON keys and non-finite literals. Use load before validate on inbound bytes. This canonical JSON is a local deterministic encoding, not an RFC 8785 or digital-signature implementation.\n\nimport_receipts(existing, incoming, dimension, admitted_existing_issuers, admitted_incoming_issuers) validates a supplied complete local register, detects ID conflicts and checks supersedes pins, subject and issuer continuity, chronology and acyclicity. Exact replay is idempotent. Both distinct issuer-admission sets must come from the authenticated trusted host; it is only an admission assertion, never a credential or access-control engine. Existing entries use admitted_existing_issuers; incoming entries use admitted_incoming_issuers. Retaining a former issuer in the first set does not allow new incoming records from that issuer. Even exact incoming replay requires incoming admission. Both decisions remain external host assertions. Import does not write storage, lock, enforce append-only media or discover an omitted predecessor. Store completeness, authentication, source resolution, per-object write permission and transaction/CAS remain host duties.\n\nCorrection requires a new ID, exact supersedes pin and nonblank reason. The old receipt remains byte-identical and retains its original context. A successor must have the same subject and issuer, and computedAt no earlier than predecessor. Changing issuer requires a separately governed adoption workflow; this implementation refuses a same-chain issuer change. Branching successors are retained; no current winner is inferred. Status is issued implicitly in the receipt format; superseded/withdrawn/current status is an external governance projection. No mutable status or native fact supersession changes the old receipt. No automatic withdrawal, deletion, tombstone or current-effective selector is shipped. All required predecessors must be retained for a closed import; do not silently partition history.\n\n## Bounds and native use\n\nAt most 256 inputs per receipt; at most 256 existing and 256 incoming records per call, and at most 256 unique receipt IDs after merging. Exact replay does not consume an additional unique slot. Maximum 2 MiB for each wire record or native envelope, nested depth 16, 512 characters per generic string; schema has tighter field limits. The output has at most 57 digits. The 256-record merge limit is a reference limit, not enterprise storage scale. Byte/cardinality caps are fail-closed bounds, not denial-of-service certification. A trusted prior snapshot is needed to detect replacement of a leaf record. No retention execution exists.\n\nNative V3 stores each receipt as its own object and one restricted monetary.calculation.receipt fact. Native validity time describes receipt storage, not underlying valuation. Preserve computedAt and valuationAt inside the receipt. Outer V3 validation alone cannot validate nested replay. Invoke validate_native for envelope bindings and import_receipts for the complete register in addition to the V3 validator. Install is five operational assets; read this full pinned package, including adoption-limits.md, before using those assets. There is no automatic validator dispatch or existing-Dimension migration. Current read permission is required to inspect historical receipts and diagnostics, which may contain sensitive financial facts.\n\n## Migration and minimum use\n\nMinimum useful configuration: one subject, one receipt, one exact monetary input, one admitted currency/context and one explicit rounding policy. No ERP or HRIS is required. Three synthetic profiles exercise startup line rounding, matrix reconciliation with negative amounts and AI estimate precision; none represent real company internals. Run python test_monetary.py with Python 3.12.14 (tested) and jsonschema 4.26.0. Native verification is a separate acceptance.py run with the exact tool-pins.json toolchain.\n\nOnly same-version lossless roundtrip is implemented. Unknown versions and unknown fields fail closed. Upgrade/downgrade needs an explicit future mapping, preservation of old bytes and recomputation under a new receipt ID; never edit a version label or reseal an earlier issuer's result as if it were their approval. Rollback restores the prior complete verified register and original validator, not an obsolete authorization.\n"
+  },
+  "structure": {
+    "bundles": [
+      {
+        "id": "MC-B-identity",
+        "name": "Identity and host",
+        "description": "Identity and host for an optional monetary calculation receipt.",
+        "layers": [
+          {
+            "id": "MC-L-receipt",
+            "name": "Receipt",
+            "description": "Explicit recorded facts, questions and limits for receipt.",
+            "findings": [
+              {
+                "id": "MC-F01",
+                "name": "Which computation has independent identity?",
+                "description": "Coverage: local plus host identity.",
+                "questions": [
+                  {
+                    "id": "MC-Q01",
+                    "text": "Which computation has independent identity?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Dimension-qualified request.id and subject",
+                      "If missing, request: Dimension-qualified request.id and subject. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A01",
+                    "name": "Dimension-qualified request.id and subject",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT01",
+                    "description": "Check immutable key; use existing host records only through a separately specified mapping; no adapter shipped. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F02",
+                "name": "Does another label imply a new subject?",
+                "description": "Coverage: host/deferred.",
+                "questions": [
+                  {
+                    "id": "MC-Q02",
+                    "text": "Does another label imply a new subject?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Stable external subject ID",
+                      "If missing, request: Stable external subject ID. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A02",
+                    "name": "Stable external subject ID",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT02",
+                    "description": "Keep subject identity; designation belongs to a later profile. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "MC-L-sources",
+            "name": "Sources",
+            "description": "Explicit recorded facts, questions and limits for sources.",
+            "findings": [
+              {
+                "id": "MC-F03",
+                "name": "Which exact monetary slots supplied the inputs?",
+                "description": "Coverage: local structure/host resolution.",
+                "questions": [
+                  {
+                    "id": "MC-Q03",
+                    "text": "Which exact monetary slots supplied the inputs?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Unique source IDs, revision/digest and original lexical amounts",
+                      "If missing, request: Unique source IDs, revision/digest and original lexical amounts. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A03",
+                    "name": "Unique source IDs, revision/digest and original lexical amounts",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT03",
+                    "description": "Validate unique source slots; resolve their authority externally. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F04",
+                "name": "Are source values asserted exact and readable?",
+                "description": "Coverage: host truth/local refusal.",
+                "questions": [
+                  {
+                    "id": "MC-Q04",
+                    "text": "Are source values asserted exact and readable?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "State=exact; host provenance and current read permission",
+                      "If missing, request: State=exact; host provenance and current read permission. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A04",
+                    "name": "State=exact; host provenance and current read permission",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT04",
+                    "description": "Request missing value/authority; never replace unknown with zero. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MC-B-calculation",
+        "name": "Arithmetic and context",
+        "description": "Arithmetic and context for an optional monetary calculation receipt.",
+        "layers": [
+          {
+            "id": "MC-L-admission",
+            "name": "Admission",
+            "description": "Explicit recorded facts, questions and limits for admission.",
+            "findings": [
+              {
+                "id": "MC-F05",
+                "name": "Are currency catalogue editions identical?",
+                "description": "Coverage: local equality/host resolution.",
+                "questions": [
+                  {
+                    "id": "MC-Q05",
+                    "text": "Are currency catalogue editions identical?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Complete CurrencyReference on each input/policy",
+                      "If missing, request: Complete CurrencyReference on each input/policy. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A05",
+                    "name": "Complete CurrencyReference on each input/policy",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT05",
+                    "description": "Refuse mixed tuples; do not fetch or select FX. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F06",
+                "name": "Do valuation basis, role and instant agree?",
+                "description": "Coverage: local plus host.",
+                "questions": [
+                  {
+                    "id": "MC-Q06",
+                    "text": "Do valuation basis, role and instant agree?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Complete matching Context plus host aggregation decision",
+                      "If missing, request: Complete matching Context plus host aggregation decision. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A06",
+                    "name": "Complete matching Context plus host aggregation decision",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT06",
+                    "description": "Refuse mismatches; ask policy owner about business comparability. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F07",
+                "name": "Are decimal precision and original scale preserved?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "MC-Q07",
+                    "text": "Are decimal precision and original scale preserved?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "ASCII amount string and declaredScale",
+                      "If missing, request: ASCII amount string and declaredScale. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A07",
+                    "name": "ASCII amount string and declaredScale",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT07",
+                    "description": "Reject float, exponent, overcapacity and signed zero. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "MC-L-rounding",
+            "name": "Rounding",
+            "description": "Explicit recorded facts, questions and limits for rounding.",
+            "findings": [
+              {
+                "id": "MC-F08",
+                "name": "Who chose increment, mode and stage?",
+                "description": "Coverage: local fields/host authority.",
+                "questions": [
+                  {
+                    "id": "MC-Q08",
+                    "text": "Who chose increment, mode and stage?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Pinned policy authority; explicit positive increment",
+                      "If missing, request: Pinned policy authority; explicit positive increment. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A08",
+                    "name": "Pinned policy authority; explicit positive increment",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT08",
+                    "description": "Apply only explicit declaration; request unresolved policy. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F09",
+                "name": "Was each item rounded or only the total?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "MC-Q09",
+                    "text": "Was each item rounded or only the total?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Policy stage and ordered step trace",
+                      "If missing, request: Policy stage and ordered step trace. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A09",
+                    "name": "Policy stage and ordered step trace",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT09",
+                    "description": "Replay per-item or after-sum without changing original inputs. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F10",
+                "name": "What changed through rounding?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "MC-Q10",
+                    "text": "What changed through rounding?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Exact total, result, step residuals, aggregate residual, inexact",
+                      "If missing, request: Exact total, result, step residuals, aggregate residual, inexact. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A10",
+                    "name": "Exact total, result, step residuals, aggregate residual, inexact",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT10",
+                    "description": "Keep residuals even if they cancel. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F11",
+                "name": "Can this total authorize a payment or posting?",
+                "description": "Coverage: host/deferred.",
+                "questions": [
+                  {
+                    "id": "MC-Q11",
+                    "text": "Can this total authorize a payment or posting?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Result authority=calculation-only",
+                      "If missing, request: Result authority=calculation-only. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A11",
+                    "name": "Result authority=calculation-only",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT11",
+                    "description": "Return no operational permission; consult separate domain process. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MC-B-history",
+        "name": "History and exchange",
+        "description": "History and exchange for an optional monetary calculation receipt.",
+        "layers": [
+          {
+            "id": "MC-L-history",
+            "name": "History",
+            "description": "Explicit recorded facts, questions and limits for history.",
+            "findings": [
+              {
+                "id": "MC-F12",
+                "name": "Which instant is valuation and which computation/storage?",
+                "description": "Coverage: local shape/host plausibility.",
+                "questions": [
+                  {
+                    "id": "MC-Q12",
+                    "text": "Which instant is valuation and which computation/storage?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Context valuationAt, request computedAt, native recordedAt",
+                      "If missing, request: Context valuationAt, request computedAt, native recordedAt. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A12",
+                    "name": "Context valuationAt, request computedAt, native recordedAt",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT12",
+                    "description": "Preserve separate meanings; validate strict UTC shape. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F13",
+                "name": "How is an incorrect result corrected?",
+                "description": "Coverage: local merge/host storage.",
+                "questions": [
+                  {
+                    "id": "MC-Q13",
+                    "text": "How is an incorrect result corrected?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "New receipt ID, predecessor pin, reason",
+                      "If missing, request: New receipt ID, predecessor pin, reason. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A13",
+                    "name": "New receipt ID, predecessor pin, reason",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT13",
+                    "description": "Append a successor after complete-register validation. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F14",
+                "name": "Which conflicting successor is current?",
+                "description": "Coverage: host/deferred.",
+                "questions": [
+                  {
+                    "id": "MC-Q14",
+                    "text": "Which conflicting successor is current?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "All immutable branches and governance evidence",
+                      "If missing, request: All immutable branches and governance evidence. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A14",
+                    "name": "All immutable branches and governance evidence",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT14",
+                    "description": "Return a context gap; do not select newest or overwrite. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "MC-L-exchange",
+            "name": "Exchange",
+            "description": "Explicit recorded facts, questions and limits for exchange.",
+            "findings": [
+              {
+                "id": "MC-F15",
+                "name": "Can a receipt be replayed after import?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "MC-Q15",
+                    "text": "Can a receipt be replayed after import?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Exact request/result/digest/version",
+                      "If missing, request: Exact request/result/digest/version. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A15",
+                    "name": "Exact request/result/digest/version",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT15",
+                    "description": "load then validate; compare replay; reject dropped pins. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F16",
+                "name": "Does V3 outer validation prove the nested result?",
+                "description": "Coverage: local binding.",
+                "questions": [
+                  {
+                    "id": "MC-Q16",
+                    "text": "Does V3 outer validation prove the nested result?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Outer schema plus validate_native and register validation",
+                      "If missing, request: Outer schema plus validate_native and register validation. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A16",
+                    "name": "Outer schema plus validate_native and register validation",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT16",
+                    "description": "Run each check explicitly; do not infer automatic dispatch. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F17",
+                "name": "Can this package migrate an old schema?",
+                "description": "Coverage: deferred.",
+                "questions": [
+                  {
+                    "id": "MC-Q17",
+                    "text": "Can this package migrate an old schema?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Versioned mapping and preserved old bytes",
+                      "If missing, request: Versioned mapping and preserved old bytes. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A17",
+                    "name": "Versioned mapping and preserved old bytes",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT17",
+                    "description": "Refuse unknown versions; future mapping required. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "MC-B-governance",
+        "name": "Adoption and limits",
+        "description": "Adoption and limits for an optional monetary calculation receipt.",
+        "layers": [
+          {
+            "id": "MC-L-governance",
+            "name": "Governance",
+            "description": "Explicit recorded facts, questions and limits for governance.",
+            "findings": [
+              {
+                "id": "MC-F18",
+                "name": "Who may issue, read and retain receipts?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "MC-Q18",
+                    "text": "Who may issue, read and retain receipts?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Authenticated actor, issuer admission, object authority and retention policy",
+                      "If missing, request: Authenticated actor, issuer admission, object authority and retention policy. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A18",
+                    "name": "Authenticated actor, issuer admission, object authority and retention policy",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT18",
+                    "description": "Require host controls; metadata is restricted. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F19",
+                "name": "Does a reference pin prove source truth or license?",
+                "description": "Coverage: host/expert.",
+                "questions": [
+                  {
+                    "id": "MC-Q19",
+                    "text": "Does a reference pin prove source truth or license?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Resolved source evidence and rights",
+                      "If missing, request: Resolved source evidence and rights. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A19",
+                    "name": "Resolved source evidence and rights",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT19",
+                    "description": "Report unresolved context; digest alone grants nothing. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "MC-L-limits",
+            "name": "Limits",
+            "description": "Explicit recorded facts, questions and limits for limits.",
+            "findings": [
+              {
+                "id": "MC-F20",
+                "name": "Can 256-record history scale indefinitely?",
+                "description": "Coverage: local cap/deferred scaling.",
+                "questions": [
+                  {
+                    "id": "MC-Q20",
+                    "text": "Can 256-record history scale indefinitely?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Measured capacity and complete reference closure",
+                      "If missing, request: Measured capacity and complete reference closure. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A20",
+                    "name": "Measured capacity and complete reference closure",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT20",
+                    "description": "Refuse excess; require separately reviewed production storage. Proposed action only within authenticated host authority."
+                  }
+                ]
+              },
+              {
+                "id": "MC-F21",
+                "name": "Are quantity, FX, calendar and localization cases implemented?",
+                "description": "Coverage: deferred.",
+                "questions": [
+                  {
+                    "id": "MC-Q21",
+                    "text": "Are quantity, FX, calendar and localization cases implemented?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Explicit contour disposition and future test assignments",
+                      "If missing, request: Explicit contour disposition and future test assignments. Host-dependent questions stay unresolved; locally validated arithmetic is reported only within the stated coverage."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "MC-A21",
+                    "name": "Explicit contour disposition and future test assignments",
+                    "description": "Required evidence; host/external artifacts are not automatically created or resolved."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "MC-ACT21",
+                    "description": "Keep these open; no default rates, unit conversions or availability. Proposed action only within authenticated host authority."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "composition": {
+    "runtimeImports": [],
+    "semanticReferences": [
+      {
+        "id": "WM-XCT-032",
+        "version": "0.3.0-research.1",
+        "url": "https://ver.cy/models/wm-xct-032-currency-monetary-value/spec.yaml",
+        "digest": "sha256:b102b6cba7cca2717d71791736633397ffe92377039817395bdab9bf1be3a7c0",
+        "relation": "narrow semantic overlap; no subtype/inherited contract"
+      }
+    ],
+    "delivery": "One original companion; separate native composition test toolchain pinned in tool-pins.json."
+  },
+  "statistics": {
+    "bundles": 4,
+    "layers": 8,
+    "findings": 21,
+    "questions": 21,
+    "artifacts": 21,
+    "actions": 21
+  },
+  "catalogue": {
+    "alternateNames": [
+      "Monetary calculation receipt",
+      "Money precision and rounding",
+      "EM-XCT-06"
+    ],
+    "domain": [
+      "Enterprise",
+      "Monetary calculations"
+    ],
+    "tags": [
+      "money",
+      "decimal",
+      "rounding",
+      "receipt",
+      "residual",
+      "calculation"
+    ],
+    "adoption": "Start with an exact monetary slot and an explicit rounding policy. Preserve the receipt and its original inputs; add more same-context inputs when the subject owner permits aggregation. Read the full ZIP and adoption limits before installation.",
+    "limits": "No FX, quantity-price multiplication, payment, ledger, calendar or localization execution. Currency/source/policy authenticity and rights stay with the host. 256-input/256-unique-register limits are reference bounds."
+  }
+}

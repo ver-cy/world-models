@@ -1,0 +1,15 @@
+# Agent contract — Enterprise Monetary Calculation 0.1.0
+
+Read the complete pinned model-spec.md, adoption-limits.md, spec.json and monetary.schema.json before adoption. If native install provided only five operational assets, obtain and verify the complete versioned package first. Use this optional independently addressed receipt only where the host has no equivalent calculation record.
+
+Use load on incoming JSON bytes, validate on each receipt, validate_native plus the outer V3 validator on stored envelopes, and import_receipts on a complete bounded register with independently obtained Dimension, separate existing/incoming issuer admissions, and per-record native inspection admission. No automatic hook exists. The issuer set and host-admitted currency are trusted host assertions, not credentials. Resolve source slots, policy, catalogue, valuation compatibility, authority and permissions outside this reference before issue/import; never infer them from syntax or a hash.
+
+Only exact same-currency summation with explicit per-item or after-sum quantization is implemented. Unknown is not zero. No default currency, minor unit, rounding rule or locale. 36 input digits, 18 fractional digits, 256 inputs; each existing/incoming list and the unique merged register at most 256 receipts. Reference capacity is not production scale. A correction creates a new ID and exact predecessor pin; preserve original bytes and full predecessor closure. Branches do not select a current winner.
+
+Questions in spec.json are agent guidance, not executable routes. Answer local questions from validated receipts; for host-dependent answers report insufficient-context and name the missing evidence; do not execute payments, postings, staffing, source resolution or external messages. All receipts/diagnostics are restricted; permission and retention remain with the host. Public fixtures are synthetic only.
+
+This reference has a hard lifetime limit of 256 receipt IDs per Dimension, including every correction and historical receipt. It requires the complete Dimension-wide register for this model. Splitting registers or omitting old leaves loses same-ID conflict detection and is unsupported. This is a bounded adoption fixture, not a production store; production paging/indexing/retention requires a separately reviewed design.
+
+validate_native binds the genesis object record only. It does not discover or authenticate the current head, later object revisions, current access/state, or later fact supersession. Object revision, retirement and native retraction are outside this version. A trusted host must inspect full native history and current permissions before access; passing an old genesis record never proves current access. Native record timestamps are strict UTC seconds, without fractional seconds.
+
+The same closed resource bounds apply to receipt JSON and native envelopes: depth 16, 32 keys per object, lists at most 256, generic strings at most 512 characters, integer magnitude at most 9999, and 2 MiB canonical/wire size. This intentionally accepts a narrower envelope vocabulary than general V3. Schema-specific bounds may be tighter.

@@ -1,0 +1,431 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ver.cy/models/enterprise-monetary-calculation/versions/0.1.0/monetary.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "vercy-monetary-calculation-receipt"
+    },
+    "schemaVersion": {
+      "const": "0.1.0"
+    },
+    "request": {
+      "$ref": "#/$defs/Request"
+    },
+    "result": {
+      "$ref": "#/$defs/Result"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$(?![\\s\\S])"
+    }
+  },
+  "required": [
+    "format",
+    "schemaVersion",
+    "request",
+    "result",
+    "digest"
+  ],
+  "$defs": {
+    "Pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "digest"
+      ]
+    },
+    "ReceiptPin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ]
+    },
+    "Currency": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "catalogue": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "edition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "snapshotDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$(?![\\s\\S])"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$(?![\\s\\S])"
+        },
+        "resolution": {
+          "const": "host-admitted"
+        }
+      },
+      "required": [
+        "catalogue",
+        "edition",
+        "snapshotDigest",
+        "code",
+        "resolution"
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "$ref": "#/$defs/Pin"
+        },
+        "valuationAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "amountRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "basis",
+        "valuationAt",
+        "amountRole"
+      ]
+    },
+    "Input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,31}$(?![\\s\\S])"
+        },
+        "source": {
+          "$ref": "#/$defs/Pin"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]{0,35})(\\.[0-9]{1,18})?$(?![\\s\\S])",
+          "maxLength": 38,
+          "allOf": [
+            {
+              "pattern": "^-?(?:[0-9]\\.?){1,36}$(?![\\s\\S])"
+            }
+          ]
+        },
+        "declaredScale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "state": {
+          "const": "exact"
+        }
+      },
+      "required": [
+        "key",
+        "source",
+        "amount",
+        "declaredScale",
+        "currency",
+        "context",
+        "state"
+      ]
+    },
+    "Policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "$ref": "#/$defs/Pin"
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        },
+        "increment": {
+          "type": "string",
+          "pattern": "^(?=[0-9.]*[1-9])(?:0|[1-9][0-9]{0,35})(?:\\.[0-9]{1,18})?$(?![\\s\\S])",
+          "maxLength": 38,
+          "allOf": [
+            {
+              "pattern": "^-?(?:[0-9]\\.?){1,36}$(?![\\s\\S])"
+            }
+          ]
+        },
+        "mode": {
+          "enum": [
+            "half-even",
+            "half-away-from-zero",
+            "toward-zero",
+            "floor",
+            "ceiling"
+          ]
+        },
+        "stage": {
+          "enum": [
+            "per-item",
+            "after-sum"
+          ]
+        }
+      },
+      "required": [
+        "authority",
+        "currency",
+        "increment",
+        "mode",
+        "stage"
+      ]
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1.0"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "dimension": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "subject": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "issuer": {
+          "type": "string",
+          "pattern": "^urn:[a-z0-9][a-z0-9:._/-]{0,190}$(?![\\s\\S])",
+          "maxLength": 195
+        },
+        "computedAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "purpose": {
+          "enum": [
+            "estimate",
+            "reconciliation",
+            "illustration"
+          ]
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Input"
+          }
+        },
+        "policy": {
+          "$ref": "#/$defs/Policy"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/ReceiptPin"
+            }
+          ]
+        },
+        "correctionReason": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "id",
+        "dimension",
+        "subject",
+        "issuer",
+        "computedAt",
+        "purpose",
+        "inputs",
+        "policy",
+        "supersedes",
+        "correctionReason"
+      ]
+    },
+    "Rational": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "numerator": {
+          "type": "string",
+          "pattern": "^-?(0|[1-9][0-9]{0,79})$(?![\\s\\S])"
+        },
+        "denominator": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,79}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator"
+      ]
+    },
+    "Step": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "inputKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "exact": {
+          "$ref": "#/$defs/Rational"
+        },
+        "rounded": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "residual": {
+          "$ref": "#/$defs/Rational"
+        }
+      },
+      "required": [
+        "inputKey",
+        "exact",
+        "rounded",
+        "residual"
+      ]
+    },
+    "Result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        },
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "exactTotal": {
+          "$ref": "#/$defs/Rational"
+        },
+        "roundedTotal": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "declaredScale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18
+        },
+        "residual": {
+          "$ref": "#/$defs/Rational"
+        },
+        "inexact": {
+          "type": "boolean"
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Step"
+          }
+        },
+        "authority": {
+          "const": "calculation-only"
+        }
+      },
+      "required": [
+        "currency",
+        "context",
+        "exactTotal",
+        "roundedTotal",
+        "declaredScale",
+        "residual",
+        "inexact",
+        "steps",
+        "authority"
+      ]
+    },
+    "Receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "vercy-monetary-calculation-receipt"
+        },
+        "schemaVersion": {
+          "const": "0.1.0"
+        },
+        "request": {
+          "$ref": "#/$defs/Request"
+        },
+        "result": {
+          "$ref": "#/$defs/Result"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "format",
+        "schemaVersion",
+        "request",
+        "result",
+        "digest"
+      ]
+    }
+  }
+}

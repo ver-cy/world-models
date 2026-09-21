@@ -1,0 +1,7 @@
+# Research synthesis
+
+Actual Claude Opus 5 CLI and Grok Heavy browser studies are preserved in the EM-XCT-06 dossier with the same prompt hash and exact response hashes. Both are research memos, not executable proofs. Each used summarized public web extracts and explicitly limited source access. Their supplied model proposals are not publication authority.
+
+Agreement: keep money and physical quantity separate in this contour; preserve decimal strings, policies, definition pins, as-of context, original results and correction lineage. Unresolved broad concepts remain separately assigned. Codex corrects Claude's extract that reduced WM-XCT-032 to a conversion-reference only: the full published tree has detailed quote/derivation/quantization functions. Grok's blanket refusal of point-plus-temperature-delta is too strong; the role algebra permits that operation under suitable kinds, but no quantity operation ships here. A current tzdb letter, real FX number or standard-conformance claim from either memo is not adopted without direct verification.
+
+Three approaches compared: authoritative currency-code maintenance (SIX); executable decimal arithmetic with explicit contexts (Python 3.12); the author's enterprise Money pattern (Fowler). Unicode's formatting digit/cash-increment defaults remain presentation data and do not choose calculation policy. See source-verification.json for exact access scope. No third-party code list is redistributed.

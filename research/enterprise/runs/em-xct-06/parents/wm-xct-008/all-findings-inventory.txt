@@ -1,0 +1,186 @@
+BUNDLE quantity-semantics Quantity semantics What the number is about: the kind of quantity, its dimension in the ISQ, the type of scale it lives on, and the special handling of dimension-one, count and logarithmic quantities.
+LAYER kind-and-dimension Quantity kind and dimension Identification of the quantity kind and its dimensional exponents over the ISQ base quantities, and the consistency checks these enable.
+FINDING quantity-kind-identity: Which kind of quantity the value expresses, resolved to a governed identifier, and how kinds that share a dimension are kept apart. VIM 1.2 defines kind of quantity as the aspect common to mutually comparable quantities; VIM 1.9 Note 2 records that units with the same dimension may name different kinds (joule per kelvin for both heat capacity and entropy; hertz for frequency but becquerel for activity, both 1/s). QUDT carries this as qudt:QuantityKind linked by qudt:hasQuantityKind with qudt:applicableUnit constraining admissible units.
+FIELDS quantity-kind-id identifier 1, quantity-kind-vocabulary-version text 0..1, admissible-kind-set collection 0..n
+Q qki-q1 Which quantity kind does this value express, and through which governed identifier is that kind resolved?
+Q qki-q2 When two candidate units share a dimension but denote different kinds, what evidence disambiguates the intended kind?
+Q qki-q3 Which quantity kinds are admissible in this property slot, and who has authority to add one?
+Q qki-q4 Is the property in fact a nominal property with no magnitude, and therefore outside this mixin?
+FINDING dimension-and-consistency: The dimension of the quantity expressed as integer exponents over the ISQ base quantities (length, mass, time, electric current, thermodynamic temperature, amount of substance, luminous intensity), and the arithmetic checks it authorises. VIM 1.7 defines quantity dimension; VIM 1.8 defines quantity of dimension one. QUDT materialises this as a QuantityKindDimensionVector. Dimension equality is a necessary but not sufficient condition for comparability.
+FIELDS dimension-vector object 0..1, dimension-one-flag boolean 0..1
+Q dim-q1 What are the dimensional exponents of this quantity over the seven ISQ base quantities?
+Q dim-q2 Which dimensional consistency checks must pass before an addition, comparison or assignment involving this value is accepted?
+Q dim-q3 Does dimension equality alone authorise treating two values as interchangeable in this context?
+FINDING system-of-quantities: A system of quantity kinds is a set of kinds plus the equations that relate them, typically identifying a base subset from which others are derived. The SI is coupled to the International System of Quantities. Choice of base kinds is conventional. A unit system associated with a quantity-kind system must define at least one unit for each kind of interest.
+FIELDS system-of-quantities-data01 identifier 0..1, system-of-quantities-data02 collection 1..n, system-of-quantities-data03 text 0..1
+Q system-of-quantities-q01 Which system of quantities governs this record, and which base quantity kinds does that system declare?
+Q system-of-quantities-q02 Which defining equations or physical relations of the system are needed to derive this kind from the bases?
+Q system-of-quantities-q03 Which system of units is explicitly coupled to this system of quantities, and does it define a unit for every kind in use?
+FINDING quantity-calculus-homogeneity: ISO 80000-1 describes quantity calculus: only quantities of the same kind, and therefore the same dimension, may be added or subtracted. Products and quotients produce derived kinds whose dimensions are the corresponding products of powers. Numerical-value equations have the same form as quantity equations only in a coherent system. UCUM implements the algebra as an Abelian group under multiplication with integer exponents. Implementations must refuse mixed-kind addition even when a naive dimension check would pass.
+FIELDS quantity-calculus-homogeneity-data01 code 1, quantity-calculus-homogeneity-data02 boolean 1, quantity-calculus-homogeneity-data03 number 0..1
+Q quantity-calculus-homogeneity-q01 What algebraic operation is requested among which operand quantities, and is each operand dimensionally legal for that operation?
+Q quantity-calculus-homogeneity-q02 What quantity kind, dimension and coherent unit does the result have, and must the numerical value be recomputed in a coherent system to avoid hidden factors?
+Q quantity-calculus-homogeneity-q03 If a non-coherent unit such as hour or millimetre appears in a product, how are prefix and conversion factors accumulated so that the numerical-value equation stays correct?
+LAYER scale-and-measurability Scale type and measurability The scale on which the value sits and the operations that scale permits, including the awkward cases of dimension-one, count, ordinal and logarithmic quantities.
+FINDING scale-type-classification: Whether the value sits on a ratio, interval, ordinal or nominal scale, and which arithmetic is therefore legal. VIM 1.26 defines ordinal quantity, 1.27 quantity-value scale, 1.28 ordinal quantity-value scale and 1.29 conventional reference scale. UCUM separates proper units, which form an Abelian group under multiplication, from special units on non-ratio scales such as degree Celsius that convert by function rather than scalar multiplication. Ratios and multiplicative scaling are invalid on interval scales.
+FIELDS scale-type code 0..1, reference-scale-id identifier 0..1, prohibited-operations collection 0..n
+Q stc-q1 Is the underlying scale ratio, interval, ordinal or nominal?
+Q stc-q2 Which arithmetic operations must be refused on this scale type, and what is returned instead?
+Q stc-q3 If a conventional reference scale is used, which scale definition and edition applies?
+Q stc-q4 How are ordinal codes that look numeric prevented from entering arithmetic pipelines?
+FINDING dimension-one-and-counts: Handling of values whose unit is 1, omitted, a count of discrete entities, a fraction such as percent or ppm, or a logarithmic quantity such as decibel or pH. VIM 1.8 notes that units for quantities of dimension one are numbers, sometimes with special names (radian, steradian) or as quotient expressions. ISO 80000-1 gives explicit rules for logarithmic quantities. FHIR provides a distinct Count profile. UCUM v2.2 illustrates the instability of this area: QUDT v3.5.0 reclassified BIT, BYTE and OCTET as counting units rather than information-entropy units.
+FIELDS count-entity-type reference 0..1, unit-absence-reason code 0..1, logarithmic-reference object 0..1
+Q doc-q1 Is the value a count of discrete entities, and what entity type is being counted?
+Q doc-q2 When the unit is absent, how does a consumer distinguish 'no unit was recorded' from 'the unit is one'?
+Q doc-q3 For a fraction or logarithmic quantity, what reference value and base are implied by the unit?
+BUNDLE unit-identity-and-expression Unit identity and expression The unit as a governed referent: how it is identified across code systems, how its symbol and name are presented, how compound expressions and prefixes are parsed, and which system of units it belongs to.
+LAYER unit-identification Unit identification and presentation Resolvable identification of the unit across governed code systems, and the separate question of how it is displayed to a human.
+FINDING unit-identity-and-codes: How the unit is identified so that a machine can resolve it. FHIR Quantity pairs a system URI with a code and keeps unit as a separate human-readable string, recommending UCUM. UCUM defines both case-sensitive and case-insensitive symbol variants and warns that mixing case in case-insensitive codes carries no meaning. UN/CEFACT Rec 20 Rev 17 supplies three-character alphanumeric common codes. QUDT exposes qudt:ucumCode and qudt:uneceCommonCode on its unit IRIs, making it a crosswalk hub.
+FIELDS unit-code code 0..1, unit-code-system identifier 0..1, unit-code-system-version text 0..1, unit-alternate-codes collection 0..n
+Q uic-q1 Which code system and code identify the unit, and is that code system case-sensitive?
+Q uic-q2 When a UCUM code, a UN/CEFACT common code and a QUDT IRI are all present, which is authoritative and which are derived?
+Q uic-q3 How is the code system version pinned so the same code resolves identically in five years?
+Q uic-q4 What happens when the unit has no code in any bound code system?
+FINDING unit-symbol-and-presentation: The human-facing surface of the unit, kept distinct from its code. The SI Brochure and NIST SP 811 give rules for printing and using units and for spelling unit names; FHIR separates unit (display string) from code (machine token). Presentation is locale-sensitive and must never be parsed as the authoritative unit. Note that NIST SP 811 (2008) predates the 2019 SI revision, so style guidance itself needs version pinning.
+FIELDS unit-symbol text 0..1, unit-display-text text 0..n, style-authority-ref reference 0..1
+Q usp-q1 What is the authoritative symbol and full unit name, and which locale variants are held?
+Q usp-q2 Which printing and spelling rules are enforced for this unit, and against which pinned style authority?
+Q usp-q3 Is the display string derived from the code or authored independently, and which prevails on conflict?
+LAYER unit-expression-grammar Unit expression and scaling Parsing and validating compound unit expressions, and the governed set of prefixes and scaled units.
+FINDING compound-unit-expression: The grammar that makes a unit expression machine-checkable. UCUM v2.2 uses 7-bit US-ASCII, '.' for multiplication and '/' for division evaluated left to right with equal precedence, integer exponents following the symbol, square brackets for customary units that also block prefix matching, and curly-brace annotations that fully conformant parsers must discard. Full conformance requires recognising that 'km' equals '1000.m'; limited conformance compares expressions literally — a difference that silently changes equality semantics between systems.
+FIELDS unit-expression text 0..1, unit-expression-canonical text 0..1, unit-annotation text 0..n
+Q cue-q1 Which grammar and conformance level govern parsing of compound unit expressions in this deployment?
+Q cue-q2 Are curly-brace annotations permitted, and are they discarded before semantic comparison?
+Q cue-q3 Are syntactically different but semantically equal expressions treated as equal, and is a canonical form stored?
+Q cue-q4 What is the outcome when an expression fails to parse — rejection, quarantine, or acceptance with a flag?
+FINDING prefixes-and-scaled-units: The admissible prefix set and its traps. The SI defines decimal prefixes; CGPM 2022 Resolution 3 added ronna (R, 10^27), quetta (Q, 10^30), ronto (r, 10^-27) and quecto (q, 10^-30). VIM 1.17 and 1.18 define multiple and submultiple of a unit. UCUM forbids unit atoms from containing prefixes and blocks prefix matching across bracket boundaries. Two persistent hazards: the kilogram is the base unit yet carries a prefix, and binary prefixes (Ki, Mi, Gi) are not SI prefixes and must not be conflated with decimal ones.
+FIELDS prefix-symbol code 0..1, prefix-factor number 0..1, prefix-set-version text 0..1
+Q pfx-q1 Which prefix set is admitted, and does it include the prefixes adopted by CGPM in 2022?
+Q pfx-q2 Are binary prefixes permitted, and how are they kept distinct from decimal prefixes of the same initial letter?
+Q pfx-q3 How are compound prefixes, prefixes on non-metric atoms, and the prefixed base unit kilogram handled?
+LAYER system-membership System of units membership Which system of units the unit belongs to, whether it is coherent within that system, and how off-system, customary and arbitrary units are constrained.
+FINDING system-and-non-si-units: VIM 1.13 defines a system of units, 1.14 a coherent system of units, 1.12 a coherent derived unit and 1.15 an off-system measurement unit. QUDT models this as qudt:SystemOfUnits. The decisive operational distinctions are: coherent SI units allow conversion factors of exactly one in coherent equations; units accepted for use with the SI (minute, hour, litre, tonne, electronvolt) require explicit factors; customary units require bracketed treatment in UCUM; and arbitrary units are procedure-dependent, carry no general meaning relative to any other unit, and form no equivalence classes — so cross-comparison of two arbitrary units must be refused outright, not merely warned about.
+FIELDS system-of-units-id identifier 0..1, unit-category code 0..1, defining-procedure-ref reference 0..1
+Q snu-q1 To which system of units does this unit belong, and is it coherent within that system?
+Q snu-q2 Is the unit SI, accepted for use with the SI, off-system, customary, arbitrary or procedure-defined?
+Q snu-q3 For an arbitrary or procedure-defined unit, which procedure or reference material defines it, and is comparison with any other arbitrary unit forbidden?
+Q snu-q4 Which unit is used for storage and which for presentation when they differ?
+BUNDLE value-expression Value expression and numeric fidelity The numeric side of the value object: what the number is bound to, what form it takes, and how its precision and exactness survive storage and transfer.
+LAYER value-composition Value composition and form How the number binds to its reference, and whether the value is a point, an interval, a bound or a ratio.
+FINDING value-reference-binding: VIM 1.19 defines a quantity value as a number and reference together, where the reference may be a measurement unit (5.34 m), a measurement procedure (43.5 HRC) or a reference material (5.0 IU/l). VIM 1.20 defines the numerical quantity value as the number in that expression. The number may be complex, and vector or tensor quantities have a value per component. The operational consequence is that value and reference form an atomic pair: neither may be written, updated, defaulted or indexed independently, and D-SI carries them as one payload with uncertainty.
+FIELDS numeric-value number 1, reference-type code 1, value-components collection 0..n
+Q vrb-q1 What is the numerical value, and which reference type does it bind to — unit, measurement procedure or reference material?
+Q vrb-q2 Is the numerical value real, complex, vector or tensor, and how are components carried and ordered?
+Q vrb-q3 Is the value/reference pair enforced as atomic, so that no write path can set one without the other?
+FINDING value-forms-and-bounds: A quantity value is not always a point. FHIR provides a comparator element (<, <=, >=, >, plus ad-hoc statistical markers) that modifies the meaning of the value, and separate Range and Ratio types; SimpleQuantity forbids the comparator. schema.org QuantitativeValue offers minValue and maxValue for intervals. Detection limits, censored values, values outside the measuring interval and rate expressions all need an explicit form so that a consumer never mistakes a bound for a point estimate.
+FIELDS value-form code 1, value-comparator code 0..1, value-bounds object 0..1
+Q vfb-q1 Is this value a point, a one-sided bound, an interval, or a ratio of two quantities?
+Q vfb-q2 For an interval, are the bounds inclusive, and must both bounds share the same unit?
+Q vfb-q3 How is a result below a detection limit or outside the measuring interval encoded so it is not aggregated as a point value?
+Q vfb-q4 Which value forms are prohibited in this property slot?
+LAYER numeric-representation Numeric representation and fidelity How the number survives storage, serialisation and arithmetic without silent loss of meaning.
+FINDING precision-rounding-exactness: FHIR states that a Quantity value 'includes an implicit precision in the presentation of the value' and that 0.010 is regarded as different from 0.01, so trailing zeros are semantically significant and must be preserved. ISO 80000-1:2022 specifies rules for rounding of numbers, and NIST SP 811 gives rules for expressing values of quantities. Binary floating-point representation destroys both trailing-zero precision and exact decimal round-trips, so the representation choice is a semantic decision, not an implementation detail. Some values are exact by definition (the SI defining constants, and defined conversions such as 1 in = 25.4 mm) and must never be rounded.
+FIELDS significant-digits number 0..1, exactness-flag boolean 0..1, numeric-representation-form code 0..1
+Q pre-q1 How many significant digits are meaningful, and are trailing zeros preserved through storage and serialisation?
+Q pre-q2 Is this value exact by definition or an approximation subject to rounding?
+Q pre-q3 Which numeric representation is mandated to guarantee lossless round-trip, and what is the behaviour if a consumer cannot honour it?
+Q pre-q4 Which rounding rule applies when the value is scaled, converted or aggregated, and is the rounding recorded?
+BUNDLE comparability-and-conversion Comparability and conversion When two quantity values may be compared, and how a value is transformed from one unit to another without silently corrupting its meaning.
+LAYER comparability Commensurability and comparison The tests that decide whether two values may lawfully be compared, added or aggregated.
+FINDING commensurability-and-equality: UCUM treats two units as commensurable when they share the same dimension, while stressing that commensurable units need not be equal, and that equality forms a narrower equivalence class than commensurability. Arbitrary units form no equivalence classes at all and are incomparable even to other arbitrary units. QUDT v3.4.0 introduced explicit relations such as qudt:specializationOf and qudt:unitForQuantityKind precisely because dimensional matching alone produced wrong equivalences. Comparison of values carrying uncertainty is a further distinct decision that must not default to bare numeric comparison.
+FIELDS commensurability-result object 0..1, comparison-semantics code 0..1
+Q com-q1 Are the two units commensurable, and by which test — equal dimension, equal quantity kind, or both?
+Q com-q2 Does commensurability alone authorise comparison here, or is agreement on quantity kind also required?
+Q com-q3 How are equality and ordering defined when one or both values carry uncertainty or a comparator?
+Q com-q4 Which comparisons must be refused outright rather than approximated?
+LAYER conversion-mechanics Conversion mechanics and consequences The parameters and functions that convert values between units, and the provenance and loss that conversion creates.
+FINDING conversion-functions: QUDT expresses conversion as qudt:conversionMultiplier with an optional qudt:conversionOffset relative to the coherent SI unit of the kind. UCUM distinguishes proper units, where conversion factors derive from dimensional analysis over its base set (meter, second, gram, radian, kelvin, coulomb, candela), from special units on non-ratio scales such as degree Celsius, which require mathematical functions rather than scalar multiplication. The critical trap is that converting a point on an interval scale and converting a difference on the same scale use different rules: a temperature difference of 5 °C is 5 K, but a temperature of 5 °C is 278.15 K.
+FIELDS conversion-multiplier number 0..1, conversion-offset number 0..1, conversion-function-ref reference 0..1, point-or-difference code 0..1
+Q cnv-q1 What multiplier and offset convert this unit to the coherent SI unit of its quantity kind?
+Q cnv-q2 Does the unit require a non-linear conversion function rather than multiplier and offset?
+Q cnv-q3 Is this value a point on the scale or a difference, and which conversion rule therefore applies?
+Q cnv-q4 Which authority publishes the conversion factor, at what version, and is the factor exact or rounded?
+FINDING conversion-provenance-and-loss: Every conversion is a derivation that can lose information. A converted value that overwrites the original destroys the ability to audit or reverse the transformation, and rounding after conversion silently changes the implied precision. D-SI carries value, unit and uncertainty as a single payload precisely so that a transformed result remains metrologically interpretable. Round-trip conversion through binary floating point is frequently not idempotent.
+FIELDS source-quantity-ref object 0..1, conversion-event-time timestamp 0..1, conversion-loss-note text 0..1
+Q cpl-q1 Is the stored value the value as originally reported, or a derivative produced by conversion?
+Q cpl-q2 What precision or uncertainty was lost in the conversion, and is the pre-conversion value retained?
+Q cpl-q3 Is the conversion reversible without drift, and is a round-trip check required before the result is accepted?
+BUNDLE quality-uncertainty-and-validation Quality, uncertainty and validation How confidence in the value is stated, how tolerance and conformity decisions are separated from measurement uncertainty, and how constraints and validation outcomes are recorded.
+LAYER uncertainty-and-tolerance Uncertainty and tolerance Stating dispersion attributable to measurement, and separately stating the permitted interval a value must fall within.
+FINDING uncertainty-expression: The GUM defines standard uncertainty as the standard deviation characterising the dispersion of values attributable to the measurand, evaluated by Type A (statistical analysis of repeated observations) or Type B (other means such as certificates or expert judgement) methods, combined into a combined standard uncertainty and optionally multiplied by a coverage factor k to give an expanded uncertainty with a stated coverage probability. A reported uncertainty without its type, coverage factor and coverage probability is uninterpretable. D-SI carries these as structured fields alongside value and unit.
+FIELDS uncertainty-value quantity 0..1, uncertainty-type code 0..1, coverage-factor number 0..1, coverage-probability number 0..1
+Q unc-q1 Is the reported uncertainty a standard uncertainty, a combined standard uncertainty or an expanded uncertainty?
+Q unc-q2 For an expanded uncertainty, what coverage factor and coverage probability apply, and how was the factor chosen?
+Q unc-q3 Were the contributing components evaluated by Type A or Type B methods, and is the evidence for Type B components recorded?
+Q unc-q4 Is the uncertainty expressed in the same unit as the value or as a relative quantity, and how is that declared?
+FINDING tolerance-and-conformity: Tolerance is a requirement imposed by a specification; measurement uncertainty is a property of the measurement. They have different owners, different lifecycles and different consequences, and must never be stored in the same field. A conformity decision — whether the value passes — depends additionally on a decision rule and any guard band, and is a separate assertion from either the value or its uncertainty.
+FIELDS specification-limits object 0..1, conformity-outcome code 0..1, decision-rule-ref reference 0..1
+Q tol-q1 What tolerance or specification interval applies to this value, and which authority set it?
+Q tol-q2 Is a conformity decision recorded, and what decision rule and guard band produced it?
+Q tol-q3 How does the record keep tolerance distinct from measurement uncertainty so neither is mistaken for the other?
+FINDING metrological-traceability-claim: VIM defines metrological traceability as a property of a measurement result whereby the result can be related to a reference through a documented unbroken chain of calibrations, each contributing to the measurement uncertainty. ISO 11240 requires units used in medicinal-product interchange to be traceable to international metrological standards and provides mapping structures among vocabularies. After 20 May 2019 the SI reference is the set of defining constants rather than artefacts such as the international prototype of the kilogram. Claims of traceability without a chain are not conformance.
+FIELDS metrological-traceability-claim-data01 reference 0..1, metrological-traceability-claim-data02 boolean 0..1, metrological-traceability-claim-data03 identifier 0..1, metrological-traceability-claim-data04 text 0..1
+Q metrological-traceability-claim-q01 To which international reference is this quantity value or unit claimed to be traceable, and is the calibration chain documented end to end?
+Q metrological-traceability-claim-q02 What evidence artefacts support the traceability claim, such as a calibration certificate identifier, mise en pratique citation, or mapping table version?
+Q metrological-traceability-claim-q03 Which organisation is responsible for maintaining the traceability claim, and under which accreditation or metrological authority?
+Q metrological-traceability-claim-q04 Where does the chain stop, and is the result therefore only internally consistent rather than metrologically traceable?
+LAYER constraint-and-validation Constraint specification and validation The declarative constraints applied to a quantity slot and the recorded outcome of applying them.
+FINDING constraints-and-validation-outcomes: FHIR binds units through value sets on Quantity elements and restricts SimpleQuantity by forbidding a comparator; QUDT constrains admissible units per quantity kind through qudt:applicableUnit; UCUM conformance level determines whether an unrecognised expression can even be evaluated. A quantity slot needs a declared constraint set (allowed units, allowed value forms, plausibility range, cardinality, requiredness) and a recorded, re-evaluable validation outcome — because a value that passed under one registry release may fail under the next.
+FIELDS allowed-unit-set reference 0..1, plausibility-range object 0..1, validation-status object 0..1
+Q cvo-q1 Which units and value forms are permitted for this quantity slot, and with what binding strength?
+Q cvo-q2 What plausibility range, cardinality and requiredness apply, and are they hard constraints or advisory warnings?
+Q cvo-q3 What must a consumer do when the unit is unrecognised or a constraint fails — reject, quarantine, or accept with a flag?
+Q cvo-q4 Is the validation outcome persisted, and is it re-evaluated when the bound registry release changes?
+BUNDLE context-provenance-and-lifecycle Context, provenance and lifecycle The qualifiers that change how the same number and unit must be read, where the value came from, when it applies, and how it and its unit definitions change over time.
+LAYER contextual-qualification Contextual qualification Reference conditions, denominators and other qualifiers without which the number and unit are ambiguous.
+FINDING qualifiers-and-reference-conditions: The same number and unit can mean different things depending on context that is not encoded in either. Gas volumes depend on reference temperature and pressure; concentrations depend on the basis (dry weight, wet weight, per volume of what); rates depend on their denominator population and period; fuel consumption in L/100 km carries an implied per-distance basis. schema.org provides valueReference explicitly to carry such context, and unitText as a fallback where no code exists for compound expressions like 'L/100 km'. UCUM annotations can carry the denominator hint but are semantically void and discarded by conformant parsers, so they cannot be relied on for meaning.
+FIELDS reference-conditions collection 0..n, denominator-context object 0..1, value-reference-qualifier reference 0..n
+Q qrc-q1 Under which reference conditions is this value defined, and are those conditions recorded as structured data rather than free text?
+Q qrc-q2 For a rate or ratio, what is the denominator — per what entity, per what population, per what period?
+Q qrc-q3 Does a contextual qualifier change how the same number and unit must be interpreted, and is a consumer required to fail if it cannot interpret the qualifier?
+Q qrc-q4 Is any semantic meaning being carried in a UCUM annotation that a conformant parser will discard?
+LAYER provenance-and-time Provenance and time Where the value came from, by what means, and the separate times at which the phenomenon occurred and the value was recorded.
+FINDING value-derivation-provenance: Whether a value was measured, computed, estimated, asserted, defaulted or converted determines what may be inferred from it. SOSA distinguishes the observation act from its result and delegates the result's encoding; the mixin therefore carries a compact origin statement plus a reference to the fuller observation or calculation record in the sibling model. VIM 2.41 metrological traceability is a claim requiring an unbroken documented calibration chain, so it must be recorded as a referenced claim with evidence, never asserted by default.
+FIELDS origin-category code 0..1, originating-agent reference 0..1, traceability-claim-ref reference 0..1
+Q vdp-q1 Was this value measured, computed, estimated, asserted, defaulted or converted?
+Q vdp-q2 If computed, from which input quantity values and by which documented method or expression?
+Q vdp-q3 Is a metrological traceability claim made, and what documented calibration evidence supports it?
+FINDING event-time-and-record-time: A quantity value has at least two distinct times: when the phenomenon it describes occurred or held, and when the value was observed, ingested or recorded. Conflating them makes late-arriving data, backfills and corrections indistinguishable from real change. RFC 3339 fixes the format: seconds are required and an offset must be present, with 'Z' meaning UTC and '-00:00' explicitly meaning that UTC is known but the local offset is not — a distinction that must be preserved rather than normalised away.
+FIELDS event-time timestamp 0..1, record-time timestamp 0..1, validity-interval object 0..1
+Q etr-q1 When did the phenomenon the value describes occur or hold, and when was the value observed or ingested?
+Q etr-q2 Are both timestamps RFC 3339 with seconds and an explicit offset or Z, and is '-00:00' preserved where the local offset is unknown?
+Q etr-q3 Over what interval is the value valid, and does it expire or require refresh?
+Q etr-q4 How is a late-arriving or backfilled value distinguished from a genuine change in the measured quantity?
+LAYER versioning-and-correction Versioning, deprecation and correction How changes to unit definitions and to recorded values are handled without retroactively falsifying history.
+FINDING registry-version-and-value-correction: Unit vocabularies change in ways that alter meaning: QUDT v3.4.0 replaced ambiguous broader-than relations with an explicit commensurability framework and v3.5.0 redefined BIT, BYTE and OCTET as counting units; CGPM 2022 extended the prefix set; UN/CEFACT Rec 20 has reached Revision 17; the SI itself was redefined in 2019 in terms of exact defining constants. Values must therefore record the registry release in force when they were created, and the model must state whether historical values are reinterpreted under new definitions or frozen. Separately, a corrected value needs an explicit disposition — in-place amendment, superseding version, or retraction — because silent overwrite destroys auditability.
+FIELDS registry-release-pin collection 0..n, unit-lifecycle-status code 0..1, correction-disposition code 0..1
+Q rvc-q1 Which registry release supplied the unit definition in force when this value was created?
+Q rvc-q2 Has the unit code since been deprecated, redefined or reclassified, and what is the successor and migration rule?
+Q rvc-q3 Are historical values reinterpreted under a new unit definition, or frozen at the version of record?
+Q rvc-q4 When a value is corrected, is it amended in place, superseded by a new version, or retracted — and what remains visible?
+BUNDLE interoperability-and-embedding Interoperability, embedding and disclosure How this mixin aligns with external standards without over-claiming conformance, how it is bound into exchanges, how it embeds in host records, and what access and retention rules attach to the values it carries.
+LAYER external-alignment External alignment and binding Recorded mappings to external vocabularies with strength and conflicts, and the profile bindings that govern a given exchange.
+FINDING alignment-and-conflicts: This model aligns to, and does not subsume, UCUM (machine grammar), UN/CEFACT Rec 20 (trade common codes), QUDT (IRIs, dimensions and conversion parameters), ISO 80000 and the SI Brochure (normative quantity and unit semantics), FHIR (a deployed binding) and schema.org (a web projection). Real conflicts must be registered rather than smoothed over: schema.org documents currency codes in unitCode although a currency has no quantity dimension; QUDT reclassified information units between releases; UCUM full versus limited conformance changes whether 'km' equals '1000.m'; and NIST SP 811 remains at its 2008 edition, predating the 2019 SI revision.
+FIELDS alignment-mapping object 0..n, conformance-claim object 0..n
+Q alc-q1 To which external vocabularies is this unit or quantity kind aligned, and is each mapping exact, broader, narrower or approximate?
+Q alc-q2 Where do the aligned standards conflict, and what resolution has been recorded for this deployment?
+Q alc-q3 Is conformance to a named standard being claimed, and what evidence substantiates the claim?
+Q alc-q4 Which alignments are advisory only and must not be used to drive automated conversion?
+FINDING profile-binding-and-negotiation: A generic Quantity is rarely safe on the wire; it is made safe by a profile. FHIR demonstrates this with SimpleQuantity forbidding a comparator, with unit value-set bindings on specific elements, and with typed profiles (Age, Duration, Count, Distance, MoneyQuantity). An exchange must therefore state which profile applies, which value set binds the unit, the binding strength, and what happens when a partner sends something outside it — including whether the receiver fails closed or accepts with a flag.
+FIELDS profile-id identifier 0..1, binding-strength code 0..1, nonconformance-disposition code 0..1
+Q pbn-q1 Which profile and unit value set bind this quantity slot in this exchange, and at what binding strength?
+Q pbn-q2 How was the binding agreed with the exchange partner, and where is that agreement recorded?
+Q pbn-q3 What is the receiver's behaviour when a value arrives outside the bound value set or violates the profile?
+LAYER embedding-and-disclosure Embedding and disclosure How the mixin attaches to host records and what the host must decide about access, disclosure and retention of the values it carries.
+FINDING mixin-embedding-contract: The registry marks this model as an EMBED value object. Embedding rather than referencing means the quantity has no independent identity or lifecycle: it is created, versioned, secured and deleted with its host. FHIR's Quantity is a datatype, not a resource, for the same reason, and SOSA delegates result encoding to whatever vocabulary the host adopts. The contract must state the minimum field set every embedding carries, which host responsibilities are inherited rather than restated, and the narrow conditions under which a quantity may instead be referenced by identifier — for example a shared reference condition or a defining constant reused across many records.
+FIELDS embedding-mode code 1, mandatory-field-set collection 1..n, host-record-ref reference 0..1
+Q mec-q1 Is the quantity embedded as a value object in the host record, or referenced by identifier, and what justifies the choice?
+Q mec-q2 Which fields are mandatory in every embedding, and which are conditionally required by scale type or origin?
+Q mec-q3 Does the embedded quantity inherit the host record's identity, versioning and audit trail, or does it carry its own?
+Q mec-q4 Which host-model responsibilities are explicitly delegated so this mixin does not restate them?
+FINDING access-disclosure-and-retention: A quantity value is small but not neutral. Precise numeric values can re-identify individuals, reveal protected attributes, or disclose commercially sensitive process parameters, and precision reduction or banding is a recognised disclosure control that itself changes the value's meaning and must be recorded as a derivation. No consulted primary metrology or units standard addresses access control or retention for quantity values, so these rules are inherited from the host model and from the adopting Dimension's policy — this finding exists to make that delegation explicit and auditable rather than implicit.
+FIELDS sensitivity-classification code 0..1, retention-rule-ref reference 0..1, disclosure-control-applied object 0..1
+Q adr-q1 Can this numeric value, alone or combined with others, re-identify a person or reveal a controlled attribute?
+Q adr-q2 Which access rule applies to the numeric value as against its unit and quantity-kind metadata?
+Q adr-q3 Under which retention rule is the value deleted, and is the unit and provenance metadata retained so remaining data stays interpretable?
+Q adr-q4 Is precision reduction, banding or perturbation applied as a disclosure control, and is that transformation recorded as provenance?
