@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -23,6 +24,17 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
+def provider_status(run_dir: Path, provider: str, manifest: dict, waived: set) -> str:
+    """Keep terminal CLI history while surfacing a separately verified browser memo."""
+    browser = read_json(run_dir / f"{provider}-browser.manifest.json")
+    memo = run_dir / f"{provider}-browser.review.md"
+    if browser.get("status") == "complete" and memo.is_file():
+        if hashlib.sha256(memo.read_bytes()).hexdigest() == browser.get("output_sha256"):
+            return "complete-browser-memo"
+        return "browser-evidence-digest-mismatch"
+    return manifest.get("status", "waived" if provider in waived else "queued")
+
+
 def main() -> int:
     with QUEUE.open(encoding="utf-8-sig", newline="") as handle:
         queue = list(csv.DictReader(handle))
@@ -39,8 +51,8 @@ def main() -> int:
             "sequence": item["sequence"],
             "model_id": item["model_id"],
             "name": item["name"],
-            "claude_status": claude.get("status", "waived" if "claude" in run_waived else "queued"),
-            "grok_status": grok.get("status", "waived" if "grok" in run_waived else "queued"),
+            "claude_status": provider_status(run_dir, "claude", claude, run_waived),
+            "grok_status": provider_status(run_dir, "grok", grok, run_waived),
             "synthesis_status": adjudication.get("status", "blocked-on-providers"),
             "validation_status": "valid" if synthesis_validation.get("valid") else "not-valid-or-not-run",
             "bundles": counts.get("bundles", ""),

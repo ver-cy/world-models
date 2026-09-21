@@ -1,0 +1,77 @@
+```json
+{
+  "verdict": "PASS_WITH_REQUIRED_DRAFT_FIXES",
+  "verdict_summary": "No critical contradiction prevents publishing this as an honestly scoped, versioned REVIEWABLE-DRAFT research specification. The boundary, invariants, operations and negative tests are mutually coherent at the text level. Four wording or contract fixes are needed so that stated invariants do not contradict each other, and so that source status is not overstated relative to the audited memo.",
+  "critical_conflicts": [],
+  "required_changes_for_draft": [
+    {
+      "id": "R1",
+      "area": "retention vs correction lineage",
+      "problem": "One invariant says all history is subject to the retention/erasure policy, not retained forever. At the same time, the negative mutation 'erased correction predecessor' is rejected. As written, a lawful erasure of a superseded assertion would fail validation, so the two statements conflict.",
+      "fix": "Define a policy-authorized tombstone or redaction form for a superseded assertion. It keeps the ID, the supersession link, the valid and recorded times, and a policy/authority ref, with the content removed. Restate the negative case as 'predecessor removed without a policy-authorized tombstone'."
+    },
+    {
+      "id": "R2",
+      "area": "disagreement disclosure exceptions",
+      "problem": "The invariant allows 'separately authorized exceptions where necessary' to disclosing disagreement or qualifications. However, the Disclosure record has no field that can represent such an exception. The negative test 'one-sided assessment export omitting dispute context' would therefore reject a legitimate exception, or force it outside the contract.",
+      "fix": "Do one of two things. Either add an optional exception object to Disclosure (omitted_qualification_refs, exception_basis, exception_authority_ref, reviewer), or state explicitly that exceptions are out of scope for this draft and are always rejected by the reference validator."
+    },
+    {
+      "id": "R3",
+      "area": "calibration vs single current issued outcome",
+      "problem": "Calibration requires distinct before/after assessment refs, and the profile allows at most one current issued outcome. Neither the text nor the listed negative tests state that an issued 'after' assessment must supersede the 'before' one. A post-issuance calibration could therefore leave two current issued assertions without an explicit rule.",
+      "fix": "Add an invariant covering calibration of an issued assessment. When the before-assessment is issued, the after-assessment's 'supersedes' field must equal the before-ref, and the before-assessment's status becomes 'superseded'. Add a matching negative mutation, or note the gap as untested."
+    },
+    {
+      "id": "R4",
+      "area": "source provenance honesty",
+      "problem": "The packet lists these as adopted primary precedents: the official HR Open public EPM overview, SFIA 9 LEDA, the OPM public cycle overview and the ISO 30414:2025 abstract. The Claude browser memo did not read or verify the HR Open overview; it explicitly reported only third-party HR-XML mirrors. That memo also did not cite SFIA 9 LEDA, ISO 30414 or an OPM cycle overview. This audit cannot verify any of them.",
+      "fix": "For each precedent, record who read it, the access date, and the exact URL used. Mark as Codex-verified (or unverified) any precedent not traceable to a provider memo. Do not attribute verification of these sources to the Claude memo."
+    }
+  ],
+  "nonblocking_holds": [
+    "Duplicate detection: consider adding 'purpose' to the subject/context/program/period signal. A same-purpose duplicate should then require a recorded justification, so that shadow reviews under a relabelled lane do not pass silently.",
+    "Advisory related contexts vs the 'wrong evidence employment' rejection: document how evidence from a related (non-governing) context is admitted, for example use_state=advisory with a related_context ref, so the rule does not reject legitimate advisory input.",
+    "'Absent attribution' rejection: clarify that it means a missing claim, not a claim with share unknown. Otherwise it may be misread as conflicting with 'unknown stays unknown'.",
+    "Calibration 'panel': make it a reference to the external Calibration Session and its roster rather than a local roster copy, to avoid a second master for session membership.",
+    "Assessments carry only issue time. The 'valid vs recorded time' invariant for corrections may need an explicit valid-period or effective-time field on assessment assertions.",
+    "Case state enum: no explicit cancelled/withdrawn state (for example insufficient opportunity to perform, or contractor-to-employee conversion). Confirm whether 'retired' covers these, or add a reason code.",
+    "PROV alignment: do not imply that PROV-O defines role or share on Attribution. Contribution role and share terms are Vercy extensions.",
+    "Counting the Vercy whole-object profile as a 'primary-source precedent' is self-referential. Label it as an internal normative profile, separate from external precedents.",
+    "ESCO was requested as a capability vocabulary but does not appear in the adopted precedent list. Either add it with a version pin or record why it was deferred.",
+    "Already-listed holds remain valid and nonblocking: field-level crosswalk and licensing; legal, regional and employee-representation review; production IAM and policy engine; native Dimension fixture; group-subject, membership-only, leave-fairness and multilingual profiles; ratification of Program, Scale, CalibrationSession and Recognition; EM-PEO-06 acceptance.",
+    "Reported validator counts (7 bundles, 14 layers, 24 findings, 72 questions, 24 artifacts, 8 operations) and the 27/0 test result are author-reported. They are consistent with 4 positive + 23 negative cases but not independently checked."
+  ],
+  "accepted_decisions": [
+    "The aggregate root is one purpose-qualified case for one subject and one governing work context, with advisory related contexts.",
+    "Separate masters are retained for Person, Organization, Employment, Membership, Assignment, Contract and original evidence.",
+    "Shared objectives are referenced, and case-local objective commitments are owned by the case.",
+    "Calibration Session is a peer object, with 0..n case-local before/after outcomes.",
+    "Recognition is recommendation-only with changes_rating=false; awards and payments stay external.",
+    "Scale versions have their own identities; scaled assessment pins an exact version, and narrative-only assessment needs none.",
+    "Profiles: employee uses Employment, contractor uses Contract, founder uses an explicit mandate.",
+    "There is no universal cadence, minimum tenure, scale, monitoring ceremony or appeal-depth limit.",
+    "Case IDs are stable and distinct from revision numbers and assessment-assertion IDs.",
+    "Attribution shares are optional claims (unknown, asserted or disputed) and are not ownership.",
+    "Contest types are separated: fact correction, attribution correction, opinion contest, process contest and proxy exclusion.",
+    "A Projection covers exactly one case, with pinned source revision, explicit field paths, recipient, purpose, authority and expiry. A disclosure record is not a permission to send.",
+    "Policy flags automatic_employment_decisions=false and portable_person_score=false, and there is no automatic dossier transfer to a new employer.",
+    "Assisted drafting is kept separate from accountable human issuance, and automated issuance is rejected.",
+    "Operations are proposed guarded operations, not implemented HRIS actions.",
+    "AI Act timing, legal compliance and ISO formula claims are excluded, and non-primary mirrors and vendor assertions are not promoted."
+  ],
+  "audit_scope": {
+    "mode": "frozen, no tools, text-only",
+    "inputs_audited": "Only the transmitted text packet summary of the candidate.",
+    "not_audited": [
+      "The full candidate JSON, schema file, validator code or test fixtures",
+      "The SHA-256 ae9d5dfb...5032, which is treated as a reference identifier only and not attested",
+      "Test execution: 27 pass / 0 fail is author-reported",
+      "Any source document; no new source facts were added",
+      "Lifecycle transition enforcement, jurisdictional validity, anonymization, production access control"
+    ],
+    "assurance_level": "Suitability for a public reviewable draft only; no canonical, standard or legal assurance.",
+    "provenance_note": "This audit is independent of the structured JSON authorship. The earlier Claude browser memo informed the candidate but did not emit it, and it did not verify the HR Open official overview, SFIA 9, ISO 30414 or an OPM cycle overview."
+  }
+}
+```
