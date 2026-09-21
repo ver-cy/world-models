@@ -1,0 +1,1319 @@
+{
+  "model": {
+    "registry_id": "vr.wm-xct-021",
+    "model_id": "WM-XCT-021",
+    "name": "Lifecycle / Status",
+    "entry_kind": "mixin",
+    "purpose": "Provide one reusable, format-neutral context package that lets any host world-model entry declare the governed state machine it obeys, its current state on each status axis, the effective validity of that state in real-world time and in system time, and the authority, evidence, succession, invalidation and disposition rules that govern movement between states.",
+    "scope_statement": "WM-XCT-021 is a cross-cutting mixin, not a standalone entity. It supplies (a) the definition of a lifecycle state machine as a governed, versioned, identified object; (b) the assertion of current state and the append-only history of transitions; (c) bitemporal effective validity, separating real-world (valid/application) time from record (transaction/ingestion) time; (d) succession, deprecation, revocation, suspension and disposition semantics including their reversibility and retroactive effect; and (e) the operational and interoperability surface needed to evaluate, apply, query, publish and map status. It deliberately carries no domain meaning: the semantics of any particular state ('active order', 'approved permit') belong to the host model that composes this mixin. It is independent of storage format and access interface; JSON, YAML, Markdown, HTML, Git, MCP and MongoDB are projections of these semantics, never their source.",
+    "in_scope": [
+      "Definition of the state space: governed state code list, state identity, initial state, terminal states, reversible states",
+      "Multiple concurrent status axes (governance/publication, operational, legal validity, quality) and their precedence rules",
+      "Transition topology: permitted source/target pairs, triggers, guard conditions, mandated effects, deterministic conflict resolution",
+      "Concurrent regions, composite states, and history (resumption) semantics where the host lifecycle needs them",
+      "Identity, versioning, ownership and change procedure of the lifecycle definition itself, including self-application of the mixin",
+      "Current-state assertion and append-only transition history, with actor, authorizer, delegation and reason code",
+      "Effective validity intervals (valid-from / valid-until), boundary inclusivity, precision, open-endedness and no-expiry conventions",
+      "Bitemporality: event time, observation time, record/ingestion time; retroactive correction, amendment and as-of/as-at reconstruction",
+      "Supersession, replacement, deprecation and sunset links, and traversal to the current item",
+      "Revocation versus suspension, invalidity dating, retroactive effect, and published status distribution to relying parties",
+      "Lifecycle end as a retention/disposition trigger, legal hold, logical deletion, tombstones and erasure reconciliation",
+      "Operational contract for evaluating and applying transitions (idempotency, concurrency, atomicity, rejection recording)",
+      "Mapping of local states to external status vocabularies, mapping strength, lossiness and recorded conflicts",
+      "Visibility and access classification of pre-publication states and of transition justifications"
+    ],
+    "out_of_scope": [
+      "Domain semantics of individual states (what 'dispensed', 'settled' or 'commissioned' means) — supplied by the host model",
+      "Version identity, content diffing, branching and merging of the subject's content — belongs to a Versioning & Change Control model",
+      "General provenance of content creation and derivation beyond lifecycle transitions — belongs to a Provenance & Lineage model",
+      "Retention schedules, appraisal methodology and the legal instruments that authorise disposition — belongs to a Records Retention & Disposition model",
+      "Authorization policy language, role engineering and enforcement — belongs to an Authorization & Access Control model",
+      "Human workflow orchestration: task assignment, queues, escalation, service levels — belongs to a Process / Workflow model",
+      "Calendars, business-day arithmetic, non-Gregorian temporal reference systems — belongs to a Temporal Reference & Calendar model",
+      "Assignment and minting of subject identifiers — belongs to an Identity & Identifier model",
+      "Governance of the state code list as a code list (publication, translation, code-list versioning) — belongs to a Classification / Code List Registry model",
+      "Cryptographic formats, proofs and key management for credentials whose revocation patterns are reused here",
+      "Physical storage, indexing, change-data-capture and database audit mechanisms — projection concerns",
+      "Formal verification of state machines (deadlock, liveness, reachability proofs)"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Provenance & Lineage model",
+        "distinction": "This mixin records why, by whom and under what authority a state changed, and the invalidation instant. General entity generation, derivation and attribution graphs belong to the provenance model; PROV-O generation/invalidation and FHIR Provenance.occurred vs Provenance.recorded are the shared seam, not a duplication.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "Versioning & Change Control model",
+        "distinction": "Supersession and deprecation are represented here as lifecycle states and links because they change fitness for use. The identity of a version, its content delta and its release engineering belong to the versioning model; DCAT 3 previousVersion/hasCurrentVersion and DCMI replaces/isReplacedBy are the alignment points.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-015",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Records Retention & Disposition model",
+        "distinction": "Only the lifecycle-end trigger, the legal-hold flag and the resulting disposition state are modelled here. Appraisal, retention schedules and the authorising instrument are external; ISO 15489-1 requires disposition authorities to be authorised, dated, implemented and reviewed, which this mixin references rather than restates.",
+        "source_refs": [
+          "SRC-017",
+          "SRC-021"
+        ]
+      },
+      {
+        "neighbor": "Authorization & Access Control model",
+        "distinction": "This mixin records the authority basis actually exercised for a transition and the visibility class of a state; it does not define policy syntax, role hierarchies or an enforcement point.",
+        "source_refs": [
+          "SRC-017",
+          "SRC-020"
+        ]
+      },
+      {
+        "neighbor": "Process / Workflow Orchestration model",
+        "distinction": "The lifecycle here is a declarative state machine over one subject, in the sense of SCXML/UML behavioural state machines. Multi-actor task routing, work queues and durations belong to the workflow model.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-019"
+        ]
+      },
+      {
+        "neighbor": "Temporal Reference & Calendar model",
+        "distinction": "Validity intervals, boundary conventions and RFC 3339/9557 timestamp rules are in scope. Temporal reference systems, non-Gregorian calendars and duration arithmetic belong to the temporal model; OWL-Time supplies the interval-relation vocabulary used across the seam.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Classification / Code List Registry model",
+        "distinction": "The state code list is governed as a code list elsewhere (registration authority, registration status of each code). This mixin binds a code list to a state space and adds transition structure that a plain code list does not carry.",
+        "source_refs": [
+          "SRC-016",
+          "SRC-018"
+        ]
+      },
+      {
+        "neighbor": "Credential / Certificate model",
+        "distinction": "Revocation, suspension and status-list distribution patterns are generalised here from PKI and Verifiable Credentials. Credential formats, signature suites and key lifecycle stay in the credential model.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Event Record model",
+        "distinction": "A lifecycle transition is a constrained event with a mandatory prior-state/new-state pair. General domain events, their payloads and their correlation belong to the event model.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-014"
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "resolve-effective-state",
+      "name": "Resolve effective state",
+      "description": "Return the state of a subject on a named axis for a given real-world instant, as believed at a given record instant, together with the interval and assertion that produced the answer.",
+      "inputs": [
+        "Subject reference",
+        "Status axis identifier",
+        "As-of valid instant (default: request instant)",
+        "As-at record instant (default: latest)"
+      ],
+      "outputs": [
+        "Resolved state code",
+        "Governing validity interval",
+        "Assertion and transition event references",
+        "Lifecycle definition version used"
+      ],
+      "preconditions": [
+        "The subject is bound to a lifecycle definition version",
+        "At least one state assertion exists, or an explicit indeterminate status is returned"
+      ],
+      "effects": [
+        "No state change; read-only",
+        "May emit a reproducible as-of state snapshot for audit"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-024",
+        "SRC-008",
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "evaluate-transition",
+      "name": "Evaluate transition legality",
+      "description": "Determine, without applying anything, whether a proposed transition is permitted: source state matches, transition is declared, guard holds, and the caller holds the required authority.",
+      "inputs": [
+        "Subject reference",
+        "Proposed target state or trigger",
+        "Caller identity and authority basis",
+        "Evaluation instant"
+      ],
+      "outputs": [
+        "Permitted or refused verdict",
+        "Failing precondition detail",
+        "Selected transition identifier when several match"
+      ],
+      "preconditions": [
+        "A lifecycle definition version is in force for the subject"
+      ],
+      "effects": [
+        "No state change",
+        "Evaluation may be logged for audit without creating a transition event"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-019",
+        "SRC-018"
+      ]
+    },
+    {
+      "id": "apply-transition",
+      "name": "Apply transition",
+      "description": "Record a state change: append an immutable transition event, close the prior validity interval, open the new one, execute mandated effects and update any materialised current state.",
+      "inputs": [
+        "Subject reference",
+        "Selected transition identifier",
+        "Reason code and justification",
+        "Event time and expected current state",
+        "Idempotency key"
+      ],
+      "outputs": [
+        "Transition event identifier",
+        "New current state",
+        "Outcome code (applied, rejected, duplicate)"
+      ],
+      "preconditions": [
+        "Transition evaluated as permitted",
+        "Expected current state matches actual current state",
+        "Event time conforms to the temporal convention profile"
+      ],
+      "effects": [
+        "Appends to the append-only transition log",
+        "Sets record time from the system clock, not from caller input",
+        "Triggers mandated effects atomically or with declared compensation"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-014",
+        "SRC-024"
+      ]
+    },
+    {
+      "id": "assert-validity-period",
+      "name": "Assert or adjust validity period",
+      "description": "Set or adjust the real-world validity interval of a state or assertion independently of the status value, honouring boundary and precision conventions.",
+      "inputs": [
+        "Subject reference",
+        "Status axis identifier",
+        "Valid-from and optional valid-until with explicit offset or zone annotation",
+        "Reason for adjustment"
+      ],
+      "outputs": [
+        "Updated validity interval",
+        "Continuity validation result"
+      ],
+      "preconditions": [
+        "Boundary convention and precision are declared in the temporal convention profile",
+        "Adjustment does not violate contiguity or overlap constraints unless an exception is authorised"
+      ],
+      "effects": [
+        "Creates a new assertion rather than editing the previous one",
+        "May change the derived effective status without any status transition"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-003",
+        "SRC-013",
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "supersede-subject",
+      "name": "Supersede subject",
+      "description": "Record that a subject has been replaced by a successor: set the superseded state, write bidirectional links and fix the effective instant, keeping the superseded item resolvable.",
+      "inputs": [
+        "Superseded subject reference",
+        "Successor reference",
+        "Supersession effective instant",
+        "Relation kind (version or replacement)"
+      ],
+      "outputs": [
+        "Supersession record identifier",
+        "Updated state on both items",
+        "Current-version pointer"
+      ],
+      "preconditions": [
+        "Successor exists and is itself in a valid state",
+        "Supersession is a declared transition for the current state"
+      ],
+      "effects": [
+        "Changes status from valid to superseded on the replaced item",
+        "Retains the replaced item for interpretation of historical data"
+      ],
+      "source_refs": [
+        "SRC-016",
+        "SRC-015",
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "deprecate-subject",
+      "name": "Deprecate subject with sunset",
+      "description": "Mark a subject as discouraged for new use, publish the sunset date, migration target and compatibility position, without changing its formal semantics.",
+      "inputs": [
+        "Subject reference",
+        "Sunset date",
+        "Migration target reference",
+        "Compatibility assertion and version notes"
+      ],
+      "outputs": [
+        "Deprecation notice identifier",
+        "Deprecation annotation on the subject"
+      ],
+      "preconditions": [
+        "Minimum notice period satisfied by the announced sunset date",
+        "A migration target exists or its absence is explicitly justified"
+      ],
+      "effects": [
+        "Adds a non-logical deprecation annotation",
+        "Starts the notice clock leading to retirement or supersession"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-011",
+        "SRC-009",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "invalidate-subject",
+      "name": "Revoke or suspend subject",
+      "description": "Apply an invalidation with an explicit reversibility class, reason code, invalidity instant and retroactivity ruling, and queue it for publication to relying parties.",
+      "inputs": [
+        "Subject reference",
+        "Invalidation kind (revocation or suspension)",
+        "Reason code",
+        "Invalidity instant and decision instant",
+        "Retroactivity ruling"
+      ],
+      "outputs": [
+        "Invalidation decision record identifier",
+        "Updated status and status-list entry",
+        "Cascade instructions for dependent subjects"
+      ],
+      "preconditions": [
+        "Caller holds the authority declared for this invalidation kind",
+        "Irreversible revocation is not applied where the governing policy requires suspension first"
+      ],
+      "effects": [
+        "Changes effective status independently of the validity interval",
+        "Schedules publication of the new status",
+        "May trigger cascading invalidation of dependent subjects"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-006",
+        "SRC-005",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "reinstate-subject",
+      "name": "Reinstate subject",
+      "description": "Return a subject from a reversible non-valid state to a valid state, recording the grounds, the authority and whether a new validity interval is opened.",
+      "inputs": [
+        "Subject reference",
+        "Reinstatement grounds and evidence",
+        "Effective instant",
+        "Interval policy (reopen prior interval or open new)"
+      ],
+      "outputs": [
+        "Reinstatement decision record identifier",
+        "Updated state and validity interval"
+      ],
+      "preconditions": [
+        "Current state is declared reversible",
+        "Reinstatement is a declared transition and the caller holds the required authority"
+      ],
+      "effects": [
+        "Removes the subject from suspension listings on the next publication",
+        "Leaves the original suspension event permanently in the history"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-006",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "correct-past-record",
+      "name": "Correct or amend a past record",
+      "description": "Issue a correction, clarification, amendment or retraction of an earlier assertion without editing it in place, preserving the earlier belief for as-at reconstruction.",
+      "inputs": [
+        "Target assertion or transition reference",
+        "Correction kind",
+        "Corrected values",
+        "Grounds and authorising agent"
+      ],
+      "outputs": [
+        "Correction record identifier",
+        "Notification list for affected consumers"
+      ],
+      "preconditions": [
+        "The original record remains retrievable",
+        "The correction kind is drawn from the governed code list"
+      ],
+      "effects": [
+        "Appends a new record and closes the record-time envelope of the prior belief",
+        "Never deletes or rewrites the superseded assertion",
+        "May oblige notification of downstream consumers within a stated period"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-014",
+        "SRC-016",
+        "SRC-024"
+      ]
+    },
+    {
+      "id": "validate-lifecycle-conformance",
+      "name": "Validate lifecycle conformance",
+      "description": "Check a subject's recorded state history against the governing definition version: legal transitions only, no unknown states, interval continuity respected, timestamps conforming to the temporal profile.",
+      "inputs": [
+        "Subject reference or population selector",
+        "Lifecycle definition version",
+        "Validation rule set"
+      ],
+      "outputs": [
+        "Conformance result per subject",
+        "Violation details",
+        "Conformance validation report"
+      ],
+      "preconditions": [
+        "A lifecycle definition version and constraint set are published",
+        "Subjects are bound to a definition version"
+      ],
+      "effects": [
+        "Produces retained evidence of validation",
+        "May raise lifecycle exception register entries; does not itself change state"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-018",
+        "SRC-016",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "evaluate-disposition-trigger",
+      "name": "Evaluate disposition trigger",
+      "description": "Compute whether a subject has reached the end of its retention period following a lifecycle trigger, and what disposition action is due, respecting any legal hold.",
+      "inputs": [
+        "Subject reference",
+        "Retention trigger event",
+        "Retention period and disposition authority reference",
+        "Legal hold state"
+      ],
+      "outputs": [
+        "Disposition due date",
+        "Eligibility verdict",
+        "Due disposition action"
+      ],
+      "preconditions": [
+        "An authorised, dated disposition instrument is referenced",
+        "The trigger event is recorded in the transition log"
+      ],
+      "effects": [
+        "No destruction occurs; the function only determines eligibility",
+        "Suspends eligibility while a legal hold is in force"
+      ],
+      "source_refs": [
+        "SRC-017",
+        "SRC-021",
+        "SRC-020"
+      ]
+    },
+    {
+      "id": "execute-disposition",
+      "name": "Execute disposition",
+      "description": "Carry out the due disposition action — destroy, transfer, retain permanently or re-appraise — and leave the required tombstone and evidence.",
+      "inputs": [
+        "Subject reference",
+        "Authorised disposition action",
+        "Authorising and witnessing agents",
+        "Tombstone specification"
+      ],
+      "outputs": [
+        "Destruction or erasure certificate",
+        "Tombstone record",
+        "Final lifecycle state"
+      ],
+      "preconditions": [
+        "Eligibility verified and no legal hold in force",
+        "Authorisation and any dual-control requirement satisfied"
+      ],
+      "effects": [
+        "Irreversibly removes content where the action is destruction",
+        "Leaves references resolvable through the tombstone",
+        "Retains destruction evidence for the period required by the governing authority"
+      ],
+      "source_refs": [
+        "SRC-017",
+        "SRC-021",
+        "SRC-020",
+        "SRC-016"
+      ]
+    },
+    {
+      "id": "publish-status-projection",
+      "name": "Publish status projection",
+      "description": "Produce and distribute the current status projection for a population of subjects, with its publication instant, maximum staleness, integrity proof and privacy sizing.",
+      "inputs": [
+        "Population selector",
+        "Publication channel",
+        "Maximum staleness policy",
+        "Privacy sizing parameters"
+      ],
+      "outputs": [
+        "Published status package",
+        "Publication instant and next expected update",
+        "Integrity proof"
+      ],
+      "preconditions": [
+        "Statuses to be published are resolved and conformant",
+        "Privacy analysis completed for the population"
+      ],
+      "effects": [
+        "Makes status externally observable; the act of publication is itself recorded",
+        "May reveal population membership if sizing is inadequate"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-003",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "map-external-status",
+      "name": "Map external status",
+      "description": "Translate a state between the local vocabulary and a named external vocabulary version, returning the mapping strength and any information lost.",
+      "inputs": [
+        "Source state code and vocabulary version",
+        "Target vocabulary identifier and version",
+        "Mapping direction"
+      ],
+      "outputs": [
+        "Target code or explicit unmatched result",
+        "Mapping strength",
+        "Loss notes and recorded conflicts"
+      ],
+      "preconditions": [
+        "A mapping table exists and has been revalidated against the target version",
+        "Alignment is claimed rather than conformance unless evidence exists"
+      ],
+      "effects": [
+        "No state change",
+        "Unmatched mappings are recorded rather than silently defaulted"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-016",
+        "SRC-022",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "bind-lifecycle-mixin",
+      "name": "Bind lifecycle mixin",
+      "description": "Attach a lifecycle binding to a host with a governing machine, code system, pattern family and identifiers.",
+      "inputs": [
+        "host reference",
+        "machine reference",
+        "code system reference",
+        "pattern family",
+        "identifier scheme"
+      ],
+      "outputs": [
+        "lifecycle record identifier",
+        "initial configuration",
+        "observation time"
+      ],
+      "preconditions": [
+        "Host identity exists in the identity sibling.",
+        "Machine definition is identified and has a legal initial configuration."
+      ],
+      "effects": [
+        "Creates a lifecycle record bound to the host.",
+        "Does not change host identity."
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-025"
+      ]
+    },
+    {
+      "id": "mark-entered-in-error",
+      "name": "Mark entered in error",
+      "description": "Set error or entered-in-error without deleting the host, record the correction, and apply any redaction or notification policy.",
+      "inputs": [
+        "lifecycle record identifier",
+        "authorising agent",
+        "reason",
+        "event time",
+        "observation time"
+      ],
+      "outputs": [
+        "error status",
+        "correction record identifier",
+        "redaction applied boolean"
+      ],
+      "preconditions": [
+        "Agent is authorised.",
+        "Deletion is not used as a substitute when integrity requires retention."
+      ],
+      "effects": [
+        "Sets modifier status so consumers ignore the host.",
+        "Retains the record.",
+        "Writes a correction artefact."
+      ],
+      "source_refs": [
+        "SRC-025",
+        "SRC-026",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "restore-history-configuration",
+      "name": "Restore history configuration",
+      "description": "On re-entry of a compound state, apply stored shallow or deep history instead of the default child.",
+      "inputs": [
+        "lifecycle record identifier",
+        "history vertex identifier",
+        "authorising agent"
+      ],
+      "outputs": [
+        "restored configuration",
+        "current status"
+      ],
+      "preconditions": [
+        "History kind is declared.",
+        "Stored configuration is compatible with the current machine version."
+      ],
+      "effects": [
+        "Replaces default initial entry with stored configuration.",
+        "Audits the restoration."
+      ],
+      "source_refs": [
+        "SRC-007"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Host world-model entry composing this mixin (any entity, event, relationship, aggregate, registry or classifier)",
+      "relation": "MIX-IN",
+      "purpose": "Supply the host entry with a governed state machine, current-state assertion, bitemporal validity and disposition hooks without imposing any domain semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-018",
+        "SRC-016",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Classification / Code List Registry model (sibling; not yet registered)",
+      "relation": "COMPOSE",
+      "purpose": "The state space is a governed code list administered by a registration authority; this mixin binds such a code list and adds transition structure that a plain code list does not carry.",
+      "required": true,
+      "source_refs": [
+        "SRC-016",
+        "SRC-018",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "Identity & Identifier model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Subject, artifact and authority identifiers are minted and governed there; this mixin only cites them and enforces the identity priority order for its own artifacts.",
+      "required": true,
+      "source_refs": [
+        "SRC-016",
+        "SRC-018"
+      ]
+    },
+    {
+      "target": "Provenance & Lineage model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Transition attribution, generation and invalidation timestamps extend the general provenance graph rather than duplicating it.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Versioning & Change Control model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Supersession and deprecation states here point at version lineage maintained there; version identity and content deltas are not modelled in this mixin.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-015",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Records Retention & Disposition model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Lifecycle end supplies the retention trigger; the authorised, dated disposition instrument and the appraisal behind it live in the retention model.",
+      "required": false,
+      "source_refs": [
+        "SRC-017",
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "Authorization & Access Control model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Transition authority basis and state visibility classes are recorded here and evaluated there; no policy language is defined in this mixin.",
+      "required": false,
+      "source_refs": [
+        "SRC-017",
+        "SRC-020"
+      ]
+    },
+    {
+      "target": "Process / Workflow Orchestration model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Workflow tasks drive transitions but the declarative state machine, not the task graph, is the authority on legal states.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-019"
+      ]
+    },
+    {
+      "target": "Temporal Reference & Calendar model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Interval algebra, temporal reference systems and calendar arithmetic are supplied there; this mixin consumes them for validity intervals.",
+      "required": false,
+      "source_refs": [
+        "SRC-008",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Event Record model (sibling; not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "A lifecycle transition is a constrained event subtype; general event payloads and correlation belong to the event model.",
+      "required": false,
+      "source_refs": [
+        "SRC-014",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "ISO 19135-1:2015 register item status (RE_ItemStatus: notValid, valid, superseded, retired) and proposal disposition",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for register-style lifecycles, including the requirement that retired, superseded and invalid items remain resolvable. Alignment only; no conformance is claimed.",
+      "required": false,
+      "source_refs": [
+        "SRC-016"
+      ]
+    },
+    {
+      "target": "ISO/IEC 11179-6:2023 registration status (lifecycle versus documentation status categories, single registration authority)",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the separation of governance status axes and for single-authority administration of status. Alignment only; the normative text is paywalled and was not read in full.",
+      "required": false,
+      "source_refs": [
+        "SRC-018"
+      ]
+    },
+    {
+      "target": "HL7 FHIR R5 PublicationStatus value set (draft | active | retired | unknown)",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for a minimal normative governance axis, including an explicit code for indeterminate status.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "W3C PROV-O (generation, invalidation, revision, attribution)",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for transition provenance, invalidation instants and revision links.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credentials Data Model 2.0 and Bitstring Status List v1.0",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the separation of validity period from status, and for reversible suspension versus irreversible revocation with published status lists.",
+      "required": false,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "IETF RFC 5280 certificate validity and CRLReason enumeration",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for validity boundaries, no-expiry conventions, reason codes with consequences, hold-and-release reversibility and invalidity dating.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "IETF RFC 3339 and RFC 9557 timestamp semantics",
+      "relation": "ALIGN",
+      "purpose": "Normative alignment for every timestamp in the model: explicit offset or Z, second precision, and IANA zone annotation for future-dated boundaries.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "W3C SCXML and OMG UML 2.5.1 behavioural state machines",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for the state-machine formalism: states, transitions, triggers, guards, effects, regions, history and deterministic conflict resolution.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-019"
+      ]
+    },
+    {
+      "target": "SQL:2011-style application-time and system-versioned period tables",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for bitemporal storage and as-of/as-at querying. Evidence is drawn from an implementation; the ISO/IEC 9075-2 text itself was not read.",
+      "required": false,
+      "source_refs": [
+        "SRC-024"
+      ]
+    },
+    {
+      "target": "DCMI Metadata Terms and DCAT 3 / ADMS versioning and status properties",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for validity dates and supersession links in catalogue and metadata contexts.",
+      "required": false,
+      "source_refs": [
+        "SRC-015",
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "ISO 15489-1:2016 disposition authorities and NARA General Records Schedules",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for lifecycle-triggered retention: authorities that are authorised, dated, implemented and reviewed, issued and versioned externally.",
+      "required": false,
+      "source_refs": [
+        "SRC-017",
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "Regulation (EU) 2016/679 Articles 5(1)(e), 17 and 30",
+      "relation": "ALIGN",
+      "purpose": "Legal constraint alignment for storage limitation, erasure and processing records, which bounds the append-only history where personal data is involved.",
+      "required": false,
+      "source_refs": [
+        "SRC-020"
+      ]
+    },
+    {
+      "target": "schema.org EventStatusType",
+      "relation": "ALIGN",
+      "purpose": "Alignment target for widely deployed public status vocabularies, and a recorded counterexample of conflating lifecycle state with modality change.",
+      "required": false,
+      "source_refs": [
+        "SRC-023"
+      ]
+    }
+  ],
+  "serviceLayers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension MUST designate exactly one registration authority or governance steward accountable for each lifecycle definition it publishes, mirroring the single-authority rule for administered items, and MUST record that accountability in the owner package.",
+        "The owner package MUST ship the state code list, the transition table, the status axis matrix and the temporal convention profile as one coherent version set; a state code list published without its transition table and boundary conventions is not a usable lifecycle and MUST NOT be registered as one.",
+        "The owner package MUST declare which host models compose this mixin, which status axis each host exposes by default in projections, and the binding mode (pinned or floating) between host subjects and lifecycle definition versions.",
+        "The owner package MUST reference an authorised, dated disposition instrument for every terminal state that triggers retention or destruction, or explicitly record that no disposition duty applies.",
+        "The owner package MUST name a mapping custodian for every external status vocabulary it claims alignment with, and record the target version each mapping was last revalidated against."
+      ],
+      "namespace_guidance": "Lifecycle definitions, state concepts, transitions and status axes are named under a namespace controlled by the adopting Dimension's registration authority, for example {dimension-base}/lifecycle/{definition-slug}/{version}#{state-or-transition}. State identifiers MUST be opaque with respect to display labels and MUST NOT encode dates, sequence positions or the state's own status. External vocabulary codes are never minted in the local namespace: they are referenced by their owning organisation's identifier plus version, and any local alias is recorded in the mapping table as an alias rather than as a code.",
+      "registry_links": [
+        "vr.wm-xct-021 (this model) at nav path NAV.XCT.LIF, domain tag XCT.LIF, entry kind mixin, review state boundary-review-required",
+        "Each adopting host model registers a composition link of type MIX-IN to vr.wm-xct-021 and declares its default status axis in its own registry entry",
+        "Sibling registry entries for Identity, Provenance, Versioning, Retention, Authorization, Workflow, Temporal and Classification models are prerequisites for removing the boundary-review-required flag; none are registered at the time of research"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "All timestamps are canonicalised to RFC 3339 date-time with seconds and an explicit numeric offset or Z; where the local calendar context matters for a future-dated boundary, an RFC 9557 IANA time-zone annotation is appended and the annotation is authoritative over any copied offset.",
+        "Interval boundaries are canonicalised to the convention declared in the temporal convention profile; when exchanging with a system using the other convention, the boundary is converted explicitly and the conversion is recorded, never inferred.",
+        "State values are canonicalised to the pair (code system identifier with version, state code); display labels and translations are non-canonical and MUST NOT be used for comparison, indexing or mapping.",
+        "The transition log is canonically ordered by record time, then by the system-assigned sequence, then by the transition event identifier; event time is never used as the primary ordering key because it may be back-dated.",
+        "An absent validity end boundary is canonicalised to an explicit open-ended marker with a declared meaning; a null is never allowed to stand for the three distinct meanings of open-ended, unknown and undecided.",
+        "Identifiers are canonicalised without case folding; a date, sequence number or publication instant is never promoted to an identifier."
+      ],
+      "patch_rules": [
+        "The transition log, the invalidation records and the disposition evidence are append-only: a patch that edits or removes an existing entry is invalid regardless of authority.",
+        "A change to a past assertion is expressed as a new correction record referencing the target, which closes the record-time envelope of the prior belief; the prior belief remains retrievable for as-at reconstruction.",
+        "Every patch MUST cite the lifecycle definition version in force at the time of the change; a patch that silently reinterprets history under a newer definition version is invalid.",
+        "Patches to the lifecycle definition itself follow the proposal-and-disposition procedure and produce a new definition version with its own effective period; in-place edits to a published definition version are prohibited.",
+        "Erasure required by law is executed as a destruction action that removes the erasable payload and substitutes a tombstone; it is recorded as an event in the log rather than as a deletion of the log."
+      ],
+      "compatibility_rules": [
+        "Adding a new state or a new transition that widens what is permitted is a backward-compatible change; existing histories remain conformant.",
+        "Removing or renaming a state, narrowing a guard, making a reversible state terminal, or changing boundary inclusivity is a breaking change requiring a new major definition version, a migration rule for in-flight subjects and a deprecation notice with a stated notice period.",
+        "Deprecation MUST precede removal; a state may not be deleted from a published definition while any subject is bound to a version in which it is reachable.",
+        "Compatibility claims are stated explicitly using backward-compatible and incompatible declarations against the prior version; silence is read as incompatible.",
+        "Alignment to an external vocabulary is versioned: a new version of the target vocabulary does not automatically carry the mapping forward, and an unrevalidated mapping is treated as unverified rather than valid."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "1. The authoritative master-system identifier issued by the system of record or registration authority that governs the artifact.",
+        "2. A governed global identifier or IRI under a namespace controlled by the registration authority, including an explicit version token where the artifact is versioned.",
+        "3. A UUID or ULID assigned by the adopting Dimension, used only where neither of the above exists; ULID is preferred for serial artifacts so that lexical order matches record time."
+      ],
+      "timestamp_rule": "All artifact timestamps use RFC 3339 date-time with seconds and an explicit numeric offset or Z; where local calendar semantics must survive time-zone rule changes, an RFC 9557 time-zone annotation is added and marked critical if consumers must honour it. Event time (when it happened) and record or ingestion time (when the system stored it) are recorded as separate fields whenever they can differ, and neither is ever used as the artifact identifier.",
+      "serial_naming_rule": "Serial artifacts (transition log entries, decision records, notices, snapshots, published status packages, certificates) are named as {artifact-type}/{subject-or-population-reference}/{monotonic-edition-or-ulid}. The monotonic token orders the series; it is metadata, not the identity, and identity remains governed by the identity priority order. Series numbers are never reused, and gaps in a series must be explainable from the exception register.",
+      "integrity_rule": "Every serial artifact records the lifecycle definition version in force, the acting and authorising agents, and both event and record timestamps. Artifacts that are published to relying parties carry an integrity proof and an anti-rollback marker so that a stale or replayed edition can be detected; artifacts that evidence destruction or erasure are retained under their own retention rule and must not contain the erased payload."
+    },
+    "policies": [
+      "Status is never a free-text string: every state value cites a code system identifier and version drawn from a governed code list administered by a single named authority.",
+      "Validity period and status are two independent axes and are stored separately; effective status is derived from both by a published, deterministic and testable rule, and the precedence between them is stated normatively rather than left to implementation.",
+      "Lifecycle history is append-only. Corrections create new records; nothing is edited in place. Erasure required by law is executed as a recorded destruction action leaving a tombstone, not as a silent deletion.",
+      "Reversibility is a contract: a state declared reversible may only be exited by the declared reinstatement procedure, and a state declared irreversible may never be exited, regardless of the authority of the requester.",
+      "Retired, superseded and invalidated subjects remain resolvable for as long as data produced during their validity may need interpretation, subject only to an authorised disposition instrument or a legal erasure obligation.",
+      "External standards are treated as alignments, not as conformance claims. A conformance claim requires cited evidence; where none exists the model records alignment and lists the known divergences.",
+      "Every transition records who acted, who authorised, why (governed reason code) and on what evidence; a transition without an attributable actor is an exception, not a valid record.",
+      "Every status change is a recorded transition with agent, event time and observation time; unmatched or unauthorised attempts are audited.",
+      "unknown and entered-in-error are first-class; omission does not mean unknown; error does not mean delete.",
+      "Valid time answers what was true in the world; record time answers what the system knew when. Queries MUST name the axis.",
+      "Canonical FHIR resource-status and SCXML/UML alignments are optional; production use of experimental vocabularies requires an explicit Dimension decision."
+    ],
+    "crud": {
+      "read": [
+        "Reading state requires two temporal parameters — the real-world instant of interest and the record instant of belief — with stated defaults when they are omitted.",
+        "Reads are permission-aware: result sets are trimmed to states the caller may see, and trimming is signalled rather than silently applied.",
+        "Reading justification text and evidence may require a higher access class than reading the state value itself.",
+        "Reads of published status projections must be checkable against the declared maximum staleness; a consumer that cannot verify freshness applies the declared fail-open or fail-closed rule."
+      ],
+      "create": [
+        "Creating a subject under this mixin requires binding it to a lifecycle definition version and setting the declared initial state, or recording an explicit indeterminate status.",
+        "Creating a transition requires a permitted transition identifier, a satisfied guard, an authorised actor, a governed reason code and an event time conforming to the temporal convention profile.",
+        "Creating a lifecycle definition version requires a named registration authority, a complete state code list, a transition table, an axis matrix and a temporal convention profile.",
+        "Record time is always assigned by the system of record and never accepted from the caller."
+      ],
+      "update": [
+        "The current-state value and any derived status may be recomputed, but the transition log, invalidation records and disposition evidence are immutable.",
+        "Adjusting a validity interval creates a new assertion; the prior interval is closed in record time and remains retrievable.",
+        "Correcting a past record requires a correction kind from the governed code list, a reference to the target record, grounds and an authorising agent.",
+        "Rebinding a subject to a newer lifecycle definition version requires a declared migration rule for its current state and is itself recorded as an event."
+      ],
+      "delete": [
+        "Logical deletion is the default: the subject moves to a terminal state and a tombstone preserves reference resolvability and identifier non-reuse.",
+        "Physical destruction requires an authorised, dated disposition instrument, verified eligibility, no legal hold, and the declared authorisation and witnessing controls.",
+        "Erasure of personal data is scoped to the erasable payload; the fact of erasure, its authority and its instant are retained as evidence.",
+        "Deletion of a lifecycle definition version is prohibited while any subject remains bound to it; definitions are retired, never removed."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Lifecycle registration authority (governance steward)",
+        "responsibilities": [
+          "Own each lifecycle definition and approve every change to it through the proposal-and-disposition procedure",
+          "Assign and publish status axes, state code lists and their versions",
+          "Decide migration rules for subjects in flight when a definition changes",
+          "Maintain the register so that retired and superseded items remain resolvable"
+        ]
+      },
+      {
+        "name": "Transition authoriser",
+        "responsibilities": [
+          "Approve transitions that require authorisation separate from execution, including dual-control cases",
+          "Record the authority basis and any on-behalf-of delegation",
+          "Refuse and record transitions that fail guards or authority checks",
+          "Authorise emergency overrides and submit them for mandatory post-hoc review"
+        ]
+      },
+      {
+        "name": "Records and disposition officer",
+        "responsibilities": [
+          "Bind terminal lifecycle states to authorised, dated disposition instruments and keep those instruments under review",
+          "Compute and monitor disposition eligibility and apply or release legal holds",
+          "Execute or supervise destruction and retain destruction evidence",
+          "Reconcile erasure obligations with the append-only history and approve tombstone content"
+        ]
+      },
+      {
+        "name": "Interoperability mapping custodian",
+        "responsibilities": [
+          "Maintain mappings from local states to external status vocabularies, with mapping strength and loss notes",
+          "Revalidate each mapping against new versions of the target vocabulary and record the revalidation date",
+          "Record conflicts between external vocabularies rather than silently reconciling them",
+          "Ensure that only alignment, and not conformance, is claimed without cited evidence"
+        ]
+      },
+      {
+        "name": "Conformance validator and auditor",
+        "responsibilities": [
+          "Validate recorded histories against the governing definition version and publish validation reports",
+          "Test bitemporal reproducibility by reconstructing past beliefs and comparing them with retained snapshots",
+          "Raise and track lifecycle exception register entries for unknown states, illegal transitions and staleness",
+          "Verify that record time is system-assigned and that append-only guarantees hold"
+        ]
+      },
+      {
+        "name": "Data protection officer or equivalent privacy authority",
+        "responsibilities": [
+          "Assess erasure and storage-limitation obligations against the append-only lifecycle history",
+          "Approve tombstone content so that it carries no personal data",
+          "Review privacy sizing of published status projections for disclosure risk",
+          "Approve exceptions where legal obligations and audit requirements conflict"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. A caller may read a state value only for scopes it is explicitly granted, and may execute a transition only where the lifecycle definition names its role for that specific transition. Pre-publication states (draft, candidate, submitted, reserved) and all transition justification text default to a stricter access class than published state values, and are excluded from listings, search indexes and published status projections unless explicitly released.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Regulators, auditors and the registration authority may read all states, justifications and evidence within their remit, with each such read logged and attributed.",
+        "Relying parties who hold a copy of a subject may read that subject's invalidation status through the published status projection without holding any other read permission, because withholding revocation information causes greater harm than disclosing it.",
+        "Emergency overrides may bypass a guard or an authority check where a named role authorises them, subject to compensating controls and a mandatory post-hoc review recorded in the exception register.",
+        "A legal hold overrides deletion permissions: no role, including the subject owner, may execute disposition while a hold is in force.",
+        "Data subjects exercising erasure rights may compel removal of erasable payload from otherwise immutable records, with the fact, authority and instant of erasure retained.",
+        "Break-glass read of redacted error records by an auditor with recorded justification.",
+        "Machine authors may read machine definitions they do not operate.",
+        "Public artefacts with publication-status active may expose publication status without exposing transition audits."
+      ],
+      "audit_requirements": [
+        "Every transition, rejection, override and reinstatement is logged with actor, authoriser, reason code, event time and system-assigned record time.",
+        "Every read of a restricted state value, justification or evidence item is logged with the caller identity, the scope invoked and the instant of access.",
+        "Every publication of a status projection is logged with its edition token, publication instant and population size, so that a stale or replayed edition can be traced.",
+        "Every destruction or erasure is logged with the authorising instrument, the authorising and witnessing agents and the retained certificate reference.",
+        "Audit logs are themselves append-only, carry their own retention rule, and must support reproducible as-at reconstruction for the full retention horizon.",
+        "Every execute-transition, rejected transition, mark-entered-in-error, restore-history-configuration and supersede-status-record SHALL write a transition audit with agent, event time and observation time.",
+        "Reads of redacted error records SHALL themselves be audited."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Registration authority",
+        "Lifecycle definition version and effective period",
+        "Temporal convention profile URL",
+        "Status axis matrix URL",
+        "Disposition authority reference",
+        "Access default rule"
+      ],
+      "read_order": [
+        "1. AGENTS.md — establish Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL before any other action; these six fields are mandatory even when the storage is MongoDB or the interface is MCP.",
+        "2. Specification URL — read the lifecycle definition: state code list, transition table, status axis matrix and terminality/reversibility declarations.",
+        "3. Temporal convention profile — read boundary inclusivity, precision, offset and zone rules, no-expiry sentinel and clock-skew tolerance before interpreting any timestamp.",
+        "4. Status axis matrix and status derivation rule set — determine which axis governs reliance decisions and how effective status is computed.",
+        "5. Processes URL — read the transition execution contract, exception handling and disposition procedures before attempting any write.",
+        "6. Storage type URL and Interface URL — bind to the projection last; treat format and interface as projections of the semantics already loaded, never as their source.",
+        "7. Access default rule and audit requirements — confirm scope grants and logging obligations before reading restricted states or executing transitions."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "Dual-provider research synthesis for a format-independent Lifecycle / Status mixin. It covers governed state machines, concurrent status axes, current assertions, transition history, bitemporal validity, correction, succession, suspension, revocation, end-of-life, operations and external mappings. Domain-specific status vocabularies remain profiles, not universal core codes.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "State concepts, lifecycle definitions, transition events and every artifact carry an explicit identity strategy following the priority order: authoritative master-system identifier, then governed IRI, then UUID/ULID. Dates, publication instants and series numbers are explicitly excluded as identifiers. Grounded in ISO 19135-1 register-item identity and ISO/IEC 11179-6 single-authority administration."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Whole bundles address state space, transition system, terminality and reversibility, succession, deprecation, invalidation and end of life. State-machine semantics are aligned to SCXML and UML 2.5.1; status vocabularies to FHIR PublicationStatus, ISO 19135-1 RE_ItemStatus and the UKGovLD registry hierarchy."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Supersession and replacement links (both directions plus a current-version pointer), migration targets, delegation of authority, cascade to dependent subjects, and composition links to nine sibling models and twelve external alignments. Grounded in DCMI replaces/isReplacedBy, DCAT 3 version lineage and ADMS prev/next/last."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Valid time and record time are separated throughout; boundary inclusivity, precision, open-endedness, no-expiry sentinel, offsets, IANA zone annotation, leap seconds and clock skew are all explicit. Grounded in RFC 3339, RFC 9557, FHIR Period/instant, RFC 5280 validity and SQL:2011-style period tables. Allen relations from OWL-Time constrain interval continuity."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every transition records acting agent, authorising agent, on-behalf-of delegation, reason code, evidence references, event time and system-assigned record time. Aligned to PROV-O generation/invalidation/revision and FHIR Provenance occurred versus recorded."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "A single registration authority owns each lifecycle definition; mapping custodians, records officers, transition authorisers and a privacy authority are named roles with responsibilities. Risk allocation for the window between invalidity and publication is an explicit question."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Conformance rules, a constraint set for interval continuity and degeneracy, a conformance validation function producing retained reports, and a bitemporal reproducibility test. Non-conformant histories must be explicitly quarantined, mapped or rejected rather than tolerated silently."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny-by-default with four declared scopes, stricter default class for pre-publication states and justification text, five named exceptions including revocation visibility for relying parties and legal hold override, and five audit requirements including logging of restricted reads."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Lifecycle end as retention trigger, authorised and dated disposition instruments, legal hold, disposition actions, logical deletion with tombstones and identifier non-reuse, destruction evidence, and reconciliation of erasure with append-only history. Grounded in ISO 15489-1, NARA GRS and GDPR Articles 5(1)(e), 17 and 30."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Versioned mapping tables with declared mapping strength and loss notes, recorded conflicts rather than silent reconciliation, named custodians and revalidation dates, published status projections with freshness and integrity requirements, and an explicit rule that alignment is claimed rather than conformance."
+      },
+      {
+        "dimension": "authority",
+        "status": "covered",
+        "notes": "Single registration authority per definition, authority basis recorded per transition, dual control and separation of duties, emergency override with compensating controls and mandatory review, and proposal dispositions modelled on ISO 19135-1."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "State vocabularies, reason code lists, correction kinds, disposition actions, invalidation kinds and mapping relationships are all governed code lists with system identifier and version, never free text."
+      },
+      {
+        "dimension": "composition",
+        "status": "covered",
+        "notes": "Composite and nested states, concurrent regions, active state configuration as a set rather than a scalar, history semantics, and multi-axis status. Grounded in SCXML parallel/history and UML 2.5.1."
+      },
+      {
+        "dimension": "process and events",
+        "status": "covered",
+        "notes": "Triggers, guards, mandated effects, deterministic conflict resolution, idempotency, optimistic concurrency, atomicity and compensation, rejection recording, and fourteen declared functions with preconditions and effects."
+      },
+      {
+        "dimension": "evidence and quality",
+        "status": "covered",
+        "notes": "Evidence references with retrievability guarantees, confidence qualifiers distinguishing known from suspected invalidity, staleness detection with dwell-time thresholds, cache invalidation for derived status, and retained validation reports."
+      },
+      {
+        "dimension": "exception handling",
+        "status": "covered",
+        "notes": "Orphaned states after a definition change, explicit indeterminate status distinct from null, stale subjects, illegal transitions, emergency overrides, degenerate intervals and record-time inversion are each given detection and disposition rules."
+      },
+      {
+        "dimension": "privacy",
+        "status": "covered",
+        "notes": "Erasure versus append-only reconciliation, tombstone content approval so that no personal data remains, herd-privacy sizing of published status projections, and a named privacy authority role. Grounded in GDPR and Bitstring Status List privacy considerations."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Integrity proofs and anti-rollback markers on published status, system-assigned immutable record time, detection and remediation of unauthorised or repudiated transitions, and append-only audit logs."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Timestamp precision and rounding, ingestion latency expectations and thresholds, clock skew tolerance, and maximum status staleness are all quantified elements rather than prose."
+      },
+      {
+        "dimension": "decision",
+        "status": "covered",
+        "notes": "Axis precedence on disagreement, derived-versus-asserted precedence, overlap resolution, transition conflict resolution and default temporal parameters are each required to be deterministic and normatively stated."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "No inherent spatial dimension: a lifecycle state has no geometry. The one spatial-adjacent concern — territorial or jurisdictional scope of validity, where a subject is valid in one jurisdiction and not another — is recorded separately as a gap rather than forced into this dimension."
+      },
+      {
+        "dimension": "jurisdictional scope of validity",
+        "status": "gap",
+        "notes": "The model does not represent validity that is territorially or jurisdictionally scoped (valid in one jurisdiction, revoked in another). No primary source in the researched set models this directly; adopting Dimensions with cross-border subjects must treat it as an additional axis and mark it as unsupported structure until evidence is found."
+      },
+      {
+        "dimension": "non-repudiation of history",
+        "status": "gap",
+        "notes": "Append-only guarantees and integrity proofs are required, but the model does not specify a cryptographic construction (hash chain, signed log, transparency log) for proving that a transition log has not been rewritten. This is deliberately left to a security model; without it, the append-only policy rests on operational rather than mathematical assurance."
+      },
+      {
+        "dimension": "formal verification of the state machine",
+        "status": "gap",
+        "notes": "No requirement for reachability, deadlock or liveness analysis of declared lifecycles. SCXML and UML supply execution semantics but neither obliges verification, and no researched source requires it. Large lifecycles may therefore contain unreachable or trapping states that only the conformance validator will notice, after the fact."
+      }
+    ],
+    "known_omissions": [
+      "The full normative texts of ISO 19135-1:2015, ISO 15489-1:2016 and ISO/IEC 11179-6:2023 are paywalled; the ISO catalogue pages returned HTTP 403 and the sample PDFs were not machine-readable. Their content here is verified from ISO catalogue metadata, ISO/TC 211 schema listings and downstream implementations, not from the clause text. Any structural node resting solely on these sources should be re-verified against the purchased standards.",
+      "ISO/IEC 9075-2 (SQL:2011 temporal features) was not read; bitemporal alignment rests on MariaDB implementation documentation as secondary evidence. The SIGMOD Record industry paper on SQL:2011 temporal features was fetched but returned unparseable binary.",
+      "GS1 EPCIS 2.0 eventTime, eventTimeZoneOffset, recordTime and errorDeclaration were targeted as a strong event-versus-record-time source but the GS1 endpoints returned unparseable PDF or HTTP 403. The event-versus-record-time seam is therefore grounded in HL7 FHIR Provenance and system-versioned tables instead, which is adequate but narrower in domain coverage.",
+      "Domain-specific regulated lifecycles (medicinal product status, financial instrument state, employment status, planning permission) are deliberately excluded; each carries statutory state definitions that belong to host models.",
+      "No treatment of probabilistic or fuzzy status (confidence-weighted state), of state machines whose transitions are learned rather than declared, or of eventual convergence in offline-first replicas that transition independently and later merge.",
+      "Equipment and process state models (ISA-88/PackML-style operating states) were not researched because the registry entry records a robotics factor of zero; adopting Dimensions with machine-state subjects should treat that as unresearched territory rather than as excluded by evidence.",
+      "No cost or performance model for maintaining full bitemporal history at scale, and no guidance on when history compaction is acceptable — compaction inherently conflicts with the append-only policy stated here.",
+      "SQL:2011 APPLICATION_TIME and SYSTEM_TIME were not fetched as primary text and are not claimed.",
+      "IEC 61512 / ISA-88 equipment and batch states, ISA-95, and Petri-net semantics are uncovered.",
+      "ISO 55000:2024 asset life-cycle stage naming (organisation-defined) was seen only in secondary samples and is not canonical here.",
+      "RFC 9557 updates to RFC 3339 (time-zone suffixes) were not incorporated beyond noting the update.",
+      "BPMN 2.0 token state versus SCXML configuration is referenced as a sibling, not modelled.",
+      "Fuzzy, probabilistic or interval-valued uncertain validity has no primary support in the cited sources.",
+      "Saga/compensating-transaction status and two-phase commit states are omitted.",
+      "Legal hold procedures beyond a boolean flag belong to records/legal siblings.",
+      "Device-specific FHIR codes (transduc-discon, hw-discon) are not generalised.",
+      "Full SCXML datamodel, ECMAScript profile and HTTP event I/O processor are execution-environment details, not mixin semantics.",
+      "ISO 19108 TM_Period inner UML could not be quoted from the paywalled full text; only the official abstract (valid time versus transaction time) is used."
+    ],
+    "conflicts": [
+      "Interval boundary inclusivity is genuinely inconsistent across ecosystems: HL7 FHIR states that both Period boundaries are inclusive, while SQL:2011-style application-time and system-time periods are closed-open. Exchanging validity intervals between the two without explicit conversion silently shifts every boundary by one unit of precision. The model resolves this by requiring the convention to be declared and conversions to be recorded, not by choosing a winner.",
+      "RFC 9557 updates RFC 3339's interpretation of Z: under RFC 3339, -00:00 signalled that UTC is known but the local offset is not, while RFC 9557 assigns that meaning to Z itself. Systems built to the two documents can disagree about whether a timestamp carries a meaningful local offset.",
+      "FHIR PublicationStatus collapses withdrawal and supersession into a single 'retired' code, whereas ISO 19135-1 keeps 'superseded' and 'retired' distinct because only the former implies a successor. Mapping FHIR to ISO 19135-1 is lossy in one direction and requires an out-of-band successor link in the other.",
+      "Reversibility is not consistent across ecosystems: Bitstring Status List declares revocation irreversible and suspension reversible, while RFC 5280 permits a certificateHold to be reversed by removeFromCRL and treats 'superseded' as a revocation reason rather than a separate lifecycle state. A subject that is 'revoked' in one ecosystem may be 'held' and later restored in the other.",
+      "W3C ADMS is a Working Group Note that was retired in August 2023, yet adms:status remains the property that DCAT 3 and DCAT-AP reference for resource status. Citing it is unavoidable in catalogue contexts and simultaneously unsafe as a stable normative anchor.",
+      "The latest published version of the W3C Time Ontology at /TR/owl-time/ is a Candidate Recommendation Draft dated 15 November 2022, not a Recommendation. Alignment to Allen relations is therefore alignment to a non-final draft and should be re-checked before any conformance claim.",
+      "schema.org EventStatusType mixes lifecycle state (EventCancelled, EventPostponed) with a change of modality (EventMovedOnline), which is a property change rather than a state change. It is included as a widely deployed alignment target and as a documented counterexample of axis conflation, not as a model to imitate.",
+      "ISO 19135-1 requires retired, superseded and invalid items to be kept so that historical data remains interpretable, while GDPR Article 17 can require erasure of personal data held in those very records. The tombstone construct is the model's reconciliation, but it is a policy compromise rather than a resolution: some jurisdictions will not accept a tombstone as sufficient erasure.",
+      "FHIR says consistency of status codes across resources is not the primary objective, yet publishes an experimental canonical map that is not ready for production.",
+      "ISO 19108 emphasises valid time; PROV and RFC 3339 emphasise event/transaction timestamps; both axes are required and must not be collapsed.",
+      "RFC 3339 describes instants only; FHIR Period, OWL-Time and dcterms:valid describe intervals, with dcterms:valid as a literal rather than a structured period.",
+      "OWL-Time encodings ignore leap seconds; ISO 8601 mandates them.",
+      "OWL-Time 2022 is a Candidate Recommendation Draft; a 2017 Recommendation exists. Align to the cited 2022 CRD without claiming W3C Recommendation status for that edition.",
+      "SCXML XML, UML graphical/XMI and PSSM operational semantics are related Harel descendants, not identical.",
+      "Clinical status is not workflow status; using one code list for both is a conflict with FHIR.",
+      "Current-list membership cannot be inferred from status=active.",
+      "entered-in-error should be ignored but often cannot be removed, conflicting with naive CRUD delete.",
+      "RFC 3339 -00:00 (unknown offset) is semantically distinct from Z."
+    ],
+    "regional_assumptions": [
+      "Erasure and storage-limitation duties are modelled on Regulation (EU) 2016/679 and apply to EU/EEA personal data. Other regimes (UK GDPR, Brazilian LGPD, US state privacy laws, sectoral rules) impose different triggers, exemptions and retention floors; the retention trigger and disposition action elements are deliberately parameterised rather than fixed.",
+      "The NARA General Records Schedules are United States federal instruments and are cited as an example of externally issued, versioned disposition authority, not as an applicable rule outside that jurisdiction.",
+      "Gregorian calendar, UTC and the IANA time-zone database are assumed for all timestamps. Non-Gregorian calendars, ordinal or geological time scales and other temporal reference systems are out of scope and delegated to a Temporal Reference model.",
+      "ISO 19135-1 is written for geographic-information registers. Its generalisation to non-geographic registers is an interpretation made here, supported by the UKGovLD registry vocabulary explicitly reusing its status semantics, but it is an interpretation and not a claim about the standard's stated scope.",
+      "ISO/IEC 11179-6 registration status semantics are drawn from metadata registries; applying lifecycle-versus-documentation status categories to arbitrary world-model subjects is an extension by analogy.",
+      "Language and label handling assumes that display labels are non-identifying and may be translated freely; jurisdictions where a legally binding status must be expressed in a specific official language will need an additional constraint on label authority.",
+      "Default TRS is Gregorian calendar with UTC offsets as in RFC 3339 and xsd:dateTimeStamp; other TRS are allowed but not defaulted.",
+      "Canonical status tokens cited from FHIR are English codes; local systems may use other languages or jurisdictions.",
+      "Healthcare-shaped pattern families are alignments, not a requirement outside clinical Dimensions.",
+      "Records retention durations and legal holds are jurisdiction-specific and not specified here.",
+      "Daylight-saving and political offset changes are out of RFC 3339 scope; scheduled local wall-clock transitions need a time sibling."
+    ],
+    "adversarial_checks": [
+      "Tested whether 'status' and 'validity period' could be modelled as one concept, and rejected it: VC Data Model 2.0 keeps validFrom/validUntil separate from credentialStatus, and RFC 5280 keeps the certificate validity period separate from the CRL, precisely because time-bound expiry and event-driven invalidation have different actors, different reversibility and different distribution needs.",
+      "Tested whether a single flat status enumeration suffices, and rejected it: ISO/IEC 11179-6 already splits registration status into lifecycle and documentation categories, and the UKGovLD registry organises statuses into a two-level hierarchy under accepted and notAccepted. A flat enumeration cannot express that superseded and retired are both kinds of deprecated.",
+      "Tested whether the transition log could be an audit-log projection rather than model semantics, and rejected it: the FHIR distinction between Provenance.occurred and Provenance.recorded and the RFC 5280 invalidityDate extension are semantic, not storage, facts — they change what a consumer may rely on. Storage-level change-data-capture is therefore explicitly excluded while the semantic log is retained.",
+      "Searched for a counterexample to the append-only policy and found one: GDPR Article 17 erasure can compel removal of content from records that ISO 19135-1 requires to be preserved. Rather than asserting that append-only is absolute, the model records the conflict and specifies a tombstone mechanism, flagging it as a policy compromise that some jurisdictions may reject.",
+      "Attempted to verify boundary-inclusivity as a universal convention and found the opposite: FHIR Period boundaries are inclusive while SQL:2011-style periods are closed-open. The model therefore declines to pick a canonical convention and instead requires the convention to be declared and conversions to be explicit — an attractive simplification was rejected for lack of support.",
+      "Checked whether ADMS and OWL-Time could be used as stable normative anchors and found they cannot: ADMS is a retired W3C Note still referenced by DCAT 3, and the latest published OWL-Time is a Candidate Recommendation Draft. Both are retained as alignments only, with their maturity recorded as a conflict rather than glossed over.",
+      "Tested whether ISO 19135-1's four item statuses could be presented as the canonical state set for all subjects, and rejected it: the standard's stated scope is geographic-information registers, and FHIR, schema.org and PKI each carry incompatible sets. The model therefore treats every external vocabulary as a mapping target and requires local state sets to be governed independently.",
+      "Attempted to source the structural node on jurisdictional scoping of validity from a primary standard and failed; rather than presenting it as canonical structure, it is recorded as a gap in the coverage checklist and excluded from the bundle hierarchy.",
+      "Treat any proposal that uses a date as the lifecycle identifier as invalid.",
+      "Reject models that store only one timestamp for a late-entered historical status.",
+      "Reject single-code current status as complete when the machine has parallel regions.",
+      "Reject delete-as-correction when entered-in-error applies.",
+      "Reject inference that status=active means membership of a current curated list.",
+      "Reject unstated production use of experimental http://hl7.org/fhir/resource-status.",
+      "Reject collapse of clinical-interpretation inactive with workflow completed.",
+      "Reject unqualified local times without offset or Z.",
+      "Reject silent overwrite of status without a transition audit and agent.",
+      "Reject claims of universal completeness of any status vocabulary."
+    ]
+  },
+  "researchAdjudication": {
+    "providerMode": "dual-provider",
+    "activeProviders": [
+      "claude",
+      "grok"
+    ],
+    "waivedProviders": [],
+    "providerPolicy": {},
+    "boundaryDecision": {
+      "entry_kind": "mixin",
+      "status": "accepted",
+      "rationale": "Both independent providers model lifecycle semantics as a reusable binding to a host subject or aspect. The host object, executing workflow, version/change history, time reference data, evidence, access policy and disposition schedule retain their own identity and ownership."
+    },
+    "decisions": [
+      {
+        "concept": "Lifecycle / Status is a host-bound mixin",
+        "disposition": "accepted-from-both",
+        "rationale": "A lifecycle binding governs the status of an identified host or aspect without replacing the host or its domain model."
+      },
+      {
+        "concept": "Five-bundle base plus explicit binding and profile findings",
+        "disposition": "accepted-composite",
+        "rationale": "Claude provides the stronger boundaries for definition, assertion/history, bitemporality, disposition and operations. Grok adds binding identity, host/aspect multiplicity, profile families, active configuration and entered-in-error semantics."
+      },
+      {
+        "concept": "One universal canonical status code list",
+        "disposition": "rejected",
+        "rationale": "Workflow, publication, clinical interpretation, records and other lifecycle families use incompatible meanings. The core defines mapping contracts and patterns, while codes remain versioned profiles."
+      },
+      {
+        "concept": "One status field represents the whole object",
+        "disposition": "rejected",
+        "rationale": "A host may carry multiple orthogonal lifecycle bindings and a state machine may have a legal set of concurrent active states. Any scalar projection must declare loss."
+      },
+      {
+        "concept": "Current status overwrites history",
+        "disposition": "rejected",
+        "rationale": "Every accepted transition records prior/new configuration, authority, reason, evidence, event time, record time and correction semantics."
+      },
+      {
+        "concept": "Valid time and transaction time are interchangeable",
+        "disposition": "rejected",
+        "rationale": "Retroactive correction and reproducible as-of queries require separate valid, event, observation and record times."
+      },
+      {
+        "concept": "Unknown, inactive, completed, retired, revoked and entered-in-error are synonyms",
+        "disposition": "rejected",
+        "rationale": "They have different evidence, authority, consumer behavior, reversibility, retention and integrity consequences."
+      },
+      {
+        "concept": "Timestamp as lifecycle binding or transition identifier",
+        "disposition": "rejected",
+        "rationale": "Use the master-system identifier or UUIDv7/ULID. RFC 3339 timestamps with seconds and explicit timezone remain separate temporal facts."
+      },
+      {
+        "concept": "Physical delete is the ordinary terminal transition",
+        "disposition": "rejected",
+        "rationale": "Retirement, tombstone, erasure and disposition are separately governed; history needed for integrity, signatures, audit or legal retention cannot be silently removed."
+      }
+    ],
+    "publicationHolds": [
+      "Verify live editions and claim-level support for all accepted SCXML, W3C PROV/OWL-Time, HL7 FHIR, DCMI, ISO and records-management sources.",
+      "Validate the mixin against at least five independent profiles: publication, workflow/request, clinical interpretation, software release and records disposition."
+    ],
+    "deferredResearch": [
+      "Formal model checking and executable conformance suites for hierarchical and parallel state machines.",
+      "Distributed transition conflict resolution, offline replicas, consensus and eventual-consistency profiles.",
+      "Jurisdiction-specific records disposition, legal hold, erasure and evidentiary integrity requirements.",
+      "Domain mappings for court cases, security incidents, payments, projects, products, clinical resources and public-sector decisions.",
+      "Probabilistic, fuzzy and partially observed state models that do not fit deterministic status assertions."
+    ]
+  }
+}

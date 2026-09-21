@@ -1,0 +1,1431 @@
+{
+  "model": {
+    "registry_id": "vr.wm-xct-022",
+    "model_id": "WM-XCT-022",
+    "name": "Version / Change History",
+    "entry_kind": "mixin",
+    "purpose": "Give any Vercy world-model entry a composable, storage-neutral way to declare revision identity, ordered predecessor/successor lineage, the substance and authority of each change, and the migration path between versions, so an agent can identify which state it holds, reconstruct any prior state, and decide whether it must migrate.",
+    "scope_statement": "This mixin owns the semantics of a versioned record: the immutable identity of one revision of an identified host entity, the designation scheme that labels it, the predecessor/successor topology that orders it, the delta and classification that describe what changed, the agent and authority that made and approved the change, the record time and effective time of the change, the integrity evidence that makes the history verifiable, and the compatibility and migration statements that let a consumer move from one revision to another. It is mixed into host models rather than instantiated alone, and it deliberately does not model the host entity's own attributes. It is independent of storage format and access interface: JSON, YAML, Markdown, HTML, Git, OCFL, MCP and MongoDB are projections of these semantics, not the semantics themselves.",
+    "in_scope": [
+      "Revision identity: the immutable identifier of one revision and its relation to the version-independent identifier of the host entity",
+      "Version designation schemes (semantic, calendar, sequential, opaque) and the compatibility promise, if any, that an increment carries",
+      "Precedence and ordering rules over revisions, including which fields are ignored for ordering",
+      "Predecessor and successor relations, including multi-parent merge topology and branch scoping",
+      "Distinction between revision, derivation into a new entity, and format/rendition variant",
+      "Change sets: snapshot versus forward delta, patch formalisms, invertibility and verifiability of a delta",
+      "Change classification: category, breaking versus non-breaking, semantic versus presentational, correction, severity",
+      "Human-readable change notes, release notes and unreleased-change tracking",
+      "Compatibility declarations (backward, forward, incompatible) and the evidence supporting them",
+      "Migration procedures between versions, including reversibility, idempotence, expected loss and deadlines",
+      "Deprecation and sunset of a revision, endpoint or element, and the replacement pointer",
+      "Record time versus change-event time versus effective/validity period, and supersession instants",
+      "Revision lifecycle states (working copy, checked out, released, superseded, deprecated, withdrawn, deactivated) and legal transitions",
+      "Attribution of the change to a person, organisation or software agent, and the authority or approval under which it was made",
+      "Content fixity, canonicalisation profile and tamper evidence for history entries, including redaction handling",
+      "Enumeration of history, as-of retrieval and reconstruction of a prior state",
+      "Concurrency control expectations (expected-current-revision preconditions) and conflict outcomes",
+      "Retention, compaction, tombstoning and lawful disposition of history entries",
+      "Declared alignment (not conformance) to external version vocabularies and link relations"
+    ],
+    "out_of_scope": [
+      "The host entity's domain attributes; this mixin describes only how those attributes change over time",
+      "General provenance: activities, plans, usage and entity generation that are not revision events belong to the provenance sibling model",
+      "Operator audit logging of reads, failed logins, signature ceremonies and other actions that produce no new revision",
+      "Build, packaging, release engineering and deployment pipelines that produce an artefact bearing a version label",
+      "Key management, certificate issuance and signature-suite selection",
+      "Physical or logical storage layout, directory conventions, database schemas and serialisation formats",
+      "Access-control policy definition and enforcement (this model supplies classification inputs only)",
+      "Approval workflow routing, task assignment and notification mechanics",
+      "Retention schedule authoring and legal-hold adjudication (this model consumes the resulting schedule)",
+      "Identifier minting policy, namespace governance and persistence guarantees for the host entity identifier",
+      "Distributed convergence mechanics such as CRDTs, vector clocks and consensus protocols",
+      "Licensing and rights changes between versions"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Provenance / lineage model (PROV-style agents, activities, derivations)",
+        "distinction": "PROV-O covers activities, agents, plans and usage generally; prov:wasRevisionOf is one specialisation of prov:wasDerivedFrom. This mixin owns only the revision relation between successive states of one identified host entity plus designation, compatibility and migration. Anything about how work was performed, or about entities that are not revisions of one another, belongs to the provenance sibling.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "Audit trail / event log model",
+        "distinction": "21 CFR 11.10(e) requires audit trails that independently record operator entries and actions including those that create no new revision, and NIST SP 800-53 AU-3 governs audit-record content generally. Version history records only state-producing changes; the audit sibling records the wider action stream and read access.",
+        "source_refs": [
+          "SRC-017",
+          "SRC-022"
+        ]
+      },
+      {
+        "neighbor": "Records retention and disposition model",
+        "distinction": "Retention schedules, legal-hold adjudication and disposition authority are owned by the retention sibling. This mixin carries the retention basis, the disposition action applied to a history entry, and the tombstone that survives it.",
+        "source_refs": [
+          "SRC-026",
+          "SRC-017"
+        ]
+      },
+      {
+        "neighbor": "Release, build and deployment model",
+        "distinction": "Semantic Versioning and PEP 440 define version grammars for released packages, but the act of building, signing, publishing and deploying is a pipeline concern. This mixin records the designation, the compatibility promise and the migration path, not the pipeline that produced them.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-018"
+        ]
+      },
+      {
+        "neighbor": "Access interface / protocol model",
+        "distinction": "HTTP conditional requests, ETag validators, Accept-Datetime negotiation and IANA link relations are projections of this model's concurrency and navigation semantics onto one interface. The semantics must remain expressible without HTTP.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-025",
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Storage layout model",
+        "distinction": "OCFL prescribes version directory naming, inventory files and content addressing. Those are a storage projection; this mixin requires that a continuous version sequence, a head pointer and a fixity record exist, not that they be stored as directories.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Digital signature and integrity model",
+        "distinction": "C2PA claim signatures and NIST AU-10 non-repudiation depend on key and certificate lifecycle management owned by a signature sibling. This mixin records the signature reference, the signer, the covered digest and the declared meaning of the signature.",
+        "source_refs": [
+          "SRC-020",
+          "SRC-022"
+        ]
+      },
+      {
+        "neighbor": "Approval / change-governance workflow model",
+        "distinction": "NIST SP 800-53 CM-3 places change proposal, review and approval in a change-control process. The workflow sibling owns routing and task state; this mixin binds the approval outcome, approver and decision instant to a revision identifier.",
+        "source_refs": [
+          "SRC-022",
+          "SRC-017"
+        ]
+      },
+      {
+        "neighbor": "Identifier and namespace governance model",
+        "distinction": "OWL 2 separates the ontology IRI (series) from the version IRI (revision), and RFC 9562 governs UUID construction. Minting policy, resolution and persistence guarantees belong to the identifier sibling; this mixin only requires that a revision identifier is immutable and never re-pointed.",
+        "source_refs": [
+          "SRC-016",
+          "SRC-008",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "Temporal / effective-dating model",
+        "distinction": "General valid-time modelling of business facts (dcterms:valid ranges, effective periods on domain assertions) belongs to a temporal sibling. This mixin owns record time and supersession instants and only references the effective period so that as-of queries can be disambiguated.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-015"
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "mint-revision",
+      "name": "Mint a revision",
+      "description": "Create a new immutable revision of a host entity, binding identity, designation, predecessor set, agent, instants and content digest.",
+      "inputs": [
+        "Host entity persistent identifier",
+        "Proposed content or change set",
+        "Change agent reference",
+        "Change event instant",
+        "Predecessor revision references"
+      ],
+      "outputs": [
+        "Revision identifier",
+        "Revision manifest",
+        "Content digest",
+        "Assigned version designation"
+      ],
+      "preconditions": [
+        "The declared version designation scheme and public surface are published",
+        "The predecessor references resolve and the expected current revision precondition holds",
+        "An attributable agent and a change event instant are supplied"
+      ],
+      "effects": [
+        "A new immutable revision manifest exists",
+        "The predecessor set of the new revision is fixed and the successor set of each predecessor gains an entry",
+        "The history gains an append-only entry with record instant"
+      ],
+      "source_refs": [
+        "SRC-023",
+        "SRC-012",
+        "SRC-013",
+        "SRC-002",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "assign-designation",
+      "name": "Assign a version designation",
+      "description": "Derive or validate the version label for a revision under the declared scheme and its compatibility promise.",
+      "inputs": [
+        "Revision identifier",
+        "Declared scheme code",
+        "Breaking change flag",
+        "Predecessor designation"
+      ],
+      "outputs": [
+        "Version designation label",
+        "Validation outcome"
+      ],
+      "preconditions": [
+        "A version scheme is declared for the entity",
+        "The breaking change assessment has been completed"
+      ],
+      "effects": [
+        "The revision carries a scheme-valid designation",
+        "A breaking change is reflected in the designation where the scheme carries a compatibility promise"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-018",
+        "SRC-012",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "link-predecessor",
+      "name": "Assert a predecessor link",
+      "description": "Record that a revision directly succeeds one or more identified revisions, including multi-parent merges.",
+      "inputs": [
+        "Successor revision identifier",
+        "Predecessor revision identifiers",
+        "Merge strategy where multiple predecessors are supplied"
+      ],
+      "outputs": [
+        "Predecessor set assertion",
+        "Updated successor sets",
+        "Merge record where applicable"
+      ],
+      "preconditions": [
+        "All predecessor identifiers resolve to released revisions",
+        "The resulting graph remains acyclic"
+      ],
+      "effects": [
+        "The lineage graph gains directed edges",
+        "Acyclicity is re-validated and the outcome recorded"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-023",
+        "SRC-021",
+        "SRC-025"
+      ]
+    },
+    {
+      "id": "compute-change-set",
+      "name": "Compute a change set",
+      "description": "Produce the ordered, atomically applicable delta between two revisions, with the digest that a correct application must reproduce.",
+      "inputs": [
+        "Predecessor revision reference",
+        "Successor revision reference",
+        "Canonicalisation profile"
+      ],
+      "outputs": [
+        "Change set document",
+        "Expected result digest",
+        "Invertibility determination"
+      ],
+      "preconditions": [
+        "Both revisions are retrievable in canonicalised form",
+        "A patch formalism is declared"
+      ],
+      "effects": [
+        "A change set artifact is stored and bound to the revision pair",
+        "The delta becomes independently verifiable"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-009",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "assess-change-impact",
+      "name": "Assess change impact",
+      "description": "Classify the change by category, semantic impact, severity and breaking status against the declared public surface, before approval.",
+      "inputs": [
+        "Change set document",
+        "Declared public surface reference",
+        "Consumer inventory"
+      ],
+      "outputs": [
+        "Change categories",
+        "Breaking change flag",
+        "Impact assessment record"
+      ],
+      "preconditions": [
+        "A public surface is declared",
+        "The change set is available"
+      ],
+      "effects": [
+        "An impact assessment is recorded and bound to the change request",
+        "The designation increment and compatibility declaration become determinable"
+      ],
+      "source_refs": [
+        "SRC-022",
+        "SRC-002",
+        "SRC-019"
+      ]
+    },
+    {
+      "id": "evaluate-compatibility",
+      "name": "Evaluate compatibility between two versions",
+      "description": "Determine whether data or consumers produced under one version can be read under another, in a stated direction, and record the supporting evidence.",
+      "inputs": [
+        "Reader version reference",
+        "Writer version reference",
+        "Direction"
+      ],
+      "outputs": [
+        "Compatibility verdict",
+        "Evidence reference",
+        "Compatibility matrix update"
+      ],
+      "preconditions": [
+        "Both version definitions are retrievable",
+        "Default and alias rules are declared for the schema in use"
+      ],
+      "effects": [
+        "A compatibility declaration is recorded with its evidence",
+        "Any incompatibility is propagated to the designation and deprecation decisions"
+      ],
+      "source_refs": [
+        "SRC-019",
+        "SRC-016",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "plan-migration",
+      "name": "Plan a migration",
+      "description": "Produce the ordered procedure that carries state or consumers from a source version to a target version, with reversibility, idempotence and accepted loss stated.",
+      "inputs": [
+        "Source revision reference",
+        "Target revision reference",
+        "Compatibility verdict",
+        "Affected instance inventory"
+      ],
+      "outputs": [
+        "Migration plan",
+        "Reversibility determination",
+        "Expected loss statement",
+        "Migration deadline"
+      ],
+      "preconditions": [
+        "A compatibility evaluation exists for the version pair",
+        "An accepting authority for any expected loss is identified"
+      ],
+      "effects": [
+        "A migration plan artifact is bound to the version pair",
+        "Consumers gain an actionable, dated upgrade path"
+      ],
+      "source_refs": [
+        "SRC-019",
+        "SRC-006",
+        "SRC-022",
+        "SRC-024"
+      ]
+    },
+    {
+      "id": "apply-migration",
+      "name": "Apply a migration",
+      "description": "Execute a migration transform against an instance or store and record the outcome, including partial failure and resume state.",
+      "inputs": [
+        "Migration plan reference",
+        "Target instance or store reference",
+        "Execution agent reference"
+      ],
+      "outputs": [
+        "Migration execution record",
+        "Resulting revision reference",
+        "Verification digest"
+      ],
+      "preconditions": [
+        "The migration plan is released and its transform digest verifies",
+        "A rollback path or an explicit acceptance of irreversibility is recorded"
+      ],
+      "effects": [
+        "Instance state is transformed to the target version",
+        "An execution record is appended to the history and the outcome is verifiable"
+      ],
+      "source_refs": [
+        "SRC-019",
+        "SRC-012",
+        "SRC-022"
+      ]
+    },
+    {
+      "id": "resolve-as-of",
+      "name": "Resolve the revision in force at an instant",
+      "description": "Return the revision that was current at a supplied instant along the declared temporal axis.",
+      "inputs": [
+        "Entity persistent identifier",
+        "Target instant",
+        "Temporal axis selector",
+        "Branch or context"
+      ],
+      "outputs": [
+        "Revision reference",
+        "Instant actually reflected",
+        "Axis used"
+      ],
+      "preconditions": [
+        "Revision instants are recorded in RFC 3339 form with explicit offsets",
+        "A resolution rule is declared for the case where record time and effective time disagree"
+      ],
+      "effects": [
+        "The consumer obtains a pinned revision rather than a moving pointer",
+        "The response states which instant and axis it reflects"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-015",
+        "SRC-013",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "reconstruct-state",
+      "name": "Reconstruct a historical state",
+      "description": "Rebuild the full state of a revision from the nearest snapshot plus intervening deltas and verify it against the recorded digest.",
+      "inputs": [
+        "Target revision reference",
+        "Nearest snapshot reference",
+        "Intervening change sets"
+      ],
+      "outputs": [
+        "Reconstructed state",
+        "Verification outcome"
+      ],
+      "preconditions": [
+        "The delta chain from snapshot to target is complete",
+        "The canonicalisation profile of the target revision is known"
+      ],
+      "effects": [
+        "A prior state is materialised without mutating any stored revision",
+        "A mismatch marks the chain unverified rather than overwriting it"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-006",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "enumerate-history",
+      "name": "Enumerate version history",
+      "description": "List the revisions of an entity with their identifiers, instants and states, in a stable order and with a completeness statement.",
+      "inputs": [
+        "Entity persistent identifier",
+        "Range or page token",
+        "Requester authorisation context"
+      ],
+      "outputs": [
+        "History document",
+        "Completeness statement",
+        "Next page token"
+      ],
+      "preconditions": [
+        "The requester is authorised for the history visibility class of the entries returned"
+      ],
+      "effects": [
+        "The consumer can traverse the history without reading revision content",
+        "Withheld or disposed entries are represented as tombstones rather than omitted silently"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-013",
+        "SRC-014",
+        "SRC-025"
+      ]
+    },
+    {
+      "id": "enforce-update-precondition",
+      "name": "Enforce an update precondition",
+      "description": "Reject a revision attempt whose expected current revision does not match the actual head, and record the rejection.",
+      "inputs": [
+        "Target entity identifier",
+        "Expected current revision",
+        "Proposed change"
+      ],
+      "outputs": [
+        "Acceptance or precondition failure outcome",
+        "Conflict report on failure"
+      ],
+      "preconditions": [
+        "A concurrency model is declared for the entity",
+        "The head pointer is readable atomically"
+      ],
+      "effects": [
+        "Lost updates are prevented",
+        "Rejected attempts are recorded rather than silently discarded"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-013",
+        "SRC-023"
+      ]
+    },
+    {
+      "id": "verify-history-integrity",
+      "name": "Verify history integrity",
+      "description": "Re-check content fixity and the entry chain across a revision range and record the verification outcome.",
+      "inputs": [
+        "Entity persistent identifier",
+        "Revision range",
+        "Digest algorithm inventory"
+      ],
+      "outputs": [
+        "Verification outcome per revision",
+        "Chain verification outcome",
+        "Unverified entry list"
+      ],
+      "preconditions": [
+        "Digest values and the canonicalisation profile are recorded for each revision in range",
+        "Superseded digest algorithms remain resolvable"
+      ],
+      "effects": [
+        "Fixity check instants are updated",
+        "Failures are marked as unverified and escalated, never resolved by deletion"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-020",
+        "SRC-009",
+        "SRC-022"
+      ]
+    },
+    {
+      "id": "deprecate-revision",
+      "name": "Deprecate and schedule sunset",
+      "description": "Mark a revision, element or endpoint deprecated from a stated instant, publish the replacement and migration guidance, and schedule its sunset.",
+      "inputs": [
+        "Target revision or element reference",
+        "Deprecation effective instant",
+        "Sunset instant",
+        "Replacement reference"
+      ],
+      "outputs": [
+        "Deprecation notice",
+        "Interface deprecation signal",
+        "Updated compatibility matrix"
+      ],
+      "preconditions": [
+        "The sunset instant is not earlier than the deprecation instant",
+        "A replacement or an explicit statement that none exists is available"
+      ],
+      "effects": [
+        "Consumers receive a dated deprecation signal and migration guidance",
+        "The deprecated revision remains retrievable until its sunset instant"
+      ],
+      "source_refs": [
+        "SRC-024",
+        "SRC-025",
+        "SRC-016",
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "withdraw-revision",
+      "name": "Withdraw or deactivate a revision",
+      "description": "Record a retraction, deactivation or deletion as a history entry that preserves ordering and lineage while removing content or availability as authorised.",
+      "inputs": [
+        "Target revision reference",
+        "Withdrawal kind",
+        "Authorising role reference",
+        "Reason"
+      ],
+      "outputs": [
+        "Tombstone record",
+        "Updated head pointer where the withdrawn revision was current"
+      ],
+      "preconditions": [
+        "The withdrawal is authorised and its authority is recorded",
+        "Retention and legal-hold constraints have been evaluated"
+      ],
+      "effects": [
+        "The revision ceases to be served according to the withdrawal kind",
+        "A tombstone remains so that deletion is distinguishable from never having existed"
+      ],
+      "source_refs": [
+        "SRC-013",
+        "SRC-015",
+        "SRC-026",
+        "SRC-017"
+      ]
+    },
+    {
+      "id": "execute-disposition",
+      "name": "Execute retention disposition on history",
+      "description": "Apply the scheduled disposition action to revisions or history entries whose retention period has elapsed and no hold applies, retaining evidence of the disposition.",
+      "inputs": [
+        "Revision or range reference",
+        "Retention schedule reference",
+        "Disposition authority reference"
+      ],
+      "outputs": [
+        "Disposition record",
+        "Redaction markers or tombstones",
+        "Updated chain verification status"
+      ],
+      "preconditions": [
+        "The retention period has elapsed and no legal hold applies",
+        "The effect on digest chains and signatures has been assessed"
+      ],
+      "effects": [
+        "Content is destroyed, redacted or anonymised as authorised",
+        "Identifiers, instants and disposition evidence survive so the history gap is accountable"
+      ],
+      "source_refs": [
+        "SRC-017",
+        "SRC-026",
+        "SRC-020",
+        "SRC-022"
+      ]
+    },
+    {
+      "id": "project-alignment",
+      "name": "Project version semantics onto an external vocabulary",
+      "description": "Emit this model's version fields as the corresponding properties, link relations or headers of a target vocabulary or interface, annotating loss.",
+      "inputs": [
+        "Revision manifest",
+        "Target vocabulary identifier and version",
+        "Alignment crosswalk"
+      ],
+      "outputs": [
+        "Projected representation",
+        "Loss annotation",
+        "Claim kind statement"
+      ],
+      "preconditions": [
+        "A crosswalk exists for the target vocabulary version",
+        "Conflicts have been recorded and a handling rule chosen"
+      ],
+      "effects": [
+        "Version relations become consumable by external systems",
+        "Every projection carries an explicit alignment-not-conformance statement unless conformance evidence is attached"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-011",
+        "SRC-025",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "compare-version-precedence",
+      "name": "Compare version precedence",
+      "description": "Order two version indicators under SemVer precedence, or under a declared alternative scheme.",
+      "inputs": [
+        "two version indicators",
+        "declared scheme"
+      ],
+      "outputs": [
+        "ordering result",
+        "precedence keys",
+        "incomparability flag if schemes differ"
+      ],
+      "preconditions": [
+        "Both indicators use the same declared scheme, or an explicit mapping exists."
+      ],
+      "effects": [
+        "Build metadata is ignored under SemVer.",
+        "Pre-release is lower than the associated normal version."
+      ],
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "publish-as-current",
+      "name": "Publish as current version",
+      "description": "Designate a snapshot as hasCurrentVersion / adms:last and, under OWL conventions, make it retrievable at the series IRI while leaving prior version IRIs in place.",
+      "inputs": [
+        "series identifier",
+        "snapshot revision",
+        "publisher"
+      ],
+      "outputs": [
+        "hasCurrentVersion pointer",
+        "series IRI resolution update",
+        "prior versions still listed"
+      ],
+      "preconditions": [
+        "Snapshot is a version of the series.",
+        "Publisher is authorised."
+      ],
+      "effects": [
+        "Exactly one current pointer is stored unless a documented branch exception applies.",
+        "Prior versions remain accessible at version identifiers."
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-016",
+        "SRC-029",
+        "SRC-031"
+      ]
+    },
+    {
+      "id": "supersede-revision",
+      "name": "Supersede revision",
+      "description": "Assert dcterms:replaces / isReplacedBy and, where DOIs are used, IsNewVersionOf / IsPreviousVersionOf, optionally minting a new identifier for a major change.",
+      "inputs": [
+        "new revision",
+        "old revision",
+        "steward major-or-minor decision",
+        "identifier policy"
+      ],
+      "outputs": [
+        "replaces links",
+        "related identifier pairs",
+        "optional new DOI or version IRI"
+      ],
+      "preconditions": [
+        "Steward has decided whether the change is major.",
+        "Identifier policy for reuse versus minting is known."
+      ],
+      "effects": [
+        "Validity and citation rules for the old identifier are updated.",
+        "Both identifiers remain recorded."
+      ],
+      "source_refs": [
+        "SRC-028",
+        "SRC-030",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "freeze-released-revision",
+      "name": "Freeze released revision",
+      "description": "Mark a revision as released so its content MUST NOT be modified; further change requires a new version.",
+      "inputs": [
+        "revision identity",
+        "content or distribution digest",
+        "release steward"
+      ],
+      "outputs": [
+        "released flag",
+        "generated or issued time",
+        "frozen release manifest"
+      ],
+      "preconditions": [
+        "Revision identity exists.",
+        "If SemVer is declared, public API is identified for 1.0.0 and later."
+      ],
+      "effects": [
+        "In-place content mutation is forbidden.",
+        "Checksum evidence is bound to the revision.",
+        "Subsequent edits must create a successor revision."
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-010",
+        "SRC-001"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Any Vercy world-model entry whose instances change over time (entity, event, aggregate or registry model)",
+      "relation": "MIX-IN",
+      "purpose": "This model is not instantiated alone. It is mixed into a host model to give that model revision identity, lineage, change substance, temporal framing, authority and migration semantics without duplicating the host's domain attributes.",
+      "required": true,
+      "source_refs": [
+        "SRC-016",
+        "SRC-010",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Provenance / Lineage model (PROV-style agents, activities and derivations) — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Revision links are a specialisation of derivation. This model asserts the revision relation and references the provenance sibling for activities, plans, usage and non-revision derivations so the concepts are not duplicated.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Audit Trail / Event Log model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Regulated audit trails record operator actions that create no revision, including reads and failed attempts. This model contributes revision-producing events to that trail and references it for the wider action stream.",
+      "required": true,
+      "source_refs": [
+        "SRC-017",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "Party / Agent model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Change agent, on-behalf-of party, approver and signer are all references into a party model; this model records only the reference, the role and the verification method.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "Identifier and Namespace Governance model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Revision identity depends on a governed minting, resolution and persistence policy. This model states the identity priority and immutability requirement and defers minting policy to the identifier sibling.",
+      "required": true,
+      "source_refs": [
+        "SRC-016",
+        "SRC-008",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Retention and Disposition model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Retention schedules, legal holds and disposition authority are authored elsewhere; this model consumes them and records the disposition applied to each history entry.",
+      "required": true,
+      "source_refs": [
+        "SRC-017",
+        "SRC-026"
+      ]
+    },
+    {
+      "target": "Access Control and Classification model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "History entries carry visibility and sensitivity classifications, but policy interpretation and enforcement belong to the access sibling.",
+      "required": true,
+      "source_refs": [
+        "SRC-026",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "Change Set / Patch structure (owned by this model, projected as a nested structure)",
+      "relation": "COMPOSE",
+      "purpose": "The ordered, atomically applicable delta with its precondition operations and expected result digest is composed into each revision record rather than being an external model.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-012",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Approval / Change Governance Workflow model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Configuration change control requires proposal, impact analysis and approval. The workflow sibling owns routing and task state; this model binds the resulting decision to a revision.",
+      "required": false,
+      "source_refs": [
+        "SRC-022",
+        "SRC-017"
+      ]
+    },
+    {
+      "target": "Digital Signature and Integrity model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "Claim signatures, certificate validation and key lifecycle are owned by a signature sibling; this model records the signature reference, covered digest and declared signature meaning.",
+      "required": false,
+      "source_refs": [
+        "SRC-020",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "Temporal / Effective-Dating model — sibling identifier to be assigned by the registry",
+      "relation": "REFERENCE",
+      "purpose": "General valid-time modelling of domain assertions belongs elsewhere; this model owns record time and supersession and references effective periods only to disambiguate as-of queries.",
+      "required": false,
+      "source_refs": [
+        "SRC-011",
+        "SRC-015"
+      ]
+    },
+    {
+      "target": "W3C PROV-O revision and attribution vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of revision, derivation, specialisation, alternate, generation, invalidation and attribution to PROV-O terms. Alignment only; no conformance is claimed without an executed validation.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "DCAT 3 and DCMI Metadata Terms versioning properties",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of version label, series membership, previous version, current version, replacement, creation, modification, issuance and validity to dcat and dcterms properties, with the version-chain limitation recorded as a known conflict.",
+      "required": false,
+      "source_refs": [
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "IANA Link Relation Types registry (version navigation and time-based access)",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of history enumeration, predecessor, successor, latest, working copy, memento, timegate, timemap, deprecation and sunset onto registered link relation types for interface exposure.",
+      "required": false,
+      "source_refs": [
+        "SRC-025",
+        "SRC-003",
+        "SRC-004",
+        "SRC-024"
+      ]
+    },
+    {
+      "target": "HL7 FHIR resource meta versioning and history interaction",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of revision identifier, record instant, history enumeration, as-of retrieval and update precondition onto versionId, lastUpdated, _history, vread and If-Match, noting that the FHIR ETag is a weak validator and not a content digest.",
+      "required": false,
+      "source_refs": [
+        "SRC-013",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "OCFL object versioning, inventory and fixity",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of sequential version numbering, head pointer, forward deltas, content addressing and legacy fixity onto OCFL inventory structures, treated as one storage projection among several.",
+      "required": false,
+      "source_refs": [
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Semantic Versioning 2.0.0 and PEP 440 designation grammars",
+      "relation": "ALIGN",
+      "purpose": "Declared, mutually exclusive designation grammars that a host entity may adopt; the model records which grammar is in force rather than assuming either, because their ordering rules conflict.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-018"
+      ]
+    },
+    {
+      "target": "C2PA manifest, ingredient and action model for media assets",
+      "relation": "ALIGN",
+      "purpose": "Declared mapping of upstream ingredient versions, edit actions, hard bindings and redaction onto C2PA manifests where the host entity is a media asset carrying embedded provenance.",
+      "required": false,
+      "source_refs": [
+        "SRC-020"
+      ]
+    }
+  ],
+  "serviceLayers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension MUST name a single accountable owner for the version and change-history package and record that owner as a resolvable agent identifier, not free text; the owner is accountable for the designation scheme, the compatibility promise and the deprecation regime.",
+        "The owner package MUST publish the version designation scheme, its grammar reference and the declared public surface before the first revision is minted, because a designation asserted without a declared surface carries no compatibility meaning.",
+        "The owner package MUST declare the digest algorithm and canonicalisation profile in force, and MUST keep every superseded algorithm resolvable so that historical fixity remains verifiable after an algorithm migration.",
+        "The owner package MUST declare the retention schedule, disposition authority and legal-hold regime applying to history entries, and MUST state how erasure and rectification obligations are reconciled with append-only history.",
+        "The owner package MUST list the host models into which this mixin is composed and state, per host, whether change history is mandatory or optional and which findings are mandatory in that context.",
+        "The owner package MUST record every alignment to an external vocabulary as an alignment with an explicit loss statement, and MUST NOT publish a conformance claim without attached, re-executable validation evidence."
+      ],
+      "namespace_guidance": "Version and change-history terms are minted in a namespace controlled by the adopting Dimension and are themselves versioned using the same series-plus-version pattern this model prescribes: a stable series IRI identifies the term set across time, and a distinct version IRI identifies each published state, with the rule that no two different published states share the same series IRI and version IRI. Term IRIs are never re-pointed to different meanings; a changed meaning requires a new term and a deprecation of the old one. Local extension terms are minted in a sub-namespace clearly separated from terms borrowed from external vocabularies, and borrowed terms are always cited with their source vocabulary version so that a later change upstream is detectable.",
+      "registry_links": [
+        "The Vercy model registry entry vr.wm-xct-022 (WM-XCT-022) records this model's status, review state and relations, and is the authoritative pointer to its current specification revision.",
+        "The IANA Link Relation Types registry is the normative source for relation types used to expose version navigation and time-based access over link-carrying interfaces.",
+        "The adopting Dimension maintains a registry of declared version designation schemes, their grammar references and their ordering rules, so that no consumer infers ordering from an undeclared label format.",
+        "The adopting Dimension maintains a registry of digest algorithms and canonicalisation profiles, including superseded entries retained for historical verification."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Before any digest is computed or signature applied, the record is serialised deterministically: object members sorted recursively by name, no insignificant whitespace, a declared Unicode normalisation form, and a declared numeric serialisation, so that two systems independently produce identical bytes.",
+        "Volatile fields MUST be excluded from the digest scope and the exclusion list MUST be published: transport metadata, the mutable head pointer, fixity-check timestamps, cached successor sets and pagination tokens are excluded because they change without any change of content.",
+        "All instants inside the canonical form are normalised to RFC 3339 with seconds and an explicit offset or Z before digesting; an implementation MUST NOT silently substitute Z for an unknown local offset, for which -00:00 is the correct representation.",
+        "Where the record is projected into RDF, a declared RDF canonicalisation algorithm is used instead of the JSON rule, and the profile identifier recorded on the revision states which was applied, because the two produce different digests over the same information.",
+        "The canonicalisation profile identifier is stored on each revision. Changing the profile is itself a versioned change to the owner package and requires dual-digest retention over a stated transition period."
+      ],
+      "patch_rules": [
+        "A change set is an ordered list of operations applied sequentially, where each operation's result is the input to the next; the list MAY begin with precondition test operations that assert the expected predecessor state.",
+        "A change set applies atomically: if any operation fails or any precondition test is not satisfied, evaluation terminates and the change set MUST NOT be treated as partially applied.",
+        "Every change set is identified by the predecessor revision identifier plus the successor revision identifier and carries the expected result digest of the canonicalised successor state, so that correct application is independently verifiable.",
+        "A published change set is immutable. A defective change set is corrected by publishing a superseding change set and a corresponding revision, never by editing the original.",
+        "Invertibility is declared explicitly. Where a change set is not invertible, the information lost under inversion MUST be stated so that rollback expectations are not inferred incorrectly."
+      ],
+      "compatibility_rules": [
+        "Compatibility is declared directionally: backward (a newer reader accepts older data), forward (an older reader accepts newer data), full, or none. An undirected claim of 'compatible' is not accepted.",
+        "Adding an optional element carrying a default is backward compatible; removing or renaming a required element without an alias, narrowing a type, or tightening a constraint is breaking and MUST be declared incompatible with the affected prior versions.",
+        "A breaking change MUST be reflected in the designation where the declared scheme carries a compatibility promise, and MUST in all cases set an explicit incompatible-with assertion, because not every legitimate scheme encodes compatibility in the label.",
+        "Deprecation precedes removal: an element is marked deprecated with an effective instant and a replacement before it is removed, and a sunset instant MUST NOT be earlier than the deprecation instant.",
+        "A compatibility claim without re-executable evidence is recorded as an assertion, not as a verified property, and is surfaced to consumers as such."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "First, the identifier issued by the authoritative master system that owns the host entity's record, where such a system exists and its identifiers are stable and non-reusable.",
+        "Second, a governed global identifier or IRI minted in a controlled namespace, following the series-plus-version pattern in which the series IRI is stable across revisions and the version IRI is unique to one revision.",
+        "Third, a UUID or ULID assigned by the adopting Dimension, preferring a time-ordered UUID form so that identifiers sort in generation order as opaque bytes.",
+        "A date, a version label, a sequence number or a content digest is NOT an identifier: a date is not unique under concurrent writes, a label may repeat across branches or schemes, and a digest is a validator that collides for identical content produced independently and changes whenever the canonicalisation profile changes.",
+        "A weak access-interface validator (for example a weak entity tag) MUST NOT be used as a revision identifier or as a fixity value, because it asserts semantic equivalence rather than byte identity."
+      ],
+      "timestamp_rule": "All instants are recorded as RFC 3339 date-time values with seconds and an explicit UTC offset or Z. Change-event time and record or ingestion time are stored as separate fields and are never conflated; publication time is stored separately again where it differs. The -00:00 form is used only where the local offset is genuinely unknown and MUST NOT be substituted for Z. Fractional-second precision is declared rather than assumed, leap-second values are accepted on input and their handling documented, and where instants are stored as Unix epoch milliseconds internally the loss of offset and leap-second information is recorded as a known projection loss.",
+      "serial_naming_rule": "Serial artifacts are named as entity-persistent-identifier, then revision-identifier, then artifact-kind, in that order. Where a numeric sequence is used it starts at 1 and MUST be continuous with no missing integers; the zero-padding convention is fixed at first use for a given entity and MUST NOT change thereafter, and the same convention MUST be used for every serial artifact of that entity. A sequence number identifies position within a branch, never global order across branches.",
+      "integrity_rule": "Every serial artifact carries a digest over its canonical form using the declared primary algorithm, with SHA-512 preferred and SHA-256 permitted; supplementary digests under superseded algorithms are retained in a fixity block so that historical verification survives algorithm migration. History entries additionally carry a chaining digest binding each entry to its predecessor, so that insertion, removal or reordering is detectable. Verification failure marks the artifact and the affected chain segment as unverified and raises an escalation; it MUST NOT be resolved by deleting or rewriting the entry, and any redaction is recorded in place as a redaction marker rather than as a silent removal."
+    },
+    "policies": [
+      "Released revisions are immutable: content bound to a released revision identifier MUST NOT be modified, and a revision identifier MUST NOT be reused or re-pointed. Corrections are issued as new revisions that supersede, never as edits.",
+      "Change history is append-only: entries are added and never edited in place, and no new entry may obscure the information recorded in a previous entry. A correction to a history entry is itself recorded as a further entry.",
+      "No revision is published without an attributable agent, a change-event instant and a separate record instant. An anonymous or timeless revision is rejected at mint time.",
+      "Every published revision carries a change classification and a human-readable note stating how it differs from its predecessor; a version list without difference statements does not satisfy the version-history requirement.",
+      "Compatibility and conformance claims require attached, re-executable evidence. Mappings to external standards are recorded as alignments with explicit loss statements and are never presented as conformance without such evidence.",
+      "Deprecation precedes removal, and a sunset instant MUST NOT be earlier than the corresponding deprecation instant. A revision remains retrievable until its sunset instant unless withdrawn under a recorded authority.",
+      "Erasure and rectification obligations over personal data are satisfied by destroying or redacting content in place while retaining non-identifying tombstones, digests and a disposition record, so that lineage, ordering and remaining verifiability survive an accountable gap.",
+      "'Latest' is never an evidentiary citation target. Any reference used as evidence, in an audit, or in a signed claim MUST pin a revision identifier, because multiple latest versions may exist under branching.",
+      "Released revisions are immutable; corrections are new revisions with predecessor links.",
+      "Every non-initial revision SHOULD have a previousVersion or an explicit first-version flag.",
+      "Backward-compatibility issues SHOULD be described in adms:versionNotes.",
+      "Prior versions remain resolvable at version identifiers until the retention rule allows tombstone; silent deletion of released history is forbidden.",
+      "Format variants, translations and series members are not recorded as versions.",
+      "Version history is readable under the host's access policy; unreleased revisions and embargoed snapshots are restricted by default."
+    ],
+    "crud": {
+      "read": [
+        "Retrieve a revision by its identifier, returning content plus the manifest that fixes its identity, instants and digest.",
+        "Enumerate the version history of an entity in a stable order with an explicit completeness statement, including tombstones for withdrawn or disposed entries.",
+        "Resolve the revision in force at a supplied instant along a stated temporal axis, and report which instant and axis the response reflects.",
+        "Compute or retrieve the difference between two named revisions, including the expected result digest.",
+        "Verify content fixity and history chain integrity over a stated revision range without mutating any stored record."
+      ],
+      "create": [
+        "Mint a new revision, which requires a resolvable host entity identifier, a predecessor set (possibly empty for a root), an attributable agent, a change-event instant and a record instant.",
+        "Create a change set bound to an ordered predecessor and successor revision pair, carrying its expected result digest.",
+        "Open a working copy or checkout against a named base revision, recording the holder and an expiry instant.",
+        "Publish a deprecation and sunset notice bound to a revision or element, with a replacement reference or an explicit statement that none exists.",
+        "Record an approval, attribution, impact assessment or timestamp attestation bound to a revision identifier."
+      ],
+      "update": [
+        "Move the head or currency pointer to a different revision, atomically, by an authorised role, recording the move instant and whether it constitutes a rollback.",
+        "Change deprecation status and sunset scheduling, subject to the constraint that a sunset instant is never set earlier than the deprecation instant.",
+        "Append fixity and chain verification outcomes, which add observations without altering the verified content.",
+        "Set retention, legal-hold and disposition-scheduling flags on history entries.",
+        "Content, instants, agent, predecessor set and digest of a released revision are NOT updatable; any attempt is rejected and the rejection recorded."
+      ],
+      "delete": [
+        "Content destruction occurs only under a recorded disposition authority or a lawful erasure obligation, never as an ordinary operation and never to resolve a verification failure.",
+        "Every deletion leaves a tombstone that preserves the revision identifier, its instants and its position in the lineage, so that a deleted revision is distinguishable from one that never existed.",
+        "Redaction removes sensitive content in place and leaves a redaction marker; the effect on covering digests and signatures is assessed and recorded before execution.",
+        "A disposition record evidencing the destruction is created before the content is destroyed and is retained beyond the retention period of the content it describes.",
+        "Compaction or squashing of history, where permitted at all, MUST preserve revision identifiers, instants, digests and predecessor edges of the compacted range, and MUST be recorded as an authorised disposition."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Version Owner",
+        "responsibilities": [
+          "Declare and publish the version designation scheme, the public surface and the compatibility promise for the host entity.",
+          "Approve deprecation and sunset schedules and ensure a replacement and migration guidance exist.",
+          "Own the versioning policy artifact and its own revision history."
+        ]
+      },
+      {
+        "name": "Change Author",
+        "responsibilities": [
+          "Propose and create revisions, supplying the change set, the change classification and the human-readable change note.",
+          "Declare breaking status against the published public surface and supply the reason for the change.",
+          "Ensure predecessor references are correct, including all parents of a merge."
+        ]
+      },
+      {
+        "name": "Change Approver",
+        "responsibilities": [
+          "Review the impact assessment and authorise or reject the change before release.",
+          "Apply signatures with an explicitly declared meaning and record the decision instant.",
+          "Confirm that migration guidance and compatibility declarations exist before a breaking change is released."
+        ]
+      },
+      {
+        "name": "History Custodian",
+        "responsibilities": [
+          "Enforce the append-only property and detect any attempt to edit or remove a history entry.",
+          "Run scheduled fixity and chain verification and escalate unverified entries without deleting them.",
+          "Manage digest-algorithm and canonicalisation-profile migrations, retaining superseded values for historical verification."
+        ]
+      },
+      {
+        "name": "Records and Retention Officer",
+        "responsibilities": [
+          "Apply the retention schedule to revisions and history entries and administer legal holds.",
+          "Authorise disposition, redaction and erasure, and ensure a disposition record survives the disposed content.",
+          "Reconcile erasure and rectification obligations with immutability requirements and record the basis for the chosen reconciliation."
+        ]
+      },
+      {
+        "name": "Registry Steward",
+        "responsibilities": [
+          "Maintain the namespace, the declared scheme registry and the alignment crosswalks with their target vocabulary versions.",
+          "Ensure alignments are published as alignments, with loss statements, and that conformance claims carry evidence.",
+          "Detect upstream changes in aligned vocabularies and re-issue crosswalks as new revisions."
+        ]
+      },
+      {
+        "name": "Consumer / Integrator",
+        "responsibilities": [
+          "Declare which revision is pinned in use and respond to deprecation signals before the sunset instant.",
+          "Execute migrations within the stated deadline and report outcomes and failures.",
+          "Supply the expected current revision as a precondition on every update to prevent lost updates."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Structural history metadata — revision identifier, version label, instants, predecessor and successor links, state and content digest — inherits the access classification of the current state of the host entity. Interpretive and attributive content — change reason, human-readable note, agent identity, approval records, impact assessments and conflict reports — defaults to a more restricted classification and is not disclosed to holders of current-state read access without a separate grant, because it can reveal personal data, internal decision-making and security detail that the current state does not.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Regulated audit-trail content must remain available for inspection by authorised regulators and internal auditors for the full retention period, overriding the default restriction on attributive content.",
+        "An embargoed revision exposes its existence, identifier, instants and digest while withholding content until the embargo instant, so that lineage and ordering remain verifiable during the embargo.",
+        "Redacted assertions remain listed as redacted with their redaction markers; the existence of a redaction is never itself concealed.",
+        "Erasure under a lawful obligation removes content but retains a non-identifying tombstone and a disposition record, which remain accessible to the retention officer and auditors.",
+        "Security-severity change notes may be withheld from general consumers until a coordinated disclosure instant, while the existence of the revision and its digest remain visible.",
+        "Where the host entity is public data, structural history metadata is published openly in line with the requirement to provide a version indicator and version history, even if attributive content stays restricted.",
+        "Embargoed unpublished versions remain hidden until issue time.",
+        "Yanked or invalidated versions stay in lineage but MUST NOT be designated current.",
+        "Legal hold blocks tombstone.",
+        "Personal-data redaction may replace a snapshot payload via a new revision rather than editing history.",
+        "If-Match failure is a denied write, not a delete."
+      ],
+      "audit_requirements": [
+        "Every append to history is logged with the acting agent, the record instant, the revision identifier affected and the authorisation basis.",
+        "Every read of restricted history content — attributive fields, embargoed revisions, redacted entries — is logged with the requesting actor, the instant, the scope requested and the decision.",
+        "Every fixity and chain verification run is logged with its range, outcome and instant, and every unverified result raises a tracked escalation.",
+        "Every rejected revision attempt, precondition failure and conflict is logged, so that suppressed changes are visible rather than silently lost.",
+        "Every disposition, redaction or erasure execution is logged with its authority, scope, instant and effect on digests and signatures, and the log is retained beyond the retention period of the disposed content.",
+        "Every movement of the head or currency pointer is logged with the acting role, the prior and new revision identifiers, and whether the move was a rollback.",
+        "Record who assigned, froze, designated current, deprecated, superseded, patched or invalidated a revision, with event time and observation time.",
+        "Record digest mismatches as integrity incidents.",
+        "Do not treat this audit as a substitute for a security event log."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Version designation scheme and its specification URL",
+        "Canonicalisation profile and digest algorithm in force",
+        "Retention schedule and disposition authority",
+        "Accountable owner (resolvable agent identifier)",
+        "Alignment crosswalk URL with target vocabulary versions",
+        "History access and visibility defaults"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Name and Type to confirm that this package is the Version / Change History mixin and not a host model that merely embeds it.",
+        "Follow the Specification URL to obtain the current specification revision, and record its revision identifier before acting on any of its rules.",
+        "Follow the Storage type URL to learn how revisions, change sets and history entries are materialised in this deployment, remembering that storage is a projection and not the semantics.",
+        "Follow the Interface URL to learn how history is enumerated, how as-of retrieval is requested, and which precondition mechanism is required on updates.",
+        "Follow the Processes URL for the mint, approve, migrate, deprecate, withdraw and dispose procedures and their required authorisations.",
+        "Read the declared version designation scheme, canonicalisation profile and digest algorithm before computing, comparing or verifying any digest or ordering.",
+        "Read the retention schedule, disposition authority and history visibility defaults before reading, exporting or deleting any history content."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "The merged plan covers the decision surface of a composable version/change-history mixin as evidenced by the two packs: revision identity and designation, ordering and currency, predecessor/successor topology including merges, derivation typing, replacement and supersession, change sets and classification, compatibility and migration, deprecation and sunset, record/event/effective time, revision lifecycle and withdrawal, attribution and change authority, fixity and tamper evidence, history access, concurrency, visibility, retention and disposition, and declared external alignment. Completeness is not claimed: preservation-event semantics (PREMIS/OAIS), configuration- and records-management standards (ISO 10007/15489), and standardised bitemporal valid-time (SQL:2011) were not retrievable in either pack, leadered-less multi-writer convergence is excluded, and all external mappings are declared alignments rather than conformance.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Revision identifier assignment, issuer authority, non-reuse guarantee, series versus revision identity, and an explicit identity priority that rejects dates, labels and digests as identifiers. Grounded in RFC 3253 (distinct never-reused URL per version), OWL 2 (ontology IRI plus version IRI uniqueness), RFC 9562 and FHIR versionId."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "States from working copy and checkout through release, supersession, deprecation, withdrawal and deactivation, with the immutability onset point and legal transitions. Grounded in RFC 3253 checkout/checkin, SemVer immutability of released versions, DID Core deactivated, FHIR delete-as-history-entry."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Predecessor and successor as sets rather than pointers, multi-parent merges, branch scoping, acyclicity validation, and typed distinction between revision, derivation and format variant. Grounded in RFC 5829, RFC 3253 DAV:predecessor-set, the Git commit DAG, PROV-O and DCMI Terms."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Change-event time, record time and publication time held separately, RFC 3339 with explicit offsets, monotonicity handling, supersession instants, and as-of resolution. Effective/valid period is present but with weaker primary support — see the migration and temporal entries in known omissions."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Attribution to person, organisation or software agent, on-behalf-of delegation, generating activity, upstream ingredient versions with pinning and digests, and the boundary that non-revision provenance belongs to the provenance sibling. Grounded in PROV-O, C2PA ingredients and DWBP BP5."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Accountable owner as a resolvable agent identifier at package level, change author, approver, custodian, retention officer, registry steward and consumer roles, plus migration responsibility and deadline. Grounded in NIST CM-3 and 21 CFR 11.10(k)."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Canonicalisation before digesting, expected result digest for delta verification, fixity re-checking with declared interval and failure handling, acyclicity and dangling-reference checks, and the rule that a weak validator is not fixity. Grounded in RFC 8785, OCFL, RFC 6902 and RFC 9110."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Structural metadata inherits the host classification while attributive content defaults to more restricted; embargo, redaction visibility, regulator access and coordinated disclosure are handled as explicit exceptions with audit requirements at bundle, layer, finding and artifact scope."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention period and basis, legal hold, compaction constraints, tombstones, redaction in place, disposition records that outlive their content, and an explicit reconciliation of append-only history with erasure and rectification duties. Grounded in 21 CFR 11.10(c), GDPR Articles 5(1)(e), 16 and 17, and C2PA redaction."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Declared alignment (never conformance without evidence) to PROV-O, DCAT 3, DCMI Terms, FHIR meta and history, OCFL, C2PA, SemVer and PEP 440, plus exposure through IANA-registered link relations and HTTP conditional and datetime-negotiation mechanisms, with loss statements and recorded conflicts."
+      },
+      {
+        "dimension": "authority",
+        "status": "covered",
+        "notes": "Authorisation basis, approval decisions bound to revisions, declared signature meaning and pre-approval impact analysis, separated from the workflow sibling that routes the approval. Grounded in NIST CM-3 and 21 CFR Part 11."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Change categories, breaking status, semantic versus presentational impact, correction flag and severity, with the category vocabulary declared rather than assumed because the widely used category set is a community convention, not a standard."
+      },
+      {
+        "dimension": "process and events",
+        "status": "covered",
+        "notes": "Mint, link, compute delta, assess impact, evaluate compatibility, plan and apply migration, resolve as-of, reconstruct, enumerate, enforce precondition, verify, deprecate, withdraw, dispose and project — each with preconditions and effects."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Timestamp precision, retrieval latency and cold-storage boundaries for deep history, history entry counts for truncation detection, and severity grading. Weakest of the covered dimensions: no cited primary source prescribes history retrieval performance bounds."
+      },
+      {
+        "dimension": "evidence and quality",
+        "status": "covered",
+        "notes": "Compatibility evidence, note completeness against the machine-readable delta, lineage completeness statements, unverifiable-upstream markers, and the rule that unevidenced claims are surfaced as assertions."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Append-only enforcement, entry chaining, signed history claims, forgery threat modelling, and non-repudiation. Grounded in 21 CFR 11.10(e), NIST AU-3 and AU-10, and C2PA claim signatures."
+      },
+      {
+        "dimension": "privacy",
+        "status": "covered",
+        "notes": "Sensitive-field inventory within history entries, pseudonymisation rules for agent identities, disclosure classification of withdrawal reasons, and reconciliation of erasure with immutability. Grounded in GDPR Articles 16, 17 and 5(1)(e)."
+      },
+      {
+        "dimension": "concurrency",
+        "status": "covered",
+        "notes": "Optimistic precondition model with expected-current-revision, precondition-failure outcomes, conflict detection and branch preservation, and lock or checkout expiry. Grounded in RFC 9110 conditional requests, FHIR If-Match with 412, and RFC 3253 checkout."
+      },
+      {
+        "dimension": "migration and compatibility",
+        "status": "covered",
+        "notes": "Directional compatibility with evidence, migration plan with reversibility, idempotence, accepted loss, owner and deadline, and deprecation-before-sunset ordering. Grounded in Avro schema resolution, SemVer, OWL 2 compatibility annotations and RFC 9745."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Version and change history carries no intrinsic geospatial semantics. Where a host entity's revisions differ geographically — jurisdictional variants, regional editions — that is modelled as branch or context scoping in this model plus the host model's own spatial attributes, not as a spatial dimension here."
+      }
+    ],
+    "known_omissions": [
+      "PREMIS 3.0 preservation-event semantics and the OAIS reference model (ISO 14721 / CCSDS 650.0-M-2) could not be retrieved during this research (HTTP 403 on loc.gov and ccsds.org). Consequently the preservation-specific distinctions between refreshment, replication, repackaging and transformation migration are not modelled, and the AIP version versus AIP edition distinction is absent. This is the largest single evidence gap for the migration half of the model's stated purpose.",
+      "ISO 10007 (configuration management) and ISO 15489 (records management) are paywalled and were not verified; configuration status accounting and records-classification terminology are therefore not adopted, and NIST SP 800-53 CM-3 is used as the accessible substitute for change-control requirements.",
+      "Strict bitemporal semantics as standardised in SQL:2011 (application-time period tables, system-versioned tables, automatic row closure) could not be cited from a retrievable primary source. The effective-period finding rests on dcterms:valid, DID document metadata and Memento datetime negotiation and is explicitly flagged as partial support.",
+      "Distributed convergence — CRDTs, vector clocks, causal ordering without a central issuer — is not modelled. The model assumes an authoritative issuing system or a declared branch owner per entity; genuinely leaderless multi-writer histories would need an additional sibling model.",
+      "Blockchain or distributed-ledger anchoring is treated as one implementation of tamper evidence rather than modelled separately; the model states the required property (detectable insertion, removal and reordering) without prescribing a mechanism.",
+      "Content-specific versioning for time-based media beyond the C2PA manifest model — edit decision lists, non-destructive edit stacks, streaming manifest versioning — is not modelled.",
+      "Localisation and translation versioning is only partially modelled: change notes carry language tags, but the independent revision lifecycle of a translation relative to its source is not developed.",
+      "Cost, effort and risk estimation for migrations is out of scope; the model records deadlines, responsibility and accepted loss but not resourcing.",
+      "Signature suite selection, certificate lifecycle and revocation handling are deferred entirely to the signature sibling; a revoked signing certificate's effect on historical claim validity is therefore unresolved here.",
+      "Rights and licence changes across versions are deferred to a rights sibling; a licence change without a content change is a real case that this model would classify only as a non-semantic revision.",
+      "Git-style merge and octopus-merge predecessor DAGs; PAV previousVersion is normally functional and DCAT describes a chain, not a DAG.",
+      "Calendar Versioning (CalVer) and other non-SemVer, non-OWL identifier grammars.",
+      "Package-manager yank/unpublish/retract semantics (npm, crates.io) as distinct from PROV invalidation.",
+      "FHIR meta.versionId / If-Match resource versioning, MediaWiki revision ids, and Software Heritage SWHID as primary identifiers.",
+      "Schema-evolution compatibility (Avro, Protocol Buffers) as a specialised contract.",
+      "Content-addressed identity (git SHA, IPFS CID) as the master identifier; checksums are evidence here.",
+      "Parallel current branches as first-class OWL-incompatible series.",
+      "Legal corrigendum versus new edition in legislation and ISO document control.",
+      "Automated semantic-release and changelog-generation tool contracts.",
+      "Embargo clocks beyond a simple unreleased/released flag."
+    ],
+    "conflicts": [
+      "Semantic Versioning mandates the X.Y.Z form with compatibility semantics attached to each position, while PEP 440 permits an epoch segment, an arbitrary-length release segment, post-releases and development releases and attaches no semantic promise. A single 'version' field cannot carry both orderings, so the designation scheme must be declared per entity rather than assumed.",
+      "Semantic Versioning states that build metadata MUST be ignored when determining precedence, whereas PEP 440 local version identifiers do participate in ordering. 'Ignore the suffix' is therefore not a portable comparison rule.",
+      "RFC 5829 and RFC 3253 model predecessors as sets and explicitly anticipate merged branches and multiple latest versions, and Git commit objects carry a list of parents forming a DAG; DCAT 3 describes dcat:previousVersion as specifying a version chain of snapshots. A strict chain cannot represent a merge, so mapping this model onto DCAT is lossy at merge nodes and that loss must be declared.",
+      "PROV-O treats prov:wasRevisionOf as a derivation between two distinct entities with distinct identifiers, while FHIR, DeltaV and OCFL treat versions as successive states of one identified resource addressed by a compound identifier. Any alignment must first decide whether each revision is a first-class entity; the two readings are not interchangeable.",
+      "Immutability requirements — SemVer item 3, RFC 3253's rule that the content and dead properties of a version never change, OCFL version-directory immutability, and C2PA's rule that claimed assertions cannot be modified — conflict directly with GDPR Article 16 rectification and Article 17 erasure where history contains personal data. C2PA's redaction-by-subsequent-claim and tombstoning are partial mitigations, not a general resolution; the residual conflict is real and is handled by policy, not by pretending it does not exist.",
+      "HTTP entity tags are opaque and may be weak, and FHIR maps meta.versionId to a weak ETag. A weak validator asserts semantic equivalence rather than byte identity, so it cannot serve as a fixity value, yet both appear in the same position in many implementations. The model separates validator from digest explicitly.",
+      "RFC 3339 permits a leap-second value of 60 and distinguishes -00:00 from Z, while UUIDv7 and most epoch-millisecond stores can represent neither. Round-tripping instants through such stores is lossy, and the loss must be recorded rather than silently accepted.",
+      "W3C DWBP requires a version history with a changelog stating precisely how each version differs from its predecessor, but prescribes no format; the widely used category vocabulary (Added, Changed, Deprecated, Removed, Fixed, Security) comes from a community convention that explicitly disclaims standard status. Category vocabularies are therefore declared, not assumed interoperable.",
+      "ADMS last/next/prev versus DCAT previousVersion/hasCurrentVersion: ADMS 2.00 notes that DCAT replaced ADMS version-navigation properties; both remain as alignments.",
+      "dcat:prev (series order) versus dcat:previousVersion (snapshot lineage) share informal wording but are disjoint in DCAT.",
+      "dcterms:hasVersion includes editions and adaptations; dcat:hasVersion / pav:hasVersion are limited to life-cycle snapshots.",
+      "SemVer forbids modifying a released version; DataCite allows the same DOI with an updated Version for steward-defined minor changes.",
+      "DataCite major versus minor is steward-defined; SemVer major is an incompatible public-API change.",
+      "PAV previousVersion is normally one direct ancestor; merge revisions need multiple parents.",
+      "OWL 2 expects exactly one current version per series IRI; product branches may need several currents.",
+      "owl:backwardCompatibleWith is identifier-interpretation compatibility for ontologies, not SemVer public-API compatibility."
+    ],
+    "regional_assumptions": [
+      "21 CFR Part 11 audit-trail and record-retention requirements apply to US FDA-regulated activity. The analogous EU GMP Annex 11 expectations were not retrieved during this research and are assumed similar but are not cited; adopters in EU-regulated manufacturing must verify independently.",
+      "GDPR rectification and erasure duties assume an EU/EEA processing nexus. UK GDPR, sectoral US regimes, LGPD, PIPL and others may impose different reconciliations with immutable history, and the model deliberately parameterises the reconciliation rather than fixing it.",
+      "Retention periods and disposition authorities are jurisdiction-, sector- and contract-specific. This model requires that a retention period and basis be declared; it fixes no durations.",
+      "Time handling assumes the proleptic Gregorian calendar with UTC offsets per RFC 3339. Non-Gregorian calendar presentation, and jurisdictions where a legally effective date is defined in local civil time rather than an instant, are rendering and interpretation concerns the host model must address.",
+      "Canonical change notes are assumed to be maintained in at least one declared language with explicit language tags; no assumption is made that English is the canonical or only language, and translation lag is a declared quality concern.",
+      "The identity priority assumes that an adopting Dimension can either point at an authoritative master system or control a namespace. Federations with no single authoritative issuer per entity fall outside the assumptions of the identity findings.",
+      "Status concepts are not fixed; EU ADMS-SKOS or a local SKOS scheme may be used.",
+      "DataCite DOI practice is centred on research outputs; it is an alignment for other domains, not a requirement.",
+      "SemVer is software-API-centred and is optional for datasets and documents.",
+      "RFC 3339 timestamps with explicit offset or Z are required in this Dimension regardless of local date formats.",
+      "JSON Patch is the normative sequential-delta alignment; non-JSON hosts must record an equivalent form."
+    ],
+    "adversarial_checks": [
+      "Tested whether a timestamp alone can serve as the revision identifier: rejected. RFC 3339 instants are not unique under concurrent writes, clock skew and leap seconds break monotonic ordering, and the -00:00 convention means two textually different instants can denote the same moment. The identity priority explicitly forbids a date as an identifier.",
+      "Tested whether a content digest can serve as the sole revision identifier: rejected. A digest is a validator, not an identifier — identical content produced independently by different agents at different times collides, and re-canonicalisation changes the digest with no change of content. The digest is retained as fixity alongside a separate identifier.",
+      "Tested whether a single predecessor pointer suffices: rejected. RFC 5829 and RFC 3253 define predecessor *sets*, and Git commit objects hold a list of parents forming a directed acyclic graph. Predecessor cardinality is 0..n and merge topology is first-class, not an edge case.",
+      "Tested whether Semantic Versioning could be mandated model-wide: rejected. PEP 440, calendar versioning and OCFL's plain continuous integer sequence are all legitimate and mutually incompatible in both grammar and ordering. The scheme is declared per entity, and no compatibility meaning is inferred from an undeclared label.",
+      "Tested whether version history and audit trail are the same finding: rejected. 21 CFR 11.10(e) requires audit trails to record operator entries and actions including those that produce no new revision, and NIST AU-3 governs audit-record content generally. The audit model is a sibling that consumes revision events, not a superset or subset of this model.",
+      "Tested whether general provenance could absorb this model: rejected. PROV-O covers activities, plans, usage and agents far beyond revision events, and prov:wasRevisionOf is one specialisation of derivation. Folding version history into provenance would either bloat the provenance model or lose the designation, compatibility and migration semantics that have no PROV counterpart.",
+      "Tested whether history can be assumed immutable as a matter of law: rejected. GDPR Articles 16 and 17 create rectification and erasure duties over personal data held inside history, and Article 5(1)(e) limits storage. The model therefore carries tombstone, redaction-marker and disposition structure instead of asserting absolute immutability, and records the residual conflict explicitly.",
+      "Tested whether ETag with If-Match fully defines concurrency: only partially. RFC 9110 supplies the mechanism and the 412 outcome but no conflict-resolution policy, and a weak validator cannot distinguish semantically equivalent representations that differ byte-wise. A separate conflict-outcome field and a declared resolution strategy are therefore required.",
+      "Tested whether 'latest' is a safe citation or evidence target: rejected. RFC 5829 states that systems supporting branching may have multiple latest versions, and DCAT's hasCurrentVersion carries the same ambiguity. Evidentiary references must pin a revision identifier.",
+      "Searched for a retrievable normative source for bitemporal valid-time semantics to anchor the effective-period finding: not found within this research (ISO/IEC 9075-2 and ISO 10007 blocked or paywalled; the SIGMOD Record SQL:2011 paper returned unparseable binary). That finding is anchored instead on dcterms:valid, DID document metadata and Memento datetime negotiation, and is marked as partial support rather than presented as canonical.",
+      "Tested whether a version label can be relied upon to derive ordering without traversing the graph: rejected for the general case. Opaque identifiers (FHIR versionId, DeltaV DAV:version-name, which is explicitly for display rather than programmatic use) carry no order, so the model requires an explicit ordering rule and a sequence or graph traversal fallback.",
+      "Tested whether change-note text can be treated as the authoritative record of what changed: rejected. DWBP requires the changelog but the machine-readable delta is what verifies; the model therefore requires an explicit completeness assertion of the note against the change set rather than assuming the two agree.",
+      "Reject treating a format or encoding change as a new version (DCMI content-versus-format rule).",
+      "Reject storing dataset-series dcat:prev in the previousVersion slot.",
+      "Reject mutating bytes of a SemVer-released revision and only bumping dcterms:modified.",
+      "Reject using a date, catalog-record id, or filename as the revision identifier.",
+      "Reject claiming SemVer conformance when no public API is declared.",
+      "Reject collapsing dcterms:hasVersion adaptations into a DCAT snapshot chain.",
+      "Reject dropping prior version IRIs when publishing a new current version.",
+      "Reject applying RFC 6902 without If-Match to a moving mutable permalink and calling the result the same frozen version.",
+      "Reject modelling translations (DataCite IsTranslationOf) as IsNewVersionOf.",
+      "Reject a single functional predecessor when the evidence is a merge, without flagging the DAG gap."
+    ]
+  },
+  "researchAdjudication": {
+    "providerMode": "dual-provider",
+    "activeProviders": [
+      "claude",
+      "grok"
+    ],
+    "waivedProviders": [],
+    "providerPolicy": {},
+    "boundaryDecision": {
+      "entry_kind": "mixin",
+      "status": "accepted",
+      "rationale": "Both providers independently classified WM-XCT-022 as a mixin attached to a host entity rather than a standalone entity, and both exclude the host's own domain attributes. The base pack additionally states storage-neutrality (JSON, Git, OCFL, MCP, MongoDB as projections) and names ten sibling models — provenance, audit, retention, release pipeline, access interface, storage layout, signature, approval workflow, identifier governance, temporal — with source-backed distinctions, so the boundary is settled before any node is accepted. No split, merge or reclassification is warranted."
+    },
+    "decisions": [
+      {
+        "concept": "Base provider selection",
+        "disposition": "Claude adopted as base",
+        "rationale": "Decided on boundary completeness, not size: the base states storage-neutrality explicitly, lists twelve out-of-scope items and ten source-referenced sibling distinctions, and separates record time from effective time, validator from digest, and version history from audit trail. The alternative pack's boundaries are vocabulary-precise but silent on authority, integrity, retention, concurrency and history access."
+      },
+      {
+        "concept": "Entry kind and model boundary",
+        "disposition": "Accepted as mixin without split or reclassification",
+        "rationale": "Both packs independently reached mixin and both exclude the host entity's domain attributes, so the boundary question is settled by agreement rather than adjudication and node acceptance can proceed."
+      },
+      {
+        "concept": "Replacement and supersession relation (dcterms:replaces, DataCite IsNewVersionOf)",
+        "disposition": "Accepted into predecessor-successor",
+        "rationale": "Only genuinely missing structural concept. The base covers the supersession instant but not the replacement relation or the only-one-valid versus all-citable distinction, which changes how a consumer decides which revision is in force."
+      },
+      {
+        "concept": "Grok snapshot-versus-abstract (specialisation of an abstract resource)",
+        "disposition": "Rejected as duplicative",
+        "rationale": "prov:specializationOf and alternateOf are already asked in the base finding revision-derivation-or-variant (q-alternate-specialization), and series existence plus dereference behaviour are asked in series-and-abstract-entity. The residual value — dcterms:hasVersion being broader than dcat:hasVersion — is an alignment-loss statement for the crosswalk, not a new finding."
+      },
+      {
+        "concept": "Grok version-indicator and version-iri-and-series-iri",
+        "disposition": "Rejected as duplicative",
+        "rationale": "Fully absorbed by base findings revision-identity-assignment, version-designation-scheme and series-and-abstract-entity, which additionally cover non-reuse enforcement, qualifier ordering and the validator-versus-identifier distinction. The DataCite new-DOI decision is covered by q-identifier-change and by the base's explicit exclusion of identifier minting policy."
+      },
+      {
+        "concept": "Grok previous-version-chain",
+        "disposition": "Rejected; base predecessor-set-and-topology retained",
+        "rationale": "The base models predecessors as sets with multi-parent merges, acyclicity validation and lineage-completeness statements, which strictly dominates a functional previousVersion chain. The one distinct item — confusing dcat:prev series order with dcat:previousVersion snapshot lineage — is routed to the alignment crosswalk as a declared mapping hazard rather than admitted as structure."
+      },
+      {
+        "concept": "Grok compatibility-declaration",
+        "disposition": "Rejected as duplicative and ID-colliding",
+        "rationale": "The base already owns a finding with this identifier covering targets, direction, evidence and default handling; change class and 0.y.z instability are covered by version-designation-scheme and change-classification-and-note. Admitting it would create a duplicate node under a colliding ID."
+      },
+      {
+        "concept": "Grok deprecation-and-status",
+        "disposition": "Rejected as duplicative",
+        "rationale": "Deprecation instant, replacement pointer, sunset ordering and interface signalling are in deprecation-and-sunset; workflow status, transition legality and status authority are in revision-state-machine. The remaining nuance that deprecating a public contract forces a minor increment belongs to the declared scheme, not to a new node."
+      },
+      {
+        "concept": "Grok migration-patch",
+        "disposition": "Rejected as duplicative",
+        "rationale": "RFC 6902 is already a base source under change-set-representation, which covers formalism, atomicity, verification digest and invertibility, while ordered procedure, reversibility, idempotence, accepted loss and owner are covered by migration-procedure."
+      },
+      {
+        "concept": "Grok functions compare-version-precedence, publish-as-current, supersede-revision, freeze-released-revision",
+        "disposition": "Accepted",
+        "rationale": "Each closes an executable gap where the base declares the state or the artifact but supplies no operation: precedence comparison, moving the currency pointer, asserting displacement, and effecting the draft-to-released transition at which immutability attaches."
+      },
+      {
+        "concept": "Grok functions assign-version-identity, link-predecessor, declare-compatibility, apply-migration-patch, deprecate-revision, record-version-notes, invalidate-revision",
+        "disposition": "Rejected as duplicative",
+        "rationale": "Each maps onto an existing base function — mint-revision plus assign-designation, link-predecessor, evaluate-compatibility, apply-migration, deprecate-revision, the changelog produced under change-classification-and-note, and withdraw-revision respectively — and two would collide on identifier."
+      },
+      {
+        "concept": "Source identifier remapping for accepted additions",
+        "disposition": "Required before merge",
+        "rationale": "The accepted nodes carry source-pack IDs that mean different documents in the base pack: DCMI Terms SRC-004 maps to base SRC-011, DCAT 3 SRC-001 to base SRC-010, SemVer SRC-005 to base SRC-002, OWL 2 SRC-003 to base SRC-016. DataCite, PAV and ADMS have no base equivalent and must be admitted as new source entries or the additions will cite the wrong documents."
+      },
+      {
+        "concept": "DataCite, PAV and ADMS as newly admitted sources",
+        "disposition": "Admitted as alignment evidence only",
+        "rationale": "All three are tier-2 and the DataCite versioning page is living guidance rather than a pinned specification, so they may support declared alignment but must not be rendered as conformance, consistent with the base rule that conformance requires re-executable evidence."
+      },
+      {
+        "concept": "Effective period and bitemporal semantics",
+        "disposition": "Retained with the base's partial-support flag intact",
+        "rationale": "Neither pack retrieved a normative bitemporal source; the finding rests on dcterms:valid, DID document metadata and Memento datetime negotiation. The flag must survive synthesis rather than be smoothed away by the merge."
+      },
+      {
+        "concept": "Merge-node lossiness against chain-shaped vocabularies",
+        "disposition": "Retained as a declared alignment loss",
+        "rationale": "Both packs independently reached the same conclusion — DCAT and PAV describe a chain while RFC 5829, RFC 3253 and Git commit objects define predecessor sets — so this is corroborated, not contradictory, and belongs in the crosswalk loss statement."
+      },
+      {
+        "concept": "Catalog-record versus resource revision boundary",
+        "disposition": "Deferred to a boundary-note refinement on the base",
+        "rationale": "The alternative pack's distinction that DCAT CatalogRecord listing and modification dates describe the catalog entry rather than the versioned resource is a real neighbour the base boundary set does not name, but the plan admits findings and functions only, so it is carried as deferred work rather than forced into a node."
+      }
+    ],
+    "publicationHolds": [
+      "Live-source verification is outstanding for all 27 base sources and for the three newly admitted alternative sources (DataCite versioning, PAV 2.3.1, ADMS 2.00). Recency-sensitive pins must be re-checked at publication time: the IANA link-relations registry, the Git glossary build, the NIST SP 800-53 control release, and the DataCite guidance page, which is living documentation rather than a dated specification.",
+      "Domain-profile validation has not been performed. The pack asserts applicability across regulated manufacturing, research data, software packaging, records management and web-resource publishing, but only US FDA 21 CFR Part 11 was actually retrieved; EU GMP Annex 11 is assumed similar and uncited. At least two contrasting profiles must be exercised before publication.",
+      "Every external mapping must be rendered as declared alignment, never conformance, and the accepted DataCite, PAV and ADMS additions must carry that label explicitly along with their loss statements.",
+      "Documented evidence gaps must appear in the published draft rather than be omitted: PREMIS 3.0 and OAIS returned HTTP 403, ISO 10007 and ISO 15489 are paywalled and unverified, and no normative bitemporal source was obtained, so the effective-period finding must ship marked as partial support.",
+      "Source identifier remapping for the accepted findings and functions must be applied and re-checked before render, since the two packs use overlapping SRC identifiers for different documents."
+    ],
+    "deferredResearch": [
+      "Retrieve PREMIS 3.0 preservation-event semantics and the OAIS reference model (ISO 14721 / CCSDS 650.0-M-2), currently blocked by HTTP 403, to model refreshment, replication, repackaging and transformation migration and the AIP version versus AIP edition distinction.",
+      "Obtain a retrievable normative source for bitemporal valid-time semantics (SQL:2011 application-time period tables and system-versioned tables) to replace the current partial anchoring of the effective-period finding on dcterms:valid, DID metadata and Memento datetime negotiation.",
+      "Acquire ISO 10007 configuration status accounting and ISO 15489 records-classification terminology, both paywalled, to test whether NIST SP 800-53 CM-3 remains an adequate substitute for change-control requirements.",
+      "Add a catalog-record / registry-entry history boundary note distinguishing DCAT CatalogRecord listing and modification dates from revisions of the versioned resource itself; the base boundary set does not currently name this neighbour.",
+      "Document the merge-node mapping hazard in the alignment crosswalk, including the dcat:prev series-order versus dcat:previousVersion snapshot-lineage confusion and the functional cardinality of pav:previousVersion against multi-parent merges.",
+      "Assess whether CalVer, package-manager yank and unpublish semantics, and content-addressed identity (Git SHA, IPFS CID, SWHID) as master identifiers warrant structure or remain declared omissions."
+    ]
+  }
+}
