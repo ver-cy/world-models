@@ -1,0 +1,866 @@
+{
+  "vercy": "1.0-draft",
+  "metaModel": {
+    "id": "enterprise-classification-review",
+    "registryId": "vr.profile.enterprise-classification-review",
+    "name": "Enterprise Classification Review",
+    "version": "0.1.0",
+    "kind": "companion-contract",
+    "logicalKind": "classification-assessment-contract"
+  },
+  "canonicalUrl": "https://ver.cy/models/enterprise-classification-review/versions/0.1.0/spec.json",
+  "model": {
+    "purpose": "Validate company category assignments and narrowing profiles, preserve ambiguous crosswalks, and propose version-migration candidates without changing subject identity.",
+    "scope": "# Enterprise Classification Review 0.1.0\n\nThis original companion evaluates a frozen classification context and produces a reproducible assessment. It checks an independent category-set assignment, a narrowing profile, or a proposed migration candidate. It never writes a classification onto a live subject. A company can use it before adopting a new category, restricting a local profile, or reviewing a retired code.\n\n## Boundary and identity\n\nClassificationReviewPacket is a locally owned aggregate with a stable id, revision, optional previous content digest, Dimension, owner, purpose and knowledge/effective/target instants. Revision1 has no predecessor; later revisions name a predecessor digest. The reference validates that convention but does not fetch or resolve the packet history. The host retains that history and decides which revision to inspect. A packet is a review context, not a copied Company, Project or Document.\n\nClassificationAssessment is a distinct immutable local result. Its assessmentId hashes the exact packet digest, evaluator build and sorted host approval basis. Different approval evidence or evaluator bytes yield a distinct result. Repeating identical input and basis yields identical bytes; wall-clock generation time is not injected. knowledgeAt is the evidence cut, not a claim that computation physically happened then. The host may separately record actual computation/capture time.\n\nCodeReference is a value `(scheme, version, code)`. Equality in this dialect compares exact Unicode strings; there is no case folding, Unicode normalization, numeric coercion, alias resolution or implicit URI normalization. These are qualified assessment coordinates, not a claim that a publisher's enduring concept acquires a new semantic identity every release. Display labels never select a code. A publisher may preserve concept IRIs across releases; this evaluator still demands an explicit release coordinate.\n\nSchemeReleaseSnapshot, SlotProfileSnapshot, AssignmentSnapshot and CrosswalkSnapshot are marked frozen value copies, not additional authoritative domain entities. Each carries snapshot id, source identifier, source revision, declared source-byte digest, capture event id/actor/UTC time/method, payload and recomputed local snapshot digest. Capture ownership belongs to the host; scheme meanings, binding assertions and mapping claims remain with their original authorities. sourceDigest is a custody declaration: the evaluator does not fetch or authenticate source bytes. The local digest detects changes to the supplied envelope, not false source statements.\n\nWM-KNW-018 and WM-XCT-020 are semantic references, not parents or executable imports. The former owns scheme/concept/graph/mapping concerns, the latter design-time binding slots and instance binding assertions. This companion evaluates a small declared dialect over snapshots. Their published research holds, non-executable schemas and source limitations are not inherited as readiness claims. A profile URI here identifies captured slot rules; it is not a new identity class for the classified subject.\n\n## Inputs and explicit modes\n\nThe closed packet contract is in classification.schema.json `$defs.packet`; host context and assessment have separate definitions. Snapshot payloads discriminate their kind. Required fields have no implicit defaults; unknown release completeness is represented by complete=false, not by an empty list treated as complete. Identifiers are bounded opaque nonempty strings, not universally validated URI syntax. Synthetic examples use URNs.\n\nModes are profile, assignment, migration and metamodel-migration. profile has no selected assignment; the other modes require at least one. Multiple selected assignments are retained as ambiguous source selection and yield insufficient-context. They are not merged or ranked by revision. A host can select a single corrected assertion and retain its predecessor snapshot as evidence. The correction must name the same binding id, subject and slot with a smaller revision; full source history/mastership verification remains external.\n\nProfile-only review checks finite restrictions without a business object. Assignment mode reports source-profile conformance and selected-profile conformance separately. Migration mode evaluates exactly one source assignment with one category and a separate receiving profile. Other migration multiplicities require review; the packet can still retain their evidence. metamodel-migration always refuses automatic model identity/installation migration. An explicit chain-requested inference also returns unsupported; direct-only never traverses a path. No inference result denies SKOS transitivity or claims that unmapped concepts are unequal.\n\n## Profile and membership semantics\n\nA profile declares stable source id/version, optional exact parent snapshot pin, subjectClass, classification unit, slot id, exact meaning text, binding strength, release pins, allowed qualified codes and min/max cardinality. The implemented dialect is required finite sets of independent category selections. It is NOT FHIR CodeableConcept, a generic SHACL dialect or translated codings of one concept. All selected categories must belong to the finite set, without duplicates. Other binding strengths produce unsupported rather than successful conformance.\n\nEvery used release is pinned through a snapshot id/digest. Its concepts have exact codes, definitions, status, selectability and half-open validity intervals. Duplicated codes, duplicate release coordinates inside one profile and duplicate allowed entries are refused. Across the complete packet, captures of the same scheme/version must have exactly equal payloads under the restricted canonical encoding. Equal payloads may have distinct capture envelopes; conflicting definitions, enumeration, status, validity or completeness are refused, including across base and target profiles. The same consistency rule applies to profile id/version, assignment id/revision and crosswalk id/version. It does not establish source truth or compare different versions. If an enumeration is incomplete, membership/exclusion cannot establish a complete profile check and the result is insufficient-context. A complete release must contain every referenced allowed code. Declared completeness is an evidence claim requiring host verification; SKOS and a content hash do not establish it.\n\nA child profile must preserve subjectClass, unit, slot, meaning, strength and the exact set of release snapshot pins. Its allowed set is a subset, its minimum cannot fall, and its maximum cannot rise. Parent references are exact and ancestry is bounded to8 and acyclic. The effective profile in ordinary assignment/profile mode must descend from the supplied base. A new scheme/release or changed meaning requires a separately reviewed target profile, not a disguised restriction. Profiles may restrict a slot to0..0. A positive minimum over fewer allowed values is unsatisfiable and refused. Removing values emits a coverage question because formerly classifiable subjects may no longer fit.\n\n## Historical conformance and new-use eligibility\n\nAll timestamps use exactly UTC seconds `YYYY-MM-DDTHH:MM:SSZ`; other valid RFC3339 spellings are outside this first dialect. Intervals are `[start,end)`; null end is open. Capture must be no later than knowledgeAt; assertion time must be no later than its capture. The host review call supplies current time independently and forbids a future knowledge cut. Assertion, effective, target, knowledge and native capture times are not interchangeable.\n\nHistorical conformance uses the assignment's exact source profile, requested effectiveAt, assignment validity and concept validity. A retired/deprecated concept may remain valid historical evidence within its recorded interval. A proposed assertion can be structurally assessed, but its state is retained and does not become a fact. Disputed/withdrawn assertions are not selected as operative source truth. The reference cannot discover an omitted dispute or a newer authoritative revision.\n\nNew-use migration eligibility uses targetAt and requires an active, selectable target within its declared interval, in the receiving allowed set. This is a deliberately conservative local policy; other systems may admit deprecated codes. A historical source pass is distinct from a current or planned target recommendation. Future target assessments are conditional on captured evidence, never guarantees of future status or authority. The reference does not implement a live bitemporal query engine.\n\n## Crosswalk and decision rule\n\nA crosswalk snapshot names its own source id/version, exact unit/purpose/jurisdiction context, completeness declaration and bounded mapping entries. Each entry has stable source entry id, source and target arrays, predicate, lifecycle state, approving-actor claim, evidence references, validity interval, origin, method/version, optional uninterpreted score and loss note. Empty-to-n and n-to-empty associations can be retained; empty-to-empty is refused. Duplicate members/entry IDs are refused rather than deduplicated. Compound associations remain compound.\n\nDirect-only review selects entries whose source array explicitly contains the single qualified source category. Duplicate selected crosswalk IDs are refused. It preserves their predicate, claimed state, score, method, full sources/targets, context and target eligibility. Context mismatch is visible and never globally reused. No candidate is chosen by label, score, array order, latest revision or number of sources. Nonmatching entries remain in the frozen packet even if they are not relevant alternatives in the derived result.\n\nA proposed-candidate requires ALL of: source conformance; source claimed asserted; compatible subject class/unit/slot/meaning; complete admitted correspondence context; complete supported source/target profiles; receiving cardinality permits one; at least one applicable direct1:1 exactMatch; every applicable row is direct1:1 exactMatch, claimed approved and separately acknowledged in the supplied host context; one distinct target across ALL applicable rows; active/selectable/allowed target at targetAt. Multiple duplicate approval rows to the same sole target may coexist; they confer no greater authority. Rejected, superseded or temporally inapplicable rows remain visible but are not operative alternatives. A live contested, candidate, compound or nonexact row prevents automatic candidate selection under this strict rule.\n\nAll applicable targets are collected BEFORE profile eligibility. Excluding one target through a narrower profile never erases competing correspondence evidence or authorizes choosing another. Split, merge, zero-side, nonexact, unacknowledged or conflicting alternatives yield human-review-required. A chain request is unsupported, and direct-only will not follow A→B→C even if SKOS entails conceptual exactness. This is execution scope, not a replacement for SKOS/XKOS semantics. A mapping approval is a captured assertion plus external host acknowledgment, not cryptographic proof of the approver's competence.\n\nThe assessment candidate is only a proposal. effects is always empty. No API assigns, retracts, changes a business subject ID, approves a mapping, installs a model or executes downloaded code. Legacy model-ID mapping needs complete semantic comparison, an independently authorized installation plan and a separate migration adapter. A caller mislabels its business category namespace at its own semantic risk; this engine still has no automatic identity-replacement operation.\n\n## Host authority, disclosure and storage\n\nreview(packet,host,actor,purpose,now) checks a separately supplied host context before detailed assessment. The context binds exact packet digest, Dimension, owner, actor, purpose and half-open grant interval. The host must authenticate actor, supply a trusted clock, establish context origin and verify rights to read the COMPLETE packet. Packet fields cannot grant themselves permission. The reference compares declarations; it is not IAM, signature verification, a grant store or a network access control boundary. It cannot detect a coherently forged host context supplied by its own caller.\n\nRead permission alone is not mapping approval. Each acknowledgment binds exact crosswalk snapshot digest, entry id, approver and an evidence reference. Changing a snapshot invalidates the old acknowledgment. The host verifies the approver's authority and source custody before providing that acknowledgment. Assessment retains the exact basis used so later replay can reproduce the historical decision; this retained basis never authorizes a new read or operation.\n\nThe complete packet, evidence identifiers, scores, meanings, decisions and approval basis may be sensitive. The initial binding is restricted, all-or-nothing, within one owning Dimension. The host controls disclosure, storage permissions, retention, correction history and disposal. No redacted projection, cross-Universe exchange or erasure workflow ships. Possession of this Python library or a digest is not an access grant. inspect_snapshot checks consistency of already-authorized historical data and returns authorized=false; it does not authenticate evidence. Private data may not be published with the public package.\n\n## Integrity, failure and replay\n\nOriginal restricted canonical encoding: Python sorted-key compact UTF-8 JSON, ordered arrays, integer values only, exact booleans, null and strings. Floating point, duplicate JSON keys, nonstring keys, C0/C1/DEL controls and unpaired surrogates are refused. No BOM. No RFC8785/JCS claim. Other Unicode remains lexically distinct; UIs must render unfamiliar/format characters safely. Snapshot digests omit only their own digest field. Packet digest includes full input. Build id includes the evaluator and closed schema bytes. Approval basis is sorted for assessment identity; the packet's array order remains part of its content identity.\n\nShape/integrity errors raise Invalid; unauthorized calls raise uniform Denied; CLI reports rejected-input or not-authorized. Schema parsing errors are not successful assessments. Domain outcomes distinguish local nonconformance, outside-valid-time, insufficient-context, unsupported and human review. Both assignment and concept interval exclusions use outside-valid-time in detailed results. Per-check evidence/questions remain even when a top-level priority summarizes them. Current priority is insufficient-context, unsupported, nonconformance, review, candidate-only, then conforms-to-local-profile. A pass means only the checks implemented over the supplied snapshots. It does not prove organizational truth or full standards conformance.\n\nThe public review call validates the returned assessment and combined {packet,assessment} against their schemas and1MiB canonical ceiling. A packet that fits alone may be refused if its complete replayable result would exceed that ceiling. No result is truncated. Historical replay still requires the caller's current disclosure authorization. Captured corrections of a selected assignment and proposed assignment state emit notices; they do not override the host's explicitly selected historical revision. An explicit chain-requested flag is unsupported in every mode. Irrelevant host approvals remain recorded basis, can change assessment identity and grant no authority by themselves.\n\nLimits:1MiB canonical value,2MiB raw input, nesting32,32 snapshots,8 release pins/profile,256 members/allowed values,32 selections/assignment,8 selected assignments/crosswalks,64 entries/crosswalk,16 sources/targets/entry,64 host acknowledgments, ancestry8. The ancestry cap counts the complete chain including previously compiled ancestors. Profile min/max may describe up to256 categories, but a minimum above the32-selection instance capacity yields unsupported even in profile-only mode. A larger maximum alone does not make a profile unusable when a permitted smaller selection fits. This is a finite reference implementation, not enterprise throughput infrastructure. The CLI reads bounded files and emits a result; no database or network connector is included.\n\ninspect_snapshot re-evaluates every stored result using the exact installed build and recorded approval basis, rejecting changed claims, missing fields or forged results. Source authenticity and current authority remain external. migrate_snapshot only round-trips the current exact version/build; other versions raise an explicit refusal. There is no silent downgrade, writable restore, host transfer or existing-Dimension migration. Identical packet and basis create no new assessment identity or approval.\n\n## Native V3 binding and assurance\n\nNative materialization creates ONE local ClassificationAssessment object with one restricted classification.assessment.snapshot fact. It contains the exact packet and assessment. Its object ID derives from the local assessment digest, never from renaming the classified subject. The packet references external subjects unchanged. One aggregate object has its own owner, purpose, boundary and deterministic calculation; it is not a multi-subject federation projection.\n\nNative validFrom is capture time for the recorded assessment; business effective/target/knowledge instants remain in the nested value. The fact is asserted evidence that an assessment record exists, not an assertion that its classifications are true. No supersession chain is accepted by this first native binding. Different evidence/build produces a distinct assessment; repeated recording of the same assessment ID is refused by the Vercy writer. The host retains the first recording and controls aggregate history.\n\nGeneric native validation checks the outer envelope and declared object path. The installed companion validator MUST also replay the closed nested packet/assessment. A native pass alone cannot establish nested semantics, authenticity or current access. Tests and native acceptance reports are separate from the independent S1 studies; a frozen no-tools audit is still required before publication. Published lifecycle and reviewable-draft assurance remain separate from completing the broader EM-XCT-09 contour.\n"
+  },
+  "structure": {
+    "bundles": [
+      {
+        "id": "CR-B1",
+        "name": "Review context",
+        "description": "Govern review context within a bounded classification review.",
+        "layers": [
+          {
+            "id": "CR-L1",
+            "name": "Identity and custody",
+            "description": "Make identity and custody explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F1",
+                "name": "Packet identity",
+                "description": "Sealed packet. Assemble a new immutable revision under the host owner.",
+                "questions": [
+                  {
+                    "id": "CR-Q1",
+                    "text": "Which local review is this?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Sealed packet"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q2",
+                    "text": "Which revision and previous content digest does it preserve?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Sealed packet",
+                      "Assemble a new immutable revision under the host owner."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A1",
+                    "name": "Sealed packet",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT1",
+                    "description": "Assemble a new immutable revision under the host owner. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F2",
+                "name": "Source sovereignty",
+                "description": "Source and capture inventory. Reference original authorities and retain capture provenance.",
+                "questions": [
+                  {
+                    "id": "CR-Q3",
+                    "text": "Who owns the scheme, binding and correspondence meanings?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Source and capture inventory"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q4",
+                    "text": "Which copies are explicitly snapshots?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Source and capture inventory",
+                      "Reference original authorities and retain capture provenance."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A2",
+                    "name": "Source and capture inventory",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT2",
+                    "description": "Reference original authorities and retain capture provenance. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F3",
+                "name": "Read authority",
+                "description": "Host context. Ask the host for a current scoped context; never self-authorize.",
+                "questions": [
+                  {
+                    "id": "CR-Q5",
+                    "text": "Which authenticated actor may read the complete packet for this purpose?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Host context"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q6",
+                    "text": "Does the independent grant match exact packet bytes and current interval?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Host context",
+                      "Ask the host for a current scoped context; never self-authorize."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A3",
+                    "name": "Host context",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT3",
+                    "description": "Ask the host for a current scoped context; never self-authorize. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "CR-L2",
+            "name": "Integrity and time",
+            "description": "Make integrity and time explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F4",
+                "name": "Byte integrity",
+                "description": "Integrity checks. Verify frozen bytes and ask the custodian about external authenticity.",
+                "questions": [
+                  {
+                    "id": "CR-Q7",
+                    "text": "Do local snapshot digests match the captured envelopes?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Integrity checks"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q8",
+                    "text": "What does the separately declared source digest actually prove?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Integrity checks",
+                      "Verify frozen bytes and ask the custodian about external authenticity."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A4",
+                    "name": "Integrity checks",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT4",
+                    "description": "Verify frozen bytes and ask the custodian about external authenticity. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F5",
+                "name": "Time frames",
+                "description": "Temporal frame table. Keep assertion, validity, capture and assessment clocks separate.",
+                "questions": [
+                  {
+                    "id": "CR-Q9",
+                    "text": "What was known at the knowledge cut?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Temporal frame table"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q10",
+                    "text": "Which effective and target instants are being assessed?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Temporal frame table",
+                      "Keep assertion, validity, capture and assessment clocks separate."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A5",
+                    "name": "Temporal frame table",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT5",
+                    "description": "Keep assertion, validity, capture and assessment clocks separate. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "CR-B2",
+        "name": "Profiles and categories",
+        "description": "Govern profiles and categories within a bounded classification review.",
+        "layers": [
+          {
+            "id": "CR-L3",
+            "name": "Release membership",
+            "description": "Make release membership explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F6",
+                "name": "Qualified codes",
+                "description": "Qualified category set. Preserve exact strings; obtain missing qualifications.",
+                "questions": [
+                  {
+                    "id": "CR-Q11",
+                    "text": "Which publisher scheme and release qualify this lexical code?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Qualified category set"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q12",
+                    "text": "Could an identical label or code belong to another scheme?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Qualified category set",
+                      "Preserve exact strings; obtain missing qualifications."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A6",
+                    "name": "Qualified category set",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT6",
+                    "description": "Preserve exact strings; obtain missing qualifications. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F7",
+                "name": "Complete enumeration",
+                "description": "Completeness statement. Return insufficient-context when closure cannot be established.",
+                "questions": [
+                  {
+                    "id": "CR-Q13",
+                    "text": "Is the frozen enumeration complete for this review?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Completeness statement"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q14",
+                    "text": "Who verifies absent codes and missing expansions?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Completeness statement",
+                      "Return insufficient-context when closure cannot be established."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A7",
+                    "name": "Completeness statement",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT7",
+                    "description": "Return insufficient-context when closure cannot be established. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F8",
+                "name": "Historical selectability",
+                "description": "Historical and target checks. Preserve history and assess new eligibility independently.",
+                "questions": [
+                  {
+                    "id": "CR-Q15",
+                    "text": "Was the recorded category valid at the effective instant?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Historical and target checks"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q16",
+                    "text": "Is it active and selectable for a new target assignment?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Historical and target checks",
+                      "Preserve history and assess new eligibility independently."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A8",
+                    "name": "Historical and target checks",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT8",
+                    "description": "Preserve history and assess new eligibility independently. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "CR-L4",
+            "name": "Profile restriction",
+            "description": "Make profile restriction explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F9",
+                "name": "Identity-preserving restriction",
+                "description": "Profile ancestry assessment. Refuse changed meaning or version as a disguised restriction.",
+                "questions": [
+                  {
+                    "id": "CR-Q17",
+                    "text": "Does the child retain class, unit, slot and meaning?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Profile ancestry assessment"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q18",
+                    "text": "Are parent and release pins exact?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Profile ancestry assessment",
+                      "Refuse changed meaning or version as a disguised restriction."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A9",
+                    "name": "Profile ancestry assessment",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT9",
+                    "description": "Refuse changed meaning or version as a disguised restriction. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F10",
+                "name": "Set and cardinality restriction",
+                "description": "Restriction and coverage findings. Inspect affected subjects before adopting narrower rules.",
+                "questions": [
+                  {
+                    "id": "CR-Q19",
+                    "text": "Does the child only remove values and tighten counts?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Restriction and coverage findings"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q20",
+                    "text": "Does removing categories leave subjects unclassifiable?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Restriction and coverage findings",
+                      "Inspect affected subjects before adopting narrower rules."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A10",
+                    "name": "Restriction and coverage findings",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT10",
+                    "description": "Inspect affected subjects before adopting narrower rules. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "CR-B3",
+        "name": "Assignments and correspondence",
+        "description": "Govern assignments and correspondence within a bounded classification review.",
+        "layers": [
+          {
+            "id": "CR-L5",
+            "name": "Assignment evidence",
+            "description": "Make assignment evidence explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F11",
+                "name": "Assertion versus suggestion",
+                "description": "Assignment snapshot. Retain stated origin and ask the source owner to resolve status.",
+                "questions": [
+                  {
+                    "id": "CR-Q21",
+                    "text": "Is this an asserted, proposed, disputed or withdrawn source?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Assignment snapshot"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q22",
+                    "text": "What method/version produced model suggestions?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Assignment snapshot",
+                      "Retain stated origin and ask the source owner to resolve status."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A11",
+                    "name": "Assignment snapshot",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT11",
+                    "description": "Retain stated origin and ask the source owner to resolve status. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F12",
+                "name": "Competing revisions",
+                "description": "Source selection decision. Keep competing revisions and request explicit host selection.",
+                "questions": [
+                  {
+                    "id": "CR-Q23",
+                    "text": "Which single source assertion is authoritative for this review?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Source selection decision"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q24",
+                    "text": "Is a correction preserved without editing its predecessor?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Source selection decision",
+                      "Keep competing revisions and request explicit host selection."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A12",
+                    "name": "Source selection decision",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT12",
+                    "description": "Keep competing revisions and request explicit host selection. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "CR-L6",
+            "name": "Correspondence evidence",
+            "description": "Make correspondence evidence explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F13",
+                "name": "Mapping meaning",
+                "description": "Captured correspondence. Keep n:m associations intact; never invent pairwise exactness.",
+                "questions": [
+                  {
+                    "id": "CR-Q25",
+                    "text": "Is the relation exact, close, broader, narrower, related or compound?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Captured correspondence"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q26",
+                    "text": "Are multiple or empty sides preserved as one association?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Captured correspondence",
+                      "Keep n:m associations intact; never invent pairwise exactness."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A13",
+                    "name": "Captured correspondence",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT13",
+                    "description": "Keep n:m associations intact; never invent pairwise exactness. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F14",
+                "name": "Mapping authority",
+                "description": "Approval basis. Obtain independent acknowledgment; score is not approval.",
+                "questions": [
+                  {
+                    "id": "CR-Q27",
+                    "text": "Who approved the exact snapshot/entry and on what evidence?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Approval basis"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q28",
+                    "text": "Does the host acknowledgment match after a changed snapshot?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Approval basis",
+                      "Obtain independent acknowledgment; score is not approval."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A14",
+                    "name": "Approval basis",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT14",
+                    "description": "Obtain independent acknowledgment; score is not approval. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F15",
+                "name": "Competing targets",
+                "description": "Alternative eligibility table. Route ambiguity to a steward without ranking by confidence.",
+                "questions": [
+                  {
+                    "id": "CR-Q29",
+                    "text": "Are all applicable alternatives visible before profile filtering?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Alternative eligibility table"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q30",
+                    "text": "Does exclusion of one target conceal an unresolved conflict?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Alternative eligibility table",
+                      "Route ambiguity to a steward without ranking by confidence."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A15",
+                    "name": "Alternative eligibility table",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT15",
+                    "description": "Route ambiguity to a steward without ranking by confidence. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "CR-B4",
+        "name": "Assessment and adoption",
+        "description": "Govern assessment and adoption within a bounded classification review.",
+        "layers": [
+          {
+            "id": "CR-L7",
+            "name": "Disposition and limits",
+            "description": "Make disposition and limits explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F16",
+                "name": "Bounded migration candidate",
+                "description": "Candidate or refusal. Propose only; use a separate authorized workflow for any business change.",
+                "questions": [
+                  {
+                    "id": "CR-Q31",
+                    "text": "Is there one eligible direct target under complete declared context?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Candidate or refusal"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q32",
+                    "text": "Would a chain or a model-ID replacement exceed this contract?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Candidate or refusal",
+                      "Propose only; use a separate authorized workflow for any business change."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A16",
+                    "name": "Candidate or refusal",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT16",
+                    "description": "Propose only; use a separate authorized workflow for any business change. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F17",
+                "name": "Reproducible assessment",
+                "description": "Assessment snapshot. Recompute consistency and preserve distinct assessment identities.",
+                "questions": [
+                  {
+                    "id": "CR-Q33",
+                    "text": "Can the exact evaluator reproduce the saved result?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Assessment snapshot"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q34",
+                    "text": "Did input, approval basis or build change?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Assessment snapshot",
+                      "Recompute consistency and preserve distinct assessment identities."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A17",
+                    "name": "Assessment snapshot",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT17",
+                    "description": "Recompute consistency and preserve distinct assessment identities. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "CR-L8",
+            "name": "Native use and migration",
+            "description": "Make native use and migration explicit through evidence and checks.",
+            "findings": [
+              {
+                "id": "CR-F18",
+                "name": "Native binding and disclosure",
+                "description": "Native installation report. Validate separately and keep host disclosure controls.",
+                "questions": [
+                  {
+                    "id": "CR-Q35",
+                    "text": "Were both outer V3 and installed nested validation run?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Native installation report"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q36",
+                    "text": "Does the restricted aggregate disclose only what its owner permits?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Native installation report",
+                      "Validate separately and keep host disclosure controls."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A18",
+                    "name": "Native installation report",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT18",
+                    "description": "Validate separately and keep host disclosure controls. Host permission and source verification remain required."
+                  }
+                ]
+              },
+              {
+                "id": "CR-F19",
+                "name": "Version and records lifecycle",
+                "description": "Loss/refusal and retention decision. Refuse unsupported conversion; preserve the original sealed record.",
+                "questions": [
+                  {
+                    "id": "CR-Q37",
+                    "text": "Can an older version preserve all meanings and evidence?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Loss/refusal and retention decision"
+                    ]
+                  },
+                  {
+                    "id": "CR-Q38",
+                    "text": "Who retains superseded packets and records repeated imports?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Loss/refusal and retention decision",
+                      "Refuse unsupported conversion; preserve the original sealed record."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "CR-A19",
+                    "name": "Loss/refusal and retention decision",
+                    "description": "Local assessment evidence or referenced host/source evidence; not an automatic authority grant."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "CR-ACT19",
+                    "description": "Refuse unsupported conversion; preserve the original sealed record. Host permission and source verification remain required."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "composition": {
+    "runtimeImports": [],
+    "semanticReferences": [
+      {
+        "id": "WM-KNW-018",
+        "version": "0.3.0-research.1",
+        "url": "https://ver.cy/models/wm-knw-018-taxonomy-classification-scheme/spec.yaml",
+        "digest": "sha256:89cadb009ee2a452f1a8641d9d161d9ff7b411b7d1c4e06d04997bd70ce6cecd",
+        "relation": "Semantic reference only; full predecessor body compared by Codex; no parent subtype or executable import."
+      },
+      {
+        "id": "WM-XCT-020",
+        "version": "0.3.0-research.1",
+        "url": "https://ver.cy/models/wm-xct-020-classification-binding/spec.yaml",
+        "digest": "sha256:47aa90ca48b7e367f61c30e454fd7859ba2dc7e2b998bbd4541acb6eda81b9bd",
+        "relation": "Semantic reference only; full predecessor body compared by Codex; no parent subtype or executable import."
+      }
+    ],
+    "instanceGraph": "Review packet/assessment reference original scheme, subject, binding and mapping authorities.",
+    "deliveryGraph": "Original evaluator and schema; separately pinned generic composer/native skill.",
+    "limits": "No imported parent instance schema or blanket MUC/MMAS/MUFP conformance."
+  },
+  "statistics": {
+    "bundles": 4,
+    "layers": 8,
+    "findings": 19,
+    "questions": 38,
+    "artifacts": 19
+  },
+  "catalogue": {
+    "alternateNames": [
+      "EM-XCT-09",
+      "Classifications, profiles and crosswalk",
+      "Category and code validation",
+      "Classification Review"
+    ],
+    "domain": [
+      "Enterprise",
+      "Classification",
+      "Reference data",
+      "Profiles"
+    ],
+    "tags": [
+      "classification",
+      "taxonomy",
+      "crosswalk",
+      "profile",
+      "mapping",
+      "code",
+      "review"
+    ],
+    "adoption": "Start with a complete frozen scheme release, a finite slot profile and an assignment snapshot. Review restrictions without an assignment when needed. Three synthetic contexts and a separately tested native binding illustrate use.",
+    "limits": "Original offline assessment dialect. Scheme owners and live business subjects stay external. Scores, correspondence and a passing review confer no identity or write authority."
+  },
+  "readiness": {
+    "lifecycle": "candidate",
+    "researchAssurance": "reviewable-draft",
+    "s1Studies": "Actual Claude and Grok S1 studies complete. R1 static audits differed; defects reproduced and corrected in R2. Final release review records subsequent audit dispositions."
+  }
+}
