@@ -1,0 +1,11 @@
+# R3 disposition: revise before publication
+
+Claude BLOCK, Grok ACCEPT WITH LIMITS; both complete actual responses were read. The R3 38-file freeze and public candidate remain unchanged. Both confirmed 30 complete body files; eight hash-only context files and external toolchain implementations were explicitly outside this static audit. No tools, tests or hash computation by either reviewer.
+
+Author reproduced Claude H1 (an intake-only principal can terminally commit and seal an attested empty snapshot, producing two absence proposals) and M1 (availability selection changes across canonical JSON round-trip). Exact synthetic repro source/output are retained. These outweigh the different Grok verdict; do not publish R3.
+
+R4 repairs in progress, not yet validated: current coverage right at terminal page and successful seal; error-bearing incomplete seal remains intake-authorized for recovery. Order availability by sequence/ordinal and isolate purpose. Uniform foreign mapping/round collision refusals; prohibit implicit cross-scope pin reuse and document explicit dual-scope stewardship for moving the active claim. Global identifier and active-lineage reservation still have availability inference and finite capacity; no zero-knowledge guarantee.
+
+Address performance by measuring and reducing this executable demonstration's budgets, without weakening per-event historical validation. Separate raw transport and canonical bounds; return a structured refusal for excessive nesting. State runtime/dependency coverage honestly. Detect empty interrupted bootstrap, preserve it without silent overwrite and require operator inspection/new path. Add tests for the actual defects, multi-page snapshots, purpose isolation, conflict tamper, schema generation and representative import forms. The reference does not become a production connector or enterprise-scale store.
+
+Grok's schema-format concern is a representation mistake: the supplied audit schema was minified for display, while the shipped schema is generated with indent=2. Add a byte-reproducibility test rather than claiming the reported format defect exists. Slash native-ID restriction was already documented; add its boundary test. Original source/schema bytes, stores and archives are build-pinned; R4 must use new generated examples and a new freeze.

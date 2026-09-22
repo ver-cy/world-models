@@ -1,0 +1,1460 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vercy:enterprise-source-synchronization:0.1.0:inputs",
+  "$defs": {
+    "EvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "namespace",
+        "digest",
+        "protection"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "protection": {
+          "enum": [
+            "restricted"
+          ]
+        }
+      }
+    },
+    "GenerationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basis",
+        "assertedBy",
+        "evidence"
+      ],
+      "properties": {
+        "basis": {
+          "enum": [
+            "source-incarnation",
+            "source-nonreuse-guarantee",
+            "steward-attested"
+          ]
+        },
+        "assertedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "RecordKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "generation",
+        "generationEvidence"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "generation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generationEvidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GenerationEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Correction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "occurrenceId",
+        "assertedBy",
+        "basis",
+        "evidence"
+      ],
+      "properties": {
+        "occurrenceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "assertedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "basis": {
+          "enum": [
+            "source-asserted",
+            "steward-asserted"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "OccurrenceInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "key",
+        "operation",
+        "content",
+        "observedAt",
+        "sourceEventTime",
+        "correction"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "record"
+          ]
+        },
+        "key": {
+          "$ref": "#/$defs/RecordKey"
+        },
+        "operation": {
+          "enum": [
+            "snapshot-read",
+            "upsert",
+            "source-deleted",
+            "removed-from-scope",
+            "inaccessible"
+          ]
+        },
+        "content": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "observedAt": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "sourceEventTime": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "correction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Correction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "QuarantineInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "content",
+        "reasonCode",
+        "retryObligation"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "quarantine"
+          ]
+        },
+        "content": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "reasonCode": {
+          "enum": [
+            "malformed-record",
+            "unsupported-schema",
+            "missing-key",
+            "invalid-value",
+            "source-error"
+          ]
+        },
+        "retryObligation": {
+          "enum": [
+            "repair-and-reingest",
+            "steward-review"
+          ]
+        }
+      }
+    },
+    "SourceInstance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "productRef",
+        "tenant",
+        "environment",
+        "generation",
+        "continuityEvidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "productRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "tenant": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "environment": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "generation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "continuityEvidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "AcquisitionScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sourceId",
+        "resource",
+        "scheme",
+        "schemeVersion",
+        "sourceObjectKind",
+        "sourceQueryProjection",
+        "filter",
+        "principalVisibility",
+        "interpretation",
+        "schema",
+        "mode"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "scheme": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "schemeVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "sourceObjectKind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "sourceQueryProjection": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "filter": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "principalVisibility": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "interpretation": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "schema": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "mode": {
+          "enum": [
+            "unpartitioned-stream"
+          ]
+        }
+      }
+    },
+    "Target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        }
+      }
+    },
+    "AboutnessPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceKind",
+        "targetKind",
+        "purpose"
+      ],
+      "properties": {
+        "sourceKind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "targetKind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        }
+      }
+    },
+    "Catalogue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "subjects",
+        "pairs",
+        "evidence"
+      ],
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "subjects": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Target"
+          }
+        },
+        "pairs": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/AboutnessPair"
+          }
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "Grant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "scopeId",
+        "purpose",
+        "rights",
+        "validFrom",
+        "validTo"
+      ],
+      "properties": {
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "rights": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "intake",
+              "map",
+              "read",
+              "attest-coverage"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "maxItems": 4
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "validTo": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        }
+      }
+    },
+    "Policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "grants",
+        "evidence"
+      ],
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "grants": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Grant"
+          }
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "RecordSubjectMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scopeId",
+        "key",
+        "purpose",
+        "targetId",
+        "expectedTargetKind",
+        "issuer",
+        "validFrom",
+        "validTo",
+        "corrects",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "key": {
+          "$ref": "#/$defs/RecordKey"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "expectedTargetKind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "validTo": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "corrects": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "MappingTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expectedRevision",
+        "to",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "to": {
+          "enum": [
+            "active",
+            "disputed",
+            "retracted"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        }
+      }
+    },
+    "EpochOpen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scopeId",
+        "reason",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "reason": {
+          "enum": [
+            "initial",
+            "token-reset",
+            "continuity-lost",
+            "operator-reinit"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "EpochClose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "reason",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "reason": {
+          "enum": [
+            "token-reset",
+            "scope-retired",
+            "continuity-lost",
+            "operator-close"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "FenceAdvance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "expectedFence",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "expectedFence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        }
+      }
+    },
+    "SnapshotRound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "scopeId",
+        "epochId",
+        "purpose",
+        "consistency",
+        "consistencyEvidence",
+        "visibilityCovered",
+        "previousRoundId",
+        "notEarlierEvidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "epochId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "consistency": {
+          "enum": [
+            "source-snapshot",
+            "best-effort"
+          ]
+        },
+        "consistencyEvidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "visibilityCovered": {
+          "type": "boolean"
+        },
+        "previousRoundId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notEarlierEvidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidenceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "RoundSeal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "errors"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          }
+        }
+      }
+    },
+    "BatchContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scopeId",
+        "epochId",
+        "batchKey",
+        "purpose",
+        "roundId",
+        "pageIndex",
+        "terminal",
+        "empty",
+        "token",
+        "items"
+      ],
+      "properties": {
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "epochId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "batchKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "roundId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "terminal": {
+          "type": "boolean"
+        },
+        "empty": {
+          "type": "boolean"
+        },
+        "token": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/$defs/OccurrenceInput"
+              },
+              {
+                "$ref": "#/$defs/QuarantineInput"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "BatchAdmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content",
+        "attemptId",
+        "expectedHead",
+        "fence"
+      ],
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/BatchContent"
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "expectedHead": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      }
+    },
+    "Bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registerId",
+        "dimensionId",
+        "admin",
+        "protectedNamespace"
+      ],
+      "properties": {
+        "registerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "admin": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "protectedNamespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        }
+      }
+    },
+    "Command": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "source"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/SourceInstance"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "scope"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/AcquisitionScope"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "catalogue"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/Catalogue"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "policy"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/Policy"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "mapping"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/RecordSubjectMapping"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "mapping-state"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/MappingTransition"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "epoch-open"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/EpochOpen"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "epoch-close"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/EpochClose"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "fence"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/FenceAdvance"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "round-open"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/SnapshotRound"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "round-seal"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/RoundSeal"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "body"
+          ],
+          "properties": {
+            "op": {
+              "enum": [
+                "commit"
+              ]
+            },
+            "body": {
+              "$ref": "#/$defs/BatchAdmission"
+            }
+          }
+        }
+      ]
+    },
+    "JournalResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "recorded",
+                "not-accepted"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "receiptId"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "committed"
+              ]
+            },
+            "receiptId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            }
+          }
+        }
+      ]
+    },
+    "ConflictRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scopeId",
+        "epochId",
+        "batchKey",
+        "purpose",
+        "attemptId",
+        "expectedHead",
+        "fence",
+        "suppliedDigest",
+        "reason"
+      ],
+      "properties": {
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "epochId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "batchKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f]+$(?![\\s\\S])"
+        },
+        "attemptId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "expectedHead": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "suppliedDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+        },
+        "reason": {
+          "enum": [
+            "principal-collision",
+            "changed-content",
+            "stale-head",
+            "stale-fence"
+          ]
+        }
+      }
+    },
+    "JournalEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "previousDigest",
+        "actor",
+        "recordedAt",
+        "command",
+        "result",
+        "outcomeDigest",
+        "digest"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "previousDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^urn:[A-Za-z0-9][A-Za-z0-9:._/-]*$(?![\\s\\S])"
+        },
+        "recordedAt": {
+          "type": "string",
+          "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$(?![\\s\\S])"
+        },
+        "command": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Command"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "op",
+                "body"
+              ],
+              "properties": {
+                "op": {
+                  "enum": [
+                    "conflict-observation"
+                  ]
+                },
+                "body": {
+                  "$ref": "#/$defs/ConflictRecord"
+                }
+              }
+            }
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/JournalResult"
+        },
+        "outcomeDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "buildId",
+    "config",
+    "events",
+    "root",
+    "resumable"
+  ],
+  "properties": {
+    "format": {
+      "enum": [
+        "vercy-source-sync-journal-snapshot"
+      ]
+    },
+    "version": {
+      "enum": [
+        "0.1.0"
+      ]
+    },
+    "buildId": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+    },
+    "config": {
+      "$ref": "#/$defs/Bootstrap"
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/JournalEvent"
+      }
+    },
+    "root": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$(?![\\s\\S])"
+    },
+    "resumable": {
+      "enum": [
+        false
+      ]
+    }
+  }
+}
