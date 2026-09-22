@@ -1,0 +1,9 @@
+# R2 disposition: revise before publication
+
+Actual complete-input static audits disagree: Claude BLOCK, Grok ACCEPT WITH LIMITS. Both responses were read in full; raw text and exact method/input limits are preserved. R1 was withdrawn before audit and is not counted as a completed review. No catalogue model publication is authorized by these responses; the owner already authorized the program, but this candidate has unresolved code defects.
+
+Accepted for R3 correction: bind the reducer/schema build and each derived outcome into durable history; reject prohibited control characters consistently; compare derived state by canonical bytes (not Python bool/int equality); constrain occurrence correction lookup to an authorized scope/purpose; retain compact bounded conflict diagnostics; explicitly authorize coverage attestations; normalize invalid calendar error handling. Tighten mapping correction predecessors and state the authority/liveness/export/transport boundaries explicitly. Add meaningful tests for the reproduced defects and uncovered independent guards. Do not simply count provider votes.
+
+Supply complete generated examples, tool pin inventory and literal model.scope in the next audit, alongside exact changed code/schema/docs and test/acceptance reports. Toolchain execution remains author evidence, not static reviewer execution. Upstream bytes and historical research may remain independently hash-listed with explicit scope; do not claim they were read in this audit.
+
+R2 38-file freeze remains unchanged and publicly inspectable at implementation-r2/. R3 requires a new freeze and explicit changed-input review by BOTH providers. Version 0.1.0 has not been released; draft build changes must nevertheless become distinguishable in local stores/archives. No live connectors, distributed semantics, writable restore, business effects or production certification are added implicitly.
