@@ -1,0 +1,7 @@
+# Continuation after Action Requests 0.1.0
+
+Continue EM-XCT-08 (read its exact registry assignment), compare complete pinned ownership/provenance predecessors and existing enterprise fact-authority/assertion-provenance companions before selecting reuse/profile/new boundary. Obtain actual independent Claude and Grok studies and frozen audits. Do not repeat completed EM-XCT-07 rounds or mutate its immutable 0.1.0 release.
+
+EM-XCT-07 remains partial: real host authority/issuer-standing and delegation evidence; broader action parameter/effect adapters, remote effects and ambiguous external outcomes; protected disclosure, continuity and recovery; quotas/rollover; stronger historical clock validation and missing edge tests; incremental/existing-Dimension native bindings and generic composer integration. Each needs a separate bounded implementation and acceptance; no production authorization is provided.
+
+Candidate scope decisions: ActionDefinition and immutable ActionRequest are the two canonical objects. Submission, delivery, try, receipt, observation, disposition and key retirement are Event profiles. ActionResult is split into committed receipt and separately attributed observation; neither is a new generic result master. AuthorityBinding is a trusted host input with exact dual scopes, not a new authority registry or proof of delegation. Full mandate/delegation issuance and external effects remain deferred.
