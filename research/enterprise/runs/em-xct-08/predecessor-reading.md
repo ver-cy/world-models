@@ -6,7 +6,7 @@ Read on 2026-09-22. This checkpoint is deliberately narrower than complete conto
 
 The five retrieved AGENTS documents were read completely. The complete Enterprise Fact Authority 0.1.0 specification was read, including its embedded semantic contract, composition, native binding and eighteen question routes. The complete Enterprise Assertion Provenance 0.1.0 specification was read: contract, metadata, composition, native binding and all four bundles/eight layers/twenty question-artifact-action routes.
 
-Their schema/code, fixture and release-review files still need the focused comparison required for this new contour. The full WM-XCT-001/012/036 specifications remain unread for this pass; do not mark them complete from retrieval or prior name matches.
+Their schema/code, fixture and release-review files still need the focused comparison required for this new contour. The complete WM-XCT-001 and WM-XCT-012 specifications have now also been read section by section, including all bundles, functions, sources, composition, service layers, coverage and adjudication holds. The entire WM-XCT-036 parent specification remains unread for this pass; do not infer its complete conformance from the narrower profile.
 
 ## Concrete implications observed in the published contracts
 
@@ -24,3 +24,13 @@ Both companions have empty executable runtime imports and exact selected semanti
 2. Inspect the Enterprise Identity 0.1.0 package through its published parent association. Its archived semantic basis differs from current parent metadata. Do not create an invented independent runtime entry.
 3. Read relevant companion schemas/validators/examples/reviews and MMAS/native source-binding definitions; compare precise reuse versus a new contract.
 4. Freeze the same public boundary and synthetic cases for actual independent Claude/Grok studies. Neither study has been submitted yet.
+
+## Second reading checkpoint — complete primary parent contracts
+
+WM-XCT-001 0.3.1-enterprise.1: all six bundles/fifteen layers/31 findings/120 questions, sixteen functions, 28 source records, metadata, composition, service layers, coverage and adjudication read completely. A truncated two-bundle output was recovered in individual reads. Embedded discovery text says the companion has no separate runtime entry; this historical metadata is contradicted by the current exact runtime index, which contains vr.profile.enterprise-fact-authority. Do not change immutable parent history to conceal the discrepancy. Transfer/exclusivity are descriptive requirements with external competent-register ordering, not an executable sync checkpoint. Legal and paywalled-source verification holds remain inherited and were not cleared by reading this spec.
+
+WM-XCT-012 0.3.0-research.1: all six bundles/fourteen layers/33 findings/123 questions, fourteen functions, 28 source records, metadata, composition, service layers, coverage and adjudication read completely. A middle-output truncation in the confidence finding was recovered by reading that whole finding separately. Graph traversal continuation is not a durable source-delivery cursor. Streaming and continuously updated resource lineage are expressly partial; source-validity, trust and actual fetching remain separate. Its rule to ignore unknown elements is not adopted into a closed executable sync envelope without a safe extension contract. It contains differing source-verification statements (e.g. OAIS/PREMIS availability); those inherited claims are not independently verified here.
+
+Enterprise Identity 0.1.0: complete model-spec.md read from the local published profile path; exact HTTP pin and additional code/schema/fixture/holds comparison pending. Qualified assignments, assertion events and frozen SourceBinding carry identity assertions, not source-observation revision or durable checkpointing. No transitive equality, matching engine or silent merge is supplied. Source referent, kind, issuer, namespace, purpose and assignment generation are externally governed. Current parent is 0.3.2-enterprise.1 but profile's archived semantic basis is 0.3.0; no independent runtime identity-profile entry exists. This study will defer whole-parent equivalence and automated cross-package execution pending their separate evidence.
+
+The frozen independent study boundary is an operational acquisition/binding/checkpoint contract, excluding business-identity merging and field-authority selection. A provider receives the exact limits of current reading; this is a design study, not a successful code audit.
