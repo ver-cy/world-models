@@ -1,0 +1,165 @@
+SAME FROZEN R3 SOURCE RECOVERY 6/9. Browser paragraph rendering adds blank separator lines; all nonempty lines and indentation are verified unchanged. These are static display fragments, not raw-byte hash verification.
+
+Do not audit yet. Reply only ACK 6/9 if all code in this fragment is visible. No tools.
+
+BEGIN action_bundle.py fragment 6/9
+
+on'] and digest(i)==r['intentDigest'],'intent-digest')
+
+        require(r['submittedAt']<=m['clock'],'request-future')
+
+        requests[r['requestId']]=r; slots.add(r['keyHash'])
+
+    resource_rows={}; live={}; expected_resources=[]
+
+    for row in s['resources']:
+
+        fields(row,'id revision labels recorded_at control_sequence')
+
+        require(type(row['id']) is str and re.fullmatch('[A-Za-z0-9][A-Za-z0-9._:-]{2,127}',row['id']) is not None,'resource-id')
+
+        integer(row['revision']); Executor._time(row['recorded_at']); validate('Labels',parse(row['labels']))
+
+        integer(row['control_sequence'],1); require(row['control_sequence']<=m['control_sequence'],'resource-control-sequence')
+
+        key=(row['id'],row['revision']); require(key not in resource_rows,'resource-duplicate'); resource_rows[key]=row
+
+        require(row['recorded_at']<=m['clock'],'resource-future')
+
+        if row['revision']==0:
+
+            live[row['id']]=row; expected_resources.append(row)
+
+    definition_ids={key[0] for key in definitions}
+
+    resource_ids={key[0] for key in resource_rows}
+
+    require(not definition_ids & resource_ids and not set(requests) & (definition_ids|resource_ids),'object-kind-collision')
+
+    object_ids=set(requests)|definition_ids|resource_ids
+
+    # Each host transaction is one complete operation. Empty control-sequence
+
+    # gaps are reads/snapshots/refusals; retained fragments cannot form an operation.
+
+    groups={}
+
+    for e in s['events']:
+
+        validate('Event',e)
+
+        groups.setdefault(e['controlSequence'],[]).append(e)
+
+    for group in groups.values():
+
+        first=group[0]
+
+        require(all((e['requestId'],e['recordedAt'],e['issuerId'])==(first['requestId'],first['recordedAt'],first['issuerId']) for e in group),'operation-context')
+
+        kinds=[e['kind'] for e in group]
+
+        base=kinds[1:] if kinds[0]=='submission' else kinds
+
+        require(base,'operation-shape')
+
+        if base==['key-retirement']: require(kinds==base,'operation-shape')
+
+        elif base[0]=='delivery': require(base in (['delivery','try'],['delivery','try','receipt'],['delivery','try','disposition']),'operation-shape')
+
+        else: require(kinds==base and base in (['try'],['try','disposition'],['try','observation']),'operation-shape')
+
+    # Admin mutations and operation groups cannot share a transaction identity.
+
+    controls=set(groups)
+
+    admin=[]
+
+    for _,row in definitions.values():
+
+        admin.append(row['control_sequence'])
+
+        if row['retired_sequence'] is not None: admin.append(row['retired_sequence'])
+
+    admin += [row['control_sequence'] for _,row in policies.values()]
+
+    admin += [row['control_sequence'] for row in s['resources'] if row['revision']==0]
+
+    require(len(set(admin))==len(admin) and not controls & set(admin),'control-operation-collision')
+
+    seen={}; states={}; receipts={}; retired=set(); corrected=set(); last_time=0; last_control=0; used_trials=set()
+
+    def precondition(intent,event):
+
+        row=live.get(intent['resourceId'])
+
+        valid=bool(row and row['revision']==intent['expectedRevision'] and row['control_sequence']<=event['controlSequence'] and row['recorded_at']<=event['recordedAt'])
+
+        rid=intent['compensatesReceiptId']
+
+        if rid:
+
+            original=seen.get(rid)
+
+            if not original or original['kind']!='receipt': return False
+
+            old_i=requests[original['requestId']]['intent']; p=original['payload']
+
+            valid=bool(valid and all(old_i[k]==intent[k] for k in ('actorId','principalId','purpose','audience','dimensionId')) and p['resourceId']==intent['resourceId'] and p['definition']==intent['definition'] and p['afterRevision']==intent['expectedRevision'] and p['beforeLabels']==intent['parameters']['labels'])
+
+        return valid
+
+    def trial_for(e,action,allowed=True):
+
+        t=seen.get(e['payload']['tryEventId'])
+
+        require(t and t['kind']=='try' and t['requestId']==e['requestId'] and t['controlSequence']==e['controlSequence'] and t['recordedAt']==e['recordedAt'],'trial-link')
+
+        require(t['payload']['decision']['action']==action and (not allowed or t['payload']['decision']['allowed']),'trial-authority')
+
+        require(t['eventId'] not in used_trials,'trial-reused'); used_trials.add(t['eventId'])
+
+        return t
+
+    for index,e in enumerate(s['events'],1):
+
+        validate('Event',e); rid=e['requestId']; kind=e['kind']; p=e['payload']
+
+        require(e['sequence']==index and e['eventId'] not in seen,'event-sequence')
+
+        require(e['eventId'] not in object_ids,'event-object-collision')
+
+        require(last_time<=e['recordedAt']<=m['clock'] and last_control<=e['controlSequence']<=m['control_sequence'],'event-order')
+
+        last_time=e['recordedAt']; last_control=e['controlSequence']
+
+        require(rid in requests and rid not in retired and e['issuerId']==m['issuer'],'event-context')
+
+        r=requests[rid]; intent=r['intent']; now=e['recordedAt']
+
+        require(now>=r['submittedAt'],'event-before-admission')
+
+        rev,policy=current_policy(e); definition,available=definition_at(intent,e)
+
+        if kind=='submission':
+
+            require(rid not in states and e['eventId']==r['submissionEventId'] and now==r['submittedAt'],'submission-identity')
+
+            require(p['intentDigest']==r['intentDigest'] and definition['mode']=='synthetic-executable' and intent['purpose'] in definition['purposes'],'submission-definition')
+
+            require(matching_rules(policy,intent,'submit',now),'submission-permission'); states[rid]='pending'
+
+        else:
+
+            require(rid in states,'missing-submission')
+
+            if kind=='delivery': require(p['intentDigest']==r['intentDigest'],'delivery-digest')
+
+            elif kind=='try':
+
+                d=p['decision']; matches=matching_rules(policy,intent,d['action'],now)
+
+                require(d['policyRevision']==rev and d['matchedRuleDigests']==matches and d['definitionAvailable']==available,'decision-evidence')
+
+                require(d['allowed']==bool(match
+
+END fragment 6/9

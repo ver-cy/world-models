@@ -1,0 +1,36 @@
+SAME FROZEN R3 SOURCE RECOVERY 9/9. Browser paragraph rendering adds blank separator lines; all nonempty lines and indentation are verified unchanged. These are static display fragments, not raw-byte hash verification.
+All 9 source fragments are now supplied. Reconstruct their contents in order (fragment boundaries may split tokens), and perform the complete R3 audit requested above. Confirm that every named function is actually visible before the verdict. No tools; do not infer code from tests.
+BEGIN action_bundle.py fragment 9/9
+t).as_posix() for p in target.rglob('*') if p.is_dir()}<= {'records'},'export-directory-closure')
+    expected=set(manifest['files'])|{'manifest.json'}
+    actual={p.relative_to(target).as_posix() for p in target.rglob('*') if p.is_file()}
+    require(expected==actual,'export-file-closure')
+    for name,expected_hash in manifest['files'].items():
+        require(name in actual and '..' not in Path(name).parts and not Path(name).is_absolute(),'export-path')
+        require(sha((target/name).read_bytes())==expected_hash,'export-file-digest')
+    snapshot=json.loads((target/'snapshot.json').read_text(encoding='utf-8'),object_pairs_hook=_unique_pairs)
+    result=validate_snapshot(snapshot); recs=records(snapshot)
+    require((target/'snapshot.json').read_bytes()==file_bytes(snapshot),'snapshot-canonical-bytes')
+    require(set(manifest['files'])=={'snapshot.json'}|{record_path(rid) for rid in recs},'native-closure')
+    for rid,record in recs.items(): require((target/record_path(rid)).read_bytes()==file_bytes(record),'native-projection')
+    m=snapshot['meta']
+    require(manifest['dimensionId']==m['dimension'] and manifest['executorEpoch']==m['epoch'] and manifest['controlSequence']==m['control_sequence'] and manifest['eventSequence']==len(snapshot['events']) and manifest['exportedAt']==stamp(m['clock']),'export-cut')
+    require(manifest['assurance']=='synthetic-evidence-not-authenticated-current-state','export-assurance')
+    expected_manifest={**manifest,'controlSequence':m['control_sequence'],'eventSequence':len(snapshot['events'])}
+    require((target/'manifest.json').read_bytes()==file_bytes(expected_manifest),'manifest-canonical-bytes')
+    return {**result,'files':len(actual),'controlSequence':m['control_sequence'],'exportedAt':manifest['exportedAt']}
+
+def _unique_pairs(items):
+    result={}
+    for key,value in items:
+        require(key not in result,'duplicate-key'); result[key]=value
+    return result
+
+if __name__ == '__main__':
+    import argparse
+    ap=argparse.ArgumentParser(description='Validate a complete synthetic action export; not authenticated admission or execution.')
+    ap.add_argument('export_directory')
+    args=ap.parse_args()
+    print(json.dumps(verify_export(args.export_directory),indent=2))
+
+END fragment 9/9

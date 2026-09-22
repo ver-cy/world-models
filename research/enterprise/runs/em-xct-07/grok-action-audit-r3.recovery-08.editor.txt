@@ -1,0 +1,167 @@
+SAME FROZEN R3 SOURCE RECOVERY 8/9. Browser paragraph rendering adds blank separator lines; all nonempty lines and indentation are verified unchanged. These are static display fragments, not raw-byte hash verification.
+
+Do not audit yet. Reply only ACK 8/9 if all code in this fragment is visible. No tools.
+
+BEGIN action_bundle.py fragment 8/9
+
+        d=parse(row['body'])
+
+        obj(d['definitionId'],'rec.def.'+row['digest'],'urn:vercy:enterprise:ActionDefinition:0.1.0',d['name'],row['recorded_at'],{'enterpriseActionDefinition':d})
+
+    for row in snapshot['resources']:
+
+        if row['revision']==0: require(row['id'] not in object_ids,'native-subject-collision')
+
+        obj(row['id'],'rec.resource.'+digest({'id':row['id'],'revision':row['revision']}),'urn:vercy:synthetic:OrderedLabelResource','Synthetic ordered-label resource',row['recorded_at'],{'syntheticLabels':{'revision':row['revision'],'labels':parse(row['labels'])}})
+
+    for r in snapshot['requests']:
+
+        require(r['requestId'] not in object_ids,'native-subject-collision')
+
+        immutable={k:r[k] for k in ('requestId','keyHash','intentDigest','intent','submittedAt','submissionEventId')}
+
+        obj(r['requestId'],'rec.'+r['requestId'],'urn:vercy:enterprise:ActionRequest:0.1.0','Synthetic action request',r['submittedAt'],{'enterpriseActionRequest':immutable})
+
+    for e in snapshot['events']:
+
+        request=request_by_id[e['requestId']]
+
+        subjects=[e['requestId'],request['intent']['definition']['definitionId']]
+
+        if e['kind']=='receipt': subjects.append(e['payload']['resourceId'])
+
+        for field in ('correctsEventId','compensatesReceiptId'):
+
+            if e['payload'].get(field): subjects.append(e['payload'][field])
+
+        require(e['eventId'] not in result,'native-id-collision')
+
+        result[e['eventId']]={'recordType':'event','schemaVersion':'1.0.0','eventId':e['eventId'],
+
+              'eventType':'urn:vercy:enterprise:action:'+e['kind']+':0.1.0','subjectIds':list(dict.fromkeys(subjects)),
+
+              'occurredAt':stamp(e['recordedAt']),'recordedAt':stamp(e['recordedAt']),'actorId':e['issuerId'],
+
+              'payload':{'enterpriseActionEvent':e},'provenance':provenance}
+
+    return result
+
+def export_snapshot(snapshot,target,*,_fail_after=None):
+
+    """Privileged export. A retry must use the identical snapshot including cut/time.
+
+    Files are append-only and exact-match on retry. A between-files interruption
+
+    resumes with the SAME cut; a torn file requires a NEW directory. Never overwrite
+
+    conflicting evidence. No atomic native commit or power-loss recovery is claimed.
+
+    """
+
+    target=Path(target); require(not target.is_symlink(),'export-symlink')
+
+    recs=records(snapshot)
+
+    blobs={'snapshot.json':file_bytes(snapshot)}
+
+    for rid,record in recs.items():
+
+        name=record_path(rid); require(name not in blobs,'native-path-collision'); blobs[name]=file_bytes(record)
+
+    manifest={'format':'enterprise-action-export/0.1.0','dimensionId':snapshot['meta']['dimension'],'executorEpoch':snapshot['meta']['epoch'],
+
+              'controlSequence':snapshot['meta']['control_sequence'],'eventSequence':len(snapshot['events']),
+
+              'exportedAt':stamp(snapshot['meta']['clock']),'files':{name:sha(raw) for name,raw in sorted(blobs.items())},
+
+              'assurance':'synthetic-evidence-not-authenticated-current-state'}
+
+    blobs['manifest.json']=file_bytes(manifest)
+
+    for index,(name,raw) in enumerate(blobs.items(),1):
+
+        path=target/name
+
+        require(not path.is_symlink() and not path.parent.is_symlink(),'export-symlink')
+
+        path.parent.mkdir(parents=True,exist_ok=True)
+
+        if path.exists(): require(path.read_bytes()==raw,'export-existing-content')
+
+        else:
+
+            with path.open('xb') as f: f.write(raw)
+
+        if _fail_after==index: raise Refused('injected-export-interruption')
+
+    return verify_export(target)
+
+def validate_native_records(snapshot,stored_records):
+
+    """Explicit nested validation of the full supplied package record set.
+
+    Caller must collect the complete authorized set for this binding; this checks
+
+    that set against the supplied cut, not all records/permissions in a Dimension.
+
+    """
+
+    require(type(stored_records) is list,'native-record-list')
+
+    expected=records(snapshot); actual={}
+
+    for r in stored_records:
+
+        require(type(r) is dict,'native-record-shape')
+
+        rid=r.get('recordId') if r.get('recordType')=='object' else r.get('eventId')
+
+        require(type(rid) is str and rid not in actual,'native-record-identity'); actual[rid]=r
+
+    require(set(actual)==set(expected),'native-record-closure')
+
+    for rid,value in expected.items(): require(actual[rid]==value,'native-record-projection')
+
+    return {'valid':True,'records':len(actual),'scope':'supplied complete package set and snapshot; not authenticated latest-history'}
+
+def verify_export(target):
+
+    """Whole exact-file closure + deterministic semantic replay; no trust bootstrap."""
+
+    try: return _verify_export(target)
+
+    except (ValueError,TypeError,KeyError,IndexError,AttributeError,OverflowError,RecursionError,OSError) as e:
+
+        if isinstance(e,Refused): raise
+
+        raise Refused('export-malformed') from None
+
+def _verify_export(target):
+
+    target=Path(target)
+
+    require(not target.is_symlink(),'export-symlink')
+
+    require((target/'manifest.json').is_file(),'export-incomplete')
+
+    require(not any(p.is_symlink() for p in target.rglob('*')),'export-symlink')
+
+    # This privileged archive is larger than an individual bounded wire intent.
+
+    manifest=json.loads((target/'manifest.json').read_text(encoding='utf-8'),object_pairs_hook=_unique_pairs)
+
+    require(type(manifest) is dict and set(manifest)=={'format','dimensionId','executorEpoch','controlSequence','eventSequence','exportedAt','files','assurance'},'manifest-shape')
+
+    require(manifest['format']=='enterprise-action-export/0.1.0','manifest-version')
+
+    require(type(manifest['files']) is dict and 1<=len(manifest['files'])<=40001,'manifest-files')
+
+    for name,value in manifest['files'].items():
+
+        require(type(name) is str and (name=='snapshot.json' or re.fullmatch(r'records/[a-f0-9]{64}\.json',name)),'export-path')
+
+        require(type(value) is str and re.fullmatch('[a-f0-9]{64}',value),'manifest-hash')
+
+    require({p.relative_to(targe
+
+END fragment 8/9
