@@ -1,0 +1,19 @@
+# Enterprise Model Release Acceptance 0.1.0
+
+This bounded Vercy companion separates release existence, mechanical installability, evidence-backed assurance, current canonical status, eligibility for a new installation and catalogue discoverability. It owns five records only: `ModelRelease`, `AcceptanceAssessment`, `ConformanceEvidenceRef`, `PublicationHoldDisposition` and `WithdrawalNotice`.
+
+`ModelRelease` binds one `(modelId, version)` to one exact `packageByteDigest`. Released bytes at that coordinate never change. `semanticFingerprint` is a separate semantic claim produced under a pinned canonicalization profile. It never identifies package bytes and never satisfies a lock. A release may exist and be mechanically installable without a semantic fingerprint; this profile requires the fingerprint for current canonical readiness.
+
+The model references WM-XCT-013 for authoritative registration and withdrawal acts. It references WM-XCT-040 for exact dependency locks, byte descriptors, compatibility and staging receipts. It projects current status to `model-publication/v1`; that projection is not authoritative when it conflicts with registry, receipt, assessment, hold or withdrawal records.
+
+`installable(release, targetContext, t)` is mechanical: exact bytes verify, the mandatory closure resolves, every member is digest-addressed and retained, and WM-XCT-040 reports successful staging for the stated target. It says nothing about semantic quality, organizational approval, catalogue listing or assurance.
+
+`assured(release, profile, t)` requires a passing active assessment bound to the release byte digest, a pinned assessment-profile digest, pinned tool artifact digests, a frozen fixture-set digest, passing mandatory and negative criteria, and retained digest-addressed evidence of every required kind. A label without the assessment and evidence is not assurance. Revocation and supersession append history; they do not rewrite the old assessment.
+
+`canonical(release, channel, t)` is derived. It requires installability, assurance, a non-TBD semantic fingerprint with a pinned canonicalization profile, no applicable open blocking canonical hold, and no effective withdrawal. It is never a mutable boolean on `ModelRelease`. Holds opened later change the predicate at the later time without changing release bytes or historical intervals.
+
+Holds have orthogonal scope (`canonical`, `new-install`, `discovery`) and severity (`blocking`, `advisory`). Disposition is append-only. A waiver needs named authority and digest-addressed evidence. Catalogue projections must apply the authoritative current predicates and report stale disagreement.
+
+`WithdrawalNotice` is a release-acceptance notice backed by a WM-XCT-013 withdrawal act. It can stop new installation and discovery, but it cannot unregister history or delete bytes, evidence, receipts or the transitive closure needed by prior locks. A withdrawn dependency does not silently rewrite dependants. Historical locks remain reproducible; new installs must obtain a policy-acceptable current closure.
+
+The evaluator accepts a pinned external acceptance profile; assessments cannot choose their own mandatory criteria or evidence threshold. All temporal predicates are evaluated at `asAt`, including future, revoked and superseded assessments and opened or closed holds. `discoverableForNewConsumers` is intentionally independent from installability for reviewable drafts unless a discovery hold or withdrawal applies. A supplied catalogue projection is checked and stale fields are reported, never trusted as authority. Receipt resolution and `closureDigest` remain WM-XCT-040 assertions: this bounded evaluator checks their binding, declared member count and per-member digest locators but does not recompute a dependency solver result or authenticate remote storage.

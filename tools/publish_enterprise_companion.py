@@ -36,7 +36,7 @@ def main():
     for n,d in (review['candidateFiles'] | review['reviewedFiles']).items():
         p=(source/n).resolve()
         if not p.is_relative_to(source) or sha(p)!=d:raise ValueError('Reviewed candidate changed: '+n)
-    if not read(source/'test-results.json')['passed'] or read(source/'acceptance-results.json')['passed']!=3:raise ValueError('Executed implementation and three native fixtures required')
+    if not read(source/'test-results.json')['passed'] or read(source/'acceptance-results.json')['passed']!=3:raise ValueError('Executed implementation and three acceptance scenarios required')
     # IDs are unambiguous across the complete logical tree.
     ids=[];layers=[];findings=[]
     for b in spec['structure']['bundles']:
@@ -51,7 +51,7 @@ def main():
     if target.exists():raise ValueError('Immutable release already exists')
     parent.mkdir(parents=True,exist_ok=True);shutil.copytree(source,target,ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     shutil.copyfile(ROOT/'LICENSE',target/'LICENSE')
-    manifest={'format':'vercy-enterprise-companion-publication','runtimeId':mid,'version':version,'status':'published','researchAssurance':'reviewable-draft','contour':a.contour,'contourStatus':'partial','specUrl':'https://ver.cy'+immutable+'spec.json','specDigest':'sha256:'+sha(target/'spec.json'),'pageUrl':'https://ver.cy'+relative,'packageUrl':'https://ver.cy'+immutable+slug+'-'+version+'.zip','semanticFingerprint':None,'review':'review.json','nativeScope':'Three synthetic new Dimensions; own companion identity, explicit nested validation and trusted host state required. Exact binding limits are in bindings/native-v3.md.'}
+    manifest={'format':'vercy-enterprise-companion-publication','runtimeId':mid,'version':version,'status':'published','researchAssurance':'reviewable-draft','contour':a.contour,'contourStatus':'partial','specUrl':'https://ver.cy'+immutable+'spec.json','specDigest':'sha256:'+sha(target/'spec.json'),'pageUrl':'https://ver.cy'+relative,'packageUrl':'https://ver.cy'+immutable+slug+'-'+version+'.zip','semanticFingerprint':None,'review':'review.json','nativeScope':review.get('nativeScope','Three synthetic new Dimensions; own companion identity, explicit nested validation and trusted host state required. Exact binding limits are in bindings/native-v3.md.')}
     if pending:manifest.update(deferredProviderAudits=pending,publicationHolds=review['publicationHolds'])
     if review.get('adoptionNotice'):
         required=review.get('requiredReading',['AGENTS.md','model-spec.md','adoption-limits.md','publication-addendum.md'])
