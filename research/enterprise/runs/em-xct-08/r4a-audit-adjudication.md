@@ -1,0 +1,7 @@
+# Final R4a adjudication
+
+Both complete actual final answers were read. Claude and Grok independently ACCEPT WITH LIMITS. Both confirm closure of the source-kind documentation contradiction, accurate shared-page host duty and three meaningful added tests. Runtime/schema/fixture/benchmark inputs remain exact R4 bytes; native checks were rerun against the corrected spec.101 source tests and3 native synthetic Dimensions pass with exact source-digest validation.
+
+No unresolved critical contradiction was identified in this bounded contract. Earlier R2/R3 disagreements and reproduced defects remain preserved. The unchanged eight context files and external native/composer implementations were not independently body-reviewed. Parsed JSON/text delta reconstruction is distinguished from author's exact-byte equality checks. Review.json/md and generated publication assets are subsequent release bookkeeping, not purported provider output.
+
+Adopt only with the explicit finite-capacity, shared-page attester review, identifier/activity disclosure, host authentication/grants/clock/evidence/latest-store trust, raw SQLite recovery and limited runtime/test coverage conditions in release review. Nonempty bootstrap recovery, broader contention/recursive-validation cases and cross-purpose round-predecessor construction remain untested limits, not claimed fixes. No production connector,IAM,distributed exactly-once,automatic quarantine repair,writable resume or standard certification. Publication follows the owner's standing authorization, not provider permission.

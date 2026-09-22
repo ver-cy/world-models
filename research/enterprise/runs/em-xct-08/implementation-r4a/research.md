@@ -1,0 +1,7 @@
+# Research and reconciliation
+
+Actual independent Claude Opus 5 High and Grok Heavy UI studies received the same public/synthetic boundary. Both complete studies and identical S1/S2 follow-ups are retained at https://ver.cy/enterprise/research/em-xct-08/ . Five Claude S1 blockers were reconciled; both S2 responses accepted the research boundary with limits. Those passes did not audit executable code. Provider suggestions are evidence, not publication authority.
+
+Primary-source comparisons include W3C PROV-DM, Airbyte protocol, Microsoft Graph delta, Debezium PostgreSQL, Singer SPEC, RFC 7643 section 3.1, Kafka Connect architecture and SQLite transaction/atomic-commit documentation. Exact selected coverage and temporal corrections are in source-verification.json. No whole-standard certification is asserted. Codex retained the authorized co-writer key-unavailability bit instead of adopting Grok's broader existence-safe wording.
+
+WM-XCT-001/012 were read completely, alongside selected published companions and platform contracts. WM-XCT-036 was not claimed completely read; the exact Enterprise Identity profile/schema/code and its four-kind limit were compared. Pins/crosswalk preserve separate historical parent versions. Records ABOUT subjects do not inherit same-as identity. The register implements local metadata durability; external acquisition, source truth, domain fact authority and evidence authentication stay separate.

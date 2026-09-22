@@ -1,0 +1,7 @@
+# Continuation after Source Synchronization 0.1.0
+
+Continue EM-XCT-09 classifications and profiles. Preparation in the task classification-research folder: KNW-018 specification fully read; XCT-020 structure/source catalog and external examples/validators still pending. Compare complete exact predecessors and primary standards before boundary freeze and actual independent Claude/Grok studies. Do not redo EM-XCT-08 or mutate its immutable release.
+
+EM-XCT-08 remains partial: live source connectors and authenticated source guarantees; durable full extraction-attempt telemetry; production IAM/disclosure and evidence custody; EFA/EAP adapters; partitioned or distributed delivery; quarantine resolution, retention/erasure; capacity rollover, nonempty-bootstrap recovery and current-store continuity; production storage/throughput; existing-Dimension migration. Each needs a separately bounded implementation and acceptance.
+
+Candidate dispositions: SourceInstance and AcquisitionScope describe immutable acquisition meaning; SubjectMapping governs aboutness to existing subjects; SyncEpoch handles local progress independently of source/record generations. A SyncRegister aggregates a complete restricted journal, retained receipts/quarantine and snapshot rounds. Source credentials/payloads and full extraction-attempt telemetry remain host-owned. Coverage assessments emit proposals, not business deletion or source truth. Mapping, consistency and current permission remain separate.
