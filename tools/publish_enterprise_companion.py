@@ -53,6 +53,14 @@ def main():
     shutil.copyfile(ROOT/'LICENSE',target/'LICENSE')
     manifest={'format':'vercy-enterprise-companion-publication','runtimeId':mid,'version':version,'status':'published','researchAssurance':'reviewable-draft','contour':a.contour,'contourStatus':'partial','specUrl':'https://ver.cy'+immutable+'spec.json','specDigest':'sha256:'+sha(target/'spec.json'),'pageUrl':'https://ver.cy'+relative,'packageUrl':'https://ver.cy'+immutable+slug+'-'+version+'.zip','semanticFingerprint':None,'review':'review.json','nativeScope':'Three synthetic new Dimensions; own companion identity, explicit nested validation and trusted host state required. Exact binding limits are in bindings/native-v3.md.'}
     if pending:manifest.update(deferredProviderAudits=pending,publicationHolds=review['publicationHolds'])
+    if review.get('adoptionNotice'):
+        required=review.get('requiredReading',['AGENTS.md','model-spec.md','adoption-limits.md','publication-addendum.md'])
+        for n in required:
+            p=(target/n).resolve()
+            if not p.is_relative_to(target.resolve()) or not p.is_file():raise ValueError('Missing required adoption reading: '+n)
+        manifest.update(adoptionNotice=review['adoptionNotice'],requiredReading=['https://ver.cy'+immutable+n for n in required])
+    if meta.get('logicalKind')=='embedded-value-profile':
+        manifest['nativeScope']='Three synthetic new Dimensions; embedded values on existing hosts, no independent quantity instance identity. Explicit nested/pair validation and trusted host state required. Read bindings/native-v3.md and the publication addendum.'
     dump(target/'profile-manifest.json',manifest)
     body='<nav><a href="/models/?q='+html.escape(a.contour)+'">← Catalogue</a> · <a href="/enterprise/models/'+a.contour.lower()+'/">Research contour</a></nav>'
     body+='<p class="v-eyebrow">'+html.escape(a.contour)+' · Enterprise profiles · Published '+version+'</p><h1>'+html.escape(meta['name'])+'</h1><p class="v-lede">'+html.escape(spec['model']['purpose'])+'</p>'
@@ -85,6 +93,8 @@ def main():
     if catalogue:
         entry.update(alternate_names=[a.contour,meta['name'],*catalogue['alternateNames']],domain=catalogue['domain'],tags=[a.contour,*catalogue['tags']],aligned_model_ids=['vr.'+x['id'].lower() for x in spec['composition']['semanticReferences']])
     if pending:entry['provenance']=audit_summary+' Original Codex synthesis; reviewable draft with explicit recovery holds.'
+    if review.get('adoptionNotice'):
+        entry['installation_requirements']=entry.get('installation_requirements','')+' '+review['adoptionNotice']+' Required reading: '+'https://ver.cy'+immutable+'publication-addendum.md'
     dump(parent/'catalogue-entry.json',entry)
     shutil.copytree(parent,a.site_root/'models'/slug,dirs_exist_ok=True)
     cards=read(a.site_root/'models/catalog-index.json');cards=[x for x in cards if x['id']!=mid]

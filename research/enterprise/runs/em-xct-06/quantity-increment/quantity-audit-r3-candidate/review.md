@@ -1,0 +1,3 @@
+# Review scope
+
+Two actual independent broad contour studies preceded this bounded implementation. The release must preserve the actual separate frozen no-tools Claude and Grok audits in the quantity increment dossier and populate review.json with their final verdicts; that bookkeeping is added after this candidate freeze. They review supplied candidate content; they do not execute code, verify external hashes or authenticate sources. test-results.json and acceptance-results.json are separate Codex execution evidence. Source, authority and adoption limits remain explicit in the complete contract. Publication authority comes from the user, not reviewers.

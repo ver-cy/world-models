@@ -1,0 +1,3 @@
+# Lifecycle
+
+No independent Quantity lifecycle exists. Source assertion validity, host object revisions, permissions and retention belong to the host. Embedded magnitude states known/unknown/withheld/not-applicable describe an assertion, not lifecycle transitions. Changing them requires a new governed host fact. validate_correction accepts a supplied pair with distinct IDs, exact predecessor link, same host/path, nondecreasing capture time and reason; it neither authorizes the change nor discovers the complete history. Source version changes and correction do not overwrite original facts.
