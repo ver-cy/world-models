@@ -1,0 +1,13 @@
+# Migration and retention
+
+Only 0.1.0 is supported. `migrate(..., '0.1.0')` preserves the archive; any other target rejects. No lossy downgrade is promised. The first release is additive and does not modify existing Dimensions or replace their policies.
+
+Catalog owner strings, CODEOWNERS and free-form spreadsheet authors are candidates, never operative FactAuthority or WriteGrant. Preserve original references in an external staging artifact. A scoped governor must explicitly appoint an accountable party, assign the exact scope/predicate, define source priorities separately from writers, provide terms/evidence and approve the deployment configuration through the host's governance process. No provider transcript is a grant.
+
+For corrections retain all rows, append revision+1 with explicit change kind and previous digest and a new trusted receipt; old `knownAt` queries retain the old answer. A correction replaces the whole assertion/authority term as currently known. For a real transfer create a new effective term and close the old one using guarded change=closure, using distinct assignment IDs when party changes. Do not truncate the old term's start or physically delete it. Tests demonstrate historical answers across the cutoff. Multi-record durability/concurrency must be implemented by the host; partial transfer gaps fail closed.
+
+Rollback restores earlier semantics by another governor-issued revision or a new term. Replacing the live register with an old exported file is not a valid append and can erase knowledge. Keep original frozen evaluation pins and the software version used. A trusted archive import validates data consistency only; it does not prove authorization or completeness. Validate domain meanings before mapping to a future profile.
+
+Production retention cannot be “forever by default”: the deployment needs an approved policy for source evidence, personally identifying party refs, erasure, legal holds and audit records. This synthetic reference keeps all revisions and implements neither physical deletion nor an erasure guarantee. Public fixtures contain no organizational instance data. External evidence values, credentials and personal addresses must remain outside public packages.
+
+Use validate_extension before replacing an operational snapshot, preserving exact historical prefixes and monotone new receipts. Admission is still required for each added record. A source writer change records the new writer on a new revision; the immutable source/subject anchor and previous writer attribution remain. Do not rewrite receipts on retry: the reference retains the original receipt for an identical payload.
