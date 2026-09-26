@@ -59,4 +59,4 @@ Issue A pins definition v1.2, parameters, input snapshots, cutoff, as-of, run R1
 
 ## Holds
 
-All neighboring releases are reviewable drafts, several under single-provider waivers. Metric-definition authority is pending EM-DAT-05. Fiscal-calendar semantics need an explicit time authority. WM-XCT-003 multi-grain validation remains declarative. These holds permit a research candidate but block canonical publication.
+All neighboring releases are reviewable drafts, several under single-provider waivers. Metric-definition authority is pending EM-DAT-05. Fiscal and civil periods now pin WM-XCT-009 calendar identity, version, timezone and convention. WM-XCT-003 multi-grain validation remains declarative. These holds permit a research candidate but block canonical publication.

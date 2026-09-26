@@ -21,9 +21,9 @@ A dashboard definition is a profile of the report definition. A live dashboard v
 - independent Grok review is pending;
 - all five neighboring models are reviewable drafts and several use single-provider waivers;
 - EM-DAT-05 metric-definition authority is still a research candidate;
-- fiscal-calendar authority and multi-grain disclosure validation require resolution;
-- relation-ledger rows and a frozen semantic audit are pending.
+- fiscal-calendar authority is now pinned to WM-XCT-009; multi-grain disclosure validation remains declarative;
+- six candidate relation-ledger rows are recorded; canonical approval and a frozen semantic audit are pending.
 
 ## Next safe step
 
-After Grok review, reconcile the definition/issue boundary, create the minimal English WM-REC-002 research candidate with synthetic issuance/restatement fixtures, then run one frozen no-tools semantic audit. Publish only after critical holds are cleared; otherwise retain the checkpoint and continue the next Enterprise contour.
+After Grok review, reconcile the prepared WM-REC-002 candidate and run one frozen no-tools semantic audit. Publish only after critical holds are cleared; otherwise retain the checkpoint and continue the next Enterprise contour.

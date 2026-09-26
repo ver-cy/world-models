@@ -6,8 +6,13 @@ Claude study and local synthesis. It does not allocate a new identifier.
 
 The aggregate owns two related but distinct identities: immutable reusable report
 definition versions and immutable issued report statements. Processing runs,
-record artifacts, publication operations, bibliographic editions and disclosure
-policies remain external authorities referenced by exact version or digest.
+record artifacts, publication operations, bibliographic editions, disclosure
+policies and calendar definitions remain external authorities referenced by exact
+version or digest.
+
+Six candidate typed-reference rows are recorded in the shared relation ledger.
+They confer no containment, cascade or lifecycle authority and remain subject to
+canonical registry approval.
 
 Run `python validate_candidate.py` before review. Publication remains held until
 the independent Grok result is reconciled and the frozen semantic audit accepts
