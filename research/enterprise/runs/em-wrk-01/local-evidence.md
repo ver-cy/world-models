@@ -53,3 +53,8 @@ Tracker A statuses and resolution values map into Tracker B while preserving the
 ## Holds
 
 WM-ACT-006 retains noncanonical source, profile and retention holds; WM-ACT-003 lacks a current specification; WM-REC-006 lacks a verified specification and has a view-classification conflict; WM-ACT-005/029 relation maturity is incomplete; Backlog and Iteration lack registry allocation; normalized-outcome sources, crosswalk fixtures and round-trip migration tests are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+
+
+## WM-ACT-006 completion candidate
+
+The reserved Task boundary now has a reviewable candidate owning stable source identity, native and canonical state, append-only transitions, assignments, estimates and evidence-bearing outcomes. It references workflow, requirement, project, program and plan masters; Backlog and Iteration remain unassigned. Seven fixtures cover acceptance evidence, cancellation, rejection, idempotent import, stale updates and estimate/actual separation.
