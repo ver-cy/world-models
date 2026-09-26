@@ -14,7 +14,7 @@ Data Product has a stable owner-scoped identity and immutable published versions
 
 Composition records role, resource identity and resolution policy. A pinned member version change creates a new product version; advancement of a declared series head does not, although the product promise must continue to hold. Title, URL, endpoint, score, date and digest never identify the product.
 
-The current WM-DAT-001 catalogue-record facet overlaps WM-DAT-008 catalog-record mastership. Resolve that overlap before publication by making WM-DAT-001 reference the catalog plane or explicitly limiting WM-DAT-008 to product records.
+The WM-DAT-001 and WM-DAT-008 catalog-record surfaces are disjoint by described-resource type and namespace: WM-DAT-001 owns records describing datasets, dataset series and distributions; WM-DAT-008 owns records describing data products and product versions. Neither model may mint a record for the other's governed resource type.
 
 ## Promotion gate
 
@@ -59,4 +59,4 @@ Product P composes dataset A at pinned version v3, dataset B by series head and 
 
 ## Holds
 
-WM-DAT-008 and its principal neighbors remain non-canonical reviewable drafts. The WM-DAT-001 relation is unapproved; catalog-record mastership overlaps; the Offering and agreement authorities are not registry-settled; relevant relations, release pins, crosswalks and fixtures are incomplete. The existing release also carries a single-provider waiver. This checkpoint makes no canonical completeness, installability or publication claim.
+WM-DAT-008 and its principal neighbors remain non-canonical reviewable drafts. Six reference rows are recorded but remain candidate. Offering and agreement authorities are not registry-settled; release pins and crosswalks remain incomplete. The candidate now includes seven fixtures and resolves catalog-record mastership by resource type. The existing release also carries a single-provider waiver. This checkpoint makes no canonical completeness, installability or publication claim.
