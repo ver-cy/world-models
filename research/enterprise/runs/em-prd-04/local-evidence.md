@@ -3,7 +3,7 @@
 ## Disposition
 
 - Reuse WM-ACT-036 as the Research Study aggregate and WM-KNW-009 as the Hypothesis master.
-- Complete reserved WM-ACT-022 as **Experiment Run**, an occurrence bound to one immutable design release. Its current specification is missing.
+- Complete reserved WM-ACT-022 as **Experiment Run**, an occurrence bound to one immutable design release. A reviewable completion candidate is prepared without a new identifier.
 - Treat study-scoped **Experiment Design** as a profile/component of WM-ACT-036 protocol/design releases. Raise a cross-study reusable Experiment Design as an identifier-unassigned candidate only when independently governed reuse is required.
 - Profile **Research Finding** across WM-ACT-036 findings, WM-KNW-007 claims and WM-KNW-008 evidence bindings. No new finding identity is needed.
 
@@ -46,4 +46,4 @@ Two runs pin the same design but different input snapshots and random seeds. One
 
 ## Holds
 
-WM-ACT-022 is reserved but has no specification; its run boundary must be completed before implementation. WM-ACT-036 and WM-KNW-009 remain non-canonical single-provider drafts with source gaps. Relations are candidate-only and fixtures are absent. Cross-study Experiment Design and Evidence Artifact remain identifier-unassigned. No runtime identifier or installable release is created.
+WM-ACT-022 now has a reviewable candidate with explicit run, manifest, attempt and deviation structures, six external relation contracts and seven fixtures. WM-ACT-036 and WM-KNW-009 retain their own publication holds, and relations remain candidate-only. Cross-study Experiment Design and Evidence Artifact remain identifier-unassigned. Exact Grok comparison, one frozen semantic audit, package conversion and live verification are still required; no installable release is claimed yet.

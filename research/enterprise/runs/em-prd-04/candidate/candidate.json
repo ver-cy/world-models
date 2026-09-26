@@ -1,0 +1,233 @@
+{
+  "format": "vercy-world-model-candidate/v1",
+  "contourId": "EM-PRD-04",
+  "modelId": "WM-ACT-022",
+  "registryId": "vr.wm-act-022",
+  "name": "Experiment Run",
+  "alternateNames": [
+    "Experiment",
+    "Trial"
+  ],
+  "version": "0.1.0-candidate.1",
+  "entryKind": "occurrence-aggregate",
+  "status": "research-candidate",
+  "canonicalPublishable": false,
+  "purpose": "Represent one governed execution of an immutable experiment design release, including attempt lineage, reproducibility manifest and append-only deviation evidence, without owning study, hypothesis, observation, dataset, analysis or finding identity.",
+  "boundary": {
+    "owns": [
+      "experiment-run identity and lifecycle",
+      "immutable run manifest and exact design pin",
+      "attempt identities and retry or rerun lineage",
+      "planned-versus-executed deviation evidence",
+      "orchestration timestamps and status",
+      "completion or abort evidence and reproducibility declaration"
+    ],
+    "delegates": [
+      "study and study-scoped design releases to WM-ACT-036",
+      "hypothesis identity and revision lifecycle to WM-KNW-009",
+      "observations and measurements to WM-MAT-008",
+      "input and output dataset versions to WM-DAT-001",
+      "analysis or processing execution to WM-ACT-053 when separately performed",
+      "claims, citations and findings to WM-KNW-007 and WM-KNW-008"
+    ],
+    "excludes": [
+      "mutable experiment design",
+      "truth or support status on a hypothesis",
+      "copied observations or dataset contents",
+      "analysis plan or finding mastership",
+      "deletion of failed attempts",
+      "automatic decision or policy effects"
+    ]
+  },
+  "objects": {
+    "ExperimentRun": {
+      "identity": [
+        "experimentRunId"
+      ],
+      "required": [
+        "studyRef",
+        "designVersionRef",
+        "startedAt",
+        "runManifest",
+        "status"
+      ],
+      "optional": [
+        "completedAt",
+        "abortedAt",
+        "successClass",
+        "supersedesRunId",
+        "correctionReason"
+      ],
+      "lifecycle": [
+        "planned",
+        "running",
+        "completed",
+        "aborted",
+        "superseded"
+      ]
+    },
+    "RunManifest": {
+      "identity": [
+        "manifestDigest"
+      ],
+      "required": [
+        "designVersionRef",
+        "componentPins",
+        "codePins",
+        "dependencyPins",
+        "configurationDigest",
+        "inputDatasetPins",
+        "instrumentPins",
+        "environmentPin",
+        "runtimePin",
+        "randomness",
+        "calibrationRefs",
+        "createdAt"
+      ]
+    },
+    "ExperimentAttempt": {
+      "identity": [
+        "attemptId"
+      ],
+      "required": [
+        "experimentRunId",
+        "sequence",
+        "startedAt",
+        "manifestDigest",
+        "status"
+      ],
+      "optional": [
+        "completedAt",
+        "abortedAt",
+        "retryOfAttemptId",
+        "resultDatasetRefs",
+        "observationRefs"
+      ],
+      "lifecycle": [
+        "started",
+        "completed",
+        "failed",
+        "aborted"
+      ]
+    },
+    "RunDeviation": {
+      "identity": [
+        "deviationId"
+      ],
+      "required": [
+        "experimentRunId",
+        "attemptId",
+        "kind",
+        "observedAt",
+        "plannedValue",
+        "executedValue",
+        "authorityRef",
+        "evidenceRefs"
+      ],
+      "optional": [
+        "reason",
+        "impactAssessmentRef",
+        "resolutionRef"
+      ]
+    }
+  },
+  "relations": [
+    {
+      "target": "WM-ACT-036",
+      "relation": "REFERENCE",
+      "required": true,
+      "purpose": "Resolve the owning study and immutable study-scoped design release."
+    },
+    {
+      "target": "WM-KNW-009",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Pin preregistered or explicit post-hoc hypothesis revisions without changing them."
+    },
+    {
+      "target": "WM-MAT-008",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Resolve observations and measurements produced by attempts."
+    },
+    {
+      "target": "WM-DAT-001",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Pin input and result dataset versions, partitions and digests."
+    },
+    {
+      "target": "WM-ACT-053",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Resolve separate analysis or processing execution evidence."
+    },
+    {
+      "target": "WM-KNW-008",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Resolve evidence and citation bindings used by later findings."
+    }
+  ],
+  "operations": [
+    {
+      "id": "plan-run",
+      "effect": "Create a run pinned to one released design version and draft manifest.",
+      "authority": "authorized investigator"
+    },
+    {
+      "id": "start-attempt",
+      "effect": "Freeze the manifest and append one attempt.",
+      "authority": "authorized investigator or orchestrator"
+    },
+    {
+      "id": "record-deviation",
+      "effect": "Append an explicit planned-versus-executed difference.",
+      "authority": "authorized recorder"
+    },
+    {
+      "id": "complete-attempt",
+      "effect": "Close one attempt and link resulting observations or datasets.",
+      "authority": "authorized recorder"
+    },
+    {
+      "id": "abort-attempt",
+      "effect": "Close a failed or stopped attempt without deletion.",
+      "authority": "authorized recorder"
+    },
+    {
+      "id": "complete-run",
+      "effect": "Close the run with retained attempt and manifest evidence.",
+      "authority": "authorized investigator"
+    },
+    {
+      "id": "correct-run-record",
+      "effect": "Create a successor run record with correction reason while preserving the predecessor.",
+      "authority": "study steward"
+    }
+  ],
+  "invariants": [
+    "Study, hypothesis, design, run, attempt, observation, dataset, analysis and finding use distinct identities.",
+    "Every run pins exactly one immutable released design version.",
+    "A completed or aborted run and its frozen manifest are immutable.",
+    "Every attempt belongs to exactly one run and has a monotonic sequence.",
+    "Retry and rerun append a new attempt or run and never overwrite a failed one.",
+    "The run manifest pins code, dependencies, configuration, inputs, instruments, environment, runtime, randomness and calibration evidence.",
+    "Every input dataset reference includes immutable version, partition and digest evidence.",
+    "Every planned-versus-executed difference is an explicit append-only deviation.",
+    "A preregistered hypothesis pin precedes result access; later hypotheses are marked post-hoc with source-result references.",
+    "Absence, censoring, zero and no effect are never inferred from run status.",
+    "Successful orchestration proves neither scientific validity nor reproducibility.",
+    "Contradictory run outcomes remain independently resolvable and do not rewrite the hypothesis.",
+    "Negative, null and inconclusive results are retained through external finding records.",
+    "Deleting or withdrawing a study never cascades to evidence-bearing completed runs.",
+    "Access to a run result cannot exceed access to its contributing design, inputs and observations."
+  ],
+  "holds": [
+    "Exact Grok review and provider reconciliation are pending.",
+    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
+    "Cross-study reusable Experiment Design remains identifier-unassigned.",
+    "Base study, hypothesis and evidence models retain their own publication holds.",
+    "Package conversion and live HTTP/runtime/search/package verification are pending."
+  ]
+}
