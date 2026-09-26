@@ -4,7 +4,7 @@
 
 - Reuse WM-ACT-025 for Meeting and contained occurrence-scoped Meeting Participation.
 - Reuse WM-ACT-027 for communication channel bindings, discussion threads, turns and message references. A meeting references its chat interaction; neither aggregate contains the other.
-- Complete reserved WM-REC-012 as the durable Minutes / Transcript record. Its specification is currently missing.
+- Complete reserved WM-REC-012 as the durable Minutes / Transcript record. A reviewable candidate is prepared without allocating a new identifier.
 - Reuse WM-ACT-006 for tasks, WM-KNW-010 for proposals/decision content, WM-ACT-024 for authorized decision occurrences and WM-REC-010 for fixed decision records.
 - Allocate no new runtime/model identifier.
 
@@ -14,7 +14,7 @@ WM-ACT-025 masters the session occurrence, agenda items, procedural acts, attend
 
 Meeting Participation is occurrence-scoped and has no lifecycle outside the session. Communication Channel is a referenced channel plus capabilities observed at the relevant time. Discussion Thread and Message Reference are projections of WM-ACT-027 data and cannot be edited through the Meeting profile.
 
-Resolve the registry inversion: WM-ACT-025 produces/references WM-REC-012; WM-REC-012 should inherit from the record authority rather than treating Meeting as its parent.
+The registry inversion is resolved in the candidate relation contract: WM-ACT-025 PRODUCES WM-REC-012; WM-REC-012 references WM-REC-001 as its record authority rather than treating Meeting as its parent.
 
 ## WM-REC-012 completion boundary
 
@@ -60,4 +60,4 @@ A discussion creates a requested task with the chair's delegation reference and 
 
 ## Holds
 
-WM-ACT-025 and adjacent models remain non-canonical reviewable drafts with single-provider and source-verification holds. WM-REC-012 has a reservation but no specification; its parent/contains relationship is inverted and owners/sources are placeholders. Relations, immutable pins, access/redaction fixtures and crosswalk validation are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+WM-ACT-025 and adjacent models remain non-canonical reviewable drafts with source-verification holds. WM-REC-012 now has a reviewable candidate, explicit external relations, immutable-expression rules and access/redaction fixtures. Publication remains pending the exact Grok comparison and one frozen semantic audit. Owners and source pins still require publication-time verification. This checkpoint makes no canonical completeness, installability or publication claim.
