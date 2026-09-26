@@ -51,4 +51,4 @@ Changing payload semantics incompatibly at the same URL creates a new contract r
 
 ## Holds
 
-WM-SFT-003 and WM-SFT-018 lack current specifications; Integration lacks registry allocation; operation-level compatibility needs primary-source verification; WM-DAT-004's own canonical blockers are inherited; relation-ledger entries, immutable pins, fixtures and the ArchiMate/CSDM/OpenTelemetry crosswalk remain incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+WM-SFT-003 now has a reviewable completion candidate with immutable revisions, consumer pins, compatibility assessments, endpoint bindings, four external relations and seven fixtures. WM-SFT-018 still lacks a current specification and Integration remains identifier-unassigned. WM-DAT-004 retains its own canonical holds; exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. This checkpoint makes no canonical completeness or installability claim yet.
