@@ -599,6 +599,26 @@ def apply_relations(world: list[dict[str, str]]) -> None:
         row["relations_ref"] = "planning/VERCY-MODEL-RELATIONS.csv" if outgoing else ""
 
 
+def preserve_unmodeled_world_rows(
+    generated: list[dict[str, str]], existing: list[dict[str, str]]
+) -> list[dict[str, str]]:
+    """Keep append-only world-model rows that are not represented by build inputs.
+
+    Dynamic allocations and later governed publications are intentionally appended to
+    the unified registry after the original desired/additions inputs were frozen. A
+    rebuild must not silently delete those rows.
+    """
+    generated_ids = {row["model_id"] for row in generated}
+    preserved = [
+        row
+        for row in existing
+        if row.get("record_plane") == "world-model"
+        and row.get("model_id")
+        and row["model_id"] not in generated_ids
+    ]
+    return generated + preserved
+
+
 def audit(rows: list[dict[str, str]]) -> dict:
     world = [r for r in rows if r["record_plane"] == "world-model"]
     ext = [r for r in rows if r["record_plane"] == "interoperability"]
@@ -631,11 +651,13 @@ def audit(rows: list[dict[str, str]]) -> dict:
 
 def main() -> None:
     world = desired_rows() + addition_rows()
+    if OUTPUT.exists():
+        world = preserve_unmodeled_world_rows(world, read_csv(OUTPUT))
     apply_relations(world)
     external = external_rows()
     rows = sorted(world, key=lambda r: (int(r["priority_wave"]), -int(r["priority_score"]), r["nav_path"], r["model_id"]))
     rows += sorted(external, key=lambda r: (-int(r["priority_score"]), r["source_group"], r["name"]))
-    with OUTPUT.open("w", encoding="utf-8-sig", newline="") as handle:
+    with OUTPUT.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, FIELDS)
         writer.writeheader(); writer.writerows(rows)
     similarities = similarity_review(world)
