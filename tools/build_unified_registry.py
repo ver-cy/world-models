@@ -131,7 +131,7 @@ WM-REC-015	Archival Fonds / Collection	standalone-mm	NAV.INF.REC.FND	2	WM-REC-00
 WM-DAT-004	Data Schema / Data Contract	standalone-mm	NAV.INF.DAT.SCH	0	WM-DAT-001	Semantics, constraints and producer-consumer agreement
 WM-DAT-005	Data Pipeline	standalone-mm	NAV.INF.DAT.PIP	1	WM-ACT-003	Executable transformation graph and operations lifecycle
 WM-DAT-006	Data Lineage	pattern	NAV.INF.DAT.LIN	0	WM-XCT-012	Dataset/field derivation and processing provenance
-WM-DAT-007	Data Quality Assessment	standalone-mm	NAV.INF.DAT.QLT	1	WM-DAT-001	Metrics, rules, observations and remediation lifecycle
+WM-DAT-007	Data Quality Assessment	standalone-mm	NAV.INF.DAT.QLT	1		Purpose-qualified evaluation and verdict over externally mastered rules metrics observations and issues
 WM-DAT-008	Data Catalog Entry / Data Product	standalone-mm	NAV.INF.DAT.CAT	1	WM-DAT-001	Discoverable governed offering distinct from dataset bytes
 WM-DAT-009	Survey / Questionnaire	standalone-mm	NAV.INF.DAT.SRV	1	WM-REC-007	Questions, instrument versions and response structure
 WM-DAT-010	Time Series / Observation Collection	standalone-mm	NAV.INF.DAT.TS	1	WM-MAT-008	Ordered observations with sampling semantics

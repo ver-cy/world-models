@@ -51,4 +51,4 @@ A fully populated dataset scores 100% completeness but is 41 hours old against a
 
 ## Holds
 
-The primary and adjacent releases remain non-canonical reviewable drafts with single-provider limitations. Candidate relations and several parent contracts remain unresolved; WM-KNW-014 has no settled relationship contract; Metric Definition lacks registry allocation; source/profile pins, crosswalks and representative fixtures are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+The primary and adjacent releases remain non-canonical reviewable drafts with single-provider limitations. The incorrect WM-DAT-001 parent signal is removed and six reference rows are recorded as candidates. WM-KNW-014 now has a corrected candidate reference boundary; Metric Definition still lacks registry allocation. Source/profile pins and crosswalks remain incomplete, while seven representative fixtures are present. This checkpoint makes no canonical completeness, installability or publication claim.
