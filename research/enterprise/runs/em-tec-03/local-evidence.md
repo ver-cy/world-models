@@ -51,9 +51,10 @@ Changing payload semantics incompatibly at the same URL creates a new contract r
 
 ## Holds
 
-WM-SFT-003 now has a reviewable completion candidate with immutable revisions, consumer pins, compatibility assessments, endpoint bindings, four external relations and seven fixtures. WM-SFT-018 still lacks a current specification and Integration remains identifier-unassigned. WM-DAT-004 retains its own canonical holds; exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. This checkpoint makes no canonical completeness or installability claim yet.
+WM-SFT-003 now has a reviewable completion candidate with immutable revisions, consumer pins, compatibility assessments, endpoint bindings, four external relations and seven fixtures. WM-SFT-018 now has a reviewable supporting candidate but no canonical specification; Integration remains identifier-unassigned. WM-DAT-004 retains its own canonical holds; exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. This checkpoint makes no canonical completeness or installability claim yet.
 
 
 ## Supporting WM-SFT-018 completion candidate
 
 The reserved Network / Endpoint boundary now owns stable logical endpoint identity plus effective-dated address, connectivity, exposure and zone-membership assertions. Software-system identity stays in WM-SFT-002, runtime/resource identity in WM-SFT-010, contract semantics in WM-SFT-003 and observed traffic in WM-SFT-017. Address reassignment, blue-green migration, URL change, declared-versus-observed reachability, secret rejection and historical resolution are covered by seven fixtures.
+
