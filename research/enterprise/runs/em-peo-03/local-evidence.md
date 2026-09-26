@@ -71,4 +71,4 @@ WM-ORG-004 owns competency and credential requirements for a position. A require
 
 ## Holds
 
-WM-PER-009 has no current specification; its purpose, owner and legacy K1 reference conflate a person's capability with system function. Proficiency Scale and Person Capability Assertion lack allocations and independent evidence. No approved competency relations exist. ESCO, SFIA, CTDL, CLR, Open Badges and VC crosswalks, scale registries, source pins and fixtures remain unverified. All supplied bases are non-canonical, several single-provider. No installability or publication-readiness claim is made.
+WM-PER-009 now has a reviewable completion candidate for scheme-scoped definitions, composition and lossy mappings, with three external relation contracts and seven fixtures. Its purpose and owner no longer conflate a person capability assertion with a system function. Proficiency Scale and Person Capability Assertion remain unallocated. ESCO, SFIA, CTDL, CLR, Open Badges and VC crosswalks still require pinned verification; exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. No installability claim is made yet.
