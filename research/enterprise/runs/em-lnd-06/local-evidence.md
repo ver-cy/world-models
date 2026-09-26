@@ -34,10 +34,10 @@ For three products and one shared platform, four memberships reference the exist
 
 ## Version reconciliation and migration
 
-The frozen AISMM evidence consistently labels version 3.1.0; the earlier 3.2 README question is stale. Its repository tree is four commits past the `v3.1.0` tag, so the exact immutable dependency ref remains unresolved. PLMM's repository is a v0.1.0 draft at commit `a8e388c21901540b71cc8479d4d6ef119c2ea276`, while the runtime contains an empty `0.1.0-legacy` projection.
+The frozen AISMM evidence consistently labels version 3.1.0; the earlier 3.2 README question is stale. Its repository tree is four commits past the `v3.1.0` tag. The candidate does not impose either ref globally: every membership must pin the exact product-context commit and content digest it actually uses, and a tag is descriptive evidence only. PLMM's repository is frozen at commit `a8e388c21901540b71cc8479d4d6ef119c2ea276` with a canonical digest over the eleven layer documents, while the runtime `0.1.0-legacy` projection remains immutable.
 
-Migration should freeze the legacy artifact, open a new draft on `vr.vercy.plmm`, project the eleven repository layers into stable bundle IDs, add findings/questions/artifacts/CRUD/roles, and make the AISMM dependency registry-visible at an immutable ref. Installability requires executable fixtures.
+Migration freezes the legacy artifact and opens `0.2.0-candidate.1` on `vr.vercy.plmm`. The candidate projects the eleven repository layers into stable bundle IDs and defines membership, dependency, completeness and impact-query semantics. Seven fixtures cover confirmed impact, missing pins, empty coverage, withdrawal history, cycles, scenarios and restricted evidence. Package conversion and live runtime/search verification remain publication work.
 
 ## Holds
 
-Provenance differs between the `ver-cy` runtime source and the `orkestron-ai` repository links. No evidence maps runtime digests to repository commits. AISMM's tag-versus-current-tree choice is unresolved, federation is prose-only, and no fixtures prove compatibility or installability. The checkpoint therefore defines the reserved-model completion boundary but is not a publishable release.
+Provenance differs between the historical `ver-cy` runtime source and the `orkestron-ai` repository links. The legacy digest is preserved without claiming it maps to the repository commit. The candidate now provides explicit federation and fixture semantics, but exact Grok comparison, one frozen semantic audit and package/live verification remain required. The checkpoint is not yet a canonical release.
