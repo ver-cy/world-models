@@ -45,4 +45,4 @@ The identifier is deliberately unassigned. Claude proposed `WM-WPL-001`, but no 
 
 ## Holds
 
-The previous WM-BLT-002 description must be migrated rather than replaced blindly. IFC host/version differences, Facility/Building crosswalk, indoor topology sources, area measurement standards, privacy/employment-law review and relation-ledger updates remain unresolved. These block canonical publication but not a research checkpoint.
+WM-BLT-002 now has a reviewable completion candidate with persistent identity, temporal containment, boundary and area evidence, use designations, split/merge lineage, four external relation contracts and seven fixtures. The previous description still requires migration packaging. IFC host/version differences, Facility/Building crosswalk, indoor topology sources, area standards, privacy review, WM-PLC-009 retirement and Workplace Allocation allocation remain unresolved. Exact Grok comparison, one frozen semantic audit, package conversion and live verification are still required.
