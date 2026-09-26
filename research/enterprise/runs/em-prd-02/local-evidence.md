@@ -32,4 +32,4 @@ An HR onboarding service and a platform identity-verification service use the sa
 
 ## Holds
 
-WM-ACT-004 is only a previous-version reservation under migration review. Its source imports are wildcard and unpinned. The Offering crosswalk, peer-model mappings, realization/dependency fixtures, provider succession, and standards comparison are incomplete. No canonical, runtime or installability claim is made.
+WM-ACT-004 remains under migration review, but a narrowed completion candidate now defines immutable service versions, realization bindings, typed dependencies, six external relations and seven fixtures. Wildcard imports and unsupported conformance claims are excluded. The shared Offering Catalogue still requires EM-PRD-01 allocation adjudication; exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. No canonical or installability claim is made yet.
