@@ -26,9 +26,9 @@ Those states have different consequences for contactability, disclosure, accepta
 
 ## Relationship holds
 
-- WM-ACT-021 has no approved outgoing relation-ledger edges. Its sibling links are provisional descriptions.
-- WM-KNW-014 declares `CHILD -> WM-ACT-021`, but its purpose describes WM-ACT-021 as the parent action/work authority. The actual WM-ACT-021 contract is a service case aggregate. EM-COM-04 must not freeze this direction as settled.
-- WM-ACT-027 requires a permission/consent/preference decision reference for every communication interaction. WM-ACT-021 treats communication references as optional at case level. These are compatible only if “no communication interaction exists” is distinguished from “a recorded interaction without a permission basis”.
+- WM-ACT-021 now has candidate outgoing relation-ledger edges. They remain provisional until canonical registry approval.
+- WM-KNW-014 `0.3.1-research.1` replaces the contradictory CHILD direction with an optional non-owning REFERENCE.
+- WM-ACT-027 `0.3.1-research.1` makes the aggregate-level permission reference optional and retains a conditional requirement for outbound contact that needs permission or lawful-basis evidence.
 - WM-ACT-007 is a suitable referenced execution authority for remedy work and must not be imported into case state.
 
 ## Final disposition after independent Grok review
