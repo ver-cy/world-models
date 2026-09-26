@@ -145,7 +145,7 @@ WM-KNW-010	Decision / Rationale	standalone-mm	NAV.INF.KNW.DEC	0	WM-KNW-007	Choic
 WM-KNW-011	Goal / Objective	standalone-mm	NAV.INF.KNW.GOL	0	WM-ACT-008	Desired outcome with measure and horizon
 WM-KNW-012	Policy / Rule	standalone-mm	NAV.INF.KNW.POL	0	WM-POL-001	Executable or interpretable normative statement
 WM-KNW-013	Constraint / Requirement Rule	standalone-mm	NAV.INF.KNW.CNS	1	WM-REC-006	Formal constraint independent of prose artifact
-WM-KNW-014	Issue / Problem	standalone-mm	NAV.INF.KNW.ISS	0	WM-ACT-021	Recognized discrepancy requiring resolution
+WM-KNW-014	Issue / Problem	standalone-mm	NAV.INF.KNW.ISS	0		Recognized discrepancy requiring resolution
 WM-KNW-015	Risk / Opportunity	standalone-mm	NAV.INF.KNW.RSK	0	WM-ACT-017	Uncertain event/effect with likelihood and impact
 WM-KNW-016	Assumption	standalone-mm	NAV.INF.KNW.ASM	1	WM-KNW-007	Accepted premise with owner and validation state
 WM-KNW-018	Taxonomy / Classification Scheme	standalone-mm	NAV.INF.KNW.TAX	1	WM-XCT-020	Governed concepts, hierarchy and mappings
