@@ -31,8 +31,8 @@ Those states have different consequences for contactability, disclosure, accepta
 - WM-ACT-027 requires a permission/consent/preference decision reference for every communication interaction. WM-ACT-021 treats communication references as optional at case level. These are compatible only if “no communication interaction exists” is distinguished from “a recorded interaction without a permission basis”.
 - WM-ACT-007 is a suitable referenced execution authority for remedy work and must not be imported into case state.
 
-## Candidate disposition pending Grok
+## Final disposition after independent Grok review
 
-`PROFILE`, no new aggregate. The smallest useful profile would add only a governed requester-presence assertion and rules for how it affects registration, communication and acceptance. Merge, incident linkage, work execution and closure semantics should be inherited from WM-ACT-021 by exact version/digest rather than restated.
+`PROFILE`, no new aggregate and no runtime ID. Claude and Grok independently agree that the smallest useful profile adds only a governed requester-presence assertion and rules for how it affects party minting, registration, communication and acceptance. Merge, incident linkage, work execution and closure semantics are inherited from WM-ACT-021 by exact version/digest rather than restated.
 
-If Grok demonstrates that WM-ACT-021's existing assertion-status mechanism already carries intentional anonymity without ambiguity, downgrade to `REUSE ONLY` and publish only an Enterprise adoption/mapping artifact.
+The published artifact is a declarative Enterprise adoption binding. It defines portable requester-presence semantics while permitting local code mappings, pins provisional sibling relations without approving the shared relation ledger, and includes adversarial fixtures. The parent remains non-canonical, so the profile is explicitly reviewable research rather than an installable or canonical model.

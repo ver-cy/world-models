@@ -4,9 +4,9 @@
 
 Research contour: **Customer inquiry and service request**. The primary candidate is WM-ACT-021 Service Case / Ticket.
 
-Claude completed a frozen-dossier review and selected **PROFILE, no new aggregate**. It confirmed existing coverage for merge/history, incident separation and resolution-versus-closure-versus-acceptance. It identified one narrow candidate gap: intentional anonymous requester mode is different from an unknown requester.
+Claude and Grok independently selected **PROFILE, no new aggregate**. Both confirmed existing coverage for merge/history, incident separation and resolution-versus-closure-versus-acceptance. Both found one narrow profile-level gap: intentional anonymous requester mode is different from an unknown requester.
 
-The exact Grok prompt is preserved in `grok-prompt.md`. Browser submission is pending the required action-time confirmation. No Grok result exists yet and no publication decision has been made.
+The exact Grok prompt, raw response, provider comparison and frozen response manifest are preserved. The minimal English adoption binding is in `profile-binding/0.1.0/`. It allocates no model/runtime ID and contains no executable code.
 
 ## Holds
 
@@ -15,6 +15,6 @@ The exact Grok prompt is preserved in `grok-prompt.md`. Browser submission is pe
 - WM-ACT-027 permission-reference requiredness may not align with optional case-level communication bindings.
 - Upstream models remain reviewable drafts.
 
-## Next safe step
+## Publication decision
 
-After authorized Grok submission, preserve the raw response and reconcile both providers. Publish only a bounded profile if the anonymous-requester semantics are independently confirmed as operationally material. Otherwise publish an Enterprise reuse/adoption mapping to WM-ACT-021 without creating another runtime identity.
+Publish the bounded research profile as an EM-COM-04 adoption/mapping artifact linked from the Enterprise card. Do not present it as canonical or installable. Canonical publication remains held until parent assurance, sibling relations and the WM-KNW-014 contradiction are resolved.
