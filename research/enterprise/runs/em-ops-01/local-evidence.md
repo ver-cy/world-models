@@ -39,4 +39,4 @@ One process family has two concurrently valid variants. Separate instances pin e
 
 ## Holds
 
-Both candidates remain previous-version descriptions under migration boundary review. Wildcard BPMN, CMMN and ISO imports are not immutable dependencies. MUC/MMAS claims are unsupported, relations are candidate-only, `stepExecution` to atomic-act cardinality is unverified, `workItem` is absent from the old spec, and no fixtures prove replay or conformance. This checkpoint defines completion boundaries but is not a release.
+Both source descriptions remain under migration boundary review, and their wildcard BPMN, CMMN and ISO imports plus MUC/MMAS claims are not carried into the candidates. The prepared candidates add WorkItem and append-only execution structures, avoid atomic-act cardinality claims, define immutable edition/adoption semantics and provide eight replay/conformance fixtures. Relations remain candidate rows. Exact Grok comparison, one frozen semantic audit, package conversion and live verification are still required before release.
