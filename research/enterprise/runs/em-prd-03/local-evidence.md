@@ -32,4 +32,4 @@ One requirement revision is traced to three Done tasks and a failed test. It rem
 
 ## Holds
 
-WM-REC-006 has no current specification and its view classification conflicts with its need for stable reference identity. WM-KNW-013 is a non-canonical single-provider reviewable draft with relation and evaluation holds. Crosswalks, registry relation changes, authority policy, test/evidence mappings and fixtures are unverified. No canonical, runtime or installability claim is made.
+WM-REC-006 now has a reviewable completion candidate with stable identity, immutable revisions, acceptance criteria, baselines, trace links and conflicts, plus five external relation contracts and seven fixtures. Its view classification is replaced with a governed aggregate classification and the WM-KNW-013 parent signal is removed. WM-KNW-013 and WM-SFT-015 retain their own publication holds. Exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. No canonical or installability claim is made yet.
