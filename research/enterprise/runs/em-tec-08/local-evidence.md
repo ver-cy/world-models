@@ -54,3 +54,8 @@ One defect is raised by one test and reproduced by two others. A retry set for o
 ## Holds
 
 Test Environment lacks registry allocation; WM-SFT-015 has the incorrect WM-ACT-038 parent and missing relation rows; WM-REC-006 lacks a verified target specification; WM-SFT-015 and WM-SFT-014 retain single-provider, source-pin, citation and artifact-identity holds; environment cardinality and non-reproducible fallback need a normative decision. This checkpoint makes no canonical completeness, installability or publication claim.
+
+
+## Supporting WM-SFT-014 completion candidate
+
+The frozen sixteen-source Defect specification is preserved as source evidence and normalized into an independent entity. Defect references Task, Software Change, Test, Requirement and Incident masters; it no longer inherits from Service Case. Verification-fixed requires a different subject digest from the one on which the defect was raised. Seven fixtures cover multi-test attribution, unchanged-build false closure, later-build verification, test-oracle defects, restoration without remediation, duplicates and will-not-fix.
