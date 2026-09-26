@@ -54,4 +54,4 @@ One service retains its WM-SFT-002 identity across EU and US environments. A glo
 
 ## Holds
 
-WM-SFT-010 has no current specification; WM-SFT-002 remains a shared legacy migration source; the WM-SFT-010 relation to WM-XCT-039 is absent; WM-SFT-009 relationship rows remain candidate; crosswalks, source pins and temporal fixtures are incomplete. WM-XCT-039 and WM-SFT-009 retain their own provider and validation holds. This checkpoint makes no canonical completeness, installability or publication claim.
+WM-SFT-010 now has a reviewable completion candidate with runtime, resource, instance, temporal topology, CI designation and desired-versus-observed structures, four external relation contracts and seven fixtures. WM-SFT-002 remains a legacy migration source, and WM-XCT-039 and WM-SFT-009 retain their own publication holds. Exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. This checkpoint makes no canonical completeness or installability claim yet.
