@@ -59,3 +59,8 @@ Test Environment lacks registry allocation; WM-SFT-015 has the incorrect WM-ACT-
 ## Supporting WM-SFT-014 completion candidate
 
 The frozen sixteen-source Defect specification is preserved as source evidence and normalized into an independent entity. Defect references Task, Software Change, Test, Requirement and Incident masters; it no longer inherits from Service Case. Verification-fixed requires a different subject digest from the one on which the defect was raised. Seven fixtures cover multi-test attribution, unchanged-build false closure, later-build verification, test-oracle defects, restoration without remediation, duplicates and will-not-fix.
+
+
+## WM-SFT-015 completion candidate
+
+The frozen thirty-three-source test specification is preserved and normalized into a test-evidence aggregate. The candidate removes the learning-activity parent, pins immutable definition, subject and requirement revisions, separates observation from verdict, retains retries and nondeterminism, and delegates defect, release, task and runtime lifecycles. Seven fixtures cover multi-build execution, flakiness, environment failure, oracle correction, defect linkage, re-baselining and redacted exports.

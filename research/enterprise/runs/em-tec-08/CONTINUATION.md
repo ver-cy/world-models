@@ -10,3 +10,6 @@ Next contour: EM-WRK-01. Read complete WM-ACT-006 specification and registry res
 
 
 A supporting WM-SFT-014 completion candidate is now preserved with the frozen 16-source specification, fifteen invariants, five external boundaries and seven fixtures. The incorrect WM-ACT-021 parent was removed in favor of non-owning references. Publication still requires exact Grok comparison, a frozen audit, package conversion and live verification.
+
+
+A WM-SFT-015 completion candidate is now preserved with the frozen 33-source specification, fifteen invariants, five external boundaries and seven fixtures. The incorrect WM-ACT-038 parent was removed; test definition, execution, observation, verdict, evidence, defect and release lifecycles remain separate.
