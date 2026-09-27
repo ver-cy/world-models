@@ -1,9 +1,11 @@
 # EM-LND-03 continuation
 
-Checkpoint date: 2026-09-26.
+Reconciled checkpoint date: 2026-09-27.
 
-Disposition: Workforce Landscape is a governed projection and Workforce Scope its versioned counting/access profile; both reuse WM-ORG-005/016 and adjacent person, position and organization masters. Measures and denominators remain distinct and privacy-controlled. No runtime/model identifier was allocated.
+Disposition: Workforce Scope is a versioned population, counting, access and disclosure profile; Workforce Landscape is its immutable pinned projection. Claude and Grok agree that neither has independent subject identity or lifecycle, so no runtime/model identifier was allocated.
 
-The complete WM-ORG-005 and WM-ORG-016 specifications plus adjacent person, unit, team, position, identity, role, measurement, access and projection specifications, registry reservations/relations and related research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is held by non-canonical bases, unapproved composition, measurement gaps, missing crosswalks, privacy validation and fixtures.
+The Grok Heavy response is preserved with an exact prompt/response manifest. Reconciliation adds deterministic source precedence for typed FTE, canonical headcount names, typed capacity, immutable source/access/disclosure/engine pins, transient WM-PER-001-derived deduplication anchors, cross-employer access checks, release-level temporal comparability and explicit contractor inclusion rules.
 
-Next contour: EM-LND-04. It has no target model IDs; inspect the registry scope and all relevant complete candidate specifications before deciding its boundary.
+One Claude Opus high no-tools frozen audit returned REVISE. All six findings were remediated once and fixtures were expanded; the audit was not repeated. Publication remains held by non-canonical WM-ORG-005/016 composition, absent normative FTE/headcount crosswalks, canonical source fixtures and disclosure-policy validation.
+
+Next Grok contour is selected from the generated queue and requires fresh action-time user confirmation before browser submission.
