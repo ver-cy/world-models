@@ -61,3 +61,11 @@ The profile records scope/version, agreement perimeter, clause/expression and de
 ## Holds
 
 Both targets remain non-canonical reviewable drafts with boundary and source-verification gaps. Their composition is not ratified in the relationship ledger. Reciprocal withholding, insolvency effects, obligations-register operations and some statutory-source boundaries remain unresolved. No verified semantic crosswalk or fixtures exist. This checkpoint is not legal advice and makes no canonical completeness, installability or publication claim.
+
+## Grok reconciliation
+
+Grok accepts the profile boundary and requires explicit homes for graph edges and evidence. Dependency edges are WM-XCT-029 obligation associations; evidence remains with WM-REC-001 or its record authority. The projection digest now pins agreement and duty revisions, as-of, party lens, access decision, disclosure shape and graph-engine revision. Historical source bindings survive agreement expiry without implying liveness. Cycles remain structured; decomposition cycles are assessment inputs rather than deleted data.
+
+## Frozen-audit reconciliation
+
+The single frozen audit accepted the boundary with eight limits. The final profile pins evidence authority and deadline clocks, names profile/shape/engine ownership, keeps cycle diagnostics non-mutating, applies graph-closed disclosure, scopes digests by party lens and uses one canonical profile name. Obligation Network remains a rendering mode. No second audit was run and no identifier was added.
