@@ -2,15 +2,15 @@
 
 ## Disposition
 
-- Create an Enterprise profile across three reserved models: WM-DAT-005 owns reusable Data Pipeline definitions, WM-ACT-053 owns Pipeline Run executions, and WM-DAT-006 owns append-only Lineage Assertions.
+- Create an Enterprise profile across three reserved models: WM-DAT-005 owns reusable Data Pipeline definitions, WM-ACT-053 owns Pipeline Run executions, and WM-DAT-006 is the mastership boundary for append-only dependent Lineage Assertion records.
 - Do not create a Transformation model. Definition components and pinned logic belong to WM-DAT-005; executed task/stage attempts belong to WM-ACT-053; observed transformation characterisation belongs to the WM-DAT-006 edge.
 - Add a version-pinned crosswalk from definition step to executed task/attempt to lineage edge. It is a mapping, never identity equality.
-- Keep dataset/schema identities in WM-DAT-001/004 and generic provenance in WM-XCT-012.
+- Keep dataset/schema identities in WM-DAT-001/004. WM-XCT-012 masters non-run provenance Activities such as manual correction.
 - Allocate no runtime or model identifier.
 
 ## Identity and clocks
 
-Pipeline definitions use owner namespace, pipeline id and immutable version. Definition components use pipeline version plus stable component id. Runs use orchestrator-issued run identity; attempts use run, task and monotonic attempt sequence. Input and output bindings pin dataset version or snapshot, partition, digest, role and effective interval. Lineage assertions have append-only identities and supersession links.
+Pipeline definitions use owner namespace, pipeline id and immutable version. Definition components use pipeline version plus stable component id. Runs use orchestrator-issued run identity; attempts use run, task and monotonic attempt sequence. Input and output bindings pin dataset version or snapshot, partition, digest, role and effective interval. Lineage assertions use local dependent-record keys and supersession links inside WM-DAT-006; those keys are not runtime/model identifiers or independent aggregates.
 
 Four clocks remain independent: definition version, run/attempt sequence, lineage assertion supersession and dataset state. Released definitions and recorded attempts are immutable; rerun, retry, backfill and correction append successors.
 
@@ -24,11 +24,11 @@ Missing lineage does not mean no dependency under the default open-world assumpt
 
 ## Manual correction, opaque input and reproducibility
 
-A manual correction is a separately evidenced activity with agent/position, ticket or approval, before/after dataset versions and a propagated manual-dependency flag. It is not fabricated as a pipeline run.
+A manual correction is a WM-XCT-012 provenance Activity with agent/position, time, ticket or patch evidence, before/after dataset versions and a propagated manual-dependency flag. Its WM-DAT-006 processing-context fragment is evidence bound to the Activity, not a new manifest aggregate. It is not fabricated as a pipeline run.
 
 An opaque external input is a boundary node with the best available identity, unresolved-upstream status, cause code and explicit confidence effect. Its internal ancestry remains unknown.
 
-A reproducible output requires the immutable run binding set: definition/component revision, code and dependency digests, parameters/configuration and secret references, input pins and digests, interval/watermark, runtime environment, attempts, output digest, nondeterminism declaration and validation/quality evidence. Missing elements lower the claim to explainable or partially reproducible.
+A reproducible output requires a processing-context manifest pinned before execution: definition/component revision, code and dependency digests, parameters/configuration and secret references, input pins and digests, interval/watermark, runtime environment, attempts, output digest, nondeterminism declaration and validation/quality evidence. Attempts append without replacing the pin. Missing elements lower the claim to explainable or partially reproducible.
 
 ## Acceptance scenario
 
@@ -53,4 +53,4 @@ Run R1 pins pipeline P v2.1, input snapshots A@s41/B@s17 and code digest c9 and 
 
 ## Holds
 
-All three primary releases remain non-canonical reviewable drafts with single-provider limitations. Their relations are candidate; WM-DAT-006 has an unresolved WM-XCT-012 parent and perimeter-versioning defects; confidence grading and several artifact/function links lack settled authority. Runtime-specific profiles, immutable pins, crosswalk validation and fixtures are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+All three primary releases remain non-canonical reviewable drafts and their relations are candidate. WM-DAT-006 has perimeter-versioning defects; confidence grading and several artifact/function links lack settled authority. WM-DAT-001/004 must admit snapshots produced by failed attempts and WM-XCT-012 Activities, while ticket/patch authority remains external. Grok reconciliation and the single frozen audit are complete; the audit's structural revision is remediated in the candidate. This checkpoint makes no canonical completeness, installability or publication claim.

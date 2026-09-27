@@ -1,0 +1,11 @@
+# EM-DAT-03 provider comparison
+
+Claude and Grok agree on the disposition: profile WM-DAT-005, WM-ACT-053 and WM-DAT-006; preserve dataset/schema and generic provenance masters; create no Transformation model and allocate no runtime/model identifier. Both keep intended topology distinct from observed lineage, preserve retries as attempts under one run, represent manual correction as an evidenced activity, treat opaque ancestry as unknown and require an immutable processing-context manifest.
+
+Grok sharpens the Transformation counterexample. Reused SQL/UDF or mapping logic may be shared by content hash and locator, but share-by-hash is not mastership. A reusable logic object with an independently governed release and retirement calendar would belong to a later catalogue boundary, outside EM-DAT-03. The current contour therefore pins logic per executed component and does not create that lifecycle.
+
+The providers use different language for WM-DAT-006. Claude says the lineage assertion is its aggregate root; Grok says an assertion is a dependent record and WM-DAT-006 is not a third aggregate root. The full specification resolves the apparent conflict: WM-DAT-006 is the model/root boundary that owns the lineage record lifecycle, while each edge/assertion is an addressable, append-only dependent record whose endpoints and producer are required and whose prior versions persist through supersession. It is not an independent domain aggregate, dataset master, pipeline definition or curated intended-topology catalogue.
+
+The reconciled scenario requires corrected outputs and durable failed-attempt outputs to receive distinct external snapshot identities. A run pins one immutable manifest before execution; attempts append without replacing that pin. Manual correction carries its own manifest fragment and new assertions without mutating the run or inventing a run. Closed-world declarations are explicit, scoped and non-transitive across runs.
+
+The disposition remains a held profile with no new identifier. Publication still depends on the candidate relation approvals, WM-DAT-006 perimeter/versioning and confidence-authority corrections, attempt retention in WM-ACT-053, external snapshot identity for corrections and multi-profile validation.
