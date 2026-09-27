@@ -62,3 +62,13 @@ The profile records scope/version, seller/channel perimeter, intercompany rule, 
 ## Holds
 
 WM-ORG-014 and WM-ECO-020 remain non-canonical drafts with provider, relationship and entry-kind gaps. Adjacent commercial models have single-provider holds; WM-ORG-012 retains its parent/reference conflict; WM-MAT-008 has an open cardinality hold. Supplier-role master WM-ORG-015 was not frozen here. Crosswalks, segmentation methods and concentration fixtures remain unverified. This checkpoint makes no canonical completeness, installability or publication claim.
+
+## Grok reconciliation
+
+The accepted review confirms `newRuntimeId=false` and adds strict run identity: one grouping-boundary revision and one fact key per concentration projection. Intercompany elimination requires an accounting-consolidation boundary containing both parties; ownership/control alone is insufficient. Market Scope stores parameters only, and any parameter, access, disclosure or engine change creates a new immutable edition and projection digest.
+
+Cross-controller facts are excluded by default. Missing authorization produces omission or typed unevaluable state without revealing existence. Cross-period comparisons require matching fact key, grouping boundary and elimination rule or an explicit pinned remapping. Two perimeters remain two projections and are only combined through set union of their facts.
+
+## Frozen-audit reconciliation
+
+The single frozen audit accepted the profile with five limits. The final candidate keeps disputed hypotheses inside one boundary revision, separates evidentiary `unevaluable` from hidden authorization denial, makes Market Scope authoritative over digest pins, requires external revisioned segmentation and coverage policies, and forbids cross-perimeter union across incompatible elimination semantics. No second audit was run and no identifier was added.
