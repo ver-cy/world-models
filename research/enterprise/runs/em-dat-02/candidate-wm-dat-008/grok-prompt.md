@@ -1,0 +1,9 @@
+# Exact unsent Grok prompt — EM-DAT-02
+
+Independent enterprise metamodel review. Use only the boundary below. Do not invent model identifiers and do not claim standards conformance.
+
+EM-DAT-02 asks whether a Data Product should complete reserved WM-DAT-008 Data Catalog Entry / Data Product, and where DataProductOffering and DataConsumerAgreement belong. Preserve separate identities and lifecycles for Catalog Record, Data Product, Dataset/DatasetVersion, Distribution, API/Interface Contract, pipeline/run, quality assessment/observation, authorization and legal/commercial agreement. Test one product that exposes two independently versioned datasets and one API under different consumer terms.
+
+Assess this proposed disposition: Data Product is the WM-DAT-008 root and Catalog Record is a separate registration facet; an ordinary table is not a product until purpose, accountable owner, consumer scope, use cases, resource composition, access route, pinned contract, measurable quality/SLO promise and lifecycle are declared; market/price Offering and Consumer Agreement stay in external masters; WM-DAT-008 owns only effective-dated bindings to those terms and resources. A pinned member change creates a product version, while a declared series-head advance does not. Listing, discoverability, availability, authorization, delivery, acceptance, fitness and use remain distinct.
+
+Return no more than 900 words with: Verdict; strongest supporting evidence; strongest counterexample; identity/mastership table; offering/agreement placement; versioning rules; scenario result; at least 10 invariants; minimum completion shape; publication blockers. Explicitly decide whether Catalog Record and Data Product can safely coexist in one aggregate without collapsing identities, and whether the consumer-entitlement binding is a relation or an independently governed object.
