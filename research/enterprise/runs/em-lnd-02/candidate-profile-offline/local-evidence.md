@@ -58,3 +58,9 @@ The profile records profile id/version, boundary kind and scheme version, purpos
 ## Holds
 
 WM-ORG-001 and WM-ORG-012 remain non-canonical reviewable drafts; WM-ORG-012 lacks independent provider review and executable relationship/graph fixtures. Its registry parent conflicts with its reference boundary. Franchise semantics, security trust, trademark rights and some external source pins remain incomplete. Multi-party relationships lose context in pairwise export. This checkpoint makes no canonical completeness, installability or publication claim.
+
+## Grok reconciliation and frozen-audit remediation
+
+Grok confirmed the no-new-ID disposition and required the view digest to bind authorization and disclosure pins. The frozen Claude audit accepted the result with limits and identified five specification gaps. The candidate now makes landscape revision handles and view digests non-registrable artifact identifiers; business objects may cite them only as evidence. The profile revision masters graph and uncertainty propagation rules, while WM-XCT-040 masters the immutable composition pin package. The digest also binds the composition rule and engine revision.
+
+Grant-set and disclosure-shape pins resolve to retained immutable revisions so later revocation changes current entitlement without destroying historical verification. Every emitted cross-organization fact, including membership edges, requires an authorized disclosure basis and governed shape. These changes preserve the profile disposition and allocate no runtime/model identifier.
