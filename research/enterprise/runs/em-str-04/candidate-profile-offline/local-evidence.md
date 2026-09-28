@@ -22,7 +22,7 @@ A Business Case release binds problem/opportunity evidence, baseline, mandate, o
 
 Every comparison uses one pinned criteria set, horizon, currency, price base, valuation basis and metric revisions. It includes a do-nothing or business-as-usual comparator unless the absence is explicitly justified. Mandatory criteria remain separate from compensatory criteria. Ordinal bands and incomparable value/harm dimensions are never arithmetically netted without a declared method.
 
-An Alternative holds its own estimates, uncertainty and risk set. Decision rationale references alternatives and records why one was selected and others rejected. Alternative identity and rationale identity never collapse.
+An Alternative has an Initiative-scoped stable option identity across releases. Each Business Case release holds its own appraisal estimates, uncertainty and risk set. Decision rationale references alternatives and records why one was selected and others rejected. Alternative identity and rationale identity never collapse.
 
 ## Assumption, hypothesis and forecast
 
@@ -32,9 +32,17 @@ Defeated assumptions, material forecast divergence, baseline changes, criteria o
 
 ## Decision, mandate, funding and benefits
 
-WM-KNW-010 owns rationale content. WM-ACT-024 owns the authorized occurrence. WM-REC-010 owns the fixed issued expression. Mandate authorizes exploration within guardrails. WM-ECO-012 owns authorization, allocation, release and availability of funds as separate facts.
+WM-KNW-010 owns rationale content. WM-ACT-024 owns the authorized occurrence. WM-REC-010 owns the fixed issued expression and freezes the complete join to the chosen Business Case release and pinned external revisions. Mandate authorizes exploration within guardrails. WM-ECO-012 owns authorization, allocation, release and availability of funds as separate facts; Initiative holds references only.
 
 Expected benefit references the unallocated Outcome and Benefit Realization candidate. Two alternatives may reference one benefit identity while carrying mutually exclusive forecast values. Those forecasts are never summed. Approval or funding does not prove outcome, causation or benefit realization.
+
+## Grok reconciliation
+
+Grok Heavy returned `Accept with conditions` and agreed that neither Business Case nor Investment Decision needs independent root identity. It sharpened the profile by requiring stable Initiative-scoped option identity across releases, immutable release-local appraisal values, revision-pinned Assumption/Hypothesis/Risk/Budget references and a WM-REC-010 record that freezes the complete decision join. Expected benefit shared across Alternatives is a pinned Opportunity reference; contained expected-benefit content is confined to one Alternative's release-local appraisal. Portfolio-first capital decisions without one Initiative stay outside the profile under WM-ACT-029.
+
+## Frozen-audit reconciliation
+
+The single frozen audit returned `ACCEPT WITH LIMITS`. Its eight holds were incorporated without another audit: REC-1 is the durable decision address and O-1 the temporal anchor; option keys are allocated by Initiative scope; criteria/pin sets are release-local copies or pinned external revisions; funding state kind is frozen with its budget revision; rejection uses WM-REC-010 join discipline; realized benefit stays outside the profile under the delivery identity; supersession is directed and never followed by an as-of decision; and portfolio decisions are never retro-mapped to mandates.
 
 ## Acceptance result
 
@@ -56,6 +64,14 @@ Options A and B reference one expected benefit B1 but use different risk sets. B
 12. Investment decisions are reproducible as-of date from fixed inputs.
 13. Decision, event, effective, observation and knowledge times remain distinct.
 14. Unallocated and blocked referents are never promoted silently.
+15. WM-REC-010 freezes the complete decision join and never points only to live current state.
+16. Alternative identity is stable across releases while appraisal values are release-local.
+17. Budget mastership remains external to Initiative.
+18. Rejected Initiative history cannot be cascade-deleted or reused.
+19. Decision labels are narrative aliases; WM-REC-010 is the durable address.
+20. Rejection uses the same frozen-join discipline as approval.
+21. Decisions never resolve through Business Case supersession chains.
+22. Realized benefit remains outside the Initiative profile after formalization.
 
 ## Holds
 
