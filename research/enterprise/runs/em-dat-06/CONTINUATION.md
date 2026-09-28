@@ -2,28 +2,26 @@
 
 ## State
 
-Research contour: **Report definition and release instance**.
+Research contour **Report definition and release instance** is provider-reconciled and frozen-audited. Claude and Grok independently select **COMPLETE RESERVED MODEL** for `WM-REC-002 Report / Statement`; no new model or runtime identifier is allocated.
 
-Local analysis and Claude's frozen-dossier review select **COMPLETE RESERVED MODEL**. WM-REC-002 Report / Statement is already reserved in the registry with the matching purpose, but it has no published specification.
+Candidate `0.1.0-candidate.3` owns immutable reusable report-definition versions and immutable issued statements. Processing runs, record artifacts, publication operations, editions, disclosure policies, metric definitions, official-statistics products and catalogue metadata remain reference-only authorities.
 
-The exact public Grok prompt is preserved in `grok-prompt.md`. No implementation or publication has started.
+The single Claude audit returned **ACCEPT WITH LIMITS**. Deterministic remediation added state-bound evidence requirements, explicit as-of ordering, projection narrowing, binding containment, conditional restatement fields, external BI metadata, one calendar pin and fail-closed fixtures. The audit was not rerun.
 
-## Proposed boundary
+## Validation
 
-WM-REC-002 owns reusable report-definition versions and issued report statements. An issue pins parameters, reporting period, cutoff/as-of basis, input snapshots, execution evidence, disclosure-policy provenance, suppression manifest, artifacts and publication references.
-
-Processing run, record artifact, publication operation, bibliographic edition and disclosure policy remain independent authorities. Corrected input produces a successor issue; the predecessor stays immutable and explainable.
-
-A dashboard definition is a profile of the report definition. A live dashboard view is ephemeral; a citable snapshot becomes a report issue.
+- candidate validator: 27 invariants, 8 external boundaries, 18 fixtures;
+- exact Grok conversation and response are preserved with hashes;
+- compact Enterprise adoption package remains profile-only and creates no runtime identity.
 
 ## Holds
 
-- independent Grok review is pending;
-- all five neighboring models are reviewable drafts and several use single-provider waivers;
-- EM-DAT-05 metric-definition authority is still a research candidate;
-- fiscal-calendar authority is now pinned to WM-XCT-009; multi-grain disclosure validation remains declarative;
-- six candidate relation-ledger rows are recorded; canonical approval and a frozen semantic audit are pending.
+- candidate relation rows are not approved and grant no cascade authority;
+- EM-DAT-05 Metric Definition remains identifier-unassigned;
+- WM-XCT-003 multi-grain validation is declarative;
+- suppression-manifest redaction policy, package conversion and live verification remain open;
+- standards crosswalks are alignment notes only.
 
 ## Next safe step
 
-After Grok review, reconcile the prepared WM-REC-002 candidate and run one frozen no-tools semantic audit. Publish only after critical holds are cleared; otherwise retain the checkpoint and continue the next Enterprise contour.
+Retain this reviewable checkpoint. Do not publish while the holds above remain. Continue the next Grok review at EM-FAC-01 after fresh action-time confirmation.

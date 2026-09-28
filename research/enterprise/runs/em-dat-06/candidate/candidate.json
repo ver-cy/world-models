@@ -4,7 +4,7 @@
   "modelId": "WM-REC-002",
   "registryId": "vr.wm-rec-002",
   "name": "Report / Statement",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.3",
   "entryKind": "aggregate",
   "status": "research-candidate",
   "canonicalPublishable": false,
@@ -44,26 +44,28 @@
     "required": [
       "title",
       "purpose",
+      "audienceClass",
       "parameterContract",
       "declaredGrain",
       "measureOrQueryBindings",
+      "permittedProjectionSet",
+      "defaultDisclosurePolicyBinding",
+      "authorityRef",
       "effectiveFrom",
       "status"
     ],
     "optional": [
-      "audienceClass",
-      "scheduleHint",
-      "layoutProfileRef",
-      "fiscalCalendarRef",
       "supersedesDefinitionVersionId",
-      "calendarBasisRef"
+      "calendarPinRef",
+      "languageVariants"
     ],
     "lifecycle": [
       "draft",
       "issued",
       "superseded",
       "withdrawn"
-    ]
+    ],
+    "projectionNarrowingRule": "Any declared projection set is a narrowing subset of the exact pinned WM-XCT-003 shape and can never widen it."
   },
   "reportIssue": {
     "identity": [
@@ -71,16 +73,22 @@
     ],
     "required": [
       "definitionVersionId",
+      "audienceClass",
       "boundParameters",
       "reportingPeriod",
+      "cutoffRule",
       "cutoffAt",
+      "asOfAt",
       "asOfBasis",
       "calendarBasis",
       "issuedAt",
       "inputSnapshots",
+      "resolvedMeasureOrQueryBindings",
       "executionEvidenceRefs",
       "disclosurePolicyTuple",
+      "compiledTemplateFingerprint",
       "suppressionManifest",
+      "authorityRef",
       "status"
     ],
     "optional": [
@@ -91,6 +99,7 @@
       "restatementClass",
       "restatementReason",
       "supersedesReportIssueId",
+      "attestationRefs",
       "explanationRefs"
     ],
     "lifecycle": [
@@ -99,6 +108,54 @@
       "issued",
       "superseded",
       "withdrawn"
+    ],
+    "stateRequirements": {
+      "planned": [
+        "definitionVersionId",
+        "boundParameters",
+        "reportingPeriod"
+      ],
+      "computed": [
+        "cutoffAt",
+        "asOfAt",
+        "inputSnapshots",
+        "executionEvidenceRefs",
+        "resolvedMeasureOrQueryBindings"
+      ],
+      "issued": [
+        "audienceClass",
+        "disclosurePolicyTuple",
+        "compiledTemplateFingerprint",
+        "suppressionManifest",
+        "authorityRef",
+        "issuedAt"
+      ],
+      "allStates": [
+        "status"
+      ],
+      "cardinality": {
+        "recordArtifactRefs": "0..n"
+      }
+    },
+    "conditionalRequirements": [
+      {
+        "when": "supersedesReportIssueId is present",
+        "require": [
+          "restatementClass",
+          "restatementReason",
+          "authorityRef"
+        ],
+        "rule": "The predecessor stays immutable and resolvable."
+      },
+      {
+        "when": "an issue shares definitionVersionId, boundParameters and reportingPeriod with an earlier issued statement and changes evidence or values",
+        "require": [
+          "supersedesReportIssueId",
+          "restatementClass",
+          "restatementReason"
+        ],
+        "rule": "The change is a successor issue, never an overwrite."
+      }
     ]
   },
   "relations": [
@@ -136,6 +193,18 @@
       "target": "WM-XCT-009",
       "relation": "REFERENCE",
       "purpose": "Pin calendar identity, version, timezone and period convention without owning calendar arithmetic.",
+      "required": false
+    },
+    {
+      "target": "WM-DAT-002",
+      "relation": "REFERENCE",
+      "purpose": "Resolve official-statistics product identity when the issue is such a product.",
+      "required": false
+    },
+    {
+      "target": "WM-DAT-008",
+      "relation": "REFERENCE",
+      "purpose": "Resolve optional data-product or catalogue discovery metadata without importing issue identity.",
       "required": false
     }
   ],
@@ -179,7 +248,21 @@
     "Publication does not prove report validity, and report validity does not prove publication.",
     "Report issue, processing run, record artifact, publication operation and edition use disjoint identifiers.",
     "Explanation references remain resolvable for the applicable retention period.",
-    "A fiscal or civil reporting period pins calendar identity, calendar version, timezone and period convention."
+    "A fiscal or civil reporting period pins calendar identity, calendar version, timezone and period convention.",
+    "An issue without one pinned definition version is invalid.",
+    "Widening a disclosure policy or projection requires a new issue and never rewrites a predecessor.",
+    "Changing only a record-artifact digest is a custody event unless report meaning or evidence changes.",
+    "A dashboard layout, theme, slicer or cache setting never participates in report-issue identity.",
+    "At issuance, the complete reproducibility tuple is present; planned and computed states use the explicit state requirements.",
+    "Record artifacts have cardinality zero-to-many and remain externally mastered by WM-REC-001.",
+    "Reporting period end is not later than cutoffAt; cutoffAt is not later than asOfAt; asOfAt is not later than issuedAt.",
+    "A definition projection set only narrows the exact pinned WM-XCT-003 shape and never becomes a second disclosure authority.",
+    "Resolved issue bindings are derived from and cannot exceed the measure or query bindings of the pinned definition version.",
+    "A successor with a predecessor requires restatement class, restatement reason and authority.",
+    "Any changed evidence or value for the same definition, parameter set and period requires an explicit predecessor reference.",
+    "Layout profiles, refresh schedules and BI-tool configuration remain external non-identity metadata.",
+    "A publication operation cannot reference a statement as issued unless its report-issue state is issued.",
+    "A dashboard snapshot without complete execution evidence fails closed and does not mint a report issue."
   ],
   "dashboardDisposition": {
     "definition": "A dashboard definition is a profile of a report definition with external layout and refresh metadata.",
@@ -187,11 +270,11 @@
     "snapshot": "A citable dashboard snapshot mints a report issue with a frozen evidence tuple."
   },
   "holds": [
-    "Independent Grok review and reconciliation are pending.",
-    "A frozen no-tools semantic audit of the final candidate is pending.",
     "Neighboring model relations remain candidate rows and grant no cascade authority.",
-    "Metric-definition authority is pending EM-DAT-05.",
-    "External product and standards crosswalks are not conformance claims.",
-    "Multi-grain disclosure validation remains declarative until WM-XCT-003 validation is executable."
+    "Metric-definition authority remains an identifier-unassigned EM-DAT-05 research candidate; inline bindings are interim.",
+    "WM-XCT-003 multi-grain validation is declarative, so the grain ceiling is asserted rather than executable.",
+    "External product and standards crosswalks are alignment notes, not conformance claims.",
+    "Suppression manifests can themselves disclose small-count structure and require a separately approved redaction policy.",
+    "Canonical publication requires relation approval, package conversion and live verification."
   ]
 }
