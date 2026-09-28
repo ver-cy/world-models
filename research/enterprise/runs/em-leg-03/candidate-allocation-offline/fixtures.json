@@ -1,11 +1,377 @@
 {
-  "format": "vercy-model-allocation-fixtures/v1",
-  "proposedName": "Policy Communication Event",
+  "format": "vercy-enterprise-profile-fixtures/v2",
+  "contourId": "EM-LEG-03",
+  "candidateRevision": 3,
   "cases": [
-    {"id": "delivered-and-acknowledged", "kind": "positive", "input": "A pinned policy expression is delivered and later acknowledged by the intended person.", "expect": "Delivery and acknowledgement are separate immutable facts linked to the same communication event."},
-    {"id": "retry-after-failure", "kind": "positive", "input": "The first delivery attempt fails and a second succeeds through another channel.", "expect": "Both attempts remain recorded; event status derives from explicit outcomes without rewriting failure history."},
-    {"id": "policy-revision", "kind": "positive", "input": "The policy is revised after acknowledgement.", "expect": "The earlier event still resolves the exact prior expression; communicating the revision requires a new event."},
-    {"id": "acknowledgement-as-compliance", "kind": "negative", "input": "A system marks a control effective because the policy was acknowledged.", "expect": "The inference is rejected; acknowledgement proves communication only."},
-    {"id": "group-recipient-expansion", "kind": "negative", "input": "A communication to an organizational unit is treated as acknowledgement by every member.", "expect": "Member acknowledgements remain unknown unless individually evidenced or governed delegation semantics exist."}
+    {
+      "id": "ack-not-control",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-1",
+        "ack": "ACK-1",
+        "control": "CTRL-EXT-1"
+      },
+      "expected": {
+        "outcome": "path-absent",
+        "code": "ACK_CONTROL_PATH_FORBIDDEN"
+      }
+    },
+    {
+      "id": "policy-storage-leak",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "policy": "POL-1",
+        "recipientReceipt": "REC-1"
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "POLICY_RECIPIENT_STATE_FORBIDDEN"
+      }
+    },
+    {
+      "id": "bounded-exception",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "global": "EXPR-G1",
+        "local": "EXPR-L1",
+        "exception": "EXC-1",
+        "expiry": "2026-10-01T00:00:00+00:00",
+        "compensation": "OBL-1"
+      },
+      "expected": {
+        "outcome": "effective-rule-set",
+        "code": "BOUNDED_DEROGATION_APPLIED"
+      }
+    },
+    {
+      "id": "expired-exception",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "global": "EXPR-G1",
+        "local": "EXPR-L1",
+        "exception": "EXC-1",
+        "expiry": "2026-09-01T00:00:00+00:00"
+      },
+      "expected": {
+        "outcome": "effective-rule-set",
+        "code": "EXCEPTION_EXPIRED"
+      }
+    },
+    {
+      "id": "weaken-floor",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "globalSlot": "SLOT-G1",
+        "derogable": false,
+        "local": "EXPR-L2"
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "NON_DEROGABLE_WEAKENING"
+      }
+    },
+    {
+      "id": "floating-successor-pending",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-F1",
+        "mode": "floating",
+        "successor": "EXPR-G2",
+        "revalidation": "pending"
+      },
+      "expected": {
+        "outcome": "unresolved-report",
+        "code": "PENDING_REVALIDATION"
+      }
+    },
+    {
+      "id": "floating-successor-valid",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-F1",
+        "mode": "floating",
+        "successor": "EXPR-G2",
+        "revalidation": "passed"
+      },
+      "expected": {
+        "outcome": "effective-rule-set",
+        "code": "FLOATING_SUCCESSOR_APPLIED"
+      }
+    },
+    {
+      "id": "pinned-successor",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-P1",
+        "mode": "pinned",
+        "expression": "EXPR-G1",
+        "newInForce": "EXPR-G2"
+      },
+      "expected": {
+        "outcome": "effective-rule-set",
+        "code": "PIN_PRESERVED"
+      }
+    },
+    {
+      "id": "old-exception-carry",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "exception": "EXC-OLD",
+        "target": "EXPR-G1",
+        "requestedTarget": "EXPR-G2"
+      },
+      "expected": {
+        "outcome": "unresolved-report",
+        "code": "EXCEPTION_REAUTH_REQUIRED"
+      }
+    },
+    {
+      "id": "unknown-applicability",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "policy": "POL-1",
+        "subjectScope": "UNKNOWN"
+      },
+      "expected": {
+        "outcome": "unresolved-report",
+        "code": "APPLICABILITY_UNKNOWN"
+      }
+    },
+    {
+      "id": "missing-exception-expiry",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "exception": "EXC-2",
+        "expiry": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "EXCEPTION_EXPIRY_REQUIRED"
+      }
+    },
+    {
+      "id": "self-granted-exception",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "exception": "EXC-3",
+        "grantingAuthority": "PARTY-1",
+        "beneficiary": "PARTY-1"
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "AUTHORITY_BENEFICIARY_DISTINCT"
+      }
+    },
+    {
+      "id": "missing-compensation",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "exception": "EXC-4",
+        "compensation": null,
+        "noneReason": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "COMPENSATION_DECLARATION_REQUIRED"
+      }
+    },
+    {
+      "id": "adoption-mode-missing",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-1",
+        "mode": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "ADOPTION_RESOLUTION_MODE_REQUIRED"
+      }
+    },
+    {
+      "id": "adoption-mandate-missing",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-2",
+        "mandateRef": null,
+        "decisionRef": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "ADOPTION_AUTHORITY_INCOMPLETE"
+      }
+    },
+    {
+      "id": "review-not-expiry",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "adoption": "ADOPT-3",
+        "reviewDue": "2026-09-01T00:00:00+00:00",
+        "efficacyEnd": null,
+        "openEndedBasis": "BOARD-DEC-1"
+      },
+      "expected": {
+        "outcome": "effective-rule-set",
+        "code": "REVIEW_DUE_NOT_EXPIRY"
+      }
+    },
+    {
+      "id": "mutable-alias-proof",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-2",
+        "policyRef": "latest",
+        "manifestationRef": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "PINNED_MANIFESTATION_REQUIRED"
+      }
+    },
+    {
+      "id": "translated-ack",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-3",
+        "expression": "EXPR-G1",
+        "manifestation": "MAN-FR-1",
+        "locale": "fr-FR"
+      },
+      "expected": {
+        "outcome": "acknowledgement-recorded",
+        "code": "MANIFESTATION_SCOPE_ONLY"
+      }
+    },
+    {
+      "id": "delegated-actor-missing",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-4",
+        "recipient": "PERSON-1",
+        "actor": "PERSON-2",
+        "delegationRef": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "ACK_ACTOR_MISMATCH"
+      }
+    },
+    {
+      "id": "unit-not-members",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-5",
+        "recipientKind": "unit",
+        "recipient": "UNIT-1",
+        "member": "PERSON-3"
+      },
+      "expected": {
+        "outcome": "unknown",
+        "code": "MEMBER_RECEIPT_NOT_INFERRED"
+      }
+    },
+    {
+      "id": "unknown-delivery",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "attempt": "ATT-1",
+        "outcome": "unknown"
+      },
+      "expected": {
+        "outcome": "unknown",
+        "code": "UNKNOWN_NOT_PROMOTED"
+      }
+    },
+    {
+      "id": "event-supersession",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "oldEvent": "COMM-6",
+        "newEvent": "COMM-7",
+        "ack": "ACK-6",
+        "ackEvent": "COMM-6"
+      },
+      "expected": {
+        "outcome": "history-preserved",
+        "code": "ACK_PIN_NOT_REPOINTED"
+      }
+    },
+    {
+      "id": "retention-disposal",
+      "kind": "positive",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "event": "COMM-8",
+        "status": "delivered",
+        "retentionState": "disposed"
+      },
+      "expected": {
+        "outcome": "history-preserved",
+        "code": "RETENTION_SEPARATE_FROM_LIFECYCLE"
+      }
+    },
+    {
+      "id": "silent-clause-copy",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "local": "EXPR-L3",
+        "sourceLocator": null,
+        "inheritanceEdge": null
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "INHERITANCE_EDGE_REQUIRED"
+      }
+    },
+    {
+      "id": "unresolved-prohibition-ref",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "slot": "SLOT-P1",
+        "modality": "prohibition",
+        "reference": "UNKNOWN"
+      },
+      "expected": {
+        "outcome": "unresolved-report",
+        "code": "FAIL_CLOSED_PROHIBITION"
+      }
+    },
+    {
+      "id": "org019-premature-retirement",
+      "kind": "negative",
+      "asOf": "2026-09-28T12:00:00+00:00",
+      "records": {
+        "model": "WM-ORG-019",
+        "residueOwner": null,
+        "registryApproval": false
+      },
+      "expected": {
+        "outcome": "rejected",
+        "code": "RETIREMENT_PRECONDITIONS_UNMET"
+      }
+    }
   ]
 }
