@@ -1,16 +1,29 @@
 # EM-FIN-03 continuation
 
-Checkpoint date: 2026-09-25.
+## State
 
-Disposition: PROFILE over WM-ECO-009 with reciprocal constraints on WM-ECO-008; no new catalogue/runtime ID. Payment Allocation and reconciliation remain owned semantics of Payment because no independent lifecycle was demonstrated.
+The invoice, payment and reconciliation contour is provider-reconciled and frozen-audited. Claude and Grok independently select **PROFILE** over WM-ECO-009 with reciprocal constraints on WM-ECO-008 and no new catalogue or runtime identifier.
 
-Completed evidence:
+Payment Allocation remains an append-only payment-owned tuple keyed by payment, document and sequence. Reconciliation remains a run-keyed payment-owned result. Neither has identity or lifecycle independent of the parent payment and commercial document aggregates. WM-ECO-008 owns issued-document identity, correction chain, dispute and admissible claim; WM-ECO-009 owns instruction, settlement, finality, return, allocation, remittance and reconciliation.
 
-- `provider-dossier.json`: frozen extracts from the full current WM-ECO-008 and WM-ECO-009 specifications.
-- `claude-study.raw.md`: Claude Opus high, tools disabled; independent verdict PROFILE.
-- `local-evidence.md`: local adjudication and acceptance walkthrough.
-- `grok-prompt.md`: exact public prompt prepared but not sent; browser submission requires action-time user confirmation.
+The single Claude frozen audit returned **ACCEPT WITH LIMITS**. CandidateRevision 3 closes its findings without rerunning the audit: closure is read-side only; short-pay basis is a set of coded signed amounts; charge deductions are a separate money bucket; recovery uses signed direction-aware conservation; and factoring requires external assignment authority or fails closed.
 
-Publication is blocked by both parents' `publishableCanonical: false` status and inherited holds. Do not create a runtime ID or publish an installable profile until those holds and Account/Holding treatment are resolved.
+## Validation
 
-Next independent contour: EM-KNW-01 Document, knowledge and terminology. Read the full current WM-REC-001, WM-KNW-006 and WM-KNW-018 specifications and registry reservations before deciding reuse/profile/new.
+- profile: 15 constraints, 2 base models, 2 external references, no runtime ID;
+- fixtures: 20 positive and negative cases;
+- no model or registry identifier is created or reserved.
+
+## Holds
+
+- WM-ECO-008 and WM-ECO-009 remain non-canonical reviewable drafts;
+- Account/Holding ownership for credit balance is unresolved;
+- receivables-assignment authority is external and unresolved in this contour;
+- appropriation priority and rail-specific return/revocability rules require regime profiles;
+- ISO 20022, UBL and EN 16931 crosswalks remain unpinned alignment targets;
+- WM-ECO-016 remains the external posting authority;
+- canonical publication and live verification remain held.
+
+## Next safe step
+
+Retain this reviewable research profile without publishing it ahead of its parents. Continue with EM-KNW-01 only after fresh action-time confirmation for its saved Grok prompt.
