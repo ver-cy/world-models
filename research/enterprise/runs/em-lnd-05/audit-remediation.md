@@ -1,0 +1,7 @@
+# Audit remediation
+
+The single Claude frozen audit returned **REVISE** while affirming PROFILE over WM-ACT-005 and WM-ACT-029 and the no-identifier decision. CandidateRevision 3 applies all 15 ordered deterministic remediation items without an audit rerun.
+
+Revision 3 separates source selection from path deduplication, unifies `viewClass`, closes the result/code taxonomy, restores the specification/view-instance boundary, resolves Team and scoped Capacity owners while explicitly withholding unallocated Product and Benefit endpoints, adds pins for cost/commitment/future benefit claims, pins a fiscal calendar, refuses heterogeneous money scopes, mandates exact-decimal share arithmetic, specifies SHA-256/JCS artifact identity, defines the zero-parent outcome, restores temporal reproducibility through complete source pins, defines DeliveryScope, removes the unsafe host token, records support-construct deviations, and adds constraint→code→fixture traceability.
+
+The fixture set now covers baseline and data-date selection, currency and price-base heterogeneity, multiple dimensions, zero parent, nested paths, share bounds and remainders, membership intervals, all view classes, unresolved endpoints, commitment deduplication, fiscal straddles, digest idempotence and external tombstoning. Fixtures remain structurally validated but unexecuted because no generator exists. Publication remains withheld.

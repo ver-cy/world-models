@@ -1,11 +1,9 @@
 # EM-LND-05 continuation
 
-Checkpoint date: 2026-09-26.
+Disposition: PROFILE over WM-ACT-005 and WM-ACT-029; no new ID. DeliveryLandscape is a projection specification, DeliveryScope remains source-owned and DeliveryView is immutable and generated.
 
-Disposition: PROFILE over WM-ACT-029 with component resolution through WM-ACT-005; no new ID. DeliveryLandscape is a projection and DeliveryScope stays with its owning root.
+Grok Heavy confirmed PROFILE/no-ID. One Claude Opus high no-tools frozen audit returned REVISE. CandidateRevision 3 applies all 15 remediation groups without rerunning the audit and now contains 39 constraints and 42 fixtures.
 
-Completed evidence: frozen `provider-dossier.json`, Claude Opus high no-tools study, `local-evidence.md`, and exact unsent `grok-prompt.md`.
+Publication is held by parent `publishableCanonical: false`, missing approved 029→005 relation rows, unratified membership/selection rules, unallocated Product and Benefit masters, programme/program normalization, absent generator and incomplete schemas/crosswalks.
 
-Publication is blocked by parent `publishableCanonical: false` states, held relation rows, unsourced membership roles and unverified cross-root deduplication. Grok browser submission requires action-time user confirmation.
-
-Next contour: EM-LND-06. Read PLMM and WM-XCT-039 specifications and registry reservations.
+Next pending Grok contour: EM-LND-06. Browser submission requires fresh action-time user confirmation.

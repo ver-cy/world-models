@@ -1,5 +1,3 @@
-# EM-LND-05 offline profile dossier
+# EM-LND-05 profile candidate
 
-Validated declarative **Project, Program and Portfolio Landscape** profile over WM-ACT-029 with project resolution through WM-ACT-005. It is a read-only projection and creates no model or runtime identifier.
-
-Publication requires parent canonicalization, relation approval and cross-root deduplication validation.
+Reconciled research profile over WM-ACT-005 and WM-ACT-029 for project, program and portfolio landscape views. It allocates no model or runtime identifier. CandidateRevision 3 contains 39 constraints and 42 fixtures. Grok confirmed the boundary; one frozen Claude audit returned REVISE and was deterministically remediated once. Canonical publication remains held.
