@@ -18,11 +18,11 @@ Every stakeholder role, interest, expectation, influence, impact or engagement a
 
 Interests are append-only attributed assertions. Declared interests remain distinct from analyst hypotheses. A subject may carry contradictory interests or expectations, which are related and retained rather than forced into one preferred statement. Missing, withheld and not-yet-heard are not equivalent to no interest or consent.
 
-Influence, impact and priority are dated WM-ACT-034 assessments with pinned criteria/scale, declared method, evidence, assessor, impartiality, uncertainty, decision rule, validity and re-assessment triggers. Indeterminate is distinct from low. A rating cannot generalize beyond its perimeter, viewpoint and period.
+Influence, impact and priority are dated WM-ACT-034 assessments with pinned criteria/scale, declared method, evidence, assessor, impartiality, uncertainty, decision rule, validity and re-assessment triggers. Indeterminate is distinct from low. A rating cannot generalize beyond its perimeter, viewpoint and period. Cross-perimeter joins into a party-level rating are prohibited unless an authorized inference review governs the derived projection.
 
 ## Engagement, conflict and privacy
 
-The engagement plan owns intent, action modes, timing, accessibility/safe-participation conditions, disclosure class, commitments, baseline and change log. Registration as a stakeholder grants no outreach or disclosure authority.
+The engagement plan owns intent, action modes, timing, accessibility/safe-participation conditions, disclosure class, commitments, baseline and change log. Registration as a stakeholder grants no outreach or disclosure authority. Execution-adjacent use pins an external permission/decision record; absent authority is explicit unknown and fails closed.
 
 Representation mandates are scoped and contestable. Dissent, objections and minority positions remain attributable. Conflicts of interest require declaration, independent determination, effective recusal and recalculation of any affected thresholds.
 
@@ -31,6 +31,16 @@ Stakeholder data is denied by default and minimized. Sensitive interests, affili
 ## Acceptance result
 
 One counterparty has one party identity but two project-specific stakeholder relations. Each project has separate interests, expectations, assessment and engagement plan. A reassessment in Project A creates a successor assessment preserving the former method, basis and result; Project B is unchanged. Writing `low influence` to the party or copying it into Project B is rejected.
+
+## Grok reconciliation
+
+Grok Heavy returned `Accept with conditions` and agreed that no candidate needs independent master identity. It sharpened four contracts now incorporated in the candidate and fixtures: the WM-ORG-013 relation must be addressable as the WM-ACT-034 assessment subject; reassessment is append-only and cites the prior record; registration never supplies outreach, processing or disclosure authority; and privacy restrictions, representation scope and attributable dissent survive projection, aggregation and cross-perimeter copy.
+
+The review also confirmed the collapse counterexample: placing `low influence` on the party, or using the party as assessment subject, causes an invalid cross-project inheritance. If WM-ORG-013 cannot provide an addressable, perimeter-qualified bitemporal relation instance, that is a base-model blocker rather than grounds for a new Enterprise identifier.
+
+## Frozen-audit reconciliation
+
+The single frozen audit returned `ACCEPT WITH LIMITS`. Its six holds were incorporated without another audit: party-level and cross-perimeter rating rollups are prohibited; imputed interests are WM-KNW-007 claims; successors preserve the prior record and carry their own dated derivation basis; permission authority is pinned or explicit unknown with default deny; restricted dissent and evidence use non-reconstructive presence markers; and relation keys are perimeter-qualified and bitemporal.
 
 ## Required invariants
 
@@ -44,6 +54,12 @@ One counterparty has one party identity but two project-specific stakeholder rel
 8. Registration authorizes no outreach or disclosure.
 9. Dissent and grievances remain in history.
 10. Perimeter, decision, evidence or mandate change triggers review.
+11. The stakeholder relation, never the party master, is the assessment subject.
+12. Reassessment adds a successor record and preserves the prior basis.
+13. Privacy restrictions and representation scope survive every derived view.
+14. Imputed interests are claims and never write to a declared-interest relation.
+15. Cross-perimeter ratings cannot be rolled up into a party trait.
+16. Restricted content is redacted with state-preserving, non-reconstructive markers.
 
 ## Holds
 
