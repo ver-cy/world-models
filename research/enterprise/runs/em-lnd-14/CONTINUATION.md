@@ -1,11 +1,13 @@
 # EM-LND-14 continuation
 
-Checkpoint date: 2026-09-26.
+Reconciled checkpoint date: 2026-09-28.
 
-Disposition: AI Research Landscape is a governed declaration/projection; AI Usage Network is an impact/traversal viewpoint over the same edge plane. Existing AI, data, measurement and model-artifact masters are reused. No catalogue/runtime identifier is allocated.
+Disposition: AI Research Landscape is a tenant-scoped declaration/projection; AI Usage Network is a non-owning impact/traversal viewpoint over the same WM-XCT-037 edge plane. No catalogue/runtime identifier is allocated.
 
-The complete target specifications and reservations plus all complete relevant AI, data, measurement, artifact and dependency specifications and prior boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+The exact Grok Heavy response and manifest are preserved. Claude and Grok agree on a profile-only result. Grok sharpened withdrawal classification, rights preservation, deployment-decision separation and the missing dependency set.
 
-Publication is held by unallocated research, deployment, metric, recipe, protocol and authorization roots; unapproved lineage edges; dependency-model contradictions; overlapping protocol ownership; unverified graph-host reuse; and absent fixtures.
+One Claude Opus high no-tools frozen audit returned `ACCEPT WITH LIMITS`. Its eight findings were remediated once with constraints and fixtures; the audit was not repeated. No new identifier was allocated.
 
-Next contour: EM-LND-18. Inspect its full registry scope and all complete relevant sustainability, facility, asset, activity, measurement, impact and disclosure specifications before boundary analysis.
+Publication remains held by missing or unproven research, dataset-revision, deployment, compute, product and rights dependencies; WM-XCT-037 contradictions; unapproved lineage edges; overlapping protocol ownership; and unverified graph-host reuse.
+
+The next Grok contour comes from the generated queue and requires fresh action-time confirmation.

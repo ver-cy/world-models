@@ -77,3 +77,13 @@ D2 is withdrawn. R1 and R2 pinned D2 and produced A1 and A2: proven impact. Quan
 ## Holds
 
 Research Programme, Research Question, Deployment/Endpoint, Metric Definition, Training Recipe, Evaluation Protocol and standing authorization remain unallocated. AI registry/artifact, benchmark/dataset and training/artifact edges are unapproved. WM-XCT-037 has scope, identity-strength and composition contradictions that block reliable traversal. Evaluation and benchmark protocol/metric ownership overlaps. Graph-host reuse is unverified. Several drafts are single-provider, all are non-canonical, and fixtures were not run. No installability or publication-readiness claim is made.
+
+## Grok reconciliation
+
+Grok independently accepted both candidates as non-root viewpoints. It sharpened withdrawal semantics: a recorded consume, derive or basis edge establishes proven participation; mixed-input artifacts remain proven impacted with sole-cause false; evaluation and safety records retain identity while applicability is invalidated; systems and endpoints are potential operational impact; missing edges, unofficial copies and undeclared fine-tunes are unknown. Projection membership grants neither rights nor authority, and deployment decisions remain separate records flagged for review rather than automatically revoked.
+
+
+## Frozen-audit remediation
+
+The single frozen audit returned ACCEPT WITH LIMITS. Eight limits were incorporated once: participation versus harm semantics, receipt-only impact sets, single declaration ownership, non-authoritative derived edges, per-hop and assembled rights filtering, no unaffected class, timed applicability overlays and bounded resolution of potential deployment impact. The audit was not repeated and no identifier was introduced.
+
