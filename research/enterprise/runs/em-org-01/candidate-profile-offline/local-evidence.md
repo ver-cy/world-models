@@ -48,3 +48,13 @@ Three organizations sharing one brand remain three organization identities. A fr
 ## Holds
 
 Both bases remain non-canonical reviewable drafts. WM-ORG-012 lacks independent external review, executable nested schemas and fixtures. Relationship mastership requires a WM-ORG-001 seam revision, the registry parent conflict remains unresolved, and trademark/brand rights plus jurisdiction-specific franchise/control rules are outside these models. This checkpoint is a profile boundary, not an installable release.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently confirmed PROFILE/no new ID and supplied the narrow perimeter and mastership rules. The single frozen Claude audit confirmed the boundary and required revision. Revision 3 applies the checklist once, keeps the profile declarative and refuses publication while base, seam and execution holds remain open.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently confirmed PROFILE/no new ID and supplied the narrow perimeter and mastership rules. The single frozen Claude audit confirmed the boundary and required revision. Revision 3 applies the checklist once, keeps the profile declarative and refuses publication while base, seam and execution holds remain open.

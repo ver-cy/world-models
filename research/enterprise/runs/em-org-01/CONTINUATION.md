@@ -1,11 +1,11 @@
 # EM-ORG-01 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-28T19:46:07.479267Z.
 
-Disposition: PROFILE. Company is a constrained WM-ORG-001 view; Enterprise Group / Business Boundary is a purpose-qualified WM-ORG-012 relationship profile. No new ID.
+Disposition: **PROFILE**, no new runtime ID. Company is a constrained WM-ORG-001 view. GroupPerimeter and BusinessPerimeter are separately governed profiles/projections over WM-ORG-012 relationship facts; a true group actor remains an independently resolved WM-ORG-001 subject.
 
-Completed evidence: full current WM-ORG-001 and WM-ORG-012 specs were parsed and pinned by digest; compact frozen `provider-dossier.json`, Claude Opus high no-tools study, `local-evidence.md`, and exact unsent `grok-prompt.md` are preserved.
+Claude and Grok are reconciled. The single frozen Claude audit returned REVISE and revision 3 applied its checklist once without rerun. The package contains exact base pins, identity and history rules, closed perimeter kinds, deterministic replay requirements, explicit mastership/stewardship, candidate-field dispositions and digest-pinned declarative fixtures including six domain walks.
 
-Publication is blocked by both bases' non-canonical status, WM-ORG-012 external-review/schema/fixture gaps, unresolved relationship mastership and registry parent conflict, and out-of-scope brand/IP and jurisdiction profiles. Grok browser submission requires action-time user confirmation.
+Publication remains held: both bases are noncanonical, base holds and seam amendments remain open, the split trigger retains provider divergence, and no executable carrier exists. `fixturesExecuted=false`; no blocker was published.
 
-Next contour: EM-ORG-02. Read complete WM-ORG-001, WM-ORG-010 and WM-ORG-011 specifications plus registry reservations.
+Next contour: EM-ORG-02. Fresh action-time confirmation is required before sending its exact Grok prompt.
