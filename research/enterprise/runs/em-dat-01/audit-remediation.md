@@ -1,0 +1,3 @@
+# Audit remediation
+
+The single Claude frozen audit returned **REVISE** while confirming PROFILE and `newRuntimeId=false`. Candidate `0.1.0-candidate.3` deterministically repairs the four semantic defects without rerunning the audit: released distribution bytes and conformance history are immutable and append-only; compatibility outcomes name baseline sets, require accountable NONE exceptions and cover structural, semantic, value-domain and declared content changes; fixity requires an exact digest or signed digest manifest; and quality-engine plus ODCS data-product mastership are explicit. Six corresponding fixtures were added. All inherited canonical-publication holds remain.

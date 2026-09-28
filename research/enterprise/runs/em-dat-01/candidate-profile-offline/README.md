@@ -1,3 +1,3 @@
-# EM-DAT-01 offline profile dossier
+# EM-DAT-01 profile candidate
 
-Validated declarative dataset/schema-contract profile over WM-DAT-001 and WM-DAT-004. It tightens cross-model conformance without creating a new aggregate or runtime identifier.
+Reconciled non-canonical Enterprise profile over WM-DAT-001 and WM-DAT-004. It allocates no new model or runtime identifier. Candidate `0.1.0-candidate.3` has 20 portable constraints and 20 fixtures. Grok and the initial Claude study agree on PROFILE. The single frozen Claude audit returned REVISE for four narrow defects; immutable release/conformance history, scoped compatibility baselines, NONE exceptions, exact fixity, quality and ODCS product boundaries were repaired once without rerunning the audit. Canonical publication remains held on inherited base-model evidence and validation gaps.
