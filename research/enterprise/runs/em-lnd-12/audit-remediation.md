@@ -1,0 +1,3 @@
+# Audit remediation
+
+The single Claude frozen audit returned **ACCEPT WITH LIMITS** and upheld the profile disposition and no-identifier decision. Six named limits were remediated deterministically without rerunning the audit: traversal-result mastership, inclusion of WM-SFT-009, tenant filtering of common-mode aggregates, non-impact handling of exposed-unconfirmed labels, WM-XCT-037 ownership of staleness/confidence policy, and promotion by new edge plus retained lineage. Fixtures were added for cross-tenant aggregate leakage, unconfirmed labels, promotion, pending mastership and tombstoned identifiers.

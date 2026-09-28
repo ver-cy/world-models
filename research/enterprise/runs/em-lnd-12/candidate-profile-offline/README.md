@@ -1,5 +1,3 @@
-# Offline delta: EM-LND-12
+# EM-LND-12 profile candidate
 
-Declarative Enterprise profile for a tenant-scoped Service Landscape and evidence-bounded dependency impact view over WM-XCT-039 and WM-XCT-037. It preserves domain mastership, distinguishes desired and observed state, and requires completeness evidence for negative impact conclusions. No runtime or model identifier is allocated.
-
-Publication remains conditional on exact Grok reconciliation, one frozen semantic audit, canonical base completion and live HTTP/runtime/search/package verification.
+Reconciled research profile over WM-XCT-039 and WM-XCT-037 for named service-landscape and dependency-impact views. It allocates no new model or runtime identifier. Candidate `0.1.0-candidate.3` has 26 constraints and 20 fixtures. Grok accepted the boundary; one frozen Claude audit accepted with limits and was remediated once. Canonical publication remains held on base-model and registry approvals.
