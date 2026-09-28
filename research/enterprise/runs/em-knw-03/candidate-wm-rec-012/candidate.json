@@ -3,8 +3,8 @@
   "contourId": "EM-KNW-03",
   "modelId": "WM-REC-012",
   "registryId": "vr.wm-rec-012",
-  "name": "Minutes / Transcript",
-  "version": "0.1.0-candidate.1",
+  "name": "Minutes and Transcript Record",
+  "version": "0.1.0-candidate.3",
   "entryKind": "aggregate",
   "status": "research-candidate",
   "canonicalPublishable": false,
@@ -13,11 +13,11 @@
     "owns": [
       "minutes-work and transcript-work identity",
       "language version and redaction expression identity",
-      "format manifestation references and fixity bindings",
+      "manifestation identity and binding to WM-REC-001 fixity",
       "certification approval and erratum lineage",
-      "passage anchors to external session items acts turns speakers and time spans",
+      "passage anchors to external session items acts turns participation children and time spans",
       "per-passage classification redaction provenance and review date",
-      "retention schedule hold tombstone and disposition evidence",
+      "binding of record works to a WM-REC-001 retention schedule and hold tombstone and disposition evidence references",
       "capture handoff instant from occurrence media to governed record"
     ],
     "delegates": [
@@ -42,12 +42,12 @@
     "minutes": {
       "fidelity": "summary",
       "required": [
-        "requiredMatterCoverage",
         "personsPresentRefs",
         "conclusionsReached",
-        "recordedVoteRefs",
-        "certifyingOfficerRef"
-      ]
+        "recordedVoteRefs"
+      ],
+      "cardinalityPerOccurrence": "0..1 official minutes work",
+      "officialRule": "A minutes work is official when it has at least one approved expression; at most one official minutes work exists per occurrence."
     },
     "transcript": {
       "fidelity": "verbatim-or-declared",
@@ -56,17 +56,26 @@
         "fidelityClass",
         "accuracyIndicator",
         "captureGapMarkers"
-      ]
+      ],
+      "cardinalityPerOccurrence": "0..n transcript works",
+      "correctionAuthority": "producer under certification, or an authorized records authority"
     },
-    "rule": "Minutes and transcript are separate works, never expressions of one another."
+    "rule": "Minutes and transcript are separate works and never expressions of one another; either may exist without the other."
   },
   "expressions": {
     "identity": [
-      "workId",
+      "workRef",
       "expressionId",
       "language",
       "version",
       "redactionVariant"
+    ],
+    "expressionKinds": [
+      "minutes",
+      "transcript",
+      "erratum",
+      "successor",
+      "redacted-derivative"
     ],
     "lifecycle": [
       "draft",
@@ -76,7 +85,30 @@
       "superseded",
       "withdrawn"
     ],
-    "immutability": "Approved expressions are immutable; correction creates an erratum or successor expression."
+    "immutability": "Approved expression content, identity and approved manifestations are immutable; status and lineage are append-only events recorded against the expression.",
+    "required": [
+      "expressionId",
+      "workRef",
+      "language",
+      "version",
+      "redactionVariant",
+      "expressionKind",
+      "createdAt",
+      "status"
+    ],
+    "requiredDefaults": {
+      "redactionVariant": "none"
+    },
+    "optional": [
+      "approvedAt",
+      "certificationRef",
+      "predecessorExpressionRef",
+      "accessScopeRef",
+      "approvalActRef",
+      "approvalAuthorityBasisRef"
+    ],
+    "conditional": "approvalActRef and approvalAuthorityBasisRef are required when status is approved, superseded or withdrawn.",
+    "transitionRule": "draft -> certified -> approved; approved -> superseded on successor approval; approved -> withdrawn only by an authorized act and never by expiry; correction creates an erratum or successor; restriction creates a redacted derivative expression."
   },
   "passageAnchor": {
     "required": [
@@ -91,25 +123,27 @@
       "agendaItemRef",
       "proceduralActRef",
       "turnRef",
-      "speakerRef",
-      "speakerCapacity",
+      "participationRef",
       "startOffset",
       "endOffset",
       "captureGapRef"
-    ]
+    ],
+    "speakerRule": "Meeting-sourced speaker and attendance anchors cite MeetingParticipation; capacity is resolved from that child and is not re-asserted here."
   },
   "relations": [
     {
       "target": "WM-ACT-025",
       "relation": "REFERENCE",
       "purpose": "Anchor passages and record obligations to meeting occurrence agenda and procedural acts.",
-      "required": true
+      "required": "conditional",
+      "condition": "occurrenceKind = meeting"
     },
     {
       "target": "WM-ACT-027",
       "relation": "REFERENCE",
       "purpose": "Resolve channels threads turns messages speakers and capture provenance.",
-      "required": false
+      "required": "conditional",
+      "condition": "occurrenceKind = interaction"
     },
     {
       "target": "WM-ACT-006",
@@ -145,51 +179,320 @@
   "operations": [
     {
       "id": "draft-record",
-      "effect": "Create a draft minutes or transcript work and expression from declared occurrence sources and capture gaps.",
+      "effect": "Create a draft minutes or transcript work and expression from one typed occurrence source and declared capture gaps.",
       "authority": "record producer"
     },
     {
       "id": "certify-record",
-      "effect": "Attest fidelity class required-matter coverage and certifier identity.",
+      "effect": "Attest fidelity, coverage and certifier identity.",
       "authority": "authorized certifying officer"
     },
     {
       "id": "approve-expression",
-      "effect": "Approve one immutable expression through a referenced authorized later act.",
+      "effect": "Approve one immutable expression through a referenced authorized later act and authority basis.",
       "authority": "record approval authority"
     },
     {
       "id": "issue-erratum",
       "effect": "Create an erratum or successor expression linked to the approved predecessor.",
-      "authority": "record approval authority"
+      "authority": "record approval authority, or transcript producer under certification"
     },
     {
       "id": "publish-redacted-expression",
-      "effect": "Create a governed redaction variant with passage grounds authorizer and review date.",
+      "effect": "Create a governed redacted derivative with passage grounds, authorizer and review date.",
       "authority": "disclosure or records authority"
+    },
+    {
+      "id": "withdraw-expression",
+      "effect": "Append a withdrawal event without changing approved content or identity.",
+      "authority": "authorized records authority through a referenced act"
+    },
+    {
+      "id": "apply-hold",
+      "effect": "Bind a hold that suspends disposition and redaction-review expiry.",
+      "authority": "WM-REC-001 records authority"
+    },
+    {
+      "id": "dispose-record",
+      "effect": "Apply authorized disposition while preserving tombstone, hold and lineage evidence.",
+      "authority": "WM-REC-001 records authority"
     }
   ],
   "invariants": [
-    "Meeting, interaction, turn, minutes, transcript, task and decision identities remain distinct.",
-    "Minutes and transcript are separate works.",
-    "Invitation acceptance does not mean content acceptance.",
-    "Presence, participation, vote, assent and approval remain distinct.",
-    "Minutes evidence what occurred and do not prove individual agreement.",
-    "A decision requires authority valid at the decision instant; absent authority it remains a proposal.",
-    "Message references preserve source identity locator fidelity and capture-gap metadata.",
-    "A quotation inherits the more restrictive source or target access scope.",
-    "Approved expressions are immutable; correction uses errata or successors.",
-    "Alternatives objections dissent and turns remain append-only.",
-    "Tasks and decisions keep lifecycles independent from record approval.",
-    "No official promotion is inferred from document structure or chat wording.",
-    "Redaction records passage ground authorizer and review date and is never silent deletion.",
-    "Disposition preserves a resolvable tombstone and hold evidence."
+    {
+      "id": "INV-001",
+      "text": "Meeting, interaction, turn, minutes, transcript, task and decision identities remain distinct."
+    },
+    {
+      "id": "INV-002",
+      "text": "Minutes and transcript are separate works."
+    },
+    {
+      "id": "INV-003",
+      "text": "Invitation acceptance does not mean content acceptance."
+    },
+    {
+      "id": "INV-004",
+      "text": "Presence, participation, vote, assent and approval remain pairwise non-implying."
+    },
+    {
+      "id": "INV-005",
+      "text": "Minutes evidence what occurred and do not prove individual agreement."
+    },
+    {
+      "id": "INV-006",
+      "text": "A decision requires authority valid at the decision instant; absent authority it remains a proposal."
+    },
+    {
+      "id": "INV-007",
+      "text": "Message references preserve source identity, locator, fidelity and capture-gap metadata."
+    },
+    {
+      "id": "INV-008",
+      "text": "Declassification requires an explicit authorized act; time passage or review-date expiry never widens access."
+    },
+    {
+      "id": "INV-009",
+      "text": "Approved expression content, identity and manifestations are immutable; correction uses errata or successors and lifecycle changes are append-only events."
+    },
+    {
+      "id": "INV-010",
+      "text": "Alternatives, objections, dissent and turns remain append-only."
+    },
+    {
+      "id": "INV-011",
+      "text": "Tasks and decisions keep lifecycles independent from WM-REC-012 record approval."
+    },
+    {
+      "id": "INV-012",
+      "text": "No official promotion is inferred from document structure or chat wording."
+    },
+    {
+      "id": "INV-013",
+      "text": "Redaction records passage, ground, authorizer, review date and source lineage and is never silent deletion."
+    },
+    {
+      "id": "INV-014",
+      "text": "Disposition preserves a resolvable tombstone and hold evidence."
+    },
+    {
+      "id": "INV-015",
+      "text": "MeetingParticipation has occurrence-scoped dependent identity inside exactly one WM-ACT-025 Meeting and is never standing membership."
+    },
+    {
+      "id": "INV-016",
+      "text": "Channel membership never implies MeetingParticipation, presence or access to minutes or transcript."
+    },
+    {
+      "id": "INV-017",
+      "text": "DiscussionThread and MessageReference cannot carry official Task or Decision status."
+    },
+    {
+      "id": "INV-018",
+      "text": "TaskProposal is not Task and DecisionAlternative is not Decision."
+    },
+    {
+      "id": "INV-019",
+      "text": "Official Decision status requires an authorized WM-ACT-024 occurrence and fixation by WM-REC-010; where minutes are required, approved WM-REC-012 expressions evidence but do not condition effect."
+    },
+    {
+      "id": "INV-020",
+      "text": "Minutes work and transcript work have separate identities; either may exist without the other."
+    },
+    {
+      "id": "INV-021",
+      "text": "Certification and minutes approval record evidence and never mint a Task, Decision, Meeting or participation identity."
+    },
+    {
+      "id": "INV-022",
+      "text": "A quorum statement recorded in WM-REC-012 resolves through MeetingParticipation and is never derived from a channel roster or bare Party."
+    },
+    {
+      "id": "INV-023",
+      "text": "Quote access is the strictest source, passage, container or quote-site scope; incomparable scope refuses or redacts."
+    },
+    {
+      "id": "INV-024",
+      "text": "Redacted derivative expressions preserve source, ground, authorizer, review date and lineage."
+    },
+    {
+      "id": "INV-025",
+      "text": "Meeting close never auto-promotes a proposal, alternative, Task or Decision."
+    },
+    {
+      "id": "INV-026",
+      "text": "MessageReference edit, delete, forward and nested-quote provenance remains WM-ACT-027-owned."
+    },
+    {
+      "id": "INV-027",
+      "text": "Exactly one occurrence authority resolves per work; WM-REC-012 never mints or asserts a Meeting to host a record."
+    },
+    {
+      "id": "INV-028",
+      "text": "A hold suspends disposition and redaction-review expiry; disposition preserves redaction lineage and tombstone resolvability; redaction never substitutes for disposition and disposition never declassifies."
+    },
+    {
+      "id": "INV-029",
+      "text": "Meeting-sourced speaker and attendance anchors cite MeetingParticipation rather than bare Party or channel membership."
+    },
+    {
+      "id": "INV-030",
+      "text": "At most one official minutes work, defined by an approved expression, exists per occurrence."
+    },
+    {
+      "id": "INV-031",
+      "text": "Approved-expression withdrawal or supersession is an authorized append-only event and never changes approved bytes."
+    },
+    {
+      "id": "INV-032",
+      "text": "A redacted passage quoted onward remains redacted or the quotation is refused."
+    },
+    {
+      "id": "INV-033",
+      "text": "Transcript capture records captureHandoffAt and captureSourceRef at the handoff from occurrence media to governed record."
+    },
+    {
+      "id": "INV-034",
+      "text": "Manifestation fixity and custody resolve through WM-REC-001 and never alter expression identity."
+    }
   ],
   "holds": [
-    "Independent Grok review and reconciliation are pending.",
-    "A frozen no-tools semantic audit of the final candidate is pending.",
     "Referenced meeting and communication models remain reviewable drafts.",
-    "Candidate relation rows confer no containment mutation promotion or cascade authority.",
-    "External transcript and records projections require pinned mappings and do not imply conformance."
-  ]
+    "Candidate relation rows confer no containment, mutation, promotion or cascade authority.",
+    "External transcript and records projections require pinned mappings and do not imply conformance.",
+    "WM-ACT-025 MeetingParticipation child identity requires reciprocal base-model approval.",
+    "Task and decision promotion hooks, party or actor authority, certification actor and access-scope comparator require registry approval.",
+    "MessageReference edit/delete/forward/nested-quote semantics require WM-ACT-027 completion.",
+    "Registry reconciliation must preserve WM-REC-001 as sole parent and WM-ACT-025 to WM-REC-012 as REFERENCE only."
+  ],
+  "disposition": {
+    "kind": "complete-reserved-model",
+    "newModelId": false,
+    "reason": "WM-REC-012 owns durable minutes and transcript works; Meeting, participation, interaction, task and decision identities remain external."
+  },
+  "meetingParticipationExpectation": {
+    "base": "WM-ACT-025",
+    "authority": "non-normative neighbor expectation pending base approval",
+    "identity": [
+      "meetingRef",
+      "participationId"
+    ],
+    "scope": "identified dependent child of exactly one Meeting occurrence; never an independent root or reusable standing membership",
+    "required": [
+      "partyRef",
+      "capacity",
+      "effectiveFrom",
+      "participationKind"
+    ],
+    "optional": [
+      "effectiveTo",
+      "presenceObservationRefs",
+      "voteActRefs"
+    ],
+    "rule": "Invitation, channel membership, presence, participation, vote, assent and approval are pairwise non-implying."
+  },
+  "communicationExpectation": {
+    "base": "WM-ACT-027",
+    "authority": "non-normative neighbor expectation",
+    "owns": [
+      "CommunicationChannel",
+      "DiscussionThread",
+      "turn",
+      "MessageReference"
+    ],
+    "messageReferenceRule": "Carries source identity, locator, edit/delete/forward/nested-quote provenance, fidelity and access class; never official status."
+  },
+  "workIdentity": [
+    "recordWorkId"
+  ],
+  "workRequired": [
+    "recordKind",
+    "occurrenceKind",
+    "occurrenceRef",
+    "producerRef",
+    "createdAt",
+    "retentionBindingRef"
+  ],
+  "workKinds": [
+    "minutes",
+    "transcript"
+  ],
+  "certification": {
+    "identity": [
+      "certificationId"
+    ],
+    "required": [
+      "expressionRef",
+      "certifierRef",
+      "authorityBasisRef",
+      "certifiedAt",
+      "fidelityClass",
+      "coverageAssertion",
+      "evidenceRefs"
+    ],
+    "rule": "Certification attests the record and never mints a Decision, Task, Meeting or participation.",
+    "inverse": "expressions.certificationRef is a derived inverse and cannot diverge."
+  },
+  "accessRule": {
+    "comparator": "effective quote scope is the strictest of source, passage, container and quote-site scopes",
+    "unknown": "If scopes cannot be compared, quotation is refused or redacted; never widened",
+    "redaction": "Redacted derivative expression with passage, ground, authorizer, review date and source lineage; source is never silently deleted."
+  },
+  "promotionRules": [
+    {
+      "from": "DiscussionThread turn",
+      "to": "TaskProposal",
+      "effect": "provisional only; no WM-ACT-006 task identity"
+    },
+    {
+      "from": "DiscussionThread turn",
+      "to": "DecisionAlternative",
+      "effect": "provisional only; no official decision status"
+    },
+    {
+      "from": "TaskProposal",
+      "to": "WM-ACT-006 Task",
+      "requires": [
+        "authorized task-creation occurrence",
+        "delegation or authority reference"
+      ]
+    },
+    {
+      "from": "DecisionAlternative",
+      "to": "official Decision",
+      "requires": [
+        "authorized WM-ACT-024 decision occurrence",
+        "fixed authoritative WM-REC-010 decision record",
+        "authority basis in force"
+      ],
+      "rule": "WM-REC-012 may evidence an official decision where minutes are required but never conditions decision effect."
+    }
+  ],
+  "lineageRule": "Promotion and correction are append-only; source turns, proposals, alternatives, dissent and prior expressions remain addressable.",
+  "manifestations": {
+    "identity": [
+      "expressionRef",
+      "manifestationId"
+    ],
+    "required": [
+      "format",
+      "createdAt",
+      "fixityRef"
+    ],
+    "optional": [
+      "mediaType",
+      "custodyRef",
+      "byteLength"
+    ],
+    "rule": "Fixity and custody resolve through WM-REC-001; a manifestation never alters expression identity."
+  },
+  "workConditional": {
+    "occurrenceKind": [
+      "meeting",
+      "interaction"
+    ],
+    "meeting": "occurrenceRef resolves through WM-ACT-025",
+    "interaction": "occurrenceRef resolves through WM-ACT-027",
+    "transcript": "captureHandoffAt and captureSourceRef are required"
+  }
 }

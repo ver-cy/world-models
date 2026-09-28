@@ -1,5 +1,3 @@
-# WM-REC-012 Minutes / Transcript candidate
+# EM-KNW-03 — WM-REC-012 research candidate
 
-This candidate completes the reserved WM-REC-012 identity without allocating a new model or runtime ID. Minutes and transcript are separate durable works. Meeting, interaction, task and decision authorities remain external and are referenced by stable identifiers.
-
-The former meeting-parent/contains inversion is replaced by a production edge from WM-ACT-025 and record parentage under WM-REC-001. Run `python validate_candidate.py`. Grok reconciliation and one frozen semantic audit remain required before publication.
+Held completion of reserved WM-REC-012 for separate Minutes and Transcript works, immutable approved expressions, certification, anchors, access/redaction and retention. MeetingParticipation is an identified dependent child of WM-ACT-025, never a new root. Interaction, Task and Decision mastership remain external. No new model or runtime identifier is allocated. Candidate `0.1.0-candidate.3` is not canonically publishable.

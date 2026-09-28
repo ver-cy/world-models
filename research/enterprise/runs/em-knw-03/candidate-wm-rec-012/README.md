@@ -1,5 +1,3 @@
-# Offline delta: EM-KNW-03 / WM-REC-012
+# EM-KNW-03 — WM-REC-012 research candidate
 
-Validated completion candidate for the already reserved **WM-REC-012 Minutes / Transcript** aggregate. It owns durable minutes and transcript works, expressions, manifestations, certification, correction, passage anchors, redaction and retention. Meeting, communication, task and decision lifecycles remain with their external masters. No identifier is allocated.
-
-Publication remains conditional on exact Grok reconciliation, one frozen semantic audit, package conversion and live HTTP/runtime/search/package verification.
+Held completion of reserved WM-REC-012 for separate Minutes and Transcript works, immutable approved expressions, certification, anchors, access/redaction and retention. MeetingParticipation is an identified dependent child of WM-ACT-025, never a new root. Interaction, Task and Decision mastership remain external. No new model or runtime identifier is allocated. Candidate `0.1.0-candidate.3` is not canonically publishable.
