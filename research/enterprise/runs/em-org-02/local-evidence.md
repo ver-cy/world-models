@@ -43,3 +43,13 @@ A second register extract creates a new registration record in an unlinked state
 ## Holds
 
 All three bases are non-canonical drafts. WM-ORG-010 must be re-subjected and its required CHILD relation replaced by an upward subject reference. WM-ORG-001/010 field and status crosswalks, branch triple-placement fixtures, identifier non-match fixtures and independent review of WM-ORG-011 are missing. Source pins and jurisdiction profiles remain incomplete. This checkpoint is not an installable release.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently confirmed PROFILE/no new ID and sharpened identifier, status-plane, branch and succession rules. The single frozen Claude audit confirmed the boundary and returned REVISE because current base text still contradicts the profile. Revision 3 records every required amendment as an unapplied publication blocker, adds machine-shaped declarative fixtures and keeps publication refused.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently confirmed PROFILE/no new ID and sharpened identifier, status-plane, branch and succession rules. The single frozen Claude audit confirmed the boundary and returned REVISE because current base text still contradicts the profile. Revision 3 records every required amendment as an unapplied publication blocker, adds machine-shaped declarative fixtures and keeps publication refused.
