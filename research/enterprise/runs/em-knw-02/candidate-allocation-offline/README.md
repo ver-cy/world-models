@@ -1,5 +1,3 @@
 # EM-KNW-02 offline allocation dossier
 
-Validated, identifier-unassigned allocation dossier for **Evidence Artifact / Source Work**, plus the declarative Enterprise decision, claim and evidence profile. No model, registry, profile, or runtime identifier is assigned.
-
-Apply only after independent review reconciliation, source/bibliographic/record boundary review, registry allocation, and resolution of parent holds.
+Provider-reconciled and frozen-audited profile over WM-KNW-007, WM-KNW-008, WM-KNW-010 and WM-REC-010 plus an identifier-unassigned Evidence Artifact / Source Work candidate. CandidateRevision 3 separates work, expression, representation, citation, claim, decision content and authentic record authority; profile and allocation fixtures are separated. No identifier is created. Canonical publication remains held.

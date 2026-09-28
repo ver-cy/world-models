@@ -1,18 +1,23 @@
 # EM-KNW-02 continuation
 
-Checkpoint date: 2026-09-25.
+## State
 
-Disposition: PROFILE over WM-KNW-010, WM-REC-010, WM-KNW-007 and WM-KNW-008; no profile ID. Decision content is mastered by WM-KNW-010 and authentic fixed expressions by WM-REC-010. Claims and reified citations remain separate masters.
+EM-KNW-02 is provider-reconciled and frozen-audited. Claude and Grok select **PROFILE** over WM-KNW-007, WM-KNW-008, WM-KNW-010 and WM-REC-010 with no profile or runtime identifier. Both identify **Evidence Artifact / Source Work** as a genuine independent aggregate candidate; its registry identifier remains unassigned.
 
-New-model candidate: Evidence Artifact / Source Work. Independent identity/lifecycle is demonstrated, but no registry identifier is allocated. Do not mint one.
+CandidateRevision 3 separates source work and expression, external representation, citation act, claim assertion, decision content and authentic issued record. WM-KNW-010 authors decision substance; WM-REC-010 fixes an authentic expression. An ADR may exist without a formal instrument. Source correction or retraction appends observations and reassessment without rewriting history.
 
-Completed evidence:
+The single Claude audit returned **REVISE**. Deterministic remediation moved digests to representation bindings, added work/expression status targets and three times, aligned lifecycles, made issuance conditional, added notice bootstrap semantics and separated profile from allocation fixtures. The audit was not rerun.
 
-- `provider-dossier.json`: frozen extracts from all four full current specifications and the registry brief.
-- `claude-study.raw.md`: Claude Opus high, tools disabled; independent verdict PROFILE plus Evidence Artifact candidate.
-- `local-evidence.md`: local adjudication and acceptance walkthrough.
-- `grok-prompt.md`: exact public prompt prepared but not sent; browser submission requires action-time user confirmation.
+## Validation target
 
-Publication is blocked by all parents' `publishableCanonical: false` status, incomplete relation ledgers, citation deduplication and serial identity gaps, and the unallocated Evidence Artifact boundary.
+- profile: 18 constraints, 4 bases, 3 references, no runtime ID;
+- Evidence Artifact / Source Work: unassigned allocation candidate, no guessed ID;
+- allocation fixtures: 10; profile fixtures: 9.
 
-Next contour: EM-LEG-01. Read full current WM-ECO-006 and WM-XCT-029 specifications and registry reservations before deciding reuse/profile/new.
+## Holds
+
+All bases remain non-canonical; relation ledgers and parentage are incomplete; decision/record purpose overlap awaits reciprocal amendments; citation deduplication and dissent identity remain unresolved; the source-work identifier is unallocated; certainty schemes and standards crosswalks are unpinned; canonical publication and live verification remain held.
+
+## Next safe step
+
+Retain this reviewable checkpoint without publication. Continue with EM-LEG-01 only after fresh action-time confirmation for its saved Grok prompt.
