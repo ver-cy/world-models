@@ -2,34 +2,28 @@
 
 ## Disposition
 
-- **Complete and reclassify reserved WM-REC-006** from view-candidate to a Requirement aggregate with stable identity and immutable revisions.
-- Keep Acceptance Criterion, Requirement Baseline and Trace Link as independently addressable records contained by the aggregate for the first completion. They receive no new model identifiers; future extraction requires separate mastership and lifecycle evidence plus registry allocation.
-- Reuse WM-KNW-013 by pinned revision reference for reusable formal or formalizable rules. Remove its candidate parent signal to WM-REC-006; Rule is also issued by policies, standards and controls.
-- Keep stakeholder need, feature/design, implementation task, test case/result, observation/evidence, waiver and decision in their source masters.
+- Complete and reclassify reserved WM-REC-006 as a Requirement aggregate with stable family identity and immutable revisions.
+- Contain Acceptance Criteria under exact Requirement revisions. Keep reusable Rule identity, predicate semantics, operands, units, tolerance and evaluation contract in WM-KNW-013 and pin exact Rule revisions.
+- Keep Trace Link as a single-owner outbound association whose source is one Requirement revision. The target remains externally mastered; inbound traces are derived projections.
+- Remove authoritative Requirement Baseline from this aggregate. Its independent authority, effectivity and successor lifecycle justify an identifier-unassigned candidate for separate reservation review.
+- Provide only a derived non-authoritative RequirementRevisionSetView over caller-supplied exact Requirement revision, criterion and Rule pins. It owns no set, approval, effectivity, successor lifecycle, verdict or stored diff.
+- Keep inter-Requirement conflict identity and lifecycle in an external issue, case or decision master.
+- Keep stakeholder Need, feature/design, task/work order, test/result, evidence, waiver, decision, evaluation and enforcement in their source masters.
 
-A stakeholder need preserves the stakeholder's problem or desired outcome. A requirement is an authoritative, verifiable statement derived from one or more needs. A feature or design claims how the requirement may be realized. A task records implementation work. A test case defines verification; a test result and evidence may support a satisfaction claim. Closing a task has no evidential weight for requirement satisfaction.
+A stakeholder Need retains as-authored wording. A Requirement is authority-issued and verifiable. Feature/design proposes realization; task records implementation work. None proves satisfaction. Requirement Acceptance Criterion remains distinct from WM-ACT-007 work-order acceptance findings.
 
-Requirement revisions are immutable. An acceptance criterion belongs to one exact requirement revision and may bind a pinned WM-KNW-013 rule revision to the requirement subject, operands, units, tolerance and verification method. One-off criteria may remain local expressions and must not silently create reusable rules.
+A Rule-pinned criterion cannot override Rule predicate, unit or tolerance locally. A reusable threshold change creates a new Rule revision and re-pin. Conversion to a one-off condition removes the Rule pin, records provenance and creates a Requirement revision.
 
-A baseline is a sealed, named set of exact requirement revision references plus authority, effectivity and digest. Any membership or revision change creates a new baseline. A trace link is a reified, attributable, typed assertion whose endpoints are revision-pinned. Conflict records preserve all alternatives; a resolution adds an authority-scoped decision and baseline selection without deleting losing alternatives.
-
-## Invariants
-
-1. Acceptance and verification cite an exact requirement revision.
-2. Requirement revisions and sealed baseline membership are append-only.
-3. Every trace link pins both endpoint revisions and records asserter and time.
-4. Task state, including Done, never proves implementation correctness or requirement satisfaction.
-5. Satisfaction needs a qualified test result and evidence for the same revision; absence is never pass.
-6. Failed and superseded results remain visible.
-7. Rule text is not copied when a pinned WM-KNW-013 reference can express the reusable rule.
-8. Verification does not transfer to a changed revision; only byte-identical revisions may be explicitly reaffirmed.
-9. Conflict alternatives remain resolvable after selection.
-10. Waiver, exception and approval never rewrite the source requirement or rule.
+A revision-set view pins identities and content digests only. It never freezes satisfaction, verification, waiver, compliance or decision verdicts. Diffs are recomputed. If source access is incomplete, the view is `partial-redacted` and cannot imply complete coverage.
 
 ## Scenario result
 
-One requirement revision is traced to three Done tasks and a failed test. It remains not verified and blocks its baseline; a later passing result does not erase the failure. A changed tolerance creates a new requirement revision and a new baseline. The previous test is stale for the new revision, while the prior baseline remains sealed and comparable by revision-set diff.
+R@rev1 has AC1, three Done tasks and one failed test. It remains unsatisfied or inconclusive and the failure stays visible. Caller-supplied set S1 includes R@rev1. A tolerance change creates R@rev2, AC2 and, when reusable, a new Rule revision pin; S2 includes the successor. The derived comparison reports revision, criterion, tolerance and Rule-pin changes. It is not an authoritative Baseline, stores no verdict and does not carry the failed result to rev2.
+
+## Frozen-audit reconciliation
+
+The single audit returned `REVISE`. Six issues were remediated without rerun: latent Baseline aggregate, unowned conflict, Rule-pin override, mirrored internal traces, verdict sealing and redaction completeness. The final candidate contains 35 constraints, five external relations and 33 fixtures.
 
 ## Holds
 
-WM-REC-006 now has a reviewable completion candidate with stable identity, immutable revisions, acceptance criteria, baselines, trace links and conflicts, plus five external relation contracts and seven fixtures. Its view classification is replaced with a governed aggregate classification and the WM-KNW-013 parent signal is removed. WM-KNW-013 and WM-SFT-015 retain their own publication holds. Exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. No canonical or installability claim is made yet.
+WM-REC-006 lacks a canonical specification. Requirement Baseline needs separate allocation review. The relation ledger must retire the WM-KNW-013 parent signal. Held bases and external task/test/evidence/waiver/conflict/decision masters remain dependencies. Trace vocabulary, field-level mastership and disclosure rules need approval. Package conversion and live verification remain pending.
