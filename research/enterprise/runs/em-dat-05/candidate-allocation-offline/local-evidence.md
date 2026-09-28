@@ -49,14 +49,16 @@ Definition version: `draft -> active -> superseded -> withdrawn/tombstoned`. Act
 
 ## Acceptance result
 
-For a KPI changing from headcount/method A/population P1 to FTE/method B/population P2:
+For a headcount KPI changing from method A/population P1 to method B/population P2 while its phenomenon, quantity kind and statistical unit type remain unchanged:
 
-- the new semantics produce a new definition version;
+- the new semantics produce a new immutable definition version under the same Metric identity;
 - the missing period remains a gap or coded missing result, never zero;
 - recalculation emits new observations bound to the new definition version and retains the old observations;
 - cross-version comparison is rejected unless an explicit reconciliation supports `comparable-with-restatement`;
 - comparisons using the same definition version remain valid subject to coverage and observation-quality rules.
 
+A change from headcount persons to FTE changes quantity kind or statistical unit type and therefore creates a new Metric identity. A correspondence or restatement mapping may relate the two metrics but cannot silently preserve identity. Aggregation and target-version refusal are declared conformance obligations for WM-DAT-010 and WM-KNW-011 consumers; this candidate does not absorb their enforcement lifecycles.
+
 ## Evidence limits
 
-All five neighboring models are reviewable drafts and several lack independent external review or frozen relations. Standards are alignment targets only. The model identifier remains unassigned. These limits permit a bounded research candidate, but not canonical publication.
+All neighboring models are reviewable drafts and several lack independent external review or frozen relations. Standards are alignment targets only. The model identifier remains unassigned. These limits permit a bounded research candidate, but not registry allocation or canonical publication.

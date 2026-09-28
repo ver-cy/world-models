@@ -2,28 +2,18 @@
 
 ## State
 
-Research contour: **Metric, target and observation**.
+Research reconciliation is complete. Claude and Grok independently select **NEW MODEL** for a cross-domain Metric Definition aggregate. The single frozen audit returned **REVISE** while accepting the boundary; candidate `0.1.0-candidate.3` applies one deterministic remediation pass and the audit was not rerun.
 
-Local catalogue analysis and Claude's frozen-dossier review select **NEW MODEL**: a cross-domain Metric Definition aggregate. The result and observation authorities already exist, while goals, quality assessments, official statistics and several enterprise models explicitly consume a metric-definition authority they do not own.
+The candidate has stable Metric identity, immutable DefinitionVersion identity, 20 fail-closed invariants and 14 synthetic fixtures. It defines external conformance obligations for WM-DAT-010 aggregation and WM-KNW-011 target pins without absorbing either lifecycle.
 
-No identifier has been assigned. Apparent numeric gaps are reserved; allocation must follow the registry workflow after boundary acceptance.
+## Identifier decision
 
-The exact public Grok prompt is preserved in `grok-prompt.md`. Browser submission remains pending action-time confirmation. No implementation or publication has started.
-
-## Proposed boundary
-
-The aggregate owns stable metric identity and immutable definition versions containing formula/components, unit and scale references, dimensions/additivity, population boundary, method/source references, null semantics, and comparability declarations.
-
-It references WM-XCT-025 result fields, WM-DAT-010 observations/series, WM-KNW-011 targets/goals and WM-DAT-007 quality assessments. It does not store actual values, targets, attainment, series membership or reports.
+No model or runtime identifier is assigned. Numeric gaps are reserved and registry allocation is a separate decision. The candidate remains a reviewable allocation dossier with `canonicalPublishable: false`.
 
 ## Holds
 
-- independent Grok review is pending;
-- all five neighboring specifications are reviewable drafts, with incomplete external review and/or relationship freezes;
-- live standard-version verification and executable crosswalk validation are pending;
-- model identifier and relation-ledger rows are unassigned;
-- no frozen semantic audit has yet reviewed an implementation candidate.
+Registry allocation, frozen relation rows, neighboring draft publication holds, live standards pins and canonical package publication remain pending. The dossier must not be installed as a runtime model until those gates clear.
 
-## Next safe step
+## Evidence
 
-Obtain the Grok review, reconcile disagreements, allocate an identifier through the registry workflow, create a minimal English research candidate with synthetic fixtures, then run one frozen no-tools semantic audit. Publish only if critical holds are cleared; otherwise retain the candidate on R and continue the next Enterprise contour.
+The exact public Grok prompt, raw response, provider manifest, provider comparison, frozen Claude audit, remediation note, candidate and fixtures are preserved in this directory and in the offline sync package.
