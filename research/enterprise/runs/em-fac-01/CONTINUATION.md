@@ -2,27 +2,33 @@
 
 ## State
 
-Research contour: **Place, office and workplace**.
+The Place, office and workplace contour is provider-reconciled and frozen-audited. Claude and Grok agree on the smallest composition:
 
-Local and Claude review select a composed landscape: reuse WM-PLC-010, WM-BLT-008, WM-BLT-006 and WM-BLT-001; complete reserved WM-BLT-002 as the single Premises / Spatial Unit authority; treat office as a use/designation profile; and research one independent Workplace Allocation relationship.
+- reuse WM-PLC-010, WM-BLT-008, WM-BLT-006 and WM-BLT-001;
+- complete reserved WM-BLT-002 as the single Premises / Spatial Unit authority;
+- propose retirement of duplicate WM-PLC-009 while preserving Indoor Topology as a WM-BLT-002 profile;
+- treat office as an effective-dated use designation;
+- retain Workplace Allocation as an identifier-unassigned **NEW MODEL** relationship.
 
-WM-PLC-009 Indoor Space is proposed for retirement as a standalone duplicate, with indoor topology/navigation retained as a WM-BLT-002 profile. That retirement remains pending independent review; no WM-PLC-009 mutation has been made.
+The physical spine is a preferred reference path with optional intermediate layers. Gazetteer Place locates Site rather than containing it; Facility may lack Site, and Building may lack Facility.
 
-A validated `0.3.0-candidate.1` WM-BLT-002 completion candidate is now prepared with fifteen invariants, four external boundaries and seven fixtures. The registry containment is corrected: Building contains top-level Premises, Premises may recursively contain Premises, and physical items are referenced by location rather than composition.
+The single Claude frozen audit returned **ACCEPT WITH LIMITS**. Deterministic candidate.3 remediation separates assertion-owned parentage, designation authorities, allocation root/version data, exact-one-of loci, granularity ceilings and fail-closed privacy defaults. Indoor Topology now explicitly preserves adjacency, connectivity, traversal and positioning semantics. The audit was not rerun.
 
-Claude proposed `WM-WPL-001`, but local synthesis rejects assigning it before registry review. The candidate identifier remains unassigned.
+## Validation
 
-The exact public Grok prompt is preserved in `grok-prompt.md`. No implementation or publication has started.
+- WM-BLT-002 candidate: 23 invariants, 4 relation boundaries, 8 fixtures;
+- Workplace Allocation candidate: 22 invariants, 5 references, 12 fixtures;
+- profile and composition artifacts validate without creating a runtime or numeric identifier.
 
 ## Holds
 
-- independent Grok review is pending;
-- the previous WM-BLT-002 description requires publication-time migration packaging;
-- IFC citation/version and Facility/Building crosswalk conflicts remain open;
-- IndoorGML, area-measurement and multi-profile validation are incomplete;
-- workplace allocation needs privacy and employment-law review;
-- WM-PLC-009 supersession is not approved; candidate relation-ledger changes are recorded for review.
+- WM-PLC-009 retirement, redirect and inbound relation retargeting are unapproved;
+- Workplace Allocation registry allocation is pending;
+- WM-BLT-002 requires migration packaging from 0.2.0-legacy;
+- IFC, IndoorGML, area-standard and Facility/Building crosswalk pins remain open;
+- non-US privacy and employment-law review is required before operational use;
+- canonical packaging and live HTTP/runtime/search/package verification remain open.
 
 ## Next safe step
 
-Obtain the exact Grok comparison, perform one frozen semantic audit, adjudicate WM-PLC-009 and Workplace Allocation, then package and verify WM-BLT-002. Allocate any new Workplace Allocation identifier only through the registry.
+Retain this reviewable checkpoint and do not publish the held artifacts. Continue with EM-FIN-01 after fresh action-time confirmation.
