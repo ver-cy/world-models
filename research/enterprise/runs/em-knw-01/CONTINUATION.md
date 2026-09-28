@@ -1,18 +1,29 @@
 # EM-KNW-01 continuation
 
-Checkpoint date: 2026-09-25.
+## State
 
-Disposition: PROFILE over WM-REC-001, WM-KNW-006 and WM-KNW-018; no new catalogue/runtime ID. Knowledge Article is a document/record designation, Document Revision remains record-owned, and Term Definition remains concept-owned.
+The document, knowledge and terminology contour is provider-reconciled and frozen-audited. Claude and Grok independently select **PROFILE** over WM-REC-001, WM-KNW-006 and WM-KNW-018 with no new catalogue or runtime identifier.
 
-Ownership reconciliation: intrinsic concept meaning is mastered by WM-KNW-006; immutable releases and release-scoped membership, relations and mappings are mastered by WM-KNW-018. Derived views are read-only. Scheme-local withdrawal does not globally deprecate a concept.
+WM-REC-001 owns record identity, versions and instantiations. WM-KNW-006 owns concept identity, intension, intrinsic definitions, designation inventory and global lifecycle. WM-KNW-018 owns immutable scheme releases and release-scoped vocabulary assertions. WM-XCT-020 remains the external-subject classification binding authority and must pin subject, concept IRI, scheme IRI and exact release.
 
-Completed evidence:
+The single Claude frozen audit returned **ACCEPT WITH LIMITS**. CandidateRevision 3 closes its semantic findings without rerunning the audit: it adds binding-model ownership, one source-release master for cross-scheme mappings, concept-level designation acceptability for scheme-less concepts, governed documentary-form wording, definition context and precedence, and correct fixing-event causality.
 
-- `provider-dossier.json`: frozen extracts from the three full current specifications plus the Enterprise registry brief.
-- `claude-study.raw.md`: Claude Opus high, tools disabled; independent verdict PROFILE.
-- `local-evidence.md`: local adjudication and acceptance walkthrough.
-- `grok-prompt.md`: exact public prompt prepared but not sent; browser submission requires action-time user confirmation.
+## Validation
 
-Publication is held by all three parents' `publishableCanonical: false` state, unresolved WM-KNW-006/018 ownership and relationship text, and definition-level access/dispute gaps. Do not create a runtime ID or publish an installable profile yet.
+- profile: 15 constraints, 3 base models, 1 external reference, no runtime ID;
+- fixtures: 24 positive and negative declarative cases;
+- no model or registry identifier is created or reserved.
 
-Next contour must be selected from the next queued unfinished Enterprise unit after EM-KNW-01 by reading `research/enterprise/queue.json`; do not infer it from this note.
+## Holds
+
+- all three bases remain non-canonical reviewable drafts;
+- WM-KNW-006 and WM-KNW-018 still overlap until reciprocal scope and relationship amendments land;
+- scheme-less concept cardinality and WM-KNW-002/WM-KNW-018 parentage remain unresolved;
+- WM-XCT-020 remains reference-only pending reversed-parent resolution;
+- mapping direction, designation acceptability, definition access/dispute and classification pins are not ratified in the bases;
+- standards crosswalks are unpinned and fixtures are declarative rather than runtime-executed;
+- canonical publication and live verification remain held.
+
+## Next safe step
+
+Retain this reviewable research profile without publishing it ahead of its parents. Continue with EM-KNW-02 only after fresh action-time confirmation for its saved Grok prompt.
