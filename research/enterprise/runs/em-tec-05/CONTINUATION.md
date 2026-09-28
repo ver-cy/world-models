@@ -1,9 +1,9 @@
 # EM-TEC-05 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-28.
 
-Disposition: reuse WM-ACT-020 for Cyber Incident; profile WM-ACT-019 for operational incidents, WM-KNW-014 for Problem and WM-SFT-014 for Defect; reuse WM-ACT-006 Task; keep ImpactAssessment incident-local and RootCauseClaim identified inside Problem. No new runtime/model identifier was allocated.
+Disposition: replace the legacy WM-ACT-019 semantics with a held operational/service incident candidate; no new model or runtime identifier.
 
-The complete available WM-ACT-019 legacy source, WM-ACT-020 current specification, related reservations and relation subset were frozen. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by missing/rewrite specifications, parent and relation conflicts, master-system allocation, migration mapping, evidence pins and independent review.
+Grok Heavy completed with conditional accept and holds. Reconciliation uses one declaration identity per occurrence, bidirectional cyber qualification, external Problem/Defect/Task masters, revisioned incident ImpactAssessment and first-class RootCauseClaim children inside Problem.
 
-Next contour: EM-TEC-06. Read complete WM-SFT-016 specification and registry reservation.
+One Claude Opus high no-tools audit returned REVISE. Sixteen blocking finding groups and eight non-blocking corrections were remediated deterministically without rerunning the audit. Candidate `0.2.1-candidate.1` now has 33 invariants and 32 fixtures. Publication remains held by registry approval of the legacy replacement, neighbor relation fixes, unassigned reference roles and migration approval.
