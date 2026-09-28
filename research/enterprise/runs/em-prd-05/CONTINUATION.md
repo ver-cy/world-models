@@ -1,11 +1,7 @@
 # EM-PRD-05 continuation
 
-Checkpoint date: 2026-09-26.
+Disposition: profile IPAsset, IPRegistration, RightsClaim and contract-local UsageGrant over existing masters; allocate no new model or runtime identifier.
 
-Disposition: profile legacy WM-KNW-003 with subject-matter, contract, obligation and record masters. IP Asset is a view; IP Registration and Rights Claim reuse WM-KNW-003; Usage Grant is a contract/obligation profile extension. No new catalogue/runtime identifier is allocated.
+Grok Heavy accepted with conditions. One Claude Opus high no-tools frozen audit accepted with five limits. Deterministic remediation produced `0.1.0-candidate.3` with 27 constraints and 18 fixtures; the audit was not repeated.
 
-WM-KNW-003 has no current specification; its complete legacy document and reservation were read. The complete legacy WM-MED-001 document plus current contract, obligation, record and party specifications, reservations, relation ledger and prior Enterprise research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
-
-Publication is held by missing current WM-KNW-003/WM-MED-001 specifications, incomplete crosswalks/code lists, unresolved IP subject and jurisdiction boundaries, non-canonical bases and absent fixtures.
-
-Next contour: EM-RSK-02. Read the complete WM-ACT-033, WM-ECO-035 and WM-KNW-014 specifications and registry reservations.
+Checkpoint is research-reconciled and publication-held pending base specifications, named subject authorities, retroactivity and right-termination policy, registry relations, schemas, adapters and crosswalks.

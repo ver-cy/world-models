@@ -1,5 +1,3 @@
-# Offline delta: EM-PRD-05
+# EM-PRD-05 profile candidate
 
-Declarative Enterprise profile for intellectual-property registrations, sourced rights claims and contract-bound usage grants. IP Asset remains a view, while subject matter, rights, evidence, parties, assignments and obligations retain their source mastership. No runtime or model identifier is allocated.
-
-Publication remains conditional on completing the legacy WM-KNW-003 and WM-MED-001 boundaries, exact Grok reconciliation, one frozen semantic audit and live verification.
+Reconciled enterprise IP and usage-rights profile over existing subject, right, record, contract, obligation and party masters. Candidate `0.1.0-candidate.3` allocates no model or runtime identifier and contains 27 constraints plus 18 fixtures. Grok accepted with conditions; one frozen Claude audit accepted with limits and was remediated once. Canonical publication remains held on base-model, subject-authority and registry approvals.
