@@ -1,7 +1,3 @@
-# WM-DAT-008 Data Product candidate
+# EM-DAT-02 — WM-DAT-008 research candidate
 
-This candidate completes the reserved WM-DAT-008 identity without allocating a new model or runtime ID. Data Product is the aggregate root. Product Catalog Record is a separately identified facet whose described resource is restricted to a product or product version, so dataset records remain WM-DAT-001-owned.
-
-The package is declarative. It references dataset, contract, assessment, observation, interface and run masters; it does not duplicate them. Market Offering and Consumer Agreement remain external authorities.
-
-Run `python validate_candidate.py`. Grok reconciliation and one frozen semantic audit remain required before publication.
+Held Data Product completion with three separately rooted objects mastered by WM-DAT-008: DataProduct, ProductCatalogRecord and ConsumerEntitlementBinding. External datasets, contracts, assessments, offerings, agreements and authorization remain separately mastered. No new model or runtime identifier is allocated. Candidate `0.3.1-candidate.3` is not canonically publishable.

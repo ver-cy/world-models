@@ -1,5 +1,3 @@
-# Offline delta: EM-DAT-02 / WM-DAT-008
+# EM-DAT-02 — WM-DAT-008 research candidate
 
-Validated completion candidate for the already reserved **WM-DAT-008 Data Product / Product Catalog Record** aggregate. Data Product is the root; Product Catalog Record is a separately identified facet restricted to product and product-version subjects. Dataset, distribution, contract, quality, observation, interface, execution, offering and agreement lifecycles remain with their external masters. No identifier is allocated.
-
-Publication remains conditional on exact Grok reconciliation, one frozen semantic audit, package conversion and live HTTP/runtime/search/package verification.
+Held Data Product completion with three separately rooted objects mastered by WM-DAT-008: DataProduct, ProductCatalogRecord and ConsumerEntitlementBinding. External datasets, contracts, assessments, offerings, agreements and authorization remain separately mastered. No new model or runtime identifier is allocated. Candidate `0.3.1-candidate.3` is not canonically publishable.
