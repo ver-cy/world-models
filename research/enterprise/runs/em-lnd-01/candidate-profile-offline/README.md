@@ -1,5 +1,5 @@
-# EM-LND-01 offline profile dossier
+# EM-LND-01 offline reconciliation dossier
 
-Validated declarative profile for an **Organizational Structure Landscape** over existing organization masters. The landscape is a deterministic projection and its snapshots are generated artifacts; no catalogue or runtime identifier is created.
+Candidate revision 3 is a declarative **PROFILE** over WM-ORG-002, WM-ORG-003, WM-ORG-004 and WM-ORG-016. It defines projection, axis, snapshot, refusal and disclosure contracts without assigning a catalogue, registry or runtime identifier.
 
-Publication requires parent canonicalization, reconstruction tests and provider reconciliation.
+The dossier is research-only. Source digest contracts, canonical parents, crosswalks, host binding, executable generator and publication gates remain open.
