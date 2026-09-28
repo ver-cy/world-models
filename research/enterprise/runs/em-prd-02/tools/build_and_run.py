@@ -1,7 +1,7 @@
 import csv, hashlib, json, subprocess
 from pathlib import Path
 
-W = Path(r"R:\02_PROJECTS\02_Meta_Models_Platforms\Ver.cy\current\ver-cy\world-models")
+W = Path(__file__).resolve().parents[5]
 R = W / "research/enterprise/runs/em-prd-02"
 MODEL_ID = "WM-ACT-004"
 
