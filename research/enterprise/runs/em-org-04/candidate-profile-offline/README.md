@@ -1,5 +1,3 @@
-# EM-ORG-04 offline profile dossier
+# EM-ORG-04 offline profile candidate
 
-Validated declarative Enterprise profile over **WM-ORG-002 Organizational Unit**. It adds scenario-qualified structural placements and enforceable axis, lineage, employer-independence and collaboration rules. It creates no model or runtime identifier.
-
-Publication remains conditional on parent canonicalization, scenario-query support and provider reconciliation.
+Revision 3 is provider-reconciled and single-audit-remediated. It profiles WM-ORG-002 and creates no ID. Base deltas are unapplied and fixtures unexecuted, so publication is refused.

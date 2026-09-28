@@ -39,3 +39,8 @@ The negative case is rejected: a cross-department product team keeps affiliation
 ## Holds
 
 WM-ORG-002 remains non-canonical. Hypothetical scenario semantics and scenario-aware query parameters are absent from the base. Unit/site and finance-axis boundaries remain deferred; unit-grain staffing evidence is extension-grade; source/version checks and several organizational forms are unvalidated. This checkpoint is a profile boundary, not an installable release.
+
+
+## Provider reconciliation and frozen audit
+
+Grok confirmed PROFILE/no new ID and sharpened axis, scenario and team boundaries. The single frozen Claude audit returned REVISE because current base text lacks the scenario and mandate deltas and contains relation/cardinality conflicts. Revision 3 applies the checklist once, strikes out-of-dossier identifiers and keeps every base amendment and unexecuted fixture as a publication blocker.

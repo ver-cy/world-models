@@ -1,11 +1,11 @@
 # EM-ORG-04 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-28T20:37:55.377981Z.
 
-Disposition: PROFILE over WM-ORG-002; no new ID. Unit identity remains in the base, while the profile adds scenario-qualified placements and enforceable axis, lineage, employer-independence and collaboration exclusions.
+Disposition: **PROFILE** over WM-ORG-002; no new ID. OrganizationalUnit remains the sole identified root. UnitType, UnitMandate and StructuralPlacement are profile-local constructs. Scenario, axis mode and reified mandate identity are explicit proposed deltas, not claimed base behavior.
 
-Completed evidence: complete current WM-ORG-002 spec parsed and pinned by digest; compact frozen `provider-dossier.json`, Claude Opus high no-tools study, `local-evidence.md`, and exact unsent `grok-prompt.md` are preserved.
+Claude and Grok are reconciled. The single frozen Claude audit returned REVISE and revision 3 applied its 30-item checklist once without rerun. The package has 24 modal constraints, 57 semantic cases and 9 separate governance gates.
 
-Publication is blocked by base non-canonical status, unsupported hypothetical scenarios, unresolved site/finance axes, extension-grade staffing semantics, source/version holds and unvalidated organizational forms. Grok browser submission requires action-time user confirmation.
+Publication remains held: WM-ORG-002 is noncanonical; required deltas and relation/pin reconciliations are unapplied; source, dependency, site and audit-projection holds remain; fixturesExecuted=false. No blocker was published.
 
-Next contour: EM-ORG-05. Read complete WM-ORG-003 and WM-ORG-006 specifications plus registry reservations.
+Next contour: EM-ORG-05. Fresh action-time confirmation is required before sending its exact Grok prompt.
