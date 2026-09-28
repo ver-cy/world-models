@@ -1,11 +1,795 @@
 {
   "format": "vercy-enterprise-profile-fixtures/v1",
-  "profileName": "Process, Workflow, Method and Procedure",
+  "profileName": "Process, Workflow, Method and Procedure completion",
+  "declarativeOnly": true,
   "cases": [
-    {"id": "concurrent-variants", "kind": "positive", "input": "One process family has two concurrently valid variants.", "expect": "Separate instances pin their chosen immutable variant and version."},
-    {"id": "manual-deviation", "kind": "positive", "input": "A step executes manually out of planned sequence.", "expect": "The trace records a deviation and any compensating execution without rewriting history."},
-    {"id": "new-procedure-edition", "kind": "positive", "input": "A revised procedure is published and later adopted.", "expect": "Only work after the adopter's effective date uses the new edition."},
-    {"id": "plan-equals-trace", "kind": "negative", "input": "A BPMN path is treated as proof that those steps occurred.", "expect": "The conformance claim is rejected without observed execution evidence."},
-    {"id": "missing-trace-conforms", "kind": "negative", "input": "An absent event is interpreted as a conforming skipped step.", "expect": "The inference is rejected; missing evidence remains missing."}
+    {
+      "id": "two-concurrent-variants",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "Two instances pin sibling variants A and B.",
+      "expect": "Both traces replay independently; neither variant supersedes the other."
+    },
+    {
+      "id": "definition-supersession",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "D2 supersedes D1 in variant A.",
+      "expect": "D1 instances retain D1; new starts may pin D2."
+    },
+    {
+      "id": "assignment-without-execution",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A WorkItem references Task T and Assignment A, then expires.",
+      "expect": "No execution or atomic act is inferred."
+    },
+    {
+      "id": "execution-without-assignment",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A step is recorded with no surviving assignment and no deviation.",
+      "expect": "Rejected until an explicit authorization-gap deviation is appended."
+    },
+    {
+      "id": "execution-with-deviation",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A step is recorded after assignment evidence was lost, with a deviation.",
+      "expect": "Execution remains observed evidence and the authorization gap stays explicit."
+    },
+    {
+      "id": "one-step-many-acts",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "One step execution references two atomic acts.",
+      "expect": "Both act references are retained without transferring identity.",
+      "provisional": true,
+      "blockedBy": "WM-ACT-002 cardinality crosswalk"
+    },
+    {
+      "id": "work-item-task-mastership",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A work item attempts to create a local Task master.",
+      "expect": "Rejected; it must reference vr.wm-act-006.",
+      "provisional": true,
+      "blockedBy": "external registry reservation verification"
+    },
+    {
+      "id": "manual-exception-compensation",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "An out-of-sequence step has a manual-exception deviation and compensation.",
+      "expect": "All records append and replay with original pins."
+    },
+    {
+      "id": "compensation-remount-without-cutover",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Compensation changes definition and edition pins without a CutoverRecord.",
+      "expect": "Rejected."
+    },
+    {
+      "id": "compensation-with-cutover",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Compensation changes pins and references an authorized CutoverRecord.",
+      "expect": "Both pin regimes remain reproducible."
+    },
+    {
+      "id": "retroactive-instruction-update",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Released edition E1 is edited after completed I1.",
+      "expect": "Rejected; issue E2 and preserve I1 pins."
+    },
+    {
+      "id": "publication-without-adoption",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "E2 is published but not adopted.",
+      "expect": "New and existing instances keep the prior effective adoption."
+    },
+    {
+      "id": "new-instance-after-adoption",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "E2 adoption is effective before I3 starts.",
+      "expect": "I3 pins E2 and its AdoptionRecord."
+    },
+    {
+      "id": "mid-flight-change-without-cutover",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "An active instance silently switches from E1/D1 to E2/D2.",
+      "expect": "Rejected."
+    },
+    {
+      "id": "mid-flight-cutover",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "An authorized CutoverRecord moves remaining steps to E2/D2.",
+      "expect": "Past steps keep old pins and later steps carry new pins."
+    },
+    {
+      "id": "planned-path-is-not-trace",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A planned branch has no observed event.",
+      "expect": "No traversal claim is produced."
+    },
+    {
+      "id": "missing-trace-conformance",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "Trace coverage is incomplete.",
+      "expect": "ConformanceResult coverage is partial or unknown, never pass."
+    },
+    {
+      "id": "historical-conformance",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "I1 is assessed against pinned D1/E1 and trace digest T1.",
+      "expect": "Immutable result records rule-set version and computedAt."
+    },
+    {
+      "id": "counterfactual-conformance",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "I1 is re-evaluated against successor D2/E2.",
+      "expect": "A counterfactual labelled result is added and historical result remains."
+    },
+    {
+      "id": "floating-conformance-flag",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "Instance carries conformant=true without digests.",
+      "expect": "Rejected as non-reproducible."
+    },
+    {
+      "id": "event-correction",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "An incorrect execution gets a successor correction with reason.",
+      "expect": "Original remains; successor is ordered after it."
+    },
+    {
+      "id": "event-in-place-edit",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "A recorder changes a completed execution timestamp.",
+      "expect": "Rejected; append a correction successor."
+    },
+    {
+      "id": "adoption-without-attestation",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "An adoption is effective with no authority or attestation.",
+      "expect": "Rejected."
+    },
+    {
+      "id": "standards-claim",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003"
+      ],
+      "input": "Candidate asserts BPMN/CMMN conformance from wildcard imports.",
+      "expect": "Rejected; keep alignment-only language."
+    },
+    {
+      "id": "legacy-installability",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "0.2.0-legacy is marked installable.",
+      "expect": "Rejected; legacy remains immutable non-installable reference."
+    },
+    {
+      "id": "release-gate",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Candidate is promoted while fixturesExecuted=false.",
+      "expect": "Publication refused."
+    },
+    {
+      "id": "duplicate-edition-version",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Two edition ids share one subject and version.",
+      "expect": "Reject the second edition."
+    },
+    {
+      "id": "edition-kind-ambiguous-pin",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A typed method pin resolves to a procedure edition.",
+      "expect": "Reject the mismatched subjectKind."
+    },
+    {
+      "id": "instance-pins-no-variant",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "An instance omits variantKey.",
+      "expect": "Reject; __default__ is required."
+    },
+    {
+      "id": "default-variant-resolution",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A single-variant family uses __default__.",
+      "expect": "Resolve exactly one definition."
+    },
+    {
+      "id": "contradictory-conformance-results",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Equal input tuple yields unequal measures.",
+      "expect": "Reject the contradictory result."
+    },
+    {
+      "id": "recompute-is-byte-identical",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Conformance is recomputed at a later time.",
+      "expect": "Result digest and measures match; computedAt may differ."
+    },
+    {
+      "id": "legacy-id-reuse",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A successor declares vercy:world:k3 or k6.",
+      "expect": "Reject."
+    },
+    {
+      "id": "procedure-step-edited-under-released-edition",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Step text changes under a released edition.",
+      "expect": "Reject."
+    },
+    {
+      "id": "edition-digest-covers-steps",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A procedure step changes in a draft successor.",
+      "expect": "Successor edition digest changes."
+    },
+    {
+      "id": "closed-pin-chain-replay",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A successor procedure is released after a closed trace.",
+      "expect": "Original method-to-procedure digest chain resolves unchanged."
+    },
+    {
+      "id": "instance-status-written-directly",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A client writes instance status.",
+      "expect": "Reject; derive from events."
+    },
+    {
+      "id": "status-derived-from-events",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Start and completion events exist.",
+      "expect": "Derive completed without mutating the instance."
+    },
+    {
+      "id": "compensation-marks-original",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Original execution is edited to compensated.",
+      "expect": "Reject; derive from Compensation."
+    },
+    {
+      "id": "backdated-cutover-repins-closed-steps",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A cutover sequence precedes already-written steps and attempts to repin them.",
+      "expect": "Reject."
+    },
+    {
+      "id": "cutover-binds-only-later-steps",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Cutover appears at sequence 12.",
+      "expect": "Only records above 12 use the new regime."
+    },
+    {
+      "id": "backdated-adoption-without-authority",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "effectiveFrom precedes recordedAt with no authorization.",
+      "expect": "Reject."
+    },
+    {
+      "id": "withdrawn-edition-still-resolves-for-closed-trace",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Pinned edition is later withdrawn.",
+      "expect": "Historical digest resolution succeeds."
+    },
+    {
+      "id": "method-less-process-instance",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A process has zero knowledge pins.",
+      "expect": "Record without synthetic edition."
+    },
+    {
+      "id": "synthetic-edition-to-satisfy-required-pin",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Client invents an edition for a method-less process.",
+      "expect": "Reject."
+    },
+    {
+      "id": "step-realizes-two-editions",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A step cites two permitted knowledge editions.",
+      "expect": "Retain both digest pins."
+    },
+    {
+      "id": "step-realizes-none",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A step cites no knowledge edition.",
+      "expect": "Record with an empty pin set."
+    },
+    {
+      "id": "execution-with-unknown-performer-and-deviation",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Performer is absent with same-unit performer-unknown deviation.",
+      "expect": "Atomic append succeeds."
+    },
+    {
+      "id": "execution-with-unknown-performer-no-deviation",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Performer is absent and no deviation exists.",
+      "expect": "Reject atomic unit."
+    },
+    {
+      "id": "deviation-with-declared-absent-evidence",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Evidence is missing with evidenceAbsentReason.",
+      "expect": "Record explicit absence."
+    },
+    {
+      "id": "deviation-with-empty-evidence-and-no-reason",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "No evidence refs and no absence reason.",
+      "expect": "Reject."
+    },
+    {
+      "id": "unknown-deviation-kind",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Deviation uses an unknown kind.",
+      "expect": "Reject against versioned vocabulary."
+    },
+    {
+      "id": "atomic-unit-missing-gap-deviation",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Execution without assignment is submitted alone.",
+      "expect": "Reject atomic unit."
+    },
+    {
+      "id": "atomic-execution-plus-gap-deviation",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Execution and authorization-gap deviation are submitted together.",
+      "expect": "Append both in one unit."
+    },
+    {
+      "id": "conformance-across-cutover",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "One trace has two ordered pin regimes.",
+      "expect": "Produce per-regime and aggregate reproducible measures."
+    },
+    {
+      "id": "digest-mismatch-on-pin",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Pinned digest differs from referent digest.",
+      "expect": "Hard reject."
+    },
+    {
+      "id": "canonicalization-stability",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Equivalent JSON member order differs.",
+      "expect": "Canonical digest is equal."
+    },
+    {
+      "id": "counterfactual-supersedes-historical",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Counterfactual result uses supersedesResultRef.",
+      "expect": "Reject."
+    },
+    {
+      "id": "trace-record-without-sequence",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A deviation lacks eventSequence.",
+      "expect": "Reject."
+    },
+    {
+      "id": "cross-type-ordering-replay",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Work item, execution, deviation and compensation share one sequence.",
+      "expect": "Replay deterministically."
+    },
+    {
+      "id": "work-item-status-edited-in-place",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Client writes work-item status.",
+      "expect": "Reject."
+    },
+    {
+      "id": "work-item-lifecycle-replay",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "WorkItemEvent sequence covers offer through completion.",
+      "expect": "Derive lifecycle."
+    },
+    {
+      "id": "execution-cites-foreign-assignment",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Work item and execution cite different assignments with no deviation.",
+      "expect": "Reject."
+    },
+    {
+      "id": "dangling-escalation-ref",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Work item points to an undefined escalation object.",
+      "expect": "Reject; use escalated WorkItemEvent."
+    },
+    {
+      "id": "local-task-master-created",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Candidate creates a local Task to satisfy taskRef.",
+      "expect": "Reject."
+    },
+    {
+      "id": "work-item-without-verified-task-ref",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Task registry is unverified and taskRef is absent.",
+      "expect": "Record work item without local Task."
+    },
+    {
+      "id": "unregistered-entry-kind",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Candidate declares an unregistered entry kind.",
+      "expect": "Reject; standalone-mm is required."
+    },
+    {
+      "id": "legacy-claim-surfaced-as-conformance",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Legacy wildcard claims are shown as current conformance.",
+      "expect": "Reject."
+    },
+    {
+      "id": "legacy-retraction-note-resolves",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Consumer resolves legacy assembly.",
+      "expect": "Return immutable bytes plus external retraction note."
+    },
+    {
+      "id": "pinned-alignment-declared",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "An alignment has exact version/digest and alignment-only claim.",
+      "expect": "Accept as non-conformance evidence."
+    },
+    {
+      "id": "untyped-reference-field",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "A *Ref field lacks a target rule.",
+      "expect": "Reject."
+    },
+    {
+      "id": "cutover-by-unauthorized-party",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Cutover authority is outside process ownership/delegation.",
+      "expect": "Reject."
+    },
+    {
+      "id": "definition-carries-trigger-and-contracts",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Released definition includes trigger, input/output contracts and step conditions.",
+      "expect": "Preserve them under definition digest."
+    },
+    {
+      "id": "benchmark-projection-leaks-case-identity",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Benchmark projection exposes case or actor identity.",
+      "expect": "Reject or de-identify."
+    },
+    {
+      "id": "adoption-without-access-right",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Consumer accesses a method edition without permitted methodAccess.",
+      "expect": "Reject."
+    },
+    {
+      "id": "tombstoned-performer-preserves-trace-digest",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Performer content is tombstoned.",
+      "expect": "Trace identity, sequence and digest remain stable."
+    },
+    {
+      "id": "overlapping-effective-adoption",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Two adoptions overlap for one adopter and subject without precedence.",
+      "expect": "Reject."
+    },
+    {
+      "id": "local-constraint-expands-edition",
+      "kind": "negative",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Adopter constraint changes or expands normative edition content.",
+      "expect": "Reject; only digested narrowing is allowed."
+    },
+    {
+      "id": "procedure-shared-by-methods",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "Two method editions pin one procedure edition.",
+      "expect": "Reuse one procedure identity and digest."
+    },
+    {
+      "id": "wm-act-009-legacy-preserved",
+      "kind": "positive",
+      "targets": [
+        "WM-ACT-003",
+        "WM-ACT-009"
+      ],
+      "input": "The K6 legacy assembly is resolved.",
+      "expect": "Bytes remain unchanged, non-installable, with retraction note."
+    }
   ]
 }
