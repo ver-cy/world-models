@@ -1,49 +1,263 @@
 {
   "format": "vercy-world-model-fixtures/v1",
   "modelId": "WM-SFT-010",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.3",
   "cases": [
     {
       "id": "two-region-service",
       "kind": "positive",
-      "input": "One logical service is deployed in EU and US runtime environments.",
-      "expect": "One software-system identity references two distinct environments and regional instances."
+      "input": "One logical service is placed by two deployment occurrences into EU and US runtime environments.",
+      "expect": "One WM-SFT-002 identity, two WM-SFT-009 occurrences and two WM-SFT-010 environments remain distinct.",
+      "expectRule": "LEGACY-001"
     },
     {
       "id": "node-replacement-as-of",
       "kind": "positive",
       "input": "Node N1 is retired at T2 and N2 replaces it before T3.",
-      "expect": "T1 impact returns N1 and old instances; T3 returns N2 and successors with N1 tombstone retained."
+      "expect": "T1 impact returns N1 and old occupant records; T3 returns N2 and successors with N1 tombstone retained.",
+      "expectRule": "LEGACY-002"
     },
     {
       "id": "ip-reassignment",
       "kind": "negative",
       "input": "The same IP address is later assigned to another tenant resource.",
-      "expect": "Resources remain distinct because address is an effective-dated observation, not identity."
+      "expect": "Resources remain distinct because address is an effective-dated observation, not identity.",
+      "expectRule": "LEGACY-003"
     },
     {
       "id": "missing-edge",
       "kind": "negative",
       "input": "One topology source is stale or unavailable.",
-      "expect": "Impact result reports incomplete coverage rather than no impact."
+      "expect": "Impact reports incomplete coverage rather than no impact.",
+      "expectRule": "LEGACY-004"
     },
     {
       "id": "ci-and-asset",
       "kind": "positive",
       "input": "One owned chassis is capitalized and also under configuration control.",
-      "expect": "Physical item, asset record and CI designation remain distinct and linked by effective evidence."
+      "expect": "Physical item, asset record, resource and CI designation remain distinct and linked by effective evidence.",
+      "expectRule": "LEGACY-005"
     },
     {
       "id": "cluster-member-turnover",
       "kind": "positive",
       "input": "All nodes of a logical cluster are replaced.",
-      "expect": "Cluster identity remains stable while membership edges close and reopen."
+      "expect": "Cluster identity remains stable while membership edges close and reopen.",
+      "expectRule": "LEGACY-006"
     },
     {
       "id": "desired-observed-drift",
       "kind": "negative",
       "input": "Declared desired version differs from discovered running version.",
-      "expect": "Both assertions and drift remain visible; neither silently overwrites the other."
+      "expect": "Both assertions and drift remain visible; neither silently overwrites the other.",
+      "expectRule": "LEGACY-007"
+    },
+    {
+      "id": "occupant-not-master",
+      "kind": "negative",
+      "input": "A runtime replica key is proposed as a second identity for the logical service.",
+      "expect": "The key remains a dependent RuntimeOccupantRecord correlation key bound to WM-SFT-002 and WM-SFT-009.",
+      "expectRule": "LEGACY-008"
+    },
+    {
+      "id": "scale-out-one-occurrence",
+      "kind": "positive",
+      "input": "One deployment occurrence produces four concurrent runtime occupants.",
+      "expect": "All four dependent records reference the same occurrence without becoming independent service masters.",
+      "expectRule": "LEGACY-009"
+    },
+    {
+      "id": "redeploy-new-occurrence",
+      "kind": "positive",
+      "input": "A new deployment occurrence replaces occupants while the logical system remains unchanged.",
+      "expect": "New dependent occupant records bind to the new occurrence; the WM-SFT-002 identity is unchanged.",
+      "expectRule": "LEGACY-010"
+    },
+    {
+      "id": "membership-vs-hosting",
+      "kind": "negative",
+      "input": "A node member-of edge is supplied where an occupant runs-on edge is required.",
+      "expect": "Endpoint rules reject the relation-kind substitution.",
+      "expectRule": "LEGACY-011"
+    },
+    {
+      "id": "ci-withdrawal",
+      "kind": "positive",
+      "input": "Configuration control is withdrawn from an environment.",
+      "expect": "The designation closes while the environment subject survives.",
+      "expectRule": "LEGACY-012"
+    },
+    {
+      "id": "asset-link-without-evidence",
+      "kind": "negative",
+      "input": "A resource is equated to an asset using only a matching display name.",
+      "expect": "The merge is rejected because effective-dated identity evidence is missing.",
+      "expectRule": "LEGACY-013"
+    },
+    {
+      "id": "unknown-retention-policy",
+      "kind": "negative",
+      "input": "A tombstone has no pinned governing retention policy.",
+      "expect": "The record is retained and the history guarantee is marked pending rather than assumed unbounded.",
+      "expectRule": "LEGACY-014"
+    },
+    {
+      "id": "region-flattening",
+      "kind": "negative",
+      "input": "Two regional environments are collapsed because they host the same service.",
+      "expect": "The environments remain distinct; service identity and region classification do not replace environment identity.",
+      "expectRule": "LEGACY-015"
+    },
+    {
+      "id": "recycled-runtime-key",
+      "kind": "negative",
+      "given": {
+        "closedRuntimeKey": "pod-7",
+        "scope": "prod-eu",
+        "authority": "orch-A"
+      },
+      "when": "the same key is ingested again in the retained scope",
+      "expectRule": "INV-005",
+      "expect": "reject key reuse; retain the closed occupant"
+    },
+    {
+      "id": "conflicting-simultaneous-hosting",
+      "kind": "negative",
+      "given": {
+        "occupant": "occ-1",
+        "asOf": "2026-01-02T00:00:00Z",
+        "hosts": [
+          "node-a",
+          "node-b"
+        ]
+      },
+      "when": "two authoritative runs-on intervals overlap",
+      "expectRule": "INV-010",
+      "expect": "retain conflict and refuse a single authoritative host"
+    },
+    {
+      "id": "parent-vs-membership",
+      "kind": "negative",
+      "given": {
+        "node": "n1",
+        "clusterEdges": [
+          "c1",
+          "c2"
+        ]
+      },
+      "when": "overlapping member-of facts claim two clusters",
+      "expectRule": "INV-009",
+      "expect": "reject timeless parent inference and expose temporal conflict"
+    },
+    {
+      "id": "ineligible-ci-subject",
+      "kind": "negative",
+      "given": {
+        "subjectType": "WM-ECO-018"
+      },
+      "when": "a CI designation is proposed",
+      "expectRule": "INV-019",
+      "expect": "reject designation for an unlisted subject type"
+    },
+    {
+      "id": "cloud-resource-no-asset",
+      "kind": "positive",
+      "given": {
+        "resource": "cloud-vm-1",
+        "assetLink": null
+      },
+      "when": "topology is queried",
+      "expectRule": "INV-021",
+      "expect": "resource remains valid without an owned asset"
+    },
+    {
+      "id": "one-chassis-many-resources",
+      "kind": "positive",
+      "given": {
+        "asset": "chassis-1",
+        "resources": [
+          "vm-1",
+          "vm-2"
+        ]
+      },
+      "when": "evidenced links overlap",
+      "expectRule": "INV-022",
+      "expect": "two links remain distinct and no identity merge occurs"
+    },
+    {
+      "id": "backdated-correction",
+      "kind": "positive",
+      "given": {
+        "target": "hosting-1",
+        "effectiveAt": "2026-01-01T00:00:00Z"
+      },
+      "when": "a later correction is recorded",
+      "expectRule": "INV-023",
+      "expect": "original survives and corrected as-of projections use the replacement"
+    },
+    {
+      "id": "cross-environment-hosting",
+      "kind": "negative",
+      "given": {
+        "occupantEnvironment": "prod-eu",
+        "resourceEnvironment": "prod-us"
+      },
+      "when": "runs-on is asserted",
+      "expectRule": "INV-008",
+      "expect": "reject environment mismatch"
+    },
+    {
+      "id": "occupant-without-deployment",
+      "kind": "negative",
+      "given": {
+        "deploymentOccurrenceRef": null
+      },
+      "when": "occupant is ingested",
+      "expectRule": "INV-003",
+      "expect": "reject missing occurrence reference"
+    },
+    {
+      "id": "planned-without-commission-date",
+      "kind": "positive",
+      "given": {
+        "status": "planned",
+        "commissionedAt": null
+      },
+      "when": "environment is registered",
+      "expectRule": "INV-012",
+      "expect": "accept planned subject"
+    },
+    {
+      "id": "retired-without-close-time",
+      "kind": "negative",
+      "given": {
+        "status": "retired",
+        "retiredAt": null
+      },
+      "when": "terminal status is asserted",
+      "expectRule": "INV-013",
+      "expect": "reject missing close timestamp"
+    },
+    {
+      "id": "resource-without-environment",
+      "kind": "negative",
+      "given": {
+        "resource": "node-9",
+        "containedIn": null
+      },
+      "when": "resource enters governed topology",
+      "expectRule": "INV-007",
+      "expect": "reject incomplete containment"
+    },
+    {
+      "id": "ci-withdrawal-preserves-subject",
+      "kind": "positive",
+      "given": {
+        "designationValidTo": "2026-02-01T00:00:00Z"
+      },
+      "when": "designation closes",
+      "expectRule": "INV-018",
+      "expect": "subject remains addressable"
     }
   ]
 }

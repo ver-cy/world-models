@@ -1,5 +1,7 @@
 # WM-SFT-010 Runtime / Compute Environment candidate
 
-This candidate completes the existing WM-SFT-010 reservation. It owns runtime environments, infrastructure resources, deployed instances, temporal hosting topology and configuration-control designations. Logical software systems, deployment occurrences, physical items and financial assets remain external. No new identifier is allocated.
+This candidate completes the existing WM-SFT-010 reservation. It owns runtime-environment and infrastructure-resource identity, effective-dated topology and status, dependent runtime-occupant records, CI designations, succession, corrections and evidenced asset-resource links.
 
-The candidate is pending exact Grok comparison, one frozen semantic audit and publication packaging.
+Logical systems remain in WM-SFT-002; deployment occurrences and desired placement remain in WM-SFT-009; mastership and bounded impact projections reuse WM-XCT-039. Runtime occupant records never become independent system identity. No new identifier is allocated.
+
+Version `0.1.0-candidate.3` incorporates the Grok comparison and one frozen Claude audit with deterministic remediation. Canonical publication remains held by package conversion and external dependency readiness.

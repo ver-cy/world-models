@@ -1,5 +1,7 @@
-# Offline delta: EM-TEC-04 / WM-SFT-010
+# WM-SFT-010 Runtime / Compute Environment candidate
 
-Validated completion candidate for the already reserved **WM-SFT-010 Runtime / Compute Environment** aggregate. It owns runtime environments, infrastructure resources, deployed instances and effective-dated hosting topology. Logical software systems, deployment occurrences, assets and landscape projections remain external masters; Configuration Item is an effective-dated designation. No identifier is allocated.
+This candidate completes the existing WM-SFT-010 reservation. It owns runtime-environment and infrastructure-resource identity, effective-dated topology and status, dependent runtime-occupant records, CI designations, succession, corrections and evidenced asset-resource links.
 
-Publication remains conditional on exact Grok reconciliation, one frozen semantic audit, package conversion and live HTTP/runtime/search/package verification.
+Logical systems remain in WM-SFT-002; deployment occurrences and desired placement remain in WM-SFT-009; mastership and bounded impact projections reuse WM-XCT-039. Runtime occupant records never become independent system identity. No new identifier is allocated.
+
+Version `0.1.0-candidate.3` incorporates the Grok comparison and one frozen Claude audit with deterministic remediation. Canonical publication remains held by package conversion and external dependency readiness.

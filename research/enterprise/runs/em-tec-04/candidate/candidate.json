@@ -4,16 +4,16 @@
   "modelId": "WM-SFT-010",
   "registryId": "vr.wm-sft-010",
   "name": "Runtime / Compute Environment",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.3",
   "entryKind": "runtime-aggregate",
   "status": "research-candidate",
   "canonicalPublishable": false,
-  "purpose": "Represent governed runtime environments, infrastructure resources, deployed instances, configuration-control designations and temporal hosting topology without duplicating logical systems, deployment occurrences, asset records or tenant landscape facts.",
+  "purpose": "Represent governed runtime environments, infrastructure resources, dependent runtime-occupant records, configuration-control designations and temporal hosting topology without duplicating logical systems, deployment occurrences, asset records or tenant landscape facts.",
   "boundary": {
     "owns": [
       "runtime-environment identity and lifecycle",
       "infrastructure-resource identity and capacity-bearing classification",
-      "deployed-instance runtime identity and tombstone history",
+      "dependent runtime-occupant records for as-of hosting, never gold-copy subject identity",
       "effective-dated HostingRelation topology",
       "desired-versus-observed state correlation and retained drift",
       "configuration-item designation under a named control authority"
@@ -28,6 +28,7 @@
     "excludes": [
       "a second logical Software System identity",
       "deployment-plan or deployment-event lifecycle",
+      "DeployedInstance as an independent gold-copy master",
       "network address as an eternal identifier",
       "copy of financial or physical asset master",
       "current topology represented as timeless truth",
@@ -41,24 +42,16 @@
       ],
       "required": [
         "name",
-        "environmentKind",
-        "controlAuthorityRef",
-        "commissionedAt",
-        "status"
+        "environmentKind"
       ],
       "optional": [
         "region",
         "isolationPolicy",
         "capacityProfile",
+        "commissionedAt",
         "retiredAt"
       ],
-      "lifecycle": [
-        "planned",
-        "commissioned",
-        "active",
-        "restricted",
-        "retired"
-      ]
+      "lifecycleSemantics": "Lifecycle is reconstructed from effective-dated StatusAssertion records; retired requires retiredAt."
     },
     "InfrastructureResource": {
       "identity": [
@@ -66,49 +59,15 @@
       ],
       "required": [
         "resourceKind",
-        "providerRef",
-        "provisionedAt",
-        "status"
+        "providerRef"
       ],
       "optional": [
         "capacity",
         "region",
-        "parentResourceRef",
-        "releasedAt",
-        "successorResourceId"
+        "provisionedAt",
+        "releasedAt"
       ],
-      "lifecycle": [
-        "planned",
-        "provisioned",
-        "active",
-        "degraded",
-        "released"
-      ]
-    },
-    "DeployedInstance": {
-      "identity": [
-        "instanceId"
-      ],
-      "required": [
-        "serviceScope",
-        "artifactVersionRef",
-        "environmentRef",
-        "startedAt",
-        "status"
-      ],
-      "optional": [
-        "deploymentOccurrenceRef",
-        "terminatedAt",
-        "terminalState",
-        "successorInstanceId"
-      ],
-      "lifecycle": [
-        "scheduled",
-        "starting",
-        "running",
-        "stopped",
-        "terminated"
-      ]
+      "lifecycleSemantics": "resourceKind is enumerated; lifecycle is reconstructed from StatusAssertion; released requires releasedAt."
     },
     "HostingRelation": {
       "identity": [
@@ -121,21 +80,15 @@
         "validFrom",
         "assertionKind",
         "sourceRef",
-        "recordedAt",
-        "status"
+        "recordedAt"
       ],
       "optional": [
         "validTo",
         "observedAt",
         "confidence",
-        "method",
-        "withdrawalReason"
+        "method"
       ],
-      "lifecycle": [
-        "asserted",
-        "superseded",
-        "withdrawn"
-      ]
+      "closureRule": "Supersession or withdrawal is represented by validTo plus a CorrectionRecord; functional relation kinds may not overlap without an explicit unresolved conflict."
     },
     "ConfigurationItemDesignation": {
       "identity": [
@@ -146,19 +99,15 @@
         "controlAuthorityRef",
         "validFrom",
         "scope",
-        "status"
+        "sourceRef",
+        "recordedAt",
+        "method"
       ],
       "optional": [
         "validTo",
-        "assetRef",
-        "identityEvidenceRefs",
         "withdrawalReason"
       ],
-      "lifecycle": [
-        "asserted",
-        "effective",
-        "withdrawn"
-      ]
+      "lifecycleSemantics": "Effective while validFrom <= asOf < validTo or validTo is absent; withdrawal closes designation only."
     },
     "StateAssertion": {
       "identity": [
@@ -168,20 +117,117 @@
         "subjectRef",
         "stateKind",
         "value",
-        "effectiveAt",
+        "effectiveFrom",
         "recordedAt",
         "sourceRef",
         "method"
       ],
       "optional": [
-        "observedAt",
-        "supersedesAssertionId"
-      ]
+        "effectiveTo"
+      ],
+      "lifecycleSemantics": "Corrections and supersession close effectiveTo and reference a CorrectionRecord; desired and observed assertions remain separate."
+    },
+    "RuntimeOccupantRecord": {
+      "identity": [
+        "occupantRecordId"
+      ],
+      "identitySemantics": "Dependent correlation record only; runtimeKey is unique within runtimeKeyAuthority and runtimeKeyScope for all retained time and is never reused locally.",
+      "required": [
+        "logicalSystemRef",
+        "deploymentOccurrenceRef",
+        "artifactVersionRef",
+        "runtimeKey",
+        "runtimeKeyAuthority",
+        "runtimeKeyScope",
+        "environmentRef",
+        "observedFrom",
+        "recordedAt",
+        "sourceRef",
+        "method"
+      ],
+      "optional": [
+        "observedTo",
+        "terminalState"
+      ],
+      "closureRule": "terminalState requires observedTo; closure never mutates the referenced WM-SFT-002 or WM-SFT-009 subject."
+    },
+    "StatusAssertion": {
+      "identity": [
+        "statusAssertionId"
+      ],
+      "required": [
+        "subjectRef",
+        "statusVocabulary",
+        "statusValue",
+        "effectiveFrom",
+        "recordedAt",
+        "sourceRef"
+      ],
+      "optional": [
+        "effectiveTo",
+        "method"
+      ],
+      "lifecycleSemantics": "All environment and resource lifecycle status is historical and as-of queryable."
+    },
+    "SuccessionRelation": {
+      "identity": [
+        "successionRelationId"
+      ],
+      "required": [
+        "predecessorRef",
+        "successorRef",
+        "effectiveAt",
+        "sourceRef",
+        "recordedAt",
+        "evidenceRef"
+      ],
+      "optional": [
+        "reason"
+      ],
+      "rule": "Predecessor and successor identities differ; this relation never rewrites either record."
+    },
+    "AssetResourceEvidenceLink": {
+      "identity": [
+        "assetResourceLinkId"
+      ],
+      "required": [
+        "assetRef",
+        "resourceRef",
+        "evidenceRef",
+        "effectiveFrom",
+        "sourceRef",
+        "recordedAt",
+        "confidence"
+      ],
+      "optional": [
+        "effectiveTo",
+        "serialOrProviderCorrelation"
+      ],
+      "lifecycleSemantics": "Append, supersede or close under the named evidence authority; the link never merges identities."
+    },
+    "CorrectionRecord": {
+      "identity": [
+        "correctionId"
+      ],
+      "required": [
+        "targetRecordRef",
+        "correctionKind",
+        "reason",
+        "effectiveAt",
+        "recordedAt",
+        "authorityRef"
+      ],
+      "optional": [
+        "replacementRecordRef",
+        "evidenceRef"
+      ],
+      "rule": "Correction is distinct from withdrawal and preserves the original record."
     }
   },
   "hostingRelationKinds": [
     "runs-on",
     "member-of",
+    "contained-in",
     "backed-by",
     "served-by"
   ],
@@ -200,13 +246,13 @@
     {
       "target": "WM-SFT-009",
       "relation": "REFERENCE",
-      "required": false,
+      "required": true,
       "purpose": "Resolve the deployment occurrence that created or changed deployed instances."
     },
     {
       "target": "WM-XCT-039",
       "relation": "REFERENCE",
-      "required": false,
+      "required": true,
       "purpose": "Reuse fact-mastership desired-versus-observed and bounded impact projection rules."
     },
     {
@@ -218,63 +264,184 @@
   ],
   "operations": [
     {
-      "id": "commission-environment",
-      "effect": "Create a governed runtime environment independent of its current members.",
-      "authority": "environment owner"
+      "id": "register-environment",
+      "effect": "Register a governed environment subject; planned status needs no commissionedAt.",
+      "authority": "environment registry owner"
     },
     {
-      "id": "provision-resource",
-      "effect": "Record a provider-identified capacity-bearing resource.",
+      "id": "register-resource",
+      "effect": "Register a capacity-bearing resource with one enumerated resourceKind.",
       "authority": "resource provider or delegated operator"
     },
     {
-      "id": "start-instance",
-      "effect": "Mint a non-recycled runtime instance pinned to one artifact version.",
-      "authority": "orchestrator"
+      "id": "record-runtime-occupant",
+      "effect": "Append a dependent runtime observation bound to one WM-SFT-002 subject, one WM-SFT-009 occurrence and one immutable artifact version.",
+      "authority": "authorized orchestrator or observability source"
     },
     {
-      "id": "assert-hosting",
-      "effect": "Append a temporal topology edge with source and assertion kind.",
-      "authority": "authorized topology source"
+      "id": "assert-topology",
+      "effect": "Append a typed temporal edge whose endpoints satisfy hostingEndpointRules.",
+      "authority": "authorizedTopologySourceRef pinned for the scope"
+    },
+    {
+      "id": "assert-status",
+      "effect": "Append an effective-dated status assertion; terminal status requires the subject close timestamp.",
+      "authority": "subject owner"
     },
     {
       "id": "record-state",
-      "effect": "Append desired or observed state while retaining drift.",
+      "effect": "Append desired, observed or inferred state while retaining drift.",
       "authority": "declared master for the fact path"
     },
     {
       "id": "designate-ci",
-      "effect": "Place a referenced subject under configuration control for a validity period.",
+      "effect": "Place an eligible referenced subject under configuration control for a validity period.",
       "authority": "configuration-control authority"
     },
     {
-      "id": "retire-subject",
-      "effect": "Close validity and retain a tombstone and succession evidence.",
+      "id": "link-asset-evidence",
+      "effect": "Append an effective-dated AssetResourceEvidenceLink without merging identities.",
+      "authority": "named evidence authority"
+    },
+    {
+      "id": "record-succession",
+      "effect": "Append a dated, sourced and evidenced predecessor-successor relation.",
       "authority": "subject owner"
+    },
+    {
+      "id": "correct-record",
+      "effect": "Append a CorrectionRecord and close or replace the target without deleting it.",
+      "authority": "named correction authority"
     }
   ],
   "invariants": [
-    "Every deployed instance references exactly one immutable artifact version.",
-    "Environment, resource, deployed instance and CI designation use distinct identifiers and lifecycles.",
-    "Every observation records source, method and observed, effective and recorded times as applicable.",
-    "Address or hostname change alone never changes subject identity.",
-    "Every HostingRelation has a validity interval and assertion kind.",
-    "Current topology is an as-of projection of temporal relations rather than timeless stored truth.",
-    "Identifiers are never recycled and retirement retains a tombstone.",
+    "WM-SFT-002 logical identity is invariant under deployment, hosting, scaling, region and node replacement.",
+    "WM-SFT-009 owns deployment occurrence and desired placement; WM-SFT-010 owns observed environment, resource and hosting facts.",
+    "A RuntimeOccupantRecord depends on exactly one WM-SFT-002 subject, one WM-SFT-009 occurrence and one immutable artifact version.",
+    "RuntimeOccupantRecord is never an independent gold-copy subject.",
+    "runtimeKey is unique for all retained time within runtimeKeyAuthority plus runtimeKeyScope; local ingestion rejects reuse.",
+    "Every InfrastructureResource has one enumerated resourceKind.",
+    "Every resource participating in environment topology has exactly one non-overlapping contained-in relation at an as-of instant.",
+    "An occupant runs only on a resource contained in the occupant environment at the same as-of instant.",
+    "Cluster member-of and occupant runs-on are distinct temporal relations.",
+    "Functional runs-on and contained-in relations do not overlap for the same subject unless an unresolved conflict is explicitly retained.",
+    "Current topology and status are as-of projections of effective-dated records, never timeless stored truth.",
+    "Planned environment or resource records do not require commissioning or provisioning timestamps.",
+    "Retired, released, stopped, superseded and withdrawn records require their applicable close timestamp.",
     "Environment and cluster identity remain independent of member resources.",
-    "Node replacement creates new resource and instance identifiers plus explicit succession links.",
-    "Desired and observed states remain separate and drift is retained.",
-    "A CI designation does not duplicate its designated subject.",
-    "A CI designation and a financial or physical asset record never share identity.",
+    "Node replacement creates a new resource identifier, closes old intervals and adds a dated evidenced SuccessionRelation.",
+    "Address or hostname is an effective-dated observation and never identity.",
+    "Desired, observed and inferred StateAssertions remain separate and drift is retained.",
+    "A CI designation does not duplicate its subject; withdrawal closes the designation and never destroys the subject.",
+    "Only explicitly eligible subject types may receive a ConfigurationItemDesignation.",
+    "Configuration-control authority exists only on the effective-dated designation plane.",
+    "Asset, resource and CI designation never share identity.",
+    "Asset-resource linkage exists only through AssetResourceEvidenceLink and requires dated evidence.",
+    "Corrections append CorrectionRecord and preserve the original record; correction is distinct from withdrawal.",
+    "Every observation carries source and recorded time plus method and effective or observed time as applicable.",
     "Missing or stale observation means unknown rather than absent.",
     "Impact answers are time-qualified and state their completeness boundary.",
-    "Environment identity is distinct from service and logical software-system identity."
+    "Region, environment, cluster, node and runtime occupant layers are never flattened into one identity."
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
+    "Frozen audit completed with deterministic remediation; audit is not rerun.",
     "WM-SFT-002 migration and WM-SFT-009/WM-XCT-039 publication holds remain external.",
     "Artifact-version and financial-asset bindings require their domain registries.",
+    "A governing tombstone-retention policy must be pinned before a finite historical guarantee is claimed.",
     "Package conversion and live HTTP/runtime/search/package verification are pending."
+  ],
+  "hostingEndpointRules": {
+    "runs-on": {
+      "subjectTypes": [
+        "RuntimeOccupantRecord"
+      ],
+      "hostTypes": [
+        "InfrastructureResource:node",
+        "InfrastructureResource:vm",
+        "InfrastructureResource:host-slice"
+      ]
+    },
+    "member-of": {
+      "subjectTypes": [
+        "InfrastructureResource:node"
+      ],
+      "hostTypes": [
+        "InfrastructureResource:cluster"
+      ]
+    },
+    "contained-in": {
+      "subjectTypes": [
+        "InfrastructureResource"
+      ],
+      "hostTypes": [
+        "RuntimeEnvironment"
+      ]
+    },
+    "backed-by": {
+      "subjectTypes": [
+        "InfrastructureResource"
+      ],
+      "hostTypes": [
+        "WM-OBJ-001"
+      ]
+    },
+    "served-by": {
+      "subjectTypes": [
+        "RuntimeOccupantRecord",
+        "WM-SFT-002"
+      ],
+      "hostTypes": [
+        "RuntimeEnvironment",
+        "InfrastructureResource:cluster"
+      ]
+    }
+  },
+  "configurationItemEligibleSubjects": [
+    "WM-SFT-002",
+    "WM-SFT-009",
+    "WM-SFT-010:RuntimeEnvironment",
+    "WM-SFT-010:InfrastructureResource"
+  ],
+  "mastership": {
+    "declaredPlacement": "WM-SFT-009",
+    "observedHosting": "authorizedTopologySourceRef pinned for the environment and relation kind",
+    "logicalSystemIdentity": "WM-SFT-002",
+    "environmentAndResourceIdentity": "WM-SFT-010",
+    "configurationControl": "controlAuthorityRef on ConfigurationItemDesignation",
+    "projectionAndCompleteness": "WM-XCT-039"
+  },
+  "identityStack": [
+    "region is a classification or external jurisdiction/placement reference, never environment identity",
+    "RuntimeEnvironment is the governed regional or isolation context",
+    "InfrastructureResource:cluster is a stable logical capacity subject",
+    "InfrastructureResource:node is a non-recycled member subject",
+    "RuntimeOccupantRecord is a dependent observation bound to WM-SFT-002 and WM-SFT-009"
+  ],
+  "assetEvidenceContract": {
+    "carrier": "AssetResourceEvidenceLink",
+    "rule": "Only the first-class link carries asset-resource evidence; ConfigurationItemDesignation has no asset field and identities never merge."
+  },
+  "tombstonePolicy": {
+    "rule": "Closed subjects and runtime keys remain as-of queryable for the retention period named by the governing policy; keys are never recycled.",
+    "policyOwnership": "external retention policy master",
+    "unknownPolicyEffect": "Retention is pending and publication cannot claim unbounded history."
+  },
+  "resourceKinds": [
+    "cluster",
+    "node",
+    "vm",
+    "volume",
+    "network",
+    "pool",
+    "host-slice"
+  ],
+  "stateKinds": [
+    "desired",
+    "observed",
+    "inferred"
+  ],
+  "functionalRelationKinds": [
+    "runs-on",
+    "contained-in"
   ]
 }

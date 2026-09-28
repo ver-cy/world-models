@@ -3,7 +3,7 @@ from pathlib import Path
 
 import yaml
 
-W = Path(r"R:\02_PROJECTS\02_Meta_Models_Platforms\Ver.cy\current\ver-cy\world-models")
+W = Path(__file__).resolve().parents[5]
 R = W / "research/enterprise/runs/em-tec-04"
 IDS = {"WM-SFT-010", "WM-SFT-002", "WM-XCT-039", "WM-SFT-009"}
 
