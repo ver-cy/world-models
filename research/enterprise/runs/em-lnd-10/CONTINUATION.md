@@ -1,11 +1,13 @@
 # EM-LND-10 continuation
 
-Checkpoint date: 2026-09-26.
+Reconciled checkpoint date: 2026-09-28.
 
-Disposition: Finance Landscape is a governed declaration/profile plus reproducible projection; Finance View Policy is a pinned policy revision. Reuse finance, organization, holding and observation masters. No catalogue/runtime identifier is allocated.
+Disposition: Finance Landscape is a governed declaration/profile plus immutable reproducible citation-only projection; Finance View Policy is a pinned policy revision. Existing finance, organization, holding and observation masters remain authoritative. No catalogue/runtime identifier is allocated.
 
-The complete target specifications and reservations plus complete relevant account, balance, holding, organization and observation specifications and prior finance/landscape boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+The exact Grok Heavy response and manifest are preserved. Claude and Grok agree on a profile-only result. Grok sharpened pin-set identity, cross-book and cross-currency gating, elimination prerequisites and mandatory residual visibility.
 
-Publication is held by unallocated responsibility, consolidation, mapping, allocation, metric, FX and matching roots; conflicting finance relations and boundaries; unsettled parentage/cardinality; and absent pins, fixtures and independent review.
+One Claude Opus high no-tools frozen audit returned `ACCEPT WITH LIMITS`. Its six findings were remediated once with constraints and fixtures; the audit was not repeated. No new identifier was allocated.
 
-Next contour: EM-LND-11. Inspect its complete registry scope and all current digital, application, deployment, runtime, interface and dependency specifications before boundary analysis.
+Publication remains held by unallocated Responsibility Centre, Consolidation Scope/Run, Chart of Accounts/Mapping, Cost Allocation, Metric Definition, FX Rate Set and Intercompany Match; finance relation conflicts; and missing canonical pins and crosswalks.
+
+The next Grok contour comes from the generated queue and requires fresh action-time confirmation.

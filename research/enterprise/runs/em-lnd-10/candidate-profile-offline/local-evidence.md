@@ -68,3 +68,13 @@ L-STAT uses EUR and L-MGMT uses USD; presentation is GBP. The plan comes from a 
 ## Holds
 
 Responsibility Centre, Consolidation Scope/Run, Chart of Accounts/Mapping, Cost Allocation, Metric Definition, FX Rate Set and Intercompany Match remain unallocated. WM-ECO-018 contradicts its out-of-scope boundary by claiming consolidation ownership; WM-ECO-018/017 composition direction conflicts; WM-ECO-015/016 relation types disagree; WM-ECO-012 has no approved outgoing relations; WM-ORG-012 parentage and WM-MAT-008 cardinality remain unsettled. Crosswalks, immutable pins, fixtures and independent review are absent. No installability or publication-readiness claim is made.
+
+## Grok reconciliation
+
+Grok independently accepted both proposed candidate types as non-roots. It sharpened identity as the governed profile plus the complete pin set, required deterministic reproduction for identical pins, and required new immutable issues for any changed pin or policy revision. It also made the blocking rules explicit: cross-book totals require authorized cross-book transformations; cross-currency totals additionally require a pinned FX Rate Set and method; elimination requires a pinned Consolidation Scope, Consolidation Run and Intercompany Match; unmatched and unallocated residuals remain visible. The dependency gaps remain holds and no publication-readiness claim is made.
+
+
+## Frozen-audit remediation
+
+The single frozen audit returned ACCEPT WITH LIMITS. Six limits were incorporated once: citation-only derived rows, ledger-revision subset validation, source-currency conservation, rehearsal-only affirmative paths while dependencies are unallocated, raw difference separated from governed variance, and explicit denial of operational or publication authority. The audit was not repeated and no identifier was introduced.
+
