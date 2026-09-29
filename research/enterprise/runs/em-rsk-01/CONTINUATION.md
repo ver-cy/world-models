@@ -1,9 +1,9 @@
 # EM-RSK-01 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: reuse WM-KNW-015 Risk / Opportunity; profile WM-XCT-027 as Risk Assessment Context; propose one identifier-unassigned Control candidate; profile WM-ACT-034 for control assessment only after crosswalk; delegate treatment to EM-RSK-02. No runtime/model identifier was allocated.
+Disposition: reuse WM-KNW-015 as Risk / Opportunity identity; profile WM-XCT-027 as host-scoped Risk Assessment Context; retain one identifier-unassigned Control root. WM-ACT-034 remains conditional and reference-only until a written crosswalk resolves WM-ACT-033/034/027 occupancy. Risk Treatment execution remains an unowned gap; EM-RSK-02 is assurance, not treatment. No catalogue or runtime identifier is allocated.
 
-Complete WM-KNW-015 and WM-XCT-027 specs were parsed and pinned. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by non-canonical parents, the WM-XCT-027 ownership split, missing Control allocation, crosswalks, source pins and fixtures.
+Claude and Grok agree on risk identity, assessment context and one Control root. Grok corrected the initial treatment delegation and strengthened the control-assessment gate. One Claude Opus high no-tools frozen audit returned REVISE at revision 2. All 33 closed items were remediated once without audit rerun. Revision 3 has 33 stable rules and 33 concrete declarative fixtures; validation passes.
 
-Next contour: EM-RSK-03. Read complete WM-PER-002 and WM-XCT-002 specifications plus registry reservations.
+Publication remains held by Control allocation, non-canonical bases, field-level mastership ratification, the assessment crosswalk, treatment/effectiveness/evidence masters, approved relations and source pins.
