@@ -1,9 +1,9 @@
 # EM-RSK-03 continuation
 
-Checkpoint date: 2026-09-26.
+Status: provider-reconciled, single frozen audit remediated once, publication held.
 
-Disposition: propose WM-PER-002 duplicate retirement into WM-XCT-016 Identity Register; profile WM-VRT-005 Online Account; reuse WM-XCT-002 only for consent/read disclosure; propose one identifier-unassigned Authorization Domain / Access Grant candidate; profile WM-ACT-034 for reviews and keep credential metadata contained. No runtime/model identifier was allocated.
+Decision: propose WM-PER-002 duplicate retirement into WM-XCT-016 only after registry-owner alias confirmation; use WM-VRT-005 only as the pending Digital Account direction; restrict WM-XCT-002 to consent/read-disclosure justification; profile WM-ACT-034 for Access Review; keep credential metadata account-owned and secret-free.
 
-The complete legacy R4 and current WM-XCT-002 specs were parsed and pinned. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by duplicate adjudication, missing WM-VRT-005 spec, non-canonical WM-XCT-002, candidate allocation, crosswalks and fixtures.
+The offline Authorization Domain / Access Grant material is an unresolved allocation cluster, not one proven root. Its Domain, Role, Assignment, Grant and Delegated Grant objects have separate identity/lifecycle/mastership. No identifier or runtime binding was created.
 
-Next contour: EM-STR-02. Read complete WM-KNW-011 and WM-XCT-025 specifications plus registry reservations.
+Evidence: Claude initial study, Grok independent study, provider comparison, one frozen Claude audit and one remediation are preserved in this directory. Publication requires registry allocation/split adjudication, base specifications and approved relations, credential crosswalk, rights controls, package conversion and live conformance.
