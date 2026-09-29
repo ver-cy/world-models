@@ -1,9 +1,11 @@
 # EM-PEO-01 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: PROFILE over WM-PER-001; no new ID. AccountBinding remains outside the person model and identifier-unassigned pending sibling discovery.
+Disposition: restricted PROFILE over WM-PER-001; no new model or runtime ID. AccountBinding is an auditor-introduced identifier-unassigned non-member candidate.
 
-Complete spec parsed and pinned; frozen dossier, Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by source-version conflicts, crosswalk/mastership issues, missing link-state semantics, account-binding ownership and jurisdiction validation.
+Completed: frozen dossier, Claude study, exact Grok study, provider comparison, one frozen Claude audit, and one-pass revision 3 remediation with addressable invariants and declarative fixtures.
 
-Next contour: EM-PEO-02. Read its complete candidate specifications and registry reservations.
+Publication remains held by inherited WM-PER-001 holds, registry drift, unresolved local extension carriers, unpinned services and unexecuted fixtures.
+
+Next contour: EM-PEO-02; its exact Grok prompt requires fresh action-time confirmation.

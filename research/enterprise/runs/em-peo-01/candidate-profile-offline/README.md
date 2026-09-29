@@ -1,3 +1,3 @@
-# EM-PEO-01 offline profile dossier
+# EM-PEO-01 offline candidate
 
-Validated restricted Enterprise person-identity profile over WM-PER-001. AccountBinding remains outside this package pending sibling discovery and allocation. No new identifier is created.
+Declarative restricted profile only. No runtime/model identifier is created and canonical publication is held.
