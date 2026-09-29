@@ -1,5 +1,3 @@
-# Offline delta: EM-TEC-01 / Source Repository
+# EM-TEC-01 Source Repository and Software Product boundary
 
-Identifier-unassigned Source Repository candidate plus a declarative profile separating software products, components, interface contracts, builds, releases, artifacts, deployments and SBOM records. Repository identity survives hosting migration, while builds must pin immutable source revisions. No identifier is guessed or allocated.
-
-Publication remains conditional on exact Grok reconciliation, registry allocation, one frozen semantic audit and live verification.
+Reconciled revision 3 research candidate and profile. No identifier, installation or publication claim.
