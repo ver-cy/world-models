@@ -1,3 +1,3 @@
-# WM-SFT-018 Network / Endpoint candidate
+# EM-TEC-03 — WM-SFT-018
 
-Reviewable completion candidate supporting EM-TEC-03. It keeps logical endpoint identity separate from addresses, runtime resources, interface contracts and telemetry. It allocates no new identifier and is not canonically publishable until provider comparison, frozen audit and package verification finish.
+Reconciled reserved-model candidate for stable endpoint identity and effective-dated network assertions. Canonical publication is held.

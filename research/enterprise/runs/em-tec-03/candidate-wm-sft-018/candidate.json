@@ -4,41 +4,46 @@
   "modelId": "WM-SFT-018",
   "registryId": "vr.wm-sft-018",
   "name": "Network / Endpoint",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.2",
   "entryKind": "network-endpoint-aggregate",
   "status": "research-candidate",
   "canonicalPublishable": false,
-  "purpose": "Represent stable logical network endpoint identity, effective-dated address bindings, connectivity and exposure assertions without owning software-system, runtime-resource, interface-contract or traffic-observation identity.",
+  "purpose": "Represent stable logical endpoint identity plus append-only effective-dated address, connectivity, exposure and zone assertions without owning software, runtime, interface, traffic observation or secret identity.",
   "boundary": {
     "owns": [
-      "logical network-endpoint identity and lifecycle",
-      "effective-dated address and name bindings",
-      "effective-dated connectivity relations",
-      "declared network exposure and reachability assertions",
-      "network-zone or segment membership assertions",
-      "successor and tombstone history for retired endpoints"
+      "logical endpoint identity and lifecycle",
+      "effective-dated address bindings",
+      "directional connectivity declarations",
+      "bounded exposure assertions",
+      "zone membership and tombstone history"
     ],
     "delegates": [
-      "logical software-system identity to WM-SFT-002",
-      "runtime environment and infrastructure-resource identity to WM-SFT-010",
-      "logical API/interface contract and endpoint binding to WM-SFT-003",
-      "observed telemetry and operational signals to WM-SFT-017"
+      "software system identity to WM-SFT-002",
+      "runtime identity to WM-SFT-010",
+      "contract exposure to WM-SFT-003",
+      "observed telemetry to WM-SFT-017"
     ],
     "excludes": [
-      "credentials secrets or private key material",
-      "software-system or deployed-instance mastership",
-      "API schema and compatibility semantics",
-      "packet flow or telemetry occurrence lifecycle",
-      "IP address hostname or URL as eternal identity",
-      "unbounded claims of actual reachability"
+      "credentials secrets tokens and private keys",
+      "software or runtime mastership",
+      "contract and schema semantics",
+      "observed traffic or reachability",
+      "address as eternal identity"
     ]
+  },
+  "temporal": {
+    "interval": "half-open [from,to)",
+    "timeBasis": "UTC millisecond precision",
+    "openEnd": "null to",
+    "recordTime": "recordedAt is append-only; corrections use supersedesLocalHandle"
   },
   "objects": {
     "NetworkEndpoint": {
-      "identity": [
+      "naturalKey": [
         "endpointId"
       ],
       "required": [
+        "endpointId",
         "name",
         "endpointKind",
         "ownerRef",
@@ -52,26 +57,34 @@
       "lifecycle": [
         "planned",
         "active",
-        "restricted",
         "retired"
       ]
     },
     "AddressBinding": {
-      "identity": [
-        "addressBindingId"
+      "naturalKey": [
+        "endpointRef",
+        "addressKind",
+        "addressValue",
+        "environmentRef",
+        "scopeRef",
+        "validFrom"
       ],
       "required": [
         "endpointRef",
         "addressKind",
         "addressValue",
+        "environmentRef",
+        "scopeRef",
         "validFrom",
         "authorityRef",
+        "recordedAt",
         "status"
       ],
       "optional": [
         "validTo",
-        "environmentRef",
-        "resolutionEvidenceRef"
+        "resolutionEvidenceRef",
+        "localHandle",
+        "supersedesLocalHandle"
       ],
       "lifecycle": [
         "proposed",
@@ -81,72 +94,91 @@
       ]
     },
     "ConnectivityRelation": {
-      "identity": [
-        "connectivityRelationId"
+      "naturalKey": [
+        "sourceEndpointRef",
+        "targetEndpointRef",
+        "protocol",
+        "portOrChannel",
+        "validFrom"
       ],
       "required": [
         "sourceEndpointRef",
         "targetEndpointRef",
         "protocol",
+        "portOrChannel",
         "validFrom",
         "authorityRef",
+        "recordedAt",
         "status"
       ],
       "optional": [
         "validTo",
-        "portOrChannel",
         "direction",
-        "evidenceRefs"
+        "evidenceRefs",
+        "localHandle",
+        "supersedesLocalHandle"
       ],
       "lifecycle": [
-        "declared",
+        "proposed",
         "effective",
         "superseded",
         "withdrawn"
       ]
     },
     "ExposureAssertion": {
-      "identity": [
-        "exposureAssertionId"
+      "naturalKey": [
+        "endpointRef",
+        "audienceScope",
+        "scopeRef",
+        "effectiveFrom"
       ],
       "required": [
         "endpointRef",
         "audienceScope",
         "accessMode",
+        "scopeRef",
         "effectiveFrom",
         "authorityRef",
+        "policyRef",
+        "recordedAt",
         "status"
       ],
       "optional": [
         "effectiveTo",
-        "policyRef",
         "evidenceRefs",
-        "confidence"
+        "confidence",
+        "localHandle",
+        "supersedesLocalHandle"
       ],
       "lifecycle": [
-        "declared",
+        "proposed",
         "effective",
         "superseded",
         "withdrawn"
       ]
     },
     "ZoneMembership": {
-      "identity": [
-        "zoneMembershipId"
+      "naturalKey": [
+        "endpointRef",
+        "zoneRef",
+        "validFrom"
       ],
       "required": [
         "endpointRef",
         "zoneRef",
         "validFrom",
         "authorityRef",
+        "recordedAt",
         "status"
       ],
       "optional": [
         "validTo",
-        "evidenceRefs"
+        "evidenceRefs",
+        "localHandle",
+        "supersedesLocalHandle"
       ],
       "lifecycle": [
-        "asserted",
+        "proposed",
         "effective",
         "superseded",
         "withdrawn"
@@ -158,76 +190,86 @@
       "target": "WM-SFT-002",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Resolve the logical software system or service exposed by the endpoint."
+      "purpose": "Logical service or software system."
     },
     {
       "target": "WM-SFT-010",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Resolve the runtime environment or infrastructure resource hosting the endpoint."
-    },
-    {
-      "target": "WM-SFT-003",
-      "relation": "REFERENCE",
-      "required": false,
-      "purpose": "Resolve interface contracts and their effective endpoint bindings."
+      "purpose": "Hosting runtime or resource."
     },
     {
       "target": "WM-SFT-017",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Resolve observed traffic health and reachability evidence without copying telemetry."
+      "purpose": "Observed telemetry without copying measurements."
     }
   ],
-  "operations": [
+  "incomingRelations": [
     {
-      "id": "register-endpoint",
-      "effect": "Mint a stable endpoint identity independent of current address or host.",
-      "authority": "network or service owner"
-    },
-    {
-      "id": "bind-address",
-      "effect": "Append an effective-dated name address or URL binding.",
-      "authority": "authoritative address registrar"
-    },
-    {
-      "id": "assert-connectivity",
-      "effect": "Append a bounded directional connectivity relation.",
-      "authority": "network control authority"
-    },
-    {
-      "id": "assert-exposure",
-      "effect": "Declare intended audience and access mode with policy evidence.",
-      "authority": "service and security owner"
-    },
-    {
-      "id": "retire-endpoint",
-      "effect": "Close current assertions and retain tombstone and successor references.",
-      "authority": "endpoint owner"
+      "source": "WM-SFT-003",
+      "relation": "REFERENCE",
+      "navigable": false,
+      "purpose": "Contract exposure cites endpoint; endpoint stores no mirrored binding."
     }
   ],
   "invariants": [
-    "Endpoint identity is independent of IP address hostname URL port and runtime resource identity.",
-    "An address binding has one bounded validity interval and one authoritative source.",
-    "Reassigning an address never reuses or merges endpoint identity.",
-    "Concurrent address bindings are permitted only when their scopes or environments are explicit.",
-    "Connectivity relations are directional unless explicitly declared bidirectional.",
-    "Every connectivity relation identifies source target protocol authority and validity period.",
-    "Declared connectivity does not prove observed traffic or current reachability.",
-    "Exposure assertions state audience access mode authority and effective period.",
-    "Secrets credentials and private keys are referenced indirectly and never stored in this aggregate.",
-    "Runtime resource replacement does not change endpoint identity when the logical exposure remains continuous.",
-    "Interface contract revision changes do not change endpoint identity.",
-    "Endpoint address changes do not change interface contract revision.",
-    "Retired endpoints retain tombstones and successor evidence.",
-    "Historical resolution uses the binding valid at the requested time.",
-    "Access to endpoint and exposure metadata cannot exceed the governing policy and evidence rights."
+    {
+      "id": "INV-SFT018-01",
+      "rule": "Endpoint identity is independent of IP, host, URL, port, protocol, runtime resource, and interface revision."
+    },
+    {
+      "id": "INV-SFT018-02",
+      "rule": "Dependent facts are unique by natural key; local handles never replace parent-scoped identity."
+    },
+    {
+      "id": "INV-SFT018-03",
+      "rule": "Address reassignment never merges endpoint identity; retired endpoints retain tombstones and acyclic successor evidence."
+    },
+    {
+      "id": "INV-SFT018-04",
+      "rule": "Concurrent address bindings require explicit distinct scope or environment."
+    },
+    {
+      "id": "INV-SFT018-05",
+      "rule": "Connectivity is directional unless explicitly bidirectional and never proves observed traffic or current reachability."
+    },
+    {
+      "id": "INV-SFT018-06",
+      "rule": "Exposure states audience, access mode, authority, policy, scope, and effective interval."
+    },
+    {
+      "id": "INV-SFT018-07",
+      "rule": "Credentials, secrets, tokens and private keys are never stored."
+    },
+    {
+      "id": "INV-SFT018-08",
+      "rule": "Runtime replacement preserves endpoint identity when logical exposure is continuous."
+    },
+    {
+      "id": "INV-SFT018-09",
+      "rule": "Historical resolution uses valid time and record time; corrections append and supersede rather than edit."
+    },
+    {
+      "id": "INV-SFT018-10",
+      "rule": "Intervals are half-open UTC [from,to); to is greater than from; null to is open-ended."
+    },
+    {
+      "id": "INV-SFT018-11",
+      "rule": "A complete connectivity or exposure inventory inherits the strictest member classification and policy ceiling."
+    },
+    {
+      "id": "INV-SFT018-12",
+      "rule": "One authority governs an address namespace at a time; conflicts are recorded and not silently resolved."
+    },
+    {
+      "id": "INV-SFT018-13",
+      "rule": "Declared and observed network facts remain separate even when telemetry contradicts a declaration."
+    }
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
-    "WM-SFT-017 retains its own specification and publication holds.",
-    "Integration remains identifier-unassigned in EM-TEC-03.",
-    "Package conversion and live HTTP/runtime/search/package verification are pending."
+    "Registry confirmation of WM-SFT-002, WM-SFT-010 and WM-SFT-017 is required before advancement.",
+    "Environment, owner, authority, policy, scope and zone reference targets must be resolved from existing registry entries before publication.",
+    "Canonical publication and live verification are held; no new runtime ID."
   ]
 }

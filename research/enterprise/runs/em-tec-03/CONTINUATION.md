@@ -1,12 +1,7 @@
 # EM-TEC-03 continuation
 
-Checkpoint date: 2026-09-26.
+Provider reconciliation and the single frozen Claude Opus no-tools audit are complete. The audit accepted the boundary direction and rejected publication of candidate.1. Candidate.2 applies all material findings once without a second audit.
 
-Disposition: complete reserved WM-SFT-003 as API / Interface Contract; keep revision/version and EndpointBinding inside its aggregate; reference WM-DAT-004, WM-SFT-018, WM-REC-003 and WM-ACT-015; leave Integration as an identifier-unassigned candidate. No new runtime/model identifier was allocated.
+Disposition: COMPLETE RESERVED MODEL candidates for WM-SFT-003 and WM-SFT-018; Integration remains identifier-unassigned; ConsumptionRouting is deferred. No new runtime/model ID. Both candidates remain canonicalPublishable=false while external referents, base-model publication holds, and registry review remain unresolved.
 
-The complete available WM-DAT-004, WM-REC-003 and WM-ACT-015 specifications, relevant reservations and relation subset were frozen. WM-SFT-003 and WM-SFT-018 were confirmed reservation-only gaps. Dossier, one Claude Opus high no-tools study, local synthesis, exact unsent Grok prompt and a validated `0.1.0-candidate.1` WM-SFT-003 completion candidate are preserved. The candidate has fifteen invariants, four external boundaries and seven fixtures. Publication remains pending exact Grok comparison, one frozen semantic audit, package conversion and live verification; Integration remains identifier-unassigned.
-
-Next contour: EM-TEC-04. Read complete WM-SFT-010, WM-SFT-002 and WM-XCT-039 specifications and registry reservations.
-
-
-Supporting completion: reserved WM-SFT-018 now has a reviewable `0.1.0-candidate.1` Network / Endpoint candidate with stable endpoint identity, temporal address/connectivity/exposure assertions, fifteen invariants, four external boundaries and seven fixtures. It allocates no new identifier and remains pending exact Grok comparison, frozen audit and package/live verification.
+Grok response, comparison, audit, candidates, traced fixtures, package copies and hashes are preserved in this checkpoint. Do not publish these blockers.
