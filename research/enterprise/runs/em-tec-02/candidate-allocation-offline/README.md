@@ -1,5 +1,3 @@
-# Offline delta: EM-TEC-02 / Purchased Licence and Entitlement
+# EM-TEC-02 entitlement boundary
 
-Identifier-unassigned candidate for purchased software rights, quantities, terms and effective allocations. It keeps commercial authorization separate from products, systems, applications, deployments, runtime environments, agreements and observations. No identifier is guessed or allocated.
-
-Publication remains conditional on exact Grok reconciliation, registry allocation, one frozen semantic audit and live verification.
+Revision 3 identifier-unassigned entitlement candidate and non-executable binding profile. Not canonical or installable.
