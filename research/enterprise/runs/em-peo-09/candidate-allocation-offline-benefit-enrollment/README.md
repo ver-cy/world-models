@@ -1,3 +1,3 @@
-# EM-PEO-09: Benefit Enrollment
+# EM-PEO-09 Benefit Enrollment
 
-Offline review package. Identifier allocation, publication and runtime registration remain pending.
+Identifier-unassigned research candidate, reconciled by Claude and Grok and remediated after one frozen audit.

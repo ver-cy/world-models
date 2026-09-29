@@ -1,11 +1,11 @@
 # EM-PEO-09 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: propose identifier-unassigned Compensation Band, Compensation Assignment, Benefit Plan and Benefit Enrollment roots; keep rules/elections/coverage contained; profile review decisions on WM-REC-010 and payroll calculation/payslip on WM-ECO-031; reuse payment, money, valuation and disclosure masters. No catalogue/runtime identifier is allocated.
+Disposition: four identifier-unassigned roots — Compensation Band, Compensation Assignment, Benefit Plan and Benefit Enrollment. Eligibility is plan-owned; election and coverage are enrollment-owned. Compensation Review profiles WM-REC-010. Payroll calculation and payslip profile WM-ECO-031; payment and settlement remain WM-ECO-009 facts. No catalogue or runtime identifier is allocated.
 
-The full registry scope and complete current compensation, employment, position, money, valuation, decision, payment, disclosure and measurement specifications plus relevant prior boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Claude and Grok agree on the four-root boundary and reject a Compensation Review root. Reconciliation adds off-band validity, explicit amount/FX/FTE/time pins, enrollment continuity outside payroll and declarative reconstruction controls for pay aggregates.
 
-Publication is held by four unallocated roots, ambiguous WM-ECO-031 term ownership, missing approved relations, non-canonical bases, absent WM-XCT-005 and WM-POL-012 current specs, unsettled benefit/equity owners, and missing jurisdiction profiles, source pins and fixtures.
+One Claude Opus high no-tools frozen audit returned REVISE at revision 2. All twenty closed checklist items were remediated once without audit rerun. Revision 3 has 71 stable rules and 81 declarative fixtures; the combined validator passes.
 
-EM-PEO-09 is the final queued Enterprise contour requiring a new frozen checkpoint in this analysis pass. Coverage reconciliation records 98 checkpoint manifests, 11 earlier published-partial contours and 2 immutable releases, covering all 111 queue entries. The queue metadata for the two immutable releases is stale and was intentionally not rewritten. The next phase requires action-time confirmation for selected Grok prompts, then cross-contour consolidation, identifier allocation decisions and publication work only where independent evidence and registry authority permit it.
+Publication remains held by four missing allocations, provisional relations, the WM-ECO-031 term-mastership conflict, non-canonical bases, missing privacy/public-benefit specifications, jurisdiction profiles and source pins. The full Enterprise contour pass is complete; remaining work is cross-contour consolidation, allocation and publication of eligible artifacts.
