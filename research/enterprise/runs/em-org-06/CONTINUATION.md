@@ -1,11 +1,11 @@
 # EM-ORG-06 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: REUSE WM-ORG-004 and PROFILE WM-XCT-023; no new ID. BusinessRole concept scheme and HeadcountPlan remain identifier-unassigned candidates pending registry allocation and evidence.
+Disposition: REUSE WM-ORG-004 for Position, apply explicit local capacity/job-share narrowing, and PROFILE WM-XCT-023 for Accountability, held Decision Rights and RACI. No new model or runtime identifier. BusinessRole and HeadcountPlan remain identifier-unassigned.
 
-Completed evidence: complete current specs parsed and pinned; compact frozen `provider-dossier.json`, Claude Opus high no-tools study, `local-evidence.md`, and exact unsent `grok-prompt.md` are preserved.
+Completed evidence: complete pinned specs and reservations, compact frozen dossier, Claude Opus no-tools study, exact Grok study, provider comparison, one frozen Claude audit and one-pass remediation revision 3. The final candidate carries tagged constraints and declarative fixtures; no executable semantics or validator was created.
 
-Publication is blocked by missing role-vocabulary allocation, occupancy/relationship validation, unevidenced HeadcountPlan and job-share semantics, absent RACI fixtures and inherited source/profile holds. Grok browser submission requires action-time user confirmation.
+Publication is held by inherited base holds, three candidate relation rows, registry/spec drift, unpinned WM-ORG-002/016 and base-required dependencies, unallocated BusinessRole, source-weak job-share/SoD semantics and unexecuted fixtures.
 
-Next contour: EM-PEO-01. Read the complete WM-PER-001 specification and registry reservation.
+Next contour: EM-PEO-01. Its exact Grok prompt is preserved and requires fresh action-time user confirmation before browser submission.

@@ -1,0 +1,3325 @@
+# Frozen semantic audit: EM-ORG-06 Enterprise Position, Role and Accountability
+
+You are the single independent frozen auditor. Use only the material below and no tools. Audit the reconciled profile. Do not invent identifiers or external facts.
+
+Required output:
+1. Verdict ACCEPT or REVISE.
+2. Confirm or reject REUSE of WM-ORG-004 plus PROFILE of WM-XCT-023 and no new identifier.
+3. List every defect that could cause position/person/occupancy collapse, vacancy ambiguity, capacity errors, role-concept/assertion collapse, authority-plane collapse, RACI cardinality leakage, SoD bypass, IAM grants, history rewrite or unsupported release claims.
+4. Give exact remediation and fixture expectation for every defect.
+5. Identify contradictions among dossier, providers, candidate and fixtures.
+6. End with a closed numbered remediation checklist.
+
+## FROZEN DOSSIER
+```json
+{
+  "contour": {
+    "id": "EM-ORG-06",
+    "name": "Позиции, роли и ответственность",
+    "domain": "ORG",
+    "kind": "subject",
+    "wave": "W1",
+    "scope": "Штатные позиции и функциональные роли; ответственность, права решений и RACI. Назначение человека хранится у рабочей связи, определение грейда отдельно.",
+    "candidate_types": [
+      "Position",
+      "BusinessRole",
+      "Accountability",
+      "DecisionRight",
+      "RaciAssignment",
+      "HeadcountPlan"
+    ],
+    "specific_questions": [
+      "Что существует независимо от человека: позиция, роль или профессия?",
+      "Как поддержать job sharing и роли без штатной позиции?",
+      "Где кончается ответственность и начинается техническое полномочие IAM?"
+    ],
+    "proposed_invariants": [
+      "Вакантная позиция допустима",
+      "Бизнес-роль не равна access role",
+      "RACI указывает предмет, роль, период и допустимые конфликты"
+    ],
+    "negative_case": "Удаление сотрудника удаляет штатную позицию и её бюджет.",
+    "acceptance_scenario": "Смена исполнителя сохраняет позицию; один человек исполняет две роли; две доли занятости могут занимать одну позицию при разрешённом профиле.",
+    "comparison_tracks": [
+      "W3C ORG: коллективы, роли, членство и позиции",
+      "GLEIF: зарегистрированная идентичность и консолидационные связи",
+      "Сопоставление корпоративного управления, фактической оргструктуры и HR/ERP-представления"
+    ],
+    "vercy_candidates": [
+      {
+        "model_id": "WM-ORG-004",
+        "mapping_status": "conceptual-candidate",
+        "evidence_depth": "index-and-publication-metadata",
+        "note": "Связь требует проверки полного семантического crosswalk; published не означает завершённую независимую экспертизу."
+      },
+      {
+        "model_id": "WM-XCT-023",
+        "mapping_status": "conceptual-candidate",
+        "evidence_depth": "index-and-publication-metadata",
+        "note": "Связь требует проверки полного семантического crosswalk; published не означает завершённую независимую экспертизу."
+      }
+    ],
+    "candidate_properties_from_v1": [
+      {
+        "predecessor": "ORG-07",
+        "fields": [
+          {
+            "name": "position_code",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "job_family",
+            "value_type": "code",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "grade",
+            "value_type": "code",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "authorized_fte",
+            "value_type": "decimal",
+            "status": "candidate-not-normative"
+          }
+        ]
+      },
+      {
+        "predecessor": "PEO-05",
+        "fields": [
+          {
+            "name": "role_name",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "accountabilities",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "decision_rights",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "scope",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          }
+        ]
+      }
+    ],
+    "suggested_owner": "Корпоративный секретарь / владелец организационной модели",
+    "candidate_master_systems": "Корпоративный реестр, HRIS, реестры юрлиц",
+    "related_research_contours": [
+      "EM-ORG-01",
+      "EM-ORG-04",
+      "EM-PEO-02",
+      "EM-PEO-04"
+    ],
+    "blocking_decisions": [
+      "Установить границу и решение reuse/extend/new по действующим спецификациям.",
+      "Подтвердить semantic crosswalk, права и source mastership.",
+      "Выбрать immutable refs; провести проверки fixtures до заявления о публикационной готовности."
+    ]
+  },
+  "queue_reservation": {
+    "sequence": 33,
+    "id": "EM-ORG-06",
+    "status": "queued",
+    "claude_status": "not-started",
+    "grok_status": "not-started",
+    "boundary_decision": "pending",
+    "publication_urls": [],
+    "remaining_scope": "Entire research brief pending",
+    "target_model_ids": [
+      "WM-ORG-004",
+      "WM-XCT-023"
+    ]
+  },
+  "registry_reservations": [
+    {
+      "registry_id": "vr.wm-org-004",
+      "record_plane": "world-model",
+      "model_id": "WM-ORG-004",
+      "name": "Position",
+      "alternate_names": "",
+      "entry_kind": "standalone-mm",
+      "origin": "grok-union-current",
+      "status": "described-previous-version",
+      "review_state": "migration-boundary-review",
+      "nav_path": "NAV.SOC.ORG.POS",
+      "domain_tags": "SOC.ORG.POS",
+      "legacy_alias": "O2;O3",
+      "existing_spec_ref": "models/organizations/O2-organizational-unit.md;models/organizations/O3-employment-and-membership.md",
+      "parent_ids": "",
+      "contains_ids": "",
+      "aligned_model_ids": "",
+      "purpose": "Candidate governed context model for Position; boundary questions remain required.",
+      "owner_or_maintainer": "parent organization; both parties (bilateral record)",
+      "source_url": "",
+      "namespace_uri": "",
+      "source_version_or_year": "2026-08-22",
+      "source_group": "",
+      "source_category": "",
+      "source_format": "",
+      "composition_role": "COMPOSE",
+      "default_link_type": "TYPED-EDGES",
+      "priority_wave": "0",
+      "priority_score": "88",
+      "priority_method": "cohort-proxy with model-specific robotics check; use TOP-50 sequence",
+      "priority_confidence": "low",
+      "priority_rationale": "AI foundation: high reuse across agents and domains",
+      "factor_demand": "0.92",
+      "factor_data": "0.85",
+      "factor_reuse": "0.92",
+      "factor_interop": "0.85",
+      "factor_feasibility": "0.90",
+      "factor_robotics": "0.00",
+      "factor_overlap": "0.05",
+      "possible_duplicate_of": "",
+      "shared_source_with": "",
+      "relations_ref": "planning/VERCY-MODEL-RELATIONS.csv",
+      "validation_flags": "",
+      "provenance": "current-112 + Grok review + Claude adversarial audit"
+    },
+    {
+      "registry_id": "vr.wm-xct-023",
+      "record_plane": "world-model",
+      "model_id": "WM-XCT-023",
+      "name": "Party Role",
+      "alternate_names": "",
+      "entry_kind": "mixin",
+      "origin": "claude-plus-gap-audit",
+      "status": "candidate",
+      "review_state": "boundary-review-required",
+      "nav_path": "NAV.XCT.ROLE",
+      "domain_tags": "XCT.ROLE",
+      "legacy_alias": "",
+      "existing_spec_ref": "",
+      "parent_ids": "",
+      "contains_ids": "",
+      "aligned_model_ids": "",
+      "purpose": "Actor role scoped to an object or activity",
+      "owner_or_maintainer": "owner designated by the adopting Dimension",
+      "source_url": "",
+      "namespace_uri": "",
+      "source_version_or_year": "2026-08-22",
+      "source_group": "",
+      "source_category": "",
+      "source_format": "",
+      "composition_role": "",
+      "default_link_type": "",
+      "priority_wave": "0",
+      "priority_score": "86",
+      "priority_method": "cohort-proxy with model-specific robotics check; use TOP-50 sequence",
+      "priority_confidence": "low",
+      "priority_rationale": "Actor role scoped to an object or activity",
+      "factor_demand": "0.92",
+      "factor_data": "0.84",
+      "factor_reuse": "0.88",
+      "factor_interop": "0.82",
+      "factor_feasibility": "0.88",
+      "factor_robotics": "0.00",
+      "factor_overlap": "0.06",
+      "possible_duplicate_of": "",
+      "shared_source_with": "",
+      "relations_ref": "",
+      "validation_flags": "",
+      "provenance": "Claude independent review + systematic gap audit + Claude adversarial audit"
+    }
+  ],
+  "relationship_ledger": [
+    {
+      "source_model_id": "WM-ORG-002",
+      "relation_type": "CONTAINS",
+      "target_model_id": "WM-ORG-004",
+      "instance_semantics": "Unit instance contains or governs positions",
+      "rationale": "Structural matryoshka",
+      "review_state": "candidate"
+    },
+    {
+      "source_model_id": "WM-ORG-003",
+      "relation_type": "COMPOSE",
+      "target_model_id": "WM-ORG-004",
+      "instance_semantics": "Team is composed through positions and assignments",
+      "rationale": "Positions remain reusable",
+      "review_state": "candidate"
+    },
+    {
+      "source_model_id": "WM-ORG-004",
+      "relation_type": "COMPOSE",
+      "target_model_id": "WM-ORG-016",
+      "instance_semantics": "Position is occupied through a scoped assignment",
+      "rationale": "Separates position from person",
+      "review_state": "candidate"
+    }
+  ],
+  "current_specs": {
+    "WM-ORG-004": {
+      "source_file": "publications/wm-org-004-position/spec.yaml",
+      "source_bytes": 257622,
+      "source_sha256": "084bbd188562897813d79bca48bc75b1612d03dae3a8f55b7ade9ed9c13c2b23",
+      "publication": {
+        "status": "published",
+        "adjudicationStatus": "reviewable-draft",
+        "publishableCanonical": false,
+        "generatedAt": "2026-08-24T01:09:19Z",
+        "synthesisSha256": "276439f4a06ed634dda2e84d4bb34499a521d08dbb31eab9d5dfe8fb041466e0",
+        "providerMode": "dual-provider",
+        "providers": [
+          "Claude",
+          "Grok"
+        ],
+        "waivedProviders": []
+      },
+      "model": {
+        "registry_id": "vr.wm-org-004",
+        "model_id": "WM-ORG-004",
+        "name": "Position",
+        "entry_kind": "entity",
+        "purpose": "Model the position as a durable, addressable organizational construct that exists independently of any occupant: the work assigned by competent authority, classified, placed, funded, requirement-bearing and lifecycle-governed, so agents can create, inspect, classify, staff and retire positions without conflating them with people, jobs or contracts.",
+        "scope_statement": "In scope is everything that is true of a position while it is vacant. A position is the bundle of duties and responsibilities assigned by competent authority (5 CFR 511.101) and modelled as org:Post, which W3C defines as a position existing independently of the person or persons filling it. The model owns identity, titling, duty content, occupational and grade classification, structural placement and reporting, location and work arrangement, capacity (FTE/headcount) and funding, requirements and essential functions, delegated and prescribed authority, risk/screening designations, working conditions, lifecycle and effective-dated change, governance and evidence, and outbound interoperability. It does not own the person, the occupancy relationship, the employment contract, the recruiting workflow, or the taxonomies it aligns to.",
+        "in_scope": [
+          "Position identity, keys, official and working titles, and language-tagged alternative labels",
+          "Assigned duties, responsibilities and essential functions attributed to the position rather than to an incumbent",
+          "Occupational classification, job/class membership, grade or level and job-evaluation outcome",
+          "Placement in an organizational unit, cost centre, reporting and supervisory structure",
+          "Work location, work arrangement and schedule attributes attached to the seat",
+          "Capacity and occupancy control: FTE, headcount, single vs pooled, overlap tolerance, vacancy state",
+          "Budget, funding source and the pay range or grade ladder framing the seat",
+          "Qualification, competency, credential, screening, clearance and approval requirements",
+          "Delegated decision rights and externally prescribed regulatory responsibilities allocated to the seat",
+          "Lifecycle states, effective-dated versioning, classification authority, certification, appeal and retention"
+        ],
+        "out_of_scope": [
+          "The natural person, worker or agent identity that may occupy the position",
+          "The occupancy relationship itself (appointment, assignment, tenure, occupancy dates) — owned by WM-ORG-016",
+          "The organizational unit as an entity, its charter and its own hierarchy — owned by WM-ORG-002",
+          "Team formation and team-level goals — owned by WM-ORG-003",
+          "Employment contract terms, payroll processing, absence and time records",
+          "Recruiting workflow: requisition approval chain, candidate pipeline, interview and selection records",
+          "The occupation, skill and competency taxonomies themselves (ISCO-08, ESCO, O*NET-SOC, NICE) — referenced, not owned",
+          "Individual performance appraisal, development plans and remuneration paid to an incumbent",
+          "Compensation plan and pay-structure master data (grade ladders and steps are referenced by key)"
+        ],
+        "boundary_notes": [
+          {
+            "neighbor": "WM-ORG-016 Assignment / occupancy",
+            "distinction": "The position persists while vacant; the assignment exists only while an agent occupies it. W3C separates org:Post (independent of holder) from org:Membership, which exists only when an agent occupies a role. Occupancy dates, tenure and incumbent-specific terms belong to the assignment, not the position.",
+            "source_refs": [
+              "SRC-001"
+            ]
+          },
+          {
+            "neighbor": "WM-ORG-002 Organizational unit",
+            "distinction": "A unit is a collection of people and functions with its own recognition inside a larger organization; a position is a single seat that is contained in exactly one unit at a time via org:postIn / org:hasPost. Unit charter, mandate and unit hierarchy stay with WM-ORG-002.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-009"
+            ]
+          },
+          {
+            "neighbor": "Job / class / occupation classifier",
+            "distinction": "A position is an instance; a class is 'all positions which are sufficiently similar as to kind of work, level of difficulty and responsibility, and qualification requirements' (5 CFR 511.101), and an occupation is 'a set of jobs whose main tasks and duties are characterised by a high degree of similarity' (ISCO-08). Classifier definitions, code lists and hierarchies are external registries; the position holds only the coded reference and the evaluation evidence.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007"
+            ]
+          },
+          {
+            "neighbor": "Position opening / job advertisement",
+            "distinction": "A vacancy notice is a published recruiting artifact with its own validity window, datePosted, validThrough and application channel; it is a projection referencing zero, one or many positions. HR Open keeps PositionOpening in the recruiting domain and organizational structure with incumbents in OrganizationChart.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-004"
+            ]
+          },
+          {
+            "neighbor": "org:Role (abstract role)",
+            "distinction": "W3C org:Role denotes the abstract role and requires a Membership instance to link a person, whereas org:Post is a concrete organizational seat. Role vocabularies (NICE work roles, ESCO occupations) are alignments, not the position itself.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-010"
+            ]
+          },
+          {
+            "neighbor": "Employment contract and payroll",
+            "distinction": "Pay range, grade ladder and budget frame the seat; actual remuneration, contractual clauses and payroll results attach to the occupant's employment relation. EU pay-transparency duties bind the employer's disclosure at recruitment and reporting, not the position record's internal semantics.",
+            "source_refs": [
+              "SRC-012",
+              "SRC-009"
+            ]
+          }
+        ]
+      },
+      "structure_index": [
+        {
+          "id": "position-identity-and-definition",
+          "name": "Position identity and definition",
+          "layers": [
+            {
+              "id": "identity-and-designation",
+              "name": "Identity and designation",
+              "description": "Keys, namespaces and names that let an agent address exactly one position across systems and languages."
+            },
+            {
+              "id": "work-content-and-classification",
+              "name": "Work content and classification",
+              "description": "The duties assigned to the seat and how those duties place it in occupational and grade classification systems."
+            }
+          ]
+        },
+        {
+          "id": "structural-placement-and-relations",
+          "name": "Structural placement and relations",
+          "layers": [
+            {
+              "id": "organizational-placement",
+              "name": "Organizational placement",
+              "description": "Containment in a unit and cost centre, and the reporting relations depicted on an organization chart."
+            },
+            {
+              "id": "work-location-and-arrangement",
+              "name": "Work location and arrangement",
+              "description": "Where the seat is located, whether it is remote-eligible, and the working pattern attached to it."
+            }
+          ]
+        },
+        {
+          "id": "capacity-funding-and-occupancy",
+          "name": "Capacity, funding and occupancy control",
+          "layers": [
+            {
+              "id": "capacity-and-occupancy-control",
+              "name": "Capacity and occupancy control",
+              "description": "Quantified capacity of the seat and the derived vacancy state, including pooled positions with multiple holders."
+            },
+            {
+              "id": "funding-and-pay-framing",
+              "name": "Funding and pay framing",
+              "description": "The money attached to the seat: budget and funding source, and the pay range that must be disclosable at recruitment."
+            }
+          ]
+        },
+        {
+          "id": "requirements-authority-and-risk",
+          "name": "Requirements, authority and risk",
+          "layers": [
+            {
+              "id": "requirements-and-competency",
+              "name": "Requirements and competency",
+              "description": "Essential functions with accommodation logic, and the competencies, credentials and experience the seat requires."
+            },
+            {
+              "id": "authority-and-accountability",
+              "name": "Authority and accountability",
+              "description": "Decision rights delegated to the seat and externally prescribed responsibilities allocated to it."
+            },
+            {
+              "id": "risk-screening-and-conditions",
+              "name": "Risk, screening and working conditions",
+              "description": "Pre-occupancy screening and clearance demands, and the physical and environmental conditions of the seat."
+            }
+          ]
+        },
+        {
+          "id": "lifecycle-governance-and-recordkeeping",
+          "name": "Lifecycle, governance and recordkeeping",
+          "layers": [
+            {
+              "id": "lifecycle-and-effective-dating",
+              "name": "Lifecycle and effective dating",
+              "description": "Status transitions of the seat and the bitemporal discipline that separates business effect from record capture."
+            },
+            {
+              "id": "governance-assurance-and-retention",
+              "name": "Governance, assurance and retention",
+              "description": "Who may establish and classify positions, how the description is kept accurate and contestable, and how records are retained and disposed of."
+            }
+          ]
+        },
+        {
+          "id": "interoperability-measurement-and-evidence",
+          "name": "Interoperability, measurement and evidence",
+          "layers": [
+            {
+              "id": "alignment-and-exchange",
+              "name": "Alignment and exchange",
+              "description": "Crosswalks to external classification schemes and the payloads by which position information leaves the model."
+            },
+            {
+              "id": "measurement-and-evidence",
+              "name": "Measurement and evidence",
+              "description": "Metrics computed over positions and the provenance and quality controls that make the record trustworthy."
+            }
+          ]
+        }
+      ],
+      "selected_findings": [
+        {
+          "bundle": "position-identity-and-definition",
+          "layer": "identity-and-designation",
+          "finding": {
+            "id": "position-identifier-and-keys",
+            "name": "Position identifier and key set",
+            "description": "The authoritative identifier for the seat, the secondary business codes that are unique only within a scope, and the external identifiers that make it resolvable outside the master system.",
+            "questions": [
+              "Which system is the master of record for this position and what identifier does it assign?",
+              "Is the human-facing position code unique globally or only within a business unit or legal entity?",
+              "What resolvable IRI, if any, publishes this position as an org:Post in the organization graph?",
+              "When a position is split, merged or renumbered, how are prior identifiers preserved and redirected?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-position-id",
+                "name": "Master position identifier",
+                "description": "Identifier assigned by the authoritative HRIS or position-control system; never a title or a date.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-position-code",
+                "name": "Position code",
+                "description": "Human-readable code unique within a declared scope such as business unit; Oracle constrains PositionCode to uniqueness within the business unit.",
+                "value_kind": "identifier",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-position-iri",
+                "name": "Published position IRI",
+                "description": "Governed global identifier used when the position is exposed as an org:Post in a linked-data organization graph.",
+                "value_kind": "identifier",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-external-ids",
+                "name": "External identifier set",
+                "description": "Scheme-qualified identifiers used by payroll, recruiting, finance and directory systems, each with the owning system reference.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-identity-assigned-at",
+                "name": "Identifier assignment instant",
+                "description": "RFC 3339 instant at which the identifier was minted, recorded separately from the business effective date of the position.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "position-identity-and-definition",
+          "layer": "work-content-and-classification",
+          "finding": {
+            "id": "assigned-duties-and-responsibilities",
+            "name": "Assigned duties and responsibilities",
+            "description": "The decomposed work content of the seat: duty statements, their weight, and the essential-versus-marginal distinction that determines what the position exists to do.",
+            "questions": [
+              "What discrete duties and responsibilities has competent authority assigned to this position?",
+              "Which duties are essential because the position exists to perform them, and which are marginal?",
+              "How much of the position's time or effort does each duty consume?",
+              "Which duty statements are drawn from a governed catalogue rather than written free-hand?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-duty-statement",
+                "name": "Duty statement",
+                "description": "A single assigned duty or responsibility expressed at task or work-activity granularity.",
+                "value_kind": "text",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "de-duty-essential-flag",
+                "name": "Essential function flag",
+                "description": "Whether the duty is a fundamental job duty of the position under the essential-functions test.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-duty-time-share",
+                "name": "Duty time or effort share",
+                "description": "Proportion of the position's work attributable to the duty; an explicit evidentiary factor in essential-function determination.",
+                "value_kind": "quantity",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-duty-catalogue-ref",
+                "name": "Duty catalogue reference",
+                "description": "Scheme, version and code of a reusable task or work-activity statement, for example a NICE Task statement or an O*NET detailed work activity.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "position-identity-and-definition",
+          "layer": "work-content-and-classification",
+          "finding": {
+            "id": "occupational-classification",
+            "name": "Occupational and job classification",
+            "description": "Placement of the position in occupational taxonomies and in the organization's internal job or class structure, with each code carrying its scheme and version.",
+            "questions": [
+              "Which internal job or class does this position belong to, and is that assignment mandatory?",
+              "Which external occupational codes are asserted, under which scheme and version?",
+              "On what evidence was the occupational classification determined, and by whom?",
+              "What triggers a review of the occupational classification of this position?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-job-ref",
+                "name": "Job or class reference",
+                "description": "Reference to the internal job/class grouping positions that are sufficiently similar in kind of work, difficulty, responsibility and qualification requirements; mandatory in position-managed HCM configurations.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-occupation-code",
+                "name": "External occupation code",
+                "description": "Coded occupational category expressed as a scheme/version/code triple such as ISCO-08 unit group, ESCO concept or O*NET-SOC code.",
+                "value_kind": "code",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-skill-level",
+                "name": "Asserted skill level",
+                "description": "ISCO-08 skill level and skill specialisation attribution supporting comparability of the seat across statistics.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-classification-decision",
+                "name": "Classification decision record reference",
+                "description": "Pointer to the analysis that placed the position in a class, with decision maker and instant.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "position-identity-and-definition",
+          "layer": "work-content-and-classification",
+          "finding": {
+            "id": "grade-level-and-job-evaluation",
+            "name": "Grade, level and job evaluation",
+            "description": "The levelling of the position and the gender-neutral evaluation criteria that justify it, distinct from the occupational category of the work.",
+            "questions": [
+              "What grade, band or level is assigned to the position and under which grade ladder?",
+              "Which evaluation criteria produced the level, and were skills, effort, responsibility and working conditions all applied?",
+              "Which other positions are treated as the same category of workers or as work of equal value?",
+              "Is the evaluation system documented as objective and gender-neutral, and when was it last validated?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-grade-ref",
+                "name": "Grade or level reference",
+                "description": "Assigned grade, band or level; a grade groups classes equivalent in difficulty, responsibility and qualification requirements for pay administration.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-grade-ladder",
+                "name": "Grade ladder and valid grades",
+                "description": "The ladder and the effective-dated set of grades valid for the position, including entry grade and entry step.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-evaluation-criteria",
+                "name": "Job evaluation criteria scores",
+                "description": "Ratings against objective criteria including skills, effort, responsibility and working conditions, used to establish work of equal value.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-worker-category",
+                "name": "Category of workers reference",
+                "description": "The grouping used for pay comparison and gender pay-gap reporting to which this position is allocated.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "structural-placement-and-relations",
+          "layer": "organizational-placement",
+          "finding": {
+            "id": "unit-and-cost-center-placement",
+            "name": "Unit and cost centre placement",
+            "description": "The single organizational unit that holds the position, the legal entity and business unit context, and the cost centre that carries it financially.",
+            "questions": [
+              "Which organizational unit holds this position at a given effective date?",
+              "Which legal entity and business unit govern the position for employment and payroll purposes?",
+              "Which cost centre bears the position and does it differ from the holding unit?",
+              "How is a position moved between units without losing its identity or history?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-unit-ref",
+                "name": "Holding organizational unit reference",
+                "description": "The unit in which the post exists, corresponding to org:postIn / org:hasPost; mandatory department reference in production systems.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-business-unit",
+                "name": "Business unit reference",
+                "description": "Mandatory business-unit scope that also bounds position-code uniqueness.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-cost-center",
+                "name": "Cost centre code",
+                "description": "Financial owner of the seat, distinct from the organizational holder.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-placement-window",
+                "name": "Placement validity window",
+                "description": "Effective start and end dates for the placement of the position in this unit.",
+                "value_kind": "date",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "capacity-funding-and-occupancy",
+          "layer": "capacity-and-occupancy-control",
+          "finding": {
+            "id": "capacity-fte-and-schedule",
+            "name": "Capacity, FTE and working pattern",
+            "description": "The full-time equivalence, headcount allowance, single or pooled type and scheduled working pattern that quantify the seat.",
+            "questions": [
+              "What FTE and headcount does this position authorize, and are they consistent?",
+              "Is the position single or pooled, and may more than one holder occupy it at once?",
+              "Is the position full-time or part-time, regular or temporary, and for how long?",
+              "How is FTE derived when working hours differ from the standard for the jurisdiction?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-fte",
+                "name": "Authorized FTE",
+                "description": "Full-time equivalent authorized for the seat, defaulting to 1 and used to standardize workload across differing hours.",
+                "value_kind": "quantity",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-headcount",
+                "name": "Authorized headcount",
+                "description": "Number of holders the seat admits; greater than one only for pooled positions.",
+                "value_kind": "number",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-position-type",
+                "name": "Position type",
+                "description": "Single or pooled; W3C also permits a post to be held by more than one person, so single occupancy must never be assumed.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-employment-pattern",
+                "name": "Employment pattern codes",
+                "description": "Full-time or part-time and regular or temporary indicators attached to the seat, plus any probation period in days.",
+                "value_kind": "code",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "capacity-funding-and-occupancy",
+          "layer": "capacity-and-occupancy-control",
+          "finding": {
+            "id": "vacancy-and-occupancy-state",
+            "name": "Vacancy and occupancy state",
+            "description": "The derived state of the seat with respect to its holders: vacant, partly filled, fully filled or over-established, computed against authorized capacity.",
+            "questions": [
+              "Is the position vacant, and how is vacancy derived rather than asserted?",
+              "Which assignments currently consume the capacity of this position?",
+              "What happens when an incoming holder would exceed authorized capacity?",
+              "How long has the position been vacant and does that trigger review or lapse?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-open-capacity",
+                "name": "Open capacity",
+                "description": "Remaining unconsumed FTE and headcount at an as-of instant; the basis for incumbent validation.",
+                "value_kind": "quantity",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-occupancy-links",
+                "name": "Occupancy links",
+                "description": "References to the assignment records that hold the post, corresponding to org:heldBy; the occupancy itself is owned by the assignment model.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-vacancy-since",
+                "name": "Vacant since instant",
+                "description": "RFC 3339 instant from which the seat has had unconsumed capacity, distinct from the ingestion instant of the computation.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-overlap-outcome",
+                "name": "Overlap validation outcome",
+                "description": "Whether exceeding capacity produced a warning or a hard block, and who overrode it.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "capacity-funding-and-occupancy",
+          "layer": "funding-and-pay-framing",
+          "finding": {
+            "id": "budget-and-funding-source",
+            "name": "Budget and funding source",
+            "description": "Whether the position is budgeted, what amount and currency it carries, and which funding source or existing position finances it.",
+            "questions": [
+              "Is this position budgeted, and for what amount and currency in which fiscal period?",
+              "Is the position funded by an existing position, a grant or a new allocation?",
+              "Who authorizes budget changes for the seat and what evidence is retained?",
+              "What happens to the position when its funding lapses?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-budgeted-flag",
+                "name": "Budgeted indicator",
+                "description": "Whether the seat is included in the approved establishment budget.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-budget-amount",
+                "name": "Budget amount and currency",
+                "description": "Monetary allocation attached to the position with an explicit currency code.",
+                "value_kind": "quantity",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-funding-source",
+                "name": "Funding source reference",
+                "description": "Reference to the grant, cost centre or existing position that finances the seat, including the funded-by-existing-position case.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-funding-window",
+                "name": "Funding validity window",
+                "description": "Dates over which funding is committed, distinct from the position's own effective window.",
+                "value_kind": "date",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "requirements-authority-and-risk",
+          "layer": "authority-and-accountability",
+          "finding": {
+            "id": "delegated-authority-and-decision-rights",
+            "name": "Delegated authority and decision rights",
+            "description": "The approval limits, signing powers and decision scopes attached to the seat by competent authority, independent of who holds it.",
+            "questions": [
+              "Which decisions may the holder of this position take, and up to what limit?",
+              "Which competent authority conferred each delegation and when does it expire?",
+              "Do the delegations lapse, transfer or escalate when the position is vacant?",
+              "Does the position have sufficient seniority and resources to exercise its authority?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-decision-right",
+                "name": "Decision right",
+                "description": "A named authority conferred on the seat, with scope and any quantitative limit.",
+                "value_kind": "object",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-conferring-authority",
+                "name": "Conferring authority reference",
+                "description": "The competent authority that assigned the work and its associated powers to the position.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-vacancy-authority-rule",
+                "name": "Vacancy authority rule",
+                "description": "What happens to each delegation while the seat is unoccupied: lapse, escalate to the reports-to post, or transfer to a delegate.",
+                "value_kind": "code",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "requirements-authority-and-risk",
+          "layer": "authority-and-accountability",
+          "finding": {
+            "id": "prescribed-regulatory-responsibilities",
+            "name": "Prescribed regulatory responsibilities",
+            "description": "Responsibilities that a regulator requires to be allocated to a designated senior position, together with the documentation that evidences allocation without gaps.",
+            "questions": [
+              "Which prescribed regulatory responsibilities are allocated to this position?",
+              "Is this position the most senior one responsible for the area, and is the allocation gap-free across the firm?",
+              "Is the responsibility shared or split with other positions, and on what justification?",
+              "Which statement of responsibilities and responsibilities map record this allocation?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-prescribed-responsibility",
+                "name": "Prescribed responsibility allocation",
+                "description": "Regulator-defined responsibility allocated to the designated function held through this position.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-regulated-function",
+                "name": "Regulated function designation",
+                "description": "The designated senior management or controlled function that this position corresponds to.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-allocation-justification",
+                "name": "Allocation justification",
+                "description": "Recorded reasoning that the holder is the most senior person responsible with sufficient resources and authority.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-governance-and-recordkeeping",
+          "layer": "lifecycle-and-effective-dating",
+          "finding": {
+            "id": "position-lifecycle-states",
+            "name": "Position lifecycle states",
+            "description": "The permitted status values of a seat — proposed, approved, frozen, active, inactive, abolished — and the transitions and authorities that move between them.",
+            "questions": [
+              "What is the current hiring status and activity status of the position, and are they independent?",
+              "Which transitions are permitted and who may authorize each one?",
+              "May a position be frozen or abolished while occupied, and what must happen first?",
+              "Can an abolished position be reinstated, or must a new identity be minted?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-hiring-status",
+                "name": "Hiring status",
+                "description": "Whether the seat is proposed, approved or frozen for staffing purposes.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-active-status",
+                "name": "Active status",
+                "description": "Whether the position record is active or inactive, held separately from hiring status.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "de-transition-authority",
+                "name": "Transition authorization",
+                "description": "Role and identity that authorized a status transition, with the authorization instant.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "de-abolition-date",
+                "name": "Abolition effective date",
+                "description": "Business date on which the seat ceases to exist, distinct from the date the record was closed.",
+                "value_kind": "date",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-governance-and-recordkeeping",
+          "layer": "lifecycle-and-effective-dating",
+          "finding": {
+            "id": "effective-dated-change-and-history",
+            "name": "Effective-dated change and history",
+            "description": "Version history of the seat where every attribute set is bounded by effective dates and queryable as of a date, with record instants kept separate.",
+            "questions": [
+              "What did this position look like as of a given effective date?",
+              "When was each version recorded, as distinct from when it took business effect?",
+              "Is a change a correction of an erroneous record or a genuine change in the work?",
+              "How are open-ended versions terminated and what end-date sentinel is used?"
+            ],
+            "data_elements": [
+              {
+                "id": "de-effective-window",
+                "name": "Effective start and end dates",
+                "description": "Business validity window of a version; production systems use a far-future sentinel for open-ended versions.",
+                "value_kind": "date",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "de-record-instants",
+                "name": "Record creation and update instants",
+                "description": "RFC 3339 instants with explicit offsets recording when the version was captured and last modified.",
+                "value_kind": "timestamp",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "de-change-type",
+                "name": "Change type",
+                "description": "Correction versus substantive change, which determines whether prior versions remain assertable.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "de-change-reason",
+                "name": "Change reason code",
+                "description": "Governed reason for the change, such as reorganization, reclassification, funding change or appeal outcome.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "interoperability-measurement-and-evidence",
+          "layer": "alignment-and-exchange",
+          "finding": {
+            "id": "abstract-role-binding",
+            "name": "Role or function of the post",
+            "description": "Popolo: many people fulfil the role CEO, but only one holds the post CEO at a named organization. ORG org:role on a Post indicates the role any holder plays. schema.org roleName is the occupancy-side analogue and must not replace the Post.",
+            "questions": [
+              "What abstract role or function does any holder of this Position fulfil, and from which controlled vocabulary is it taken?",
+              "Is this organization using role-only memberships (for example club membership) for some relationships, and is this record still a true Position?",
+              "How is this Position’s role mapped to equivalent roles in other organizations for interoperability?"
+            ],
+            "data_elements": [
+              {
+                "id": "abstract-role-binding-data01",
+                "name": "Abstract role reference",
+                "description": "org:Role or equivalent SKOS concept the holder of the Position plays.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "abstract-role-binding-data02",
+                "name": "Role label",
+                "description": "Lexical label of the function, used only when a Role resource is not yet minted.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        }
+      ],
+      "functions": [
+        {
+          "id": "establish-position",
+          "name": "Establish position",
+          "description": "Create a new seat by recording the duties assigned by competent authority, mint its identifier and place it in a unit."
+        },
+        {
+          "id": "classify-position",
+          "name": "Classify position",
+          "description": "Analyse the assigned duties and place the position in an internal class and one or more external occupational codes."
+        },
+        {
+          "id": "evaluate-and-level-position",
+          "name": "Evaluate and level position",
+          "description": "Apply objective, gender-neutral evaluation criteria to assign a grade and allocate the position to a category of workers."
+        },
+        {
+          "id": "set-capacity-and-funding",
+          "name": "Set capacity and funding",
+          "description": "Authorize FTE, headcount, position type and overlap tolerance, and bind the seat to a budget and funding source."
+        },
+        {
+          "id": "specify-requirements",
+          "name": "Specify requirements and essential functions",
+          "description": "Record essential and marginal functions, competencies, credentials and experience required of any holder, using versioned catalogue references."
+        },
+        {
+          "id": "allocate-authority-and-responsibilities",
+          "name": "Allocate authority and prescribed responsibilities",
+          "description": "Confer decision rights on the seat and allocate any regulator-prescribed responsibilities to it without leaving gaps."
+        },
+        {
+          "id": "designate-risk-and-screening",
+          "name": "Designate risk and screening requirements",
+          "description": "Determine the clearance, vetting, regulatory approval and access requirements that attach to the seat before recruitment starts."
+        },
+        {
+          "id": "reconcile-occupancy-and-vacancy",
+          "name": "Reconcile occupancy and vacancy",
+          "description": "Compute consumed and open capacity from assignment records and validate incoming occupancy against the authorization."
+        },
+        {
+          "id": "amend-or-reclassify-position",
+          "name": "Amend or reclassify position",
+          "description": "Apply an effective-dated change to duties, placement, capacity or classification, distinguishing correction from substantive change."
+        },
+        {
+          "id": "certify-and-appeal",
+          "name": "Certify description and process appeals",
+          "description": "Certify the accuracy of the position description and administer challenges to its classification, applying decision effective dates."
+        },
+        {
+          "id": "publish-position-projection",
+          "name": "Publish position projection",
+          "description": "Generate an outbound projection of the position for a named recipient profile, applying suppression rules and disclosure duties."
+        },
+        {
+          "id": "freeze-abolish-or-dispose",
+          "name": "Freeze, abolish or dispose position",
+          "description": "Move the seat to frozen or abolished status and, at the end of retention, apply the governed disposition action to its records."
+        },
+        {
+          "id": "authorize-fill",
+          "name": "Authorize fill or freeze",
+          "description": "Permit or withhold recruitment against a vacant Position, producing a fill-authorization that a JobPosting or requisition may reference."
+        }
+      ],
+      "composition": [
+        {
+          "target": "WM-ORG-002 Organizational unit",
+          "relation": "CHILD",
+          "purpose": "Every position is contained in exactly one organizational unit at a given effective date, matching org:postIn / org:hasPost and the mandatory department reference in production position records.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "WM-ORG-003 Team",
+          "relation": "REFERENCE",
+          "purpose": "Teams are composed through positions and their assignments; positions remain reusable across team formations and are referenced, not owned, by the team model.",
+          "required": false,
+          "source_refs": [
+            "SRC-001",
+            "SRC-002"
+          ]
+        },
+        {
+          "target": "WM-ORG-016 Assignment / occupancy",
+          "relation": "COMPOSE",
+          "purpose": "A position is occupied through a scoped assignment; occupancy, tenure and incumbent-specific terms live there, mirroring the org:Post versus org:Membership separation, and supply the consumed capacity used to derive vacancy.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "Job / class / occupation classifier model (sibling; registry entry not yet identified)",
+          "relation": "REFERENCE",
+          "purpose": "The class grouping similar positions and the occupational category are external classifier concepts; the position holds only coded references, not the class definitions or hierarchies.",
+          "required": true,
+          "source_refs": [
+            "SRC-007",
+            "SRC-005"
+          ]
+        },
+        {
+          "target": "Person / worker identity model (sibling; registry entry not yet identified)",
+          "relation": "REFERENCE",
+          "purpose": "Incumbents are referenced only indirectly through assignments so that the position record carries no personal data of its own.",
+          "required": false,
+          "source_refs": [
+            "SRC-001"
+          ]
+        },
+        {
+          "target": "ISCO-08 (International Standard Classification of Occupations)",
+          "relation": "ALIGN",
+          "purpose": "Alignment target for occupational coding and for the job-versus-occupation distinction; mapping strength and version are recorded and conformance is not claimed without assessment evidence.",
+          "required": false,
+          "source_refs": [
+            "SRC-005"
+          ]
+        },
+        {
+          "target": "ESCO occupations pillar",
+          "relation": "ALIGN",
+          "purpose": "Alignment target for multilingual labels, scope notes, regulatory aspects and essential or optional skills at ISCO level 5 and below.",
+          "required": false,
+          "source_refs": [
+            "SRC-003"
+          ]
+        },
+        {
+          "target": "O*NET Content Model",
+          "relation": "ALIGN",
+          "purpose": "Alignment target for duty decomposition into work activities, for requirement typing and for environmental work-context descriptors.",
+          "required": false,
+          "source_refs": [
+            "SRC-006"
+          ]
+        },
+        {
+          "target": "W3C Organization Ontology (org:Post)",
+          "relation": "ALIGN",
+          "purpose": "Ontological alignment for publishing positions as graph nodes with postIn, heldBy and reportsTo edges, and for the vacancy-independent semantics of a post.",
+          "required": false,
+          "source_refs": [
+            "SRC-001"
+          ]
+        },
+        {
+          "target": "HR Open Standards 4.5 (OrganizationChart, PositionOpening, PositionCompetencyModel, HRMasterData)",
+          "relation": "ALIGN",
+          "purpose": "Exchange alignment for organizational structure, recruiting projections, competency models and provisioning payloads.",
+          "required": false,
+          "source_refs": [
+            "SRC-002"
+          ]
+        },
+        {
+          "target": "schema.org JobPosting",
+          "relation": "ALIGN",
+          "purpose": "Publication alignment for the advertisement projection only; the posting is a time-bounded document about the position, not the position itself.",
+          "required": false,
+          "source_refs": [
+            "SRC-004"
+          ]
+        },
+        {
+          "target": "NICE Workforce Framework work roles (NIST SP 800-181 Rev.1)",
+          "relation": "ALIGN",
+          "purpose": "Alignment for composing Task, Knowledge and Skill statements into reusable requirement sets that organizations map onto positions.",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        },
+        {
+          "target": "Effective-dated versioning and provenance mixin",
+          "relation": "MIX-IN",
+          "purpose": "Supplies the bitemporal pattern separating business effective windows from RFC 3339 record and observation instants, reused by every attribute group in this model.",
+          "required": true,
+          "source_refs": [
+            "SRC-009",
+            "SRC-013"
+          ]
+        },
+        {
+          "target": "Regulated-firm accountability extension (SM&CR-style designated functions)",
+          "relation": "EXTEND",
+          "purpose": "Adds prescribed responsibility allocation, statements of responsibilities and responsibilities maps for positions in regulated firms without imposing them on all adopters.",
+          "required": false,
+          "source_refs": [
+            "SRC-011"
+          ]
+        },
+        {
+          "target": "Statutory position-classification extension (General Schedule style)",
+          "relation": "EXTEND",
+          "purpose": "Adds statutory class, grade, official position description certification, classification appeal and effective-date rules for public-sector adopters bound by such a plan.",
+          "required": false,
+          "source_refs": [
+            "SRC-007",
+            "SRC-008"
+          ]
+        }
+      ],
+      "researchAdjudication": {
+        "providerMode": "dual-provider",
+        "activeProviders": [
+          "claude",
+          "grok"
+        ],
+        "waivedProviders": [],
+        "providerPolicy": {},
+        "boundaryDecision": {
+          "entry_kind": "entity",
+          "status": "accepted",
+          "rationale": "Both providers independently classify WM-ORG-004 as an entity and both anchor it on the same test: the record must be able to exist while vacant. That test is decidable, is grounded in W3C ORG (org:Post exists independently of the person filling it) and in the regulatory definition of a position as work assigned by competent authority, and it cleanly separates the seat from occupancy (WM-ORG-016), from the unit (WM-ORG-002), from the abstract role, and from the recruitment advertisement. No split or reclassification is warranted; the base boundary is adopted as written, with grok's word-sense and FHIR disambiguations carried forward as boundary annotations rather than as new structure."
+        },
+        "decisions": [
+          {
+            "concept": "Base provider selection",
+            "disposition": "claude as base",
+            "rationale": "Claude offers a single decidable boundary test (everything true of a position while it is vacant), names the owning sibling model for each exclusion, carries roughly 1.4 times the base's own layer count in findings with four questions each, and declares one honest gap. Grok has more bundles and layers but nineteen findings across nineteen layers, so its topology is thinner per node despite the larger frame."
+          },
+          {
+            "concept": "Entry kind",
+            "disposition": "entity, accepted",
+            "rationale": "Independent agreement between providers plus the vacant-existence test grounded in W3C ORG and the regulatory definition of assigned work; nothing in either pack suggests an event, service or relationship framing would fit better."
+          },
+          {
+            "concept": "Grok eight-bundle topology",
+            "disposition": "rejected in favour of base topology",
+            "rationale": "Grok's split of location, compensation and establishment into separate top-level bundles fragments concerns the base already integrates, and re-parenting the base's twenty-seven findings into nineteen thin layers would lose the base's explicit inline-only rationales without adding evidence."
+          },
+          {
+            "concept": "Abstract role binding",
+            "disposition": "accepted into alignment-and-exchange",
+            "rationale": "Materially absent from the base, evidence-backed on ORG, Popolo and schema.org, and consistent with the base's own statement that role vocabularies are alignments rather than the position itself."
+          },
+          {
+            "concept": "Geographic area and constituency",
+            "disposition": "accepted into work-location-and-arrangement",
+            "rationale": "Distinct from duty station and work arrangement; Popolo ties post existence to area existence and schema.org scopes occupational description by region, and the base's omissions list already concedes elected and appointed offices are underserved."
+          },
+          {
+            "concept": "Interoperability profile declaration",
+            "disposition": "accepted into alignment-and-exchange",
+            "rationale": "The ORG-versus-Popolo disagreement about direct holds is genuine and source-backed; recording the profile in force per instance is the mechanism that keeps it a declared configuration rather than an unresolved contradiction."
+          },
+          {
+            "concept": "Fill authorization",
+            "disposition": "accepted as a narrowed function",
+            "rationale": "Closes the only real hole in the base function set and marks the boundary handoff to the excluded recruiting domain; narrowed to fill so it does not duplicate the base freeze and abolish function."
+          },
+          {
+            "concept": "Grok class, series and grade finding",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base already separates occupational classification from grade and job evaluation across two findings with twelve questions and both a classification evaluation record and a job evaluation statement; grok adds no evidence the base lacks."
+          },
+          {
+            "concept": "Grok occupation code alignment finding",
+            "disposition": "rejected as duplicative",
+            "rationale": "Covered by the base occupational-classification finding plus the version-pinned crosswalk finding, both of which already require scheme, version and mapping strength; the ISCO armed-forces-major-group nuance is deferred instead."
+          },
+          {
+            "concept": "Grok position remuneration band finding",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base pay-range-and-transparency finding already fixes the position band against occupant pay and adds disclosure and reporting duties; only the unpaid, nominal-pay and fee-basis case is genuinely new and it is too thin to stand as structure, so it is deferred."
+          },
+          {
+            "concept": "Grok hosting organization finding",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base unit-and-cost-centre finding covers holding unit, legal entity, business unit and cost centre with movement semantics; the residual ex officio and Post-as-Organization dual-typing questions are deferred rather than injected."
+          },
+          {
+            "concept": "Grok constraints-on-the-position finding",
+            "disposition": "rejected as split across existing layers",
+            "rationale": "Its three elements land separately in the base screening-and-clearance, retention-and-privacy and pay findings; injecting it whole would create overlapping ownership of sensitivity and privacy rules across two bundles."
+          },
+          {
+            "concept": "Vacancy as derived state",
+            "disposition": "retained from base, corroborated",
+            "rationale": "Both providers independently refuse to persist occupancy on the seat and both cite ORG and the assignment boundary; the base's no-artifact rationale is kept because a stored vacancy flag would create a second source of truth against WM-ORG-016."
+          },
+          {
+            "concept": "Retention dimension status",
+            "disposition": "retained as gap, not upgraded",
+            "rationale": "Grok marks retention covered while its own notes concede national schedules were not fetched; the base's gap marking is the accurate one and no fetched primary source in either pack states a retention period for position records."
+          },
+          {
+            "concept": "Source identifier collision",
+            "disposition": "re-key all source ids on merge",
+            "rationale": "SRC-002 denotes HR Open in the base and Popolo in grok, and several other identifiers collide across providers while pointing at different documents; the synthesizer must re-key rather than union by identifier or every accepted addition will carry the wrong citation."
+          },
+          {
+            "concept": "FHIR and word-sense disambiguation",
+            "disposition": "carried as boundary annotation, not structure",
+            "rationale": "Grok's align-not-equate treatment of PractitionerRole and its exclusion of financial, geospatial and sports senses of position are correct and useful, but they are boundary prose rather than findings; they are recorded as a publication hold on the boundary notes instead of being injected as nodes."
+          }
+        ],
+        "publicationHolds": [
+          "Source verification is incomplete: every base URL and version pin must be re-resolved at publication time. In particular the base cites 5 CFR and 29 CFR from the Cornell LII reproduction because eCFR and opm.gov were unreachable in its run, while grok reached eCFR current as of 2026-08-20 and the OPM classification standards PDF; re-verify and dual-cite or swap to the official host before publishing.",
+          "Source identifiers collide across providers with different underlying documents (SRC-002 is HR Open in the base and Popolo in grok, among others). All sources must be re-keyed during merge and every accepted addition re-pointed, and the merged source list re-verified as live, before any draft is published.",
+          "ISO 30400:2022 must not be cited as defining position, job, role or FTE: grok's own note concedes the term text was not inspectable behind the paywall, so only the standard's existence, date and scope are supportable. The ISCO-08 citation must likewise resolve to an authoritative ILO or UNSD host rather than the third-party netlify mirror used by grok.",
+          "Retention and disposition periods remain a declared gap. No fetched primary source in either pack states a retention period for position records, descriptions or classification decisions; the structure may be published only as a required local determination, never as canonical guidance.",
+          "Multi-profile domain validation is outstanding. Evidence concentrates on US federal General Schedule classification, UK FCA prescribed responsibilities, EU pay transparency and a single HCM vendor API. Before publication the model must be exercised against at least a civic or legislative profile (Popolo post with constituency), a healthcare profile (FHIR PractitionerRole unnamed slot) and a non-US private-sector profile, and every regional assumption must be labelled a jurisdiction profile rather than a universal requirement.",
+          "Published boundary notes must carry grok's disambiguations verbatim in substance: HL7 FHIR PractitionerRole is aligned, not equated, to a classified position, and the financial, geospatial and sports senses of the word position are excluded, including schema.org's Quarterback example of a named position."
+        ],
+        "deferredResearch": [
+          "Post-as-Organization dual typing and ex officio membership conferred by holding a post (W3C ORG and Popolo), unresolved against the WM-ORG-002 unit and WM-ORG-003 team boundaries and against corporate statutory officer roles versus board membership.",
+          "Unpaid, honorary, nominal-pay, fee-basis, piece-work and volunteer positions, and statutory exclusions from classification and pay statutes such as 5 U.S.C. section 5102(c); currently only reachable through grok's rejected remuneration finding.",
+          "Military billets versus rank as personal status (including ISCO Major Group 0 alignment), academic faculty lines and endowed chairs, and elected or appointed public office appointment and eligibility rules.",
+          "Works council, co-determination and collective consultation duties triggered by position creation, reclassification and abolition; no primary source was verified by either provider.",
+          "Occupancy of a position by a non-human agent, unresolved in both packs even though org:holds is defined over agents rather than persons.",
+          "National retention schedules (for example NARA GRS) and GDPR storage-limitation periods as concrete durations for position descriptions, classification files and occupant-linked records.",
+          "Unfetched standard texts that would strengthen weakly supported areas: HR Open Position and PositionOpening full schemas, the ESCO occupation pillar beyond its ISCO mapping, ISO 30414 human capital metrics, and ISO 30400 term entries.",
+          "Dual-incumbency overlap windows for succession, career-ladder or intern positions, job-share fractions and union exclusivity of a slot, all widely practised but without primary support in either run."
+        ]
+      },
+      "statistics": {
+        "sources": 25,
+        "bundles": 6,
+        "layers": 13,
+        "findings": 30,
+        "questions": 117,
+        "artifacts": 26,
+        "functions": 13
+      }
+    },
+    "WM-XCT-023": {
+      "source_file": "publications/wm-xct-023-party-role/spec.yaml",
+      "source_bytes": 279743,
+      "source_sha256": "f717522fc366398db09176ab8058b73bb9814db0566131f7e426eb3b3564bdd7",
+      "publication": {
+        "status": "published",
+        "adjudicationStatus": "reviewable-draft",
+        "publishableCanonical": false,
+        "generatedAt": "2026-08-23T06:03:39Z",
+        "synthesisSha256": "11f17ca2273d07b88689b0b9f7c43185918f51dabce9fc7ab4dc63efd178b082",
+        "providerMode": "dual-provider",
+        "providers": [
+          "Claude",
+          "Grok"
+        ],
+        "waivedProviders": []
+      },
+      "model": {
+        "registry_id": "vr.wm-xct-023",
+        "model_id": "WM-XCT-023",
+        "name": "Party Role",
+        "entry_kind": "mixin",
+        "purpose": "Provide a reusable, format-neutral structure for asserting that a party plays a named role with respect to a specific object, activity, agreement or other party, together with the scope, validity, authority, provenance, evidence and constraints that make the assertion operable and auditable.",
+        "scope_statement": "Party Role reifies the n-ary link (player, host context, role type, validity) as an addressable assertion so that qualifying facts can attach to it. It covers how such an assertion is identified, classified, scoped, time-bounded, delegated, evidenced, constrained, disputed, superseded, disclosed and retired. It deliberately carries no party master data, no host payload and no permission semantics; those belong to composable sibling models. The mixin is storage- and interface-neutral: RDF, JSON, tabular, document and API projections are views over the same invariants.",
+        "in_scope": [
+          "Reification of the party-to-host link as a first-class role assertion with its own identity",
+          "Role type classification, vocabulary binding strength, and mapping to external role code lists",
+          "Host context binding: object, activity/event, agreement, organization, or another party",
+          "Player binding across party kinds including organizations, groups, automated agents and vacant posts",
+          "Scope qualifiers: spatial, jurisdictional, organizational-unit, quantitative extent and typed characteristics",
+          "Role validity period separated from assertion/record time, with retroactive correction and as-of resolution",
+          "Status lifecycle, suspension, revocation, succession, acting/interim holdings and coverage gaps",
+          "Basis of authority: statutory, contractual, appointment-based or self-declared, with mandate references",
+          "Delegation, acting-on-behalf-of chains, sub-delegation and representation/signing limits",
+          "Multiplicity, exclusivity, segregation-of-duties and conflict-of-interest constraints",
+          "Provenance of the assertion, supporting evidence, corroboration level and dispute handling",
+          "Disclosure tiers, retention, tombstoning and erasure of person-identifying role history",
+          "Alignment to external standards and the invariants that must survive any projection"
+        ],
+        "out_of_scope": [
+          "Party master data such as legal name, registered address, contact details or LEI registration itself",
+          "The internal content, state or behaviour of the host object, activity or agreement",
+          "Permission sets, entitlements and access-control decisions derived from a role",
+          "Organizational structure, reporting hierarchy and post establishment beyond the role reference",
+          "Agreement terms, pricing and obligations other than those attached to the role type",
+          "Credential issuance, cryptographic proof formats and verification protocol mechanics",
+          "Consent capture and lawful-basis determination for processing personal data",
+          "Authentication, session and identity-assurance mechanics for the player",
+          "Storage engine, wire format and API surface choices"
+        ],
+        "boundary_notes": [
+          {
+            "neighbor": "Party / Agent identity model",
+            "distinction": "A role has no independent existence apart from a player and a host; the mixin references the player by identifier and never restates party master data such as name, address or registration.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-008",
+              "SRC-017"
+            ]
+          },
+          {
+            "neighbor": "Organization membership (W3C org:Membership, org:Post)",
+            "distinction": "org:Membership is a role of an agent specifically within an Organization and org:Post is a holder-independent position. Party Role generalises to arbitrary hosts; where the host is an organization the two overlap and must be reconciled by an explicit ALIGN mapping rather than duplicated.",
+            "source_refs": [
+              "SRC-002"
+            ]
+          },
+          {
+            "neighbor": "Role-Based Access Control role (INCITS 359 / NIST RBAC)",
+            "distinction": "An RBAC role is a permission-bundling construct evaluated by a policy decision point; a party role is a business or legal assertion about who stands in what relation to what. A party role may be an input to authorization but never carries permissions itself.",
+            "source_refs": [
+              "SRC-015"
+            ]
+          },
+          {
+            "neighbor": "Provenance model (W3C PROV-O)",
+            "distinction": "prov:hadRole is scoped to prov:Association and prov:Attribution qualifications of agent involvement in activities and entities. Party Role covers standing roles that exist independently of any recorded activity, so PROV alignment is partial and must not be presented as conformance.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006"
+            ]
+          },
+          {
+            "neighbor": "Participation / event participant records",
+            "distinction": "A participation attaches an actor to a single act occurrence; a party role may be durable and outlive any occurrence. Occurrence-bound participations should reference a role assertion rather than duplicate it.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-016"
+            ]
+          },
+          {
+            "neighbor": "Party-to-party relationship registers (GLEIF Level 2)",
+            "distinction": "Structural ownership and consolidation relationships are symmetric-ish records between two legal entities with their own validation regime. This boundary is genuinely fuzzy: parent/subsidiary can be read as a role. The adopting Dimension must choose one representation per relationship type and record the choice.",
+            "source_refs": [
+              "SRC-008"
+            ]
+          },
+          {
+            "neighbor": "Verifiable credential / attestation model",
+            "distinction": "A credential is one possible evidence artifact for a role assertion. Issuer, holder, subject and verifier are roles relative to a credential exchange, not the role being asserted; conflating them produces circular models.",
+            "source_refs": [
+              "SRC-004"
+            ]
+          },
+          {
+            "neighbor": "Consent and lawful-basis model",
+            "distinction": "Statutory role types such as controller and processor carry obligations, but the lawful basis for a given processing operation is a separate determination held elsewhere and referenced from the role assertion.",
+            "source_refs": [
+              "SRC-009"
+            ]
+          }
+        ]
+      },
+      "structure_index": [
+        {
+          "id": "assertion-core",
+          "name": "Role Assertion Core",
+          "layers": [
+            {
+              "id": "reification-and-identity",
+              "name": "Reification and Assertion Identity",
+              "description": "The role assertion as a first-class reified n-ary link, and the rules that decide when two records denote the same assertion."
+            },
+            {
+              "id": "classification-and-vocabulary",
+              "name": "Role Classification and Vocabulary",
+              "description": "The role type itself, the axis it expresses, and the governance of the vocabulary that supplies it."
+            }
+          ]
+        },
+        {
+          "id": "scoping-and-composition",
+          "name": "Scoping and Composition",
+          "layers": [
+            {
+              "id": "host-context-binding",
+              "name": "Host Context Binding",
+              "description": "The kinds of host a role may attach to, how the host is referenced, and whether roles cascade to parts and successors."
+            },
+            {
+              "id": "player-binding",
+              "name": "Player Binding",
+              "description": "Which parties may play a role, how vacancy is expressed, and how player identity is resolved and re-verified."
+            },
+            {
+              "id": "scope-qualifiers",
+              "name": "Scope Qualifiers and Extent",
+              "description": "Qualifiers that narrow a role within its host: spatial and temporal extent, jurisdiction, organizational unit, quantitative extent and typed characteristics."
+            }
+          ]
+        },
+        {
+          "id": "temporal-state-lifecycle",
+          "name": "Time, State and Lifecycle",
+          "layers": [
+            {
+              "id": "validity-and-time-semantics",
+              "name": "Validity Periods and Time Semantics",
+              "description": "The role period, its boundary and precision semantics, and the separation of role time from record time."
+            },
+            {
+              "id": "status-and-succession",
+              "name": "Status Lifecycle and Succession",
+              "description": "The permitted states of an assertion, the events that move it between them, and how accountability passes from one holder to the next."
+            }
+          ]
+        },
+        {
+          "id": "authority-and-constraints",
+          "name": "Authority, Delegation and Constraints",
+          "layers": [
+            {
+              "id": "authority-basis",
+              "name": "Basis of Authority and Mandate",
+              "description": "The ground on which the role subsists and the obligations that attach to it by operation of law or contract."
+            },
+            {
+              "id": "delegation-and-representation",
+              "name": "Delegation and Representation",
+              "description": "Chains of acting on behalf of another, and the limits on what a role holder may bind."
+            },
+            {
+              "id": "multiplicity-and-separation",
+              "name": "Multiplicity and Separation of Duties",
+              "description": "How many holders a role admits, and which role combinations are forbidden for the same party."
+            }
+          ]
+        },
+        {
+          "id": "provenance-evidence-quality",
+          "name": "Provenance, Evidence and Quality",
+          "layers": [
+            {
+              "id": "assertion-provenance",
+              "name": "Assertion Provenance",
+              "description": "Provenance of the claim itself, kept strictly separate from provenance of the host."
+            },
+            {
+              "id": "evidence-and-quality",
+              "name": "Evidence, Verification and Quality",
+              "description": "Documents and credentials substantiating the role, the corroboration level reached, and how contested or erroneous assertions are handled."
+            }
+          ]
+        },
+        {
+          "id": "governance-access-retention",
+          "name": "Disclosure, Access and Retention",
+          "layers": [
+            {
+              "id": "disclosure-and-privacy",
+              "name": "Disclosure and Privacy",
+              "description": "Publication tiers, minimization, role-only disclosure and recipient logging."
+            },
+            {
+              "id": "retention-and-erasure",
+              "name": "Retention, Erasure and Tombstones",
+              "description": "How long ended role history is kept, and how erasure is reconciled with accountability chains that depend on it."
+            }
+          ]
+        },
+        {
+          "id": "interoperability-and-projection",
+          "name": "Interoperability and Projection",
+          "layers": [
+            {
+              "id": "external-alignment",
+              "name": "External Standard Alignment",
+              "description": "Mapping to external role constructs with explicit relation strength, and the register of known conflicts."
+            },
+            {
+              "id": "projection-and-exchange",
+              "name": "Projection and Exchange Invariants",
+              "description": "What must hold in every serialization and interface so that the same assertion is recognisable across projections."
+            }
+          ]
+        }
+      ],
+      "selected_findings": [
+        {
+          "bundle": "assertion-core",
+          "layer": "reification-and-identity",
+          "finding": {
+            "id": "role-assertion-reification",
+            "name": "Role assertion as a reified n-ary link",
+            "description": "Party Role is not a binary property between a party and a host. It is a reified node joining player, host context, role type and validity, so that qualifying facts such as period, extent, evidence and delegation can attach without polluting either endpoint.",
+            "questions": [
+              "When must a party-to-host link be reified as a Party Role assertion rather than expressed as a direct binary property?",
+              "What is the minimal tuple that makes a Party Role assertion well-formed?",
+              "Is there a scoping party distinct from the host that defines or acknowledges the role, and how is it recorded?",
+              "Which facts are lost when the assertion is projected to a binary shorthand, and is the projection declared lossy?"
+            ],
+            "data_elements": [
+              {
+                "id": "role-assertion",
+                "name": "Role assertion",
+                "description": "The reified node joining player, host, role type and validity; the unit of identity for this mixin.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "player-ref",
+                "name": "Player reference",
+                "description": "Reference to the party that plays the role; never an embedded copy of party master data.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "host-context-ref",
+                "name": "Host context reference",
+                "description": "Reference to the object, activity, agreement, organization or party the role is scoped to.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "scoping-party-ref",
+                "name": "Scoping party reference",
+                "description": "Party that identifies, defines, guarantees or acknowledges the role, where distinct from the host.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "assertion-core",
+          "layer": "reification-and-identity",
+          "finding": {
+            "id": "assertion-identifier-and-sameness",
+            "name": "Assertion identifier and sameness rules",
+            "description": "Which identifier governs the assertion, what is minted when none exists, and which attribute changes create a new assertion rather than a new version of the existing one.",
+            "questions": [
+              "Which authoritative master-system identifier governs this role assertion, and which body issues it?",
+              "What identifier is minted when no authoritative master-system or governed global identifier exists?",
+              "Which attribute changes create a new assertion rather than a new version of the existing one?",
+              "How are duplicate assertions contributed by multiple systems detected, ranked and merged?"
+            ],
+            "data_elements": [
+              {
+                "id": "assertion-id",
+                "name": "Assertion identifier",
+                "description": "The governing identifier of the role assertion.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "assertion-id-scheme",
+                "name": "Identifier scheme",
+                "description": "Scheme or issuing authority of the governing identifier.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "assertion-alternate-id",
+                "name": "Alternate identifier",
+                "description": "Identifiers held for the same assertion in contributing systems, retained after merge.",
+                "value_kind": "identifier",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "assertion-natural-key",
+                "name": "Natural key fingerprint",
+                "description": "Deterministic fingerprint over the identity-bearing attribute set, used for duplicate detection.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "assertion-core",
+          "layer": "classification-and-vocabulary",
+          "finding": {
+            "id": "role-type-and-axes",
+            "name": "Role type and classification axes",
+            "description": "A role type must declare which axis it expresses. FHIR Provenance separates the functional role with respect to an activity from the structural role indicating competency; contractual and statutory positions form further axes. Collapsing them produces vocabularies that cannot be validated.",
+            "questions": [
+              "Which axis does this role type express: functional participation, structural competency, contractual position or statutory status?",
+              "Which controlled vocabulary and version supplies the role type, and what is the binding strength?",
+              "May one assertion carry more than one role type, and how is a multi-typed assertion interpreted?",
+              "How is a local or unmapped role term carried without breaking consumers bound to the governed vocabulary?"
+            ],
+            "data_elements": [
+              {
+                "id": "role-type-code",
+                "name": "Role type code",
+                "description": "The governed term identifying the role played.",
+                "value_kind": "code",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "role-type-scheme",
+                "name": "Role type scheme and version",
+                "description": "IRI and version of the vocabulary from which the role type is drawn.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "role-classification-axis",
+                "name": "Classification axis",
+                "description": "Whether the type is functional, structural, contractual or statutory.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "role-type-binding-strength",
+                "name": "Binding strength",
+                "description": "How strictly the vocabulary constrains the value.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "scoping-and-composition",
+          "layer": "host-context-binding",
+          "finding": {
+            "id": "host-kind-and-reference",
+            "name": "Host kind and reference integrity",
+            "description": "The host discriminator and the referencing rule that keeps an assertion resolvable when the host is versioned, merged or superseded. PROV separates activity association from entity attribution; ISO 19115-1 binds a party to a role relative to a described resource; TMF669 binds roles to accounts and agreements.",
+            "questions": [
+              "What kind of host does this role attach to: an object, an activity or event, an agreement, an organization, or another party?",
+              "How is the host referenced so the assertion stays resolvable when the host is versioned or re-identified?",
+              "May one assertion span multiple hosts, or is a separate assertion required per host?",
+              "What happens to the assertion when its host is deleted, merged or superseded?"
+            ],
+            "data_elements": [
+              {
+                "id": "host-kind",
+                "name": "Host kind",
+                "description": "Discriminator for the category of host the role is scoped to.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "host-version-ref",
+                "name": "Host version reference",
+                "description": "Version-pinned reference where the role is asserted against a specific host version.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "host-ref-mode",
+                "name": "Host reference mode",
+                "description": "Whether the reference floats to the current host or pins to a version.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "scoping-and-composition",
+          "layer": "host-context-binding",
+          "finding": {
+            "id": "scope-cascade-and-derivation",
+            "name": "Scope cascade, inheritance and derived holdings",
+            "description": "Whether a role asserted on a container reaches its parts, whether transitive holdings are distinguished from direct ones, and whether derived assertions are materialised or computed.",
+            "questions": [
+              "Does a role asserted on a container host apply to its parts, and is that reach materialised or computed at query time?",
+              "Are direct and indirect holdings distinguished, and how is the derivation path recorded?",
+              "When a host is derived from or supersedes another, do existing roles carry over automatically?"
+            ],
+            "data_elements": [
+              {
+                "id": "cascade-mode",
+                "name": "Cascade mode",
+                "description": "How a role on a container reaches contained hosts.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "derived-assertion-flag",
+                "name": "Derived assertion flag",
+                "description": "Marks an assertion produced by derivation rather than direct assertion.",
+                "value_kind": "boolean",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "derivation-source-ref",
+                "name": "Derivation source reference",
+                "description": "The assertion from which a derived holding was computed.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "derivation-depth",
+                "name": "Derivation depth",
+                "description": "Number of traversal steps between the direct assertion and the derived holding.",
+                "value_kind": "number",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "scoping-and-composition",
+          "layer": "player-binding",
+          "finding": {
+            "id": "player-kind-and-vacancy",
+            "name": "Admissible player kinds and vacancy",
+            "description": "Roles may be played by natural persons, organizations, collectives, automated agents, or by nobody at all. FHIR permits a PractitionerRole with an empty practitioner for organizational role tracking, and the W3C Organization Ontology defines a Post that exists independently of the person filling it.",
+            "questions": [
+              "Which party kinds are admissible players for this role type: natural person, organization, group, automated agent, or an unfilled post?",
+              "How is a vacant or not-yet-assigned position represented distinctly from a terminated role?",
+              "May a collective such as a team, committee or class of parties hold the role as a single player?",
+              "Are automated or AI agents permitted players, and what additional attribution is required when they are?"
+            ],
+            "data_elements": [
+              {
+                "id": "player-kind",
+                "name": "Player kind",
+                "description": "Category of party occupying the player slot.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "position-ref",
+                "name": "Position reference",
+                "description": "Reference to a holder-independent position or role specification the assertion instantiates.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "vacancy-status",
+                "name": "Vacancy status",
+                "description": "Whether the position is filled, vacant or in handover.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "collective-player-flag",
+                "name": "Collective player flag",
+                "description": "Marks a player that is a collection of parties rather than a single party.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "temporal-state-lifecycle",
+          "layer": "validity-and-time-semantics",
+          "finding": {
+            "id": "role-validity-period",
+            "name": "Role validity period",
+            "description": "The interval during which the role holds, expressed as RFC 3339 date-times with mandatory seconds and an explicit offset or Z, with declared boundary inclusivity and precision.",
+            "questions": [
+              "What are the start and end instants of the role period, and how is an open-ended role expressed?",
+              "Are period boundaries inclusive or exclusive, and at what precision are they compared?",
+              "How is a recurring, rota-based or on-call role period represented without exploding into thousands of assertions?",
+              "Which offset is recorded, and is it the offset legally relevant to the host's jurisdiction?"
+            ],
+            "data_elements": [
+              {
+                "id": "valid-from",
+                "name": "Valid from",
+                "description": "Instant at which the role begins to hold, in RFC 3339 form with seconds and an explicit offset or Z.",
+                "value_kind": "timestamp",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "valid-until",
+                "name": "Valid until",
+                "description": "Instant at which the role ceases to hold; absent means open-ended, expressed by an explicit marker.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "period-boundary-semantics",
+                "name": "Period boundary semantics",
+                "description": "Declared inclusivity and comparison precision for the role period.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "role-recurrence",
+                "name": "Role recurrence expression",
+                "description": "Recurrence or availability pattern for intermittent holdings, with exceptions.",
+                "value_kind": "duration",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "temporal-state-lifecycle",
+          "layer": "status-and-succession",
+          "finding": {
+            "id": "role-status-lifecycle",
+            "name": "Status lifecycle and state transitions",
+            "description": "Two state machines must be kept apart: the substantive state of the role and the registration state of the record. GLEIF separates RelationshipStatus from a nine-value RegistrationStatus; TMF669 carries status with statusReason and emits an explicit state-change event.",
+            "questions": [
+              "What is the permitted state set for a role assertion, and which transitions are legal?",
+              "Is the registration state of the record kept distinct from the substantive state of the role?",
+              "Which reason codes must accompany suspension, revocation and termination?",
+              "Does expiry of the validity period change status automatically, or is an explicit transition event required?"
+            ],
+            "data_elements": [
+              {
+                "id": "role-status",
+                "name": "Role status",
+                "description": "Substantive state of the role such as proposed, active, suspended, ended or revoked.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "registration-status",
+                "name": "Registration status",
+                "description": "State of the record itself such as pending validation, published, lapsed or retired.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "status-reason-code",
+                "name": "Status reason code",
+                "description": "Coded justification for the current status, mandatory for suspension, revocation and termination.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "status-changed-at",
+                "name": "Status changed at",
+                "description": "RFC 3339 instant of the most recent status transition.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "authority-and-constraints",
+          "layer": "authority-basis",
+          "finding": {
+            "id": "basis-of-authority",
+            "name": "Basis of authority and conferring instrument",
+            "description": "Whether the role rests on statute, contract, appointment, court order or self-declaration; which authority conferred it; and whether registration is constitutive of the role or merely declaratory of it.",
+            "questions": [
+              "On what basis does this role subsist: statute, contract, appointment, court order or self-declaration?",
+              "Which authority conferred the role, and is that authority itself identified and within scope?",
+              "Does the role subsist as a matter of fact regardless of registration, or does registration constitute it?",
+              "Which jurisdiction's law governs the role, and what applies when jurisdictions conflict?"
+            ],
+            "data_elements": [
+              {
+                "id": "authority-basis-kind",
+                "name": "Authority basis kind",
+                "description": "The ground on which the role subsists.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "conferring-authority-ref",
+                "name": "Conferring authority",
+                "description": "Reference to the party or body that conferred the role.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "mandate-ref",
+                "name": "Mandate or instrument reference",
+                "description": "Reference to the statute, contract, appointment or order that establishes the role.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "constitutive-flag",
+                "name": "Registration constitutive flag",
+                "description": "Whether registration constitutes the role or merely declares a pre-existing fact.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "authority-and-constraints",
+          "layer": "delegation-and-representation",
+          "finding": {
+            "id": "delegation-and-on-behalf-of",
+            "name": "Delegation and acting on behalf of",
+            "description": "PROV-O reifies delegation as prov:Delegation qualifying prov:actedOnBehalfOf, and FHIR constrains agent.who to differ from agent.onBehalfOf. The mixin carries the delegator, the chain, sub-delegation permission and revocation.",
+            "questions": [
+              "Who delegated the authority for this holding, and is the delegator itself a recorded role holder?",
+              "How deep may a delegation chain go, and is sub-delegation permitted?",
+              "How is a delegation revoked, and what is the effect on acts already performed under it?",
+              "Must the delegate and the delegator be distinct parties, and how is that enforced?"
+            ],
+            "data_elements": [
+              {
+                "id": "on-behalf-of-ref",
+                "name": "On behalf of",
+                "description": "The party on whose behalf the holder exercises the role.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "delegation-chain-depth",
+                "name": "Delegation chain depth",
+                "description": "Number of delegation hops from the original authority to this holder.",
+                "value_kind": "number",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "sub-delegation-permitted",
+                "name": "Sub-delegation permitted",
+                "description": "Whether the holder may delegate onward.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "delegation-revoked-at",
+                "name": "Delegation revoked at",
+                "description": "RFC 3339 instant at which the delegation was revoked.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "authority-and-constraints",
+          "layer": "delegation-and-representation",
+          "finding": {
+            "id": "representation-and-limits",
+            "name": "Representation limits and joint action",
+            "description": "What a holder may bind the host or scoping party to, expressed as machine-checkable limits rather than prose, and how this differs from system permissions.",
+            "questions": [
+              "What may the holder of this role commit the host or scoping party to, and up to what limit?",
+              "Is joint or countersigned action required, and what quorum applies?",
+              "How are representation limits expressed so a system can check them rather than a human reading prose?",
+              "How does representation authority differ from the system permissions granted to the holder?"
+            ],
+            "data_elements": [
+              {
+                "id": "representation-limit",
+                "name": "Representation limit",
+                "description": "Maximum commitment the holder may make on behalf of the host or scoping party.",
+                "value_kind": "quantity",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "quorum-requirement",
+                "name": "Quorum requirement",
+                "description": "Number or proportion of holders whose concurrence is required for a valid act.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "constraint-expression",
+                "name": "Machine-checkable constraint expression",
+                "description": "Formal expression of the limit, evaluable by a policy engine.",
+                "value_kind": "text",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "joint-action-required",
+                "name": "Joint action required",
+                "description": "Whether acts under this role require countersignature.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "authority-and-constraints",
+          "layer": "multiplicity-and-separation",
+          "finding": {
+            "id": "role-multiplicity",
+            "name": "Multiplicity, exclusivity and mandatory roles",
+            "description": "Cardinality constraints on the assertion: how many parties may hold a role on a host, whether the same party may hold it more than once with different qualifiers, and whether the host is invalid without the role filled.",
+            "questions": [
+              "How many parties may simultaneously hold this role on the same host?",
+              "May one party hold the same role on the same host more than once with different qualifiers?",
+              "Is this role mandatory for the host, and what validates that it is filled?",
+              "How are joint holders' shares or ranks expressed, and must they sum to a declared total?"
+            ],
+            "data_elements": [
+              {
+                "id": "holder-cardinality",
+                "name": "Holder cardinality bounds",
+                "description": "Minimum and maximum simultaneous holders permitted for the role on a host.",
+                "value_kind": "object",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "assertion-uniqueness-key",
+                "name": "Assertion uniqueness key",
+                "description": "Attribute set over which duplicate assertions are prohibited.",
+                "value_kind": "text",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "holder-share",
+                "name": "Holder share or rank",
+                "description": "Proportional share or ordinal rank of a joint holder.",
+                "value_kind": "quantity",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "role-mandatory-on-host",
+                "name": "Role mandatory on host",
+                "description": "Whether the host is incomplete or invalid while the role is unfilled.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "authority-and-constraints",
+          "layer": "multiplicity-and-separation",
+          "finding": {
+            "id": "segregation-and-conflict",
+            "name": "Segregation of duties and conflict of interest",
+            "description": "Incompatible role pairs, static versus per-transaction exclusion, time-limited exceptions, and declared conflicts of interest. NIST RBAC contributes the static and dynamic separation-of-duty distinction; FHIR contributes the concrete who-is-not-onBehalfOf constraint.",
+            "questions": [
+              "Which role pairs are mutually exclusive for the same party on the same host, and is the exclusion static or evaluated per transaction?",
+              "How is an approved exception to a segregation rule recorded, justified and time-limited?",
+              "How are conflicts of interest declared by holders, and who adjudicates them?",
+              "What must happen to existing assertions when a new segregation rule is introduced?"
+            ],
+            "data_elements": [
+              {
+                "id": "incompatible-role-pair",
+                "name": "Incompatible role pair",
+                "description": "A pair of role types that may not be held by the same party within a declared scope.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "separation-mode",
+                "name": "Separation mode",
+                "description": "Whether exclusion is enforced at assignment time or at transaction time.",
+                "value_kind": "code",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "sod-exception-ref",
+                "name": "Segregation exception reference",
+                "description": "Reference to an approved, time-limited exception permitting an otherwise forbidden combination.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "conflict-declaration-ref",
+                "name": "Conflict declaration reference",
+                "description": "Reference to a declared conflict of interest affecting the holding.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "interoperability-and-projection",
+          "layer": "external-alignment",
+          "finding": {
+            "id": "participation-vs-standing-role",
+            "name": "Participation versus role boundary",
+            "description": "Standing Party Role occupancy is not a statement that the player performed a particular act. FHIR Provenance.agent.type records how an agent participated in an activity; PractitionerRole records what the practitioner may perform for an organisation over a period. ISO 20022 PartyRole on a Payment is activity-instance scoped and should be linked as participation-like use of this mixin, not stored as a second identity model.",
+            "questions": [
+              "Is this record a standing assignment or an activity-instance participation, and which sibling holds the other?",
+              "If linked to a participation, what participation type (performer, author, enterer, verifier) applies to the activity?",
+              "Does this Dimension forbid merging standing occupancy and act-participation into a single undifferentiated role record?"
+            ],
+            "data_elements": [
+              {
+                "id": "participation-vs-standing-role-data01",
+                "name": "Assignment mode",
+                "description": "standing-assignment or activity-instance.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "participation-vs-standing-role-data02",
+                "name": "Participation reference",
+                "description": "Optional link to a participation sibling for a specific activity.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        }
+      ],
+      "functions": [
+        {
+          "id": "assert-party-role",
+          "name": "Assert a party role",
+          "description": "Create a new role assertion binding a player to a host with a role type, validity and authority basis."
+        },
+        {
+          "id": "resolve-role-holders-at-time",
+          "name": "Resolve role holders as of a time",
+          "description": "Answer who held a given role on a given host at a given effective time, optionally as the register knew it at a second time."
+        },
+        {
+          "id": "resolve-roles-of-party",
+          "name": "Resolve roles held by a party",
+          "description": "Return the roles a party holds or held across hosts, respecting cascade rules and disclosure tiers."
+        },
+        {
+          "id": "validate-role-assertion",
+          "name": "Validate a role assertion",
+          "description": "Check an assertion against well-formedness, vocabulary binding, temporal, cardinality, segregation and representation constraints."
+        },
+        {
+          "id": "transition-role-status",
+          "name": "Transition role status",
+          "description": "Move an assertion between substantive or registration states with a reason and effective instant."
+        },
+        {
+          "id": "correct-role-assertion",
+          "name": "Correct a role assertion retroactively",
+          "description": "Record a correction to a previously asserted fact without losing what the register previously believed."
+        },
+        {
+          "id": "record-delegation",
+          "name": "Record a delegation",
+          "description": "Record that a holder exercises a role on behalf of another party, with scope, limits and revocability."
+        },
+        {
+          "id": "verify-role-evidence",
+          "name": "Verify role evidence",
+          "description": "Examine the evidence supporting an assertion and record the corroboration level reached."
+        },
+        {
+          "id": "succeed-role-holder",
+          "name": "Succeed a role holder",
+          "description": "End one holding and begin its successor in the same position, recording the handover and any gap or overlap."
+        },
+        {
+          "id": "map-role-to-external-term",
+          "name": "Map a role type to an external term",
+          "description": "Record or update a crosswalk entry between a local role type and an external construct, with relation strength and evidence."
+        },
+        {
+          "id": "apply-retention-decision",
+          "name": "Apply a retention or erasure decision",
+          "description": "Execute a retention, redaction, tombstoning or hold decision against an assertion and its history."
+        },
+        {
+          "id": "publish-role-register-snapshot",
+          "name": "Publish a role register snapshot",
+          "description": "Emit an as-of, tier-appropriate projection of the role register for external consumption."
+        }
+      ],
+      "composition": [
+        {
+          "target": "Party / Agent identity model (person, organization, group, automated agent)",
+          "relation": "REFERENCE",
+          "purpose": "Supplies the player and scoping-party identity that this mixin references but never restates; identifier schemes such as LEI or ORCID are resolved there.",
+          "required": true,
+          "source_refs": [
+            "SRC-005",
+            "SRC-008",
+            "SRC-017"
+          ]
+        },
+        {
+          "target": "Role type vocabulary / concept scheme model",
+          "relation": "REFERENCE",
+          "purpose": "Supplies governed role terms, their axis assignment, status, broader relations and successor mappings; the mixin binds to a named vocabulary version rather than embedding terms.",
+          "required": true,
+          "source_refs": [
+            "SRC-013",
+            "SRC-014",
+            "SRC-017"
+          ]
+        },
+        {
+          "target": "Identifier and identity-resolution mixin",
+          "relation": "MIX-IN",
+          "purpose": "Supplies the identity priority ladder, minting rules and alias retention used for assertion identifiers and for resolving player and host references through merges and splits.",
+          "required": true,
+          "source_refs": [
+            "SRC-008",
+            "SRC-011"
+          ]
+        },
+        {
+          "target": "Temporal validity (bitemporal period) mixin",
+          "relation": "MIX-IN",
+          "purpose": "Supplies interval semantics, boundary inclusivity, the separation of effective time from knowledge time, and RFC 3339 timestamp rules used by every period on an assertion.",
+          "required": true,
+          "source_refs": [
+            "SRC-008",
+            "SRC-010"
+          ]
+        },
+        {
+          "target": "Provenance and assertion-record mixin",
+          "relation": "MIX-IN",
+          "purpose": "Supplies the qualified agent-activity-entity pattern used to record who asserted the role, under what plan, from what source, and when it was recorded versus when it occurred.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-006"
+          ]
+        },
+        {
+          "target": "Activity / event model (host context)",
+          "relation": "REFERENCE",
+          "purpose": "Provides activity and event hosts for activity-scoped roles; the mixin supplies the role qualification while the activity model supplies the occurrence.",
+          "required": false,
+          "source_refs": [
+            "SRC-001",
+            "SRC-006"
+          ]
+        },
+        {
+          "target": "Object / resource model (host context)",
+          "relation": "REFERENCE",
+          "purpose": "Provides object and resource hosts for object-scoped roles such as custodian, owner and rights holder, which PROV-O cannot express through hadRole alone.",
+          "required": false,
+          "source_refs": [
+            "SRC-001",
+            "SRC-014",
+            "SRC-017"
+          ]
+        },
+        {
+          "target": "Agreement / contract model",
+          "relation": "REFERENCE",
+          "purpose": "Supplies the agreements that confer contractual roles and the binding instruments required where a role acts on another party's behalf.",
+          "required": false,
+          "source_refs": [
+            "SRC-007",
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "Organization and organizational structure model",
+          "relation": "ALIGN",
+          "purpose": "Overlaps where the host is an organization; org:Membership and org:Post must be mapped to the assertion and position constructs rather than duplicated, with the precedence decision recorded.",
+          "required": false,
+          "source_refs": [
+            "SRC-002"
+          ]
+        },
+        {
+          "target": "Access control / authorization policy model",
+          "relation": "ALIGN",
+          "purpose": "Consumes party roles as inputs to policy decisions; the boundary is that this mixin carries no permissions and an RBAC role is a different construct that happens to share the word.",
+          "required": false,
+          "source_refs": [
+            "SRC-003",
+            "SRC-015"
+          ]
+        },
+        {
+          "target": "Evidence and attestation model (verifiable credentials, filed documents)",
+          "relation": "REFERENCE",
+          "purpose": "Supplies the documents and credentials that substantiate a role assertion, together with their validity windows and revocation status.",
+          "required": false,
+          "source_refs": [
+            "SRC-004",
+            "SRC-008"
+          ]
+        },
+        {
+          "target": "Consent and lawful-basis model",
+          "relation": "REFERENCE",
+          "purpose": "Holds the lawful basis relied upon for processing and disclosing role assertions about natural persons; the mixin references it rather than determining it.",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "Retention and disposition schedule model",
+          "relation": "REFERENCE",
+          "purpose": "Supplies retention classes, disposal triggers and legal hold mechanics applied to ended role assertions and their history.",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "Jurisdiction and legal mandate model",
+          "relation": "REFERENCE",
+          "purpose": "Supplies the statutes, orders and jurisdictional scopes cited as the basis of authority and as the source of obligations attaching to statutory role types.",
+          "required": false,
+          "source_refs": [
+            "SRC-008",
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "Party-to-party relationship register model (ownership, consolidation)",
+          "relation": "ALIGN",
+          "purpose": "Adjacent construct for structural relationships between legal entities; the adopting Dimension must decide per relationship type whether it is a role assertion or a relationship record and record that decision to avoid double representation.",
+          "required": false,
+          "source_refs": [
+            "SRC-008"
+          ]
+        }
+      ],
+      "researchAdjudication": {
+        "providerMode": "dual-provider",
+        "activeProviders": [
+          "claude",
+          "grok"
+        ],
+        "waivedProviders": [],
+        "providerPolicy": {},
+        "boundaryDecision": {
+          "entry_kind": "mixin",
+          "status": "accepted",
+          "rationale": "Both providers independently reached entry_kind=mixin with matching negative scope: the model references but never owns party master data, never carries host payload, and never mints permissions. Claude additionally fixes the spine as a reified n-ary assertion (player, host, role type, validity) and grok's assignment record is the same construct under another name, so no reclassification, split or merge is warranted. The boundary is settled before any node is accepted; the only unsettled edges (ownership-as-property-right versus the sibling Ownership and Stewardship entry, and GLEIF parent/subsidiary as relationship versus role) are parameterised registry precedence decisions, not entry-kind questions."
+        },
+        "decisions": [
+          {
+            "concept": "Base provider selection",
+            "disposition": "claude as base",
+            "rationale": "Claude carries eight sourced boundary notes, an explicit nine-item out-of-scope list, a conflict register and adversarial checks, and covers disclosure, retention, vocabulary governance and projection invariants that grok leaves entirely to Dimension policy. Size was not decisive; boundary completeness and source authority were."
+          },
+          {
+            "concept": "Entry kind",
+            "disposition": "accepted as mixin",
+            "rationale": "Independent agreement across providers, with matching negative scope on party master data, host payload and permissions. No evidence in either pack supports promoting this to a standalone entity or splitting it."
+          },
+          {
+            "concept": "Reified assertion as model spine",
+            "disposition": "accepted from base",
+            "rationale": "Claude's reified n-ary node and grok's assignment record are the same construct; base wording is retained because it names the qualifying facts (period, extent, evidence, delegation) that cannot attach to a binary property, and marks the binary form as a declared-lossy projection."
+          },
+          {
+            "concept": "Role-local contact and service context",
+            "disposition": "accepted from grok into scope-qualifiers",
+            "rationale": "Genuine gap: contact, availability and endpoint attached to the post rather than the person, with an explicit override rule against party-master contact. Grounded in FHIR PractitionerRole and ISO 19115-1 CI_Party."
+          },
+          {
+            "concept": "Ultimate versus immediate party in agency chains",
+            "disposition": "accepted from grok into delegation-and-representation",
+            "rationale": "The base delegation chain has depth and revocation but no principal/immediate-agent distinction and no direct-versus-indirect representation split; UN/CEFACT and PROV supply both, and they change who is bound by an act."
+          },
+          {
+            "concept": "Credential-conditioned occupancy",
+            "disposition": "accepted from grok into authority-basis",
+            "rationale": "The base covers only the negative rule that a qualification does not imply a role. Occupancy preconditions, issuing scoper and auto-suspension on credential lapse are missing and are operationally decisive for licensed posts."
+          },
+          {
+            "concept": "Standing assignment versus act participation discriminator",
+            "disposition": "accepted from grok into external-alignment",
+            "rationale": "The base declares this boundary in prose but supplies no question that forces a record to declare its mode, and no constraint forbidding the merge of standing occupancy with act participation."
+          },
+          {
+            "concept": "RoleClass exclusion gate",
+            "disposition": "accepted from grok into classification-and-vocabulary",
+            "rationale": "The base never excludes partitive, ontological or passive-material roles, nor PROV Role on non-agent entities. For a mixin this is boundary-critical and is directly grounded in HL7 RoleClass at tier 1."
+          },
+          {
+            "concept": "grok permission-boundary finding",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base already enforces the non-grant rule through its NIST RBAC boundary note and the representation-versus-permission question; a second finding would create a competing statement of the same rule that could drift."
+          },
+          {
+            "concept": "grok external-code-alignment-and-conflicts",
+            "disposition": "rejected as duplicative and narrower",
+            "rationale": "The base alignment finding already requires directional mappings with relation strength, a dated conflict-precedence register and evidence for any conformance claim, across ten external constructs rather than five."
+          },
+          {
+            "concept": "grok functional-role-code and named-position labels",
+            "disposition": "rejected; label question deferred",
+            "rationale": "Coded role typing is fully covered by the base classification and vocabulary-governance findings. Multilingual labels and label-versus-code precedence are a declared base omission delegated to the vocabulary model and rest on a tier-2 source only, so they are deferred rather than bolted on."
+          },
+          {
+            "concept": "grok access-privacy-and-exceptions",
+            "disposition": "rejected as narrower",
+            "rationale": "The base disclosure finding covers tiers, minimization, role-only disclosure, lawful-basis referencing and recipient logging; break-glass and public-directory publication are instances of its exception classes, not new structure."
+          },
+          {
+            "concept": "grok detect-role-conflict function",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base validate-role-assertion already names cardinality, segregation and representation checks, which cannot be evaluated without inspecting the player's wider assignment set; a separate function would split one rule engine in two."
+          },
+          {
+            "concept": "ISO 20022 PartyRole evidence",
+            "disposition": "rejected as grounding; deferred to research",
+            "rationale": "Grok's only ISO 20022 source is IBM product documentation, non-primary at tier 3, which grok itself flags as possibly lagging the Registration Authority dictionary. It may not underwrite published structure."
+          },
+          {
+            "concept": "Ownership as a property right",
+            "disposition": "held for sibling boundary review",
+            "rationale": "Grok excludes it explicitly while the base leaves it fuzzy in the GLEIF boundary note, and a sibling Ownership and Stewardship entry already exists in the registry. A recorded precedence decision is required before publication to prevent double representation."
+          },
+          {
+            "concept": "PROV-O conformance",
+            "disposition": "alignment only, no conformance claim",
+            "rationale": "prov:hadRole is restricted to prov:Association, so object-scoped roles cannot be expressed with it without misuse. Both providers converge on partial alignment with a locally defined role property, so this is resolved and is not a critical conflict."
+          },
+          {
+            "concept": "grok bundle player-scope-and-occupancy",
+            "disposition": "not added as structure",
+            "rationale": "Its content maps onto the base scoping-and-composition bundle (host binding, player binding, scope qualifiers) plus the multiplicity layer; only the role-local contact gap was genuinely missing and it was added as a finding, not a bundle."
+          }
+        ],
+        "publicationHolds": [
+          "Source verification: re-fetch and version-pin every base source plus the grok sources underwriting adopted findings (UN/CEFACT PartyRoleCodeList and partyRoleCode, HL7 RoleClass, FHIR PractitionerRole and Provenance), and reconcile the R5-pinned versus unpinned FHIR URLs the two providers used for the same resources.",
+          "Multi-profile validation: the mixin must be exercised against at least healthcare (PractitionerRole), geospatial metadata (CI_Responsibility), trade/customs (UN/CEFACT), telecom (TMF669), LEI relationship records and research credit (CRediT/DataCite) before any claim that it is domain-neutral; only healthcare and geospatial are jointly evidenced today.",
+          "HL7 v3 RoleClass player/scoper definitions are the weakest verified retrieval in the base (page rendered navigation only; definitions confirmed via search index). Grok fetched the same code system successfully, so re-verify directly before publishing any scoper-dependent structure.",
+          "ISO 19115-1 normative wording is unverified: both providers relied on ICSM's public documentation of a paywalled standard. Mark CI_Responsibility and CI_RoleCode claims as secondary-sourced or obtain the standard.",
+          "Audit the base's ODRL 2.2 citations on player-kind-and-vacancy, role-extent-and-characteristics, statutory-role-obligations, representation-and-limits and disclosure-tiers-and-minimization; ODRL is a rights-expression vocabulary and may be over-cited relative to what it actually states.",
+          "Record registry-level precedence decisions before publication for the two fuzzy sibling boundaries: ownership-as-property-right against the existing Ownership and Stewardship entry, and GLEIF parent/subsidiary represented as a relationship record versus a role assertion."
+        ],
+        "deferredResearch": [
+          "ISO 20022 BusinessRole and PartyRole from the Registration Authority business model or message dictionary, not vendor documentation: claude's two fetches timed out and grok fell back to tier-3 IBM docs, leaving financial-messaging adopters ungrounded.",
+          "EDM Council FIBO PartyInRole / agent-in-role: both providers identified it as directly relevant and neither could render a citable class definition, so the financial-industry treatment of party-in-role is absent from both packs.",
+          "GS1 EPCIS 2.0 owning_party versus possessing_party on supply-chain events, which would supply an independent case of object-scoped roles separating legal from physical control; the specification PDF could not be parsed.",
+          "Multilingual role labels, honorifics, transliteration and the label-versus-coded-function precedence rule, which need an explicit contract with the vocabulary sibling model rather than a finding here.",
+          "A constraint expression language for machine-checkable representation and signing limits: the base requires machine-checkability but no cited source supplies a suitable expression language for this purpose.",
+          "Whether any authority publishes a reusable role-incompatibility or segregation-of-duties matrix; grok found none in primary sources, so incompatibilities are currently Dimension-local by default rather than by evidence.",
+          "Basis for any maximum delegation chain depth: the base depth limit is a model-imposed safeguard with no standard behind it and should stay a local policy parameter until evidence exists.",
+          "NIST SP 800-162 (ABAC) alongside INCITS 359, to test whether the no-permissions boundary holds equally against attribute-based authorization, which neither provider examined."
+        ]
+      },
+      "statistics": {
+        "sources": 24,
+        "bundles": 7,
+        "layers": 16,
+        "findings": 31,
+        "questions": 119,
+        "artifacts": 24,
+        "functions": 12
+      }
+    }
+  },
+  "evidence_limits": [
+    "Both are non-canonical reviewable drafts.",
+    "Complete specs parsed and pinned; selected findings are a compact projection.",
+    "Registry relations and v1 fields are non-normative."
+  ]
+}
+```
+
+## CLAUDE STUDY
+```md
+## Verdict per type
+
+- **Position — REUSE ONLY (WM-ORG-004).** The contour's position content is already owned: `position_code` → `de-position-code`, `job_family` → `de-job-ref`/`de-occupation-code`, `grade` → `de-grade-ref`, `authorized_fte` → `de-fte`. Nothing in EM-ORG-06 survives the vacancy test as new structure.
+- **BusinessRole — COMPLETE RESERVED MODEL, not a new ORG type.** Both specs already delegate abstract roles outward: WM-ORG-004 `abstract-role-binding` holds only a reference plus a fallback label, and WM-XCT-023 declares a required REFERENCE to a "Role type vocabulary / concept scheme model" with no registry ID. That unassigned reference is the reserved slot; BusinessRole should complete it, not be minted in ORG.
+- **Accountability — PROFILE.** Two existing owners already split it: seat-durable accountability is WM-ORG-004 `prescribed-regulatory-responsibilities`; party-scoped accountability is a WM-XCT-023 assertion with `authority-basis-kind` and `mandate-ref`. No residue needs independent identity.
+- **DecisionRight — REUSE ONLY.** Seat-conferred rights are `de-decision-right` + `de-vacancy-authority-rule`; person-exercised limits are `representation-and-limits` (`representation-limit`, `quorum-requirement`, `constraint-expression`). The pair is complete; adding a third owner would create competing sources of truth on the same limit.
+- **RaciAssignment — PROFILE of WM-XCT-023.** Every required facet has a home: subject/context → `host-kind`/`host-version-ref`; role type → `role-type-code` with `role-classification-axis` = functional; player → `player-ref` or `position-ref`; validity → `valid-from`/`valid-until` + `period-boundary-semantics`; conflict rules → `incompatible-role-pair`, `separation-mode`, `sod-exception-ref`.
+- **HeadcountPlan — identifier-unassigned candidate, but identifier assignment held.** It is a separate planning fact, not intrinsic capacity (below). The frozen dossier contains no evidence for it in either spec, so independent identity is argued, not proven; it must not be minted under EM-ORG-06.
+
+## Evidence state
+
+Both specs are `published` yet `publishableCanonical: false` and `adjudicationStatus: reviewable-draft`. Registry status is `described-previous-version` (WM-ORG-004) and `candidate` (WM-XCT-023); both `mapping_status` entries are `conceptual-candidate` at `index-and-publication-metadata` depth. Only selected findings were projected from 257,622 and 279,743 source bytes. This review is a boundary opinion over pinned drafts: no canonical status, no approved relations, no installability.
+
+## Identity/mastership
+
+Position identity is master-system-assigned (`de-position-id`, HRIS/position control) and must never be a title or date; `de-position-iri` is the optional graph identity. Role assertions carry their own identity (`assertion-id` + `assertion-id-scheme` + `assertion-natural-key`), which is what makes RACI and accountability addressable without promoting them to entities. Neither model masters the person. The contour's `candidate_master_systems` (corporate registry, HRIS, legal-entity registries) is consistent, but the split must be recorded: HRIS masters seats and occupancies; the corporate registry masters statutory officer assertions; neither masters role-type vocabulary.
+
+## Position/occupancy/capacity
+
+The three-way split is already drawn and should be adopted verbatim: WM-ORG-004 owns the durable seat; WM-ORG-016 owns occupancy (relationship ledger `WM-ORG-004 COMPOSE WM-ORG-016`, `review_state: candidate`); WM-ORG-002 owns the unit. Capacity is intrinsic to the seat — `de-fte`, `de-headcount`, `de-position-type` (single/pooled), `de-overlap-outcome`. Vacancy is **derived**, never stored: `de-open-capacity` computed against `de-occupancy-links`, with `de-vacancy-since`. HeadcountPlan is external because it is an aggregate over units and fiscal periods with its own approval lifecycle, and it exists before any seat is established; `de-budgeted-flag`/`de-budget-amount`/`de-funding-window` are the seat's projection of that plan, not the plan itself.
+
+## Business role and PartyRole
+
+An abstract BusinessRole is a concept with its own versioning and deprecation lifecycle; a PartyRole is a time-bounded assertion that a player stands in that role toward a host. WM-XCT-023's `role-type-and-axes` requires the axis declaration (functional / structural / contractual / statutory) and `role-type-binding-strength` — that is the mechanism that keeps the concept out of the assertion. Roles without a position are native: `player-kind` admits organizations, collectives and automated agents, `position-ref` is `0..1`, and the host may be an object, activity, agreement or party. Occupation/job/grade classifiers stay external registries under all three models; the position holds coded references and `de-classification-decision` evidence only.
+
+## Accountability/RACI/IAM boundary
+
+The line is stated in WM-XCT-023's RBAC boundary note and out-of-scope list: an RBAC role bundles permissions evaluated by a policy decision point; a party role is a business or legal assertion that may be an *input* to authorization and never carries permissions. `representation-limit` binds the host in the world; an entitlement binds a system. Keep them in different models with a one-way flow (assertion → policy input), and keep `participation-vs-standing-role` `assignment-mode` mandatory so act participation is not merged into standing occupancy.
+
+## Invariants
+
+1. A position exists and is queryable while `de-open-capacity` equals authorized capacity (vacant is valid).
+2. Position identity survives any change of occupant; occupancy changes create assignment records, not position records.
+3. Vacancy is derived from occupancy, never asserted on the seat.
+4. Budget and `de-fte` are attributes of the seat, terminated only by `de-abolition-date` under `de-transition-authority`.
+5. A role assertion grants no technical permission.
+6. RACI validity: for a given host and period, exactly one Accountable; at least one Responsible; `assertion-uniqueness-key` prevents duplicates; conflicts resolved by `separation-mode` with time-limited `sod-exception-ref`.
+7. Role type must name scheme, version and axis.
+
+## Scenario walkthrough
+
+**Negative — deleting an employee deletes the position and budget.** Rejected. The person is out of scope for both models; the deletion path reaches only WM-ORG-016. Ending occupancy frees `de-open-capacity`, sets `de-vacancy-since`, and leaves `de-fte`, `de-headcount`, `de-budget-amount` and `de-funding-source` untouched. Any implementation whose cascade reaches the position violates invariants 1, 2 and 4.
+
+**Acceptance.** (a) Occupant change: prior assignment ends, successor begins (`succeed-role-holder`), position identity and effective-dated history preserved; `de-vacancy-authority-rule` decides whether delegations lapse or escalate during the gap. (b) One person, two roles: two assertions with distinct hosts, both validated by `validate-role-assertion` against `incompatible-role-pair`. (c) Two fractional occupancies, one seat: `de-position-type` = pooled, `de-headcount` = 2, two 0.5 FTE assignments summing to `de-fte` = 1.0, `de-overlap-outcome` recording warn-versus-block.
+
+## Profile shape
+
+One profile over WM-XCT-023 covering Accountability, DecisionRight-as-held and RACI: axis pinned to functional or statutory; role-type scheme pinned to a governed RACI/accountability vocabulary; `host-kind` restricted to decision, deliverable, process or control; player restricted to party **or** `position-ref`; cardinality rule per host/period; `separation-mode` mandatory; an explicit non-grant clause. Plus a job-share profile over WM-ORG-004 fixing pooled capacity and fractional-sum validation.
+
+## Gaps and publication holds
+
+Both models' own holds remain open and block any canonical claim: source re-verification and SRC-id re-keying (WM-ORG-004), multi-profile validation, retention as a declared gap, ODRL over-citation and HL7 RoleClass re-verification (WM-XCT-023). Directly relevant deferred items: job-share fractions, dual-incumbency overlap and union slot exclusivity are unsupported by primary sources in either run — so the third acceptance case is a *declared local profile*, not an evidenced capability. Additional holds for EM-ORG-06: no registry ID exists for the role-type vocabulary or classifier models; WM-ORG-016 has no registry reservation in this dossier though two invariants depend on it; all three relationship-ledger rows are `candidate`; no published RACI role-type vocabulary or segregation matrix was found by either provider.
+
+```
+
+## GROK STUDY
+```md
+# EM-ORG-06 Independent Review — Positions, Roles and Accountability
+
+Independent boundary review of the live card *Positions, Roles and Responsibility* (EM-ORG-06), using the brief’s Accountability language without renaming the contour. WM-ORG-004 and WM-XCT-023 are non-canonical reviewable drafts. No Vercy identifier is invented. Standards evidence and design inference are labeled.
+
+## Verdicts per type
+
+| Type | Verdict |
+|---|---|
+| Position — reuse WM-ORG-004 | **Accept with holds** |
+| PartyRole profile of WM-XCT-023 for Accountability, held Decision Rights, RACI | **Accept with holds** |
+| BusinessRole as versioned concept scheme | **Defer** — identifier unassigned |
+| HeadcountPlan | **Defer** as a separate planning candidate — identifier unassigned |
+| Accountability / DecisionRight / RaciAssignment as sibling entities | **Reject** — constrain as profiles of WM-XCT-023 |
+
+## Position / occupancy boundary
+
+**Evidence.** W3C ORG REC: `org:Post` “exists independently of the person or persons filling it”; vacant posts are first-class; posts may report to posts. `org:Membership` “does not exist unless there is an Agent.” UK Civil Service position management treats a position as an ERP “chair” that may be vacant under pre-approved budget. US OPM practice classifies the position, not the occupant; 5 CFR 330 treats a vacancy as a vacant *position* the agency is recruiting against. Position-control HRIS practice (Oracle HCM and peers) keeps the position as the budgetary planning unit whether filled or vacant. WM-ORG-004 already models durable seat identity, unit placement, job/grade refs, authorized FTE/headcount, single vs pooled type, overlap/max holders, budgeted amount/period, funding source, and seat-level authority. Vacancy state is derived (vacant / partly filled / fully filled / over-established). Occupants are not stored on the seat. WM-ORG-016 is the time-bounded binding that consumes FTE. EM-PEO-04 Vacancy is a recruitment instrument whose owners for person, position, budget and employment are external.
+
+**Inference.** Reuse WM-ORG-004 for the durable vacant-capable seat. Occupancy stays external on WM-ORG-016; Employment (WM-ORG-005 / EM-PEO-02) is the legal relationship and does not own the seat. Four layers must not collapse: Job/class template ≠ Position/seat ≠ Occupancy/assignment ≠ BusinessRole concept. Two vacancy senses must not collapse: derived seat state on WM-ORG-004 versus the EM-PEO-04 recruitment Vacancy. EM-ORG-06 owns only the derivation rule and points the recruitment object out.
+
+## Role concept / assertion boundary
+
+**Evidence.** ORG separates `org:Role` (abstract concept) from `org:Membership` / `org:holds` (assertion). WM-XCT-023 is a mixin: a reified n-ary assertion joining player, host, role type and validity, with scope, authority basis, constraints and provenance. Players include parties *and* unfilled posts. Standing assignment is not activity-instance participation. NIST NICE: a work role is a grouping of work, not a job title or occupation.
+
+**Inference.** BusinessRole is the versioned concept scheme (`org:Role` analogue). Leave its identifier unassigned; do not silently fold it into WM-XCT-023. PartyRole is the assertion. A Position may be the player so a vacant seat can carry Accountable/Responsible without an occupant. One party may hold many PartyRole assertions against many hosts.
+
+## Accountability / RACI rules
+
+**Evidence.** COBIT: exactly one Accountable per practice, at least one Responsible; A-without-R is a failure mode. ISO/IEC 38500: responsibility requires clear roles and decision rights matched to competence. COSO IC Principles 3 and 5 plus SoD as a control activity; compensating controls when SoD is infeasible. ISO/IEC 27001 A.5.3: SoD exceptions must be explicit. The live card already requires RACI to pin subject, role, period and permitted conflicts. WM-XCT-023 already carries incompatible-role pairs, static vs dynamic exclusion, and time-limited exceptions.
+
+**Inference.** RACI, Accountability and held Decision Rights are constrained profiles of WM-XCT-023, not new types. Each RACI assertion pins host, role concept, player (party or position), period and conflict policy. “One Accountable and at least one Responsible per host/period” is a *profile invariant*, not a core PartyRole axiom — the mixin is general-purpose. SoD exceptions are explicit, scoped, temporary, and require a compensating control. Three-way authority must stay split: seat-level authority on Position; held Decision Rights as a PartyRole profile; assignment-time conveyance on WM-ORG-016.
+
+## IAM distinction
+
+**Evidence.** INCITS 359 RBAC and NIST SP 800-162 ABAC are enforcement models (users, roles, permissions, sessions, request-time attributes). Enterprise RBAC practice separates business roles from technical/IT roles; technical roles should not be assigned directly as the business concept. The live card invariant is “a business role is not an access role.” WM-XCT-023 holds NIST 800-162 as deferred research.
+
+**Inference.** BusinessRole and PartyRole may be policy *input* to IAM. They must not mint grants, entitlements, sessions or permissions. Enforcement remains outside EM-ORG-06.
+
+## Headcount-plan test
+
+**Evidence.** ISO 30409:2016 (confirmed 2022) is a planning *process* (current workforce → demand → supply → gap → actions), not a HeadcountPlan entity and not an FTE formula. Industry practice distinguishes authorized headcount from funded headcount. WM-ORG-004 capacity/funding is an authorization on the seat. WM-ORG-002 treats a staffing snapshot as a measurement event, not a plan; it already holds that unit-grain authorized complement is local control. WM-ORG-016 declares FTE metrics ungrounded. WM-ECO-012 treats workforce as a budget assumption driver, not as owner of position funding.
+
+**Inference.** Keep HeadcountPlan a separate planning candidate with identifier unassigned. Position FTE/budget are projections from an *approved* plan, not the plan itself. Four layers: Plan (intent) ≠ Seat authorization ≠ Occupancy ≠ Measurement snapshot.
+
+## Scenario results
+
+1. Occupant change preserves Position — **Pass** (ORG Post, Civil Service chair, WM-ORG-004 identity).
+2. Vacant seat remains valid; vacancy derived — **Pass**.
+3. One person holds two roles — **Pass** (two PartyRole assertions over BusinessRole concepts; not 1:1 with Position).
+4. Two 0.5 FTE assignments fill one allowed pooled seat — **Pass** iff type=pooled, overlap allowed, and consumed FTE ≤ authorized FTE; otherwise over-established.
+5. Deleting an employee deletes the seat and budget — **Correctly rejected** (negative case). Deletion ends the assignment; seat identity, authorized capacity and budget remain.
+
+## Required relations
+
+- Position —placed-in→ OrganizationalUnit (WM-ORG-002)
+- Position —classified-by→ Job/grade (external scheme)
+- Position —authorized-capacity/funding-from→ approved HeadcountPlan / Budget (references only; plan id unassigned)
+- WorkAssignment —occupies→ Position and consumes FTE (WM-ORG-016)
+- PartyRole —player→ Party **or** Position; —host→ subject; —roleConcept→ BusinessRole scheme (id unassigned)
+- RACI / Accountability / DecisionRight = constrained profiles of WM-XCT-023
+- PartyRole —policy-input-to→ external IAM (no grants)
+- Employment —references→ Position; does not own it (WM-ORG-005)
+- EM-PEO-04 Vacancy —refers-to→ Position; does not replace derived vacancy
+
+## Publication blockers
+
+1. WM-ORG-004 and WM-XCT-023 remain reviewable drafts; EM-ORG-06 cannot claim canonical reuse.
+2. BusinessRole and HeadcountPlan identifiers stay unassigned — do not invent.
+3. Occupancy and assignment-time authority must stay on WM-ORG-016; absorbing them into Position or PartyRole fails the vacant-seat and occupant-change tests.
+4. Derived vacancy (WM-ORG-004) and recruitment Vacancy (EM-PEO-04) must be named as distinct objects.
+5. Seat-level authority, held Decision Rights, and assignment-time conveyance must not collapse.
+6. “One A and ≥1 R” is a RACI-profile invariant, not a PartyRole core axiom; SoD exception lifecycle must be specified in the profile, not left as deferred research.
+7. Inherited source/coverage holds travel with reuse: ISO 30400 paywall, 5 CFR/eCFR re-verification, FHIR PractitionerRole occupancy lean (align, do not equate), ISO 20022 BusinessRole / FIBO PartyInRole / NIST 800-162 deferred, job-share fractions source-weak, unit-grain establishment as local control.
+8. Position funding is an authorization record, not a WM-ECO-012 budget line and not a plan.
+```
+
+## PROVIDER COMPARISON
+```md
+# EM-ORG-06 provider comparison
+
+Claude and Grok converge on **REUSE** of `WM-ORG-004` for the durable Position and **PROFILE** of `WM-XCT-023` for Accountability, held Decision Rights and RACI, with no new runtime or model identifier. Both keep occupancy external, preserve the seat through vacancy and occupant change, separate business/legal role assertions from IAM permissions, and leave `HeadcountPlan` unassigned.
+
+Grok sharpened the four-layer distinction between Job/Class, Position, Occupancy and BusinessRole; the distinction between derived seat vacancy and a recruitment vacancy; and the three authority planes of seat authority, held authority and assignment-time conveyance. Claude supplied the stronger concept/assertion split, the natural-key and capacity mechanics, and the requirement to treat the BusinessRole vocabulary as an unallocated dependency rather than silently embedding it. References to models outside the frozen dossier remain explanatory only and are not adopted as verified dependencies.
+
+```
+
+## RECONCILED CANDIDATE REVISION 2
+```json
+{
+  "format": "vercy-enterprise-profile-candidate/v1",
+  "contourId": "EM-ORG-06",
+  "name": "Enterprise Position, Role and Accountability",
+  "decision": "PROFILE",
+  "newRuntimeId": false,
+  "bases": [
+    "WM-ORG-004",
+    "WM-XCT-023"
+  ],
+  "candidateRevision": 2,
+  "candidateStatus": "provider-reconciled-awaiting-frozen-audit",
+  "publishableCanonical": false,
+  "fixturesExecuted": false,
+  "basePins": [
+    {
+      "modelId": "WM-ORG-004",
+      "registryId": "vr.wm-org-004",
+      "modelVersion": "0.3.0-research.1",
+      "sourceFile": "publications/wm-org-004-position/spec.yaml",
+      "sourceBytes": 257622,
+      "sourceSha256": "084bbd188562897813d79bca48bc75b1612d03dae3a8f55b7ade9ed9c13c2b23",
+      "synthesisSha256": "276439f4a06ed634dda2e84d4bb34499a521d08dbb31eab9d5dfe8fb041466e0",
+      "adjudicationStatus": "reviewable-draft",
+      "publishableCanonical": false,
+      "providerMode": "dual-provider",
+      "registryStatus": "described-previous-version",
+      "registryReviewState": "migration-boundary-review",
+      "registryEntryKind": "standalone-mm",
+      "specEntryKind": "entity",
+      "entryKindDivergence": true,
+      "legacyAlias": "O2;O3",
+      "legacySpecRef": "models/organizations/O2-organizational-unit.md;models/organizations/O3-employment-and-membership.md",
+      "registrySnapshotSha256": "c6e978ba53182b6267a96a306fc2c0137e7b4050add6ad626afd7ec65c2a42b7",
+      "invalidationRule": "Any source, synthesis, registry reservation or required-dependency drift invalidates this candidate."
+    },
+    {
+      "modelId": "WM-XCT-023",
+      "registryId": "vr.wm-xct-023",
+      "modelVersion": "0.3.0-research.1",
+      "sourceFile": "publications/wm-xct-023-party-role/spec.yaml",
+      "sourceBytes": 279743,
+      "sourceSha256": "f717522fc366398db09176ab8058b73bb9814db0566131f7e426eb3b3564bdd7",
+      "synthesisSha256": "11f17ca2273d07b88689b0b9f7c43185918f51dabce9fc7ab4dc63efd178b082",
+      "adjudicationStatus": "reviewable-draft",
+      "publishableCanonical": false,
+      "providerMode": "dual-provider",
+      "registryStatus": "candidate",
+      "registryReviewState": "boundary-review-required",
+      "registryEntryKind": "mixin",
+      "specEntryKind": "mixin",
+      "entryKindDivergence": false,
+      "legacyAlias": null,
+      "legacySpecRef": null,
+      "registrySnapshotSha256": "6b8aa707dce12e2af64773ddbb10e7f0ef3a1e2ee535cf5f5e167d8789a408df",
+      "invalidationRule": "Any source, synthesis, registry reservation or required-dependency drift invalidates this candidate."
+    }
+  ],
+  "requiredDependencies": [
+    {
+      "name": "WM-ORG-016 Assignment / Occupancy",
+      "modelId": "WM-ORG-016",
+      "pinned": false,
+      "reason": "Required for vacancy and consumed-capacity semantics but absent from frozen dossier."
+    },
+    {
+      "name": "WM-ORG-002 Organizational Unit",
+      "modelId": "WM-ORG-002",
+      "pinned": false,
+      "reason": "Required Position placement owner but absent from frozen dossier."
+    },
+    {
+      "name": "BusinessRole concept scheme",
+      "modelId": null,
+      "pinned": false,
+      "reason": "Required role vocabulary has no registry allocation."
+    },
+    {
+      "name": "HeadcountPlan",
+      "modelId": null,
+      "pinned": false,
+      "reason": "Independent planning candidate lacks allocation and evidence."
+    },
+    {
+      "name": "IAM authorization plane",
+      "modelId": null,
+      "pinned": false,
+      "reason": "External enforcement boundary is intentionally not identified by this contour."
+    }
+  ],
+  "constraints": [
+    "WM-ORG-004 MUST remain the sole master of durable Position identity, definition, placement, authorized capacity, funding frame, requirements and seat-level authority.",
+    "Position MUST survive vacancy, occupant replacement and deletion or erasure of an occupant record; no cascade from person or occupancy may delete or rewrite the seat.",
+    "Vacancy MUST be a derived as-of state from authorized capacity and effective WM-ORG-016 occupancy references and MUST NOT be stored as an independent seat fact.",
+    "Derived seat vacancy MUST remain distinct from any recruitment Vacancy or PositionOpening artifact.",
+    "WM-ORG-016 occupancy or assignment MUST remain the owner of who occupies a Position, the occupied interval and consumed capacity; EM-ORG-06 MUST NOT copy those facts onto Position.",
+    "Job or class, Position, Occupancy or assignment, and BusinessRole concept MUST remain four distinct semantic layers.",
+    "Occupation, job family, grade, skill and role vocabularies MUST remain external versioned schemes; Position and PartyRole store only pinned references and evidence.",
+    "BusinessRole MUST remain an identifier-unassigned versioned concept-scheme candidate; no registryId or runtimeId may be invented in this contour.",
+    "WM-XCT-023 MUST remain the master of addressable, time-bounded PartyRole assertions linking a player or Position, host, role concept, validity, scope and authority basis.",
+    "Accountability, held DecisionRight and RaciAssignment MUST be constrained profile labels over WM-XCT-023 and MUST NOT become sibling entity roots.",
+    "Seat-level authority belongs to WM-ORG-004; authority currently held belongs to a WM-XCT-023 profile; assignment-time conveyance belongs to WM-ORG-016. These planes MUST NOT be collapsed or inferred from one another.",
+    "A PartyRole assertion MAY use a Position as player so a vacant seat can carry durable responsibility, while the current human bearer remains resolved through occupancy.",
+    "One person MAY hold multiple concurrent PartyRole assertions when their hosts, scopes, concepts or validity intervals differ and no segregation rule forbids the combination.",
+    "A RACI assertion MUST pin host and host revision, role concept and scheme version, player or Position, validity interval, assignment mode, conflict policy and provenance.",
+    "Exactly one Accountable and at least one Responsible MUST hold for each governed RACI host and evaluated interval; this is a RACI-profile invariant and MUST NOT be promoted to a core WM-XCT-023 axiom.",
+    "Segregation-of-duties exceptions MUST be explicit, scoped, approved, time-limited and linked to a compensating control; absence of an exception MUST cause the incompatible assignment to be refused.",
+    "BusinessRole, PartyRole, RACI, Accountability and DecisionRight MAY be authorization-policy inputs but MUST NOT mint, contain or imply IAM grants, permissions, entitlements, roles or sessions.",
+    "Representation limits and real-world decision authority MUST remain distinct from technical access permissions.",
+    "Position authorized FTE and headcount MUST be non-negative; single seats MUST NOT admit multiple simultaneous holders unless an explicitly pinned overlap rule applies.",
+    "Fractional occupancies MAY share only a pooled Position and their effective consumed FTE MUST NOT exceed the seat authorization unless an explicit, recorded override outcome applies.",
+    "Ending one occupancy MUST release only its consumed capacity and MUST NOT change Position identity, authorized FTE, headcount, funding or unrelated role assertions.",
+    "HeadcountPlan MUST remain an identifier-unassigned planning candidate distinct from Position, occupancy, staffing measurement and WM-ECO-012 budget lines.",
+    "Position capacity and funding MAY be projections from an approved plan but MUST NOT be treated as the plan itself; approval source and effective period must be pinned before such a projection is asserted.",
+    "Corrections MUST append superseding assertions and preserve event, valid and knowledge time; closed Position, occupancy and PartyRole history MUST NOT be overwritten.",
+    "All standards statements MUST remain alignment-only; no W3C ORG, COBIT, ISO, NIST, FHIR, Popolo or other conformance claim is permitted.",
+    "Publication MUST be refused while base holds, candidate relation rows, missing dependency pins, vocabulary allocation or required semantic fixtures remain unresolved."
+  ],
+  "profileTypes": {
+    "Position": {
+      "disposition": "reuse durable vacant-capable seat root",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": "WM-ORG-004",
+      "baseRegistryRef": "vr.wm-org-004",
+      "origin": "base"
+    },
+    "BusinessRole": {
+      "disposition": "identifier-unassigned versioned concept-scheme candidate",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": null,
+      "baseRegistryRef": null,
+      "origin": "unallocated-dependency"
+    },
+    "Accountability": {
+      "disposition": "profile-local label over WM-XCT-023",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": "WM-XCT-023",
+      "baseRegistryRef": "vr.wm-xct-023",
+      "origin": "contour-candidate"
+    },
+    "DecisionRight": {
+      "disposition": "seat authority on WM-ORG-004 or held-authority profile over WM-XCT-023 according to plane",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": "WM-XCT-023",
+      "baseRegistryRef": "vr.wm-xct-023",
+      "origin": "contour-candidate"
+    },
+    "RaciAssignment": {
+      "disposition": "profile-local label over WM-XCT-023",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": "WM-XCT-023",
+      "baseRegistryRef": "vr.wm-xct-023",
+      "origin": "contour-candidate"
+    },
+    "HeadcountPlan": {
+      "disposition": "identifier-unassigned independent planning candidate",
+      "registryId": null,
+      "runtimeId": null,
+      "baseModelId": null,
+      "baseRegistryRef": null,
+      "origin": "deferred-candidate"
+    }
+  },
+  "authorityPlanes": {
+    "seat": "WM-ORG-004",
+    "held": "WM-XCT-023 profile",
+    "assignmentConveyance": "WM-ORG-016 external dependency",
+    "technicalAccess": "external IAM"
+  },
+  "vacancySemantics": {
+    "seatVacancy": "derived capacity state",
+    "recruitmentVacancy": "external recruiting artifact",
+    "mustRemainDistinct": true
+  },
+  "capacityRule": {
+    "single": "one effective holder unless explicitly pinned overlap rule",
+    "pooled": "sum effective occupancy FTE <= authorized FTE and headcount <= authorized headcount",
+    "override": "explicit recorded outcome only"
+  },
+  "raciRule": {
+    "scope": "profile-local",
+    "accountable": "exactly one per host and interval",
+    "responsible": "at least one per host and interval",
+    "consulted": "zero or more",
+    "informed": "zero or more",
+    "sodException": "explicit scoped approved time-limited with compensating control"
+  },
+  "relationshipLedgerStatus": [
+    {
+      "source_model_id": "WM-ORG-002",
+      "relation_type": "CONTAINS",
+      "target_model_id": "WM-ORG-004",
+      "instance_semantics": "Unit instance contains or governs positions",
+      "rationale": "Structural matryoshka",
+      "review_state": "candidate"
+    },
+    {
+      "source_model_id": "WM-ORG-003",
+      "relation_type": "COMPOSE",
+      "target_model_id": "WM-ORG-004",
+      "instance_semantics": "Team is composed through positions and assignments",
+      "rationale": "Positions remain reusable",
+      "review_state": "candidate"
+    },
+    {
+      "source_model_id": "WM-ORG-004",
+      "relation_type": "COMPOSE",
+      "target_model_id": "WM-ORG-016",
+      "instance_semantics": "Position is occupied through a scoped assignment",
+      "rationale": "Separates position from person",
+      "review_state": "candidate"
+    }
+  ],
+  "inheritedHolds": [
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 1,
+      "text": "Source verification is incomplete: every base URL and version pin must be re-resolved at publication time. In particular the base cites 5 CFR and 29 CFR from the Cornell LII reproduction because eCFR and opm.gov were unreachable in its run, while grok reached eCFR current as of 2026-08-20 and the OPM classification standards PDF; re-verify and dual-cite or swap to the official host before publishing."
+    },
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 2,
+      "text": "Source identifiers collide across providers with different underlying documents (SRC-002 is HR Open in the base and Popolo in grok, among others). All sources must be re-keyed during merge and every accepted addition re-pointed, and the merged source list re-verified as live, before any draft is published."
+    },
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 3,
+      "text": "ISO 30400:2022 must not be cited as defining position, job, role or FTE: grok's own note concedes the term text was not inspectable behind the paywall, so only the standard's existence, date and scope are supportable. The ISCO-08 citation must likewise resolve to an authoritative ILO or UNSD host rather than the third-party netlify mirror used by grok."
+    },
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 4,
+      "text": "Retention and disposition periods remain a declared gap. No fetched primary source in either pack states a retention period for position records, descriptions or classification decisions; the structure may be published only as a required local determination, never as canonical guidance."
+    },
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 5,
+      "text": "Multi-profile domain validation is outstanding. Evidence concentrates on US federal General Schedule classification, UK FCA prescribed responsibilities, EU pay transparency and a single HCM vendor API. Before publication the model must be exercised against at least a civic or legislative profile (Popolo post with constituency), a healthcare profile (FHIR PractitionerRole unnamed slot) and a non-US private-sector profile, and every regional assumption must be labelled a jurisdiction profile rather than a universal requirement."
+    },
+    {
+      "baseModelId": "WM-ORG-004",
+      "index": 6,
+      "text": "Published boundary notes must carry grok's disambiguations verbatim in substance: HL7 FHIR PractitionerRole is aligned, not equated, to a classified position, and the financial, geospatial and sports senses of the word position are excluded, including schema.org's Quarterback example of a named position."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 1,
+      "text": "Source verification: re-fetch and version-pin every base source plus the grok sources underwriting adopted findings (UN/CEFACT PartyRoleCodeList and partyRoleCode, HL7 RoleClass, FHIR PractitionerRole and Provenance), and reconcile the R5-pinned versus unpinned FHIR URLs the two providers used for the same resources."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 2,
+      "text": "Multi-profile validation: the mixin must be exercised against at least healthcare (PractitionerRole), geospatial metadata (CI_Responsibility), trade/customs (UN/CEFACT), telecom (TMF669), LEI relationship records and research credit (CRediT/DataCite) before any claim that it is domain-neutral; only healthcare and geospatial are jointly evidenced today."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 3,
+      "text": "HL7 v3 RoleClass player/scoper definitions are the weakest verified retrieval in the base (page rendered navigation only; definitions confirmed via search index). Grok fetched the same code system successfully, so re-verify directly before publishing any scoper-dependent structure."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 4,
+      "text": "ISO 19115-1 normative wording is unverified: both providers relied on ICSM's public documentation of a paywalled standard. Mark CI_Responsibility and CI_RoleCode claims as secondary-sourced or obtain the standard."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 5,
+      "text": "Audit the base's ODRL 2.2 citations on player-kind-and-vacancy, role-extent-and-characteristics, statutory-role-obligations, representation-and-limits and disclosure-tiers-and-minimization; ODRL is a rights-expression vocabulary and may be over-cited relative to what it actually states."
+    },
+    {
+      "baseModelId": "WM-XCT-023",
+      "index": 6,
+      "text": "Record registry-level precedence decisions before publication for the two fuzzy sibling boundaries: ownership-as-property-right against the existing Ownership and Stewardship entry, and GLEIF parent/subsidiary represented as a relationship record versus a role assertion."
+    }
+  ],
+  "inheritedHoldRule": "Inherited holds are verbatim, individually addressable, and cannot be summarized, merged or discharged by this contour.",
+  "publicationHolds": [
+    "Both bases are non-canonical reviewable drafts.",
+    "All relevant relationship-ledger rows are candidate.",
+    "WM-ORG-016 and WM-ORG-002 dependencies are unpinned in this frozen dossier.",
+    "BusinessRole and HeadcountPlan remain unallocated.",
+    "Declarative fixtures are unexecuted and no runtime semantics are published."
+  ],
+  "provenance": {
+    "claudeStudy": "claude-study.raw.md",
+    "grokStudy": "grok-study.raw.md",
+    "comparison": "provider-comparison.md",
+    "audit": "pending"
+  }
+}
+```
+
+## DECLARATIVE FIXTURES REVISION 2
+```json
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "profileName": "Enterprise Position, Role and Accountability",
+  "fixtureRevision": 2,
+  "fixturesExecuted": false,
+  "baseSourcePins": {
+    "WM-ORG-004": "084bbd188562897813d79bca48bc75b1612d03dae3a8f55b7ade9ed9c13c2b23",
+    "WM-XCT-023": "f717522fc366398db09176ab8058b73bb9814db0566131f7e426eb3b3564bdd7"
+  },
+  "cases": [
+    {
+      "id": "vacant-position",
+      "kind": "positive",
+      "input": "An established Position has no effective occupancy.",
+      "expect": "derive vacant/open capacity; retain Position, FTE and funding",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "660711526a7fb7ba38197deb8cd1c5866d671fa525e1496f0ae9143be402a917"
+    },
+    {
+      "id": "successor-occupant",
+      "kind": "positive",
+      "input": "A prior occupancy ends and a successor begins.",
+      "expect": "retain Position identity; preserve both occupancy intervals",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "a637b5db1b8e06f02e9f10b99022cb385b05b2d7aba5ad7e253a01ef546aa848"
+    },
+    {
+      "id": "delete-employee-cascade",
+      "kind": "negative",
+      "input": "Deleting an employee deletes the Position and budget.",
+      "expect": "refuse cascade; only occupancy/person handling changes",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "65a9a8a4315ab427c09057a7f764942f4bf976420610380175e60f501e4506f6"
+    },
+    {
+      "id": "stored-vacancy-flag",
+      "kind": "negative",
+      "input": "A mutable vacancy flag conflicts with effective occupancy.",
+      "expect": "refuse independent vacancy source; recompute as-of",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "c6bf2e2f3bf02aab0c6a3b387a0c61b3232b2f5f01c120e894e7dc5c6f362f44"
+    },
+    {
+      "id": "recruitment-vacancy-collapse",
+      "kind": "negative",
+      "input": "A PositionOpening is treated as the seat vacancy state.",
+      "expect": "refuse; keep recruitment artifact external",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "d1277f3a0df76e5528e2f081e6a144b0c46319ef260b3be1a7c5a8930a658be6"
+    },
+    {
+      "id": "two-scoped-roles",
+      "kind": "positive",
+      "input": "One person holds two roles on distinct hosts.",
+      "expect": "accept two PartyRole assertions if no SoD conflict",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "6f3a55fbc3d5cde4589288614f8056eb4d74488f3a07b7bfc65fd70ce272b768"
+    },
+    {
+      "id": "business-role-embedded",
+      "kind": "negative",
+      "input": "Role labels are copied without scheme/version into every assertion.",
+      "expect": "refuse; require pinned concept reference",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "48ede71308c9c9ee15d1ba24c056182f2c28c02cecdd4fc55f1d3c89c3f71c55"
+    },
+    {
+      "id": "party-role-grants-iam",
+      "kind": "negative",
+      "input": "RACI Responsible automatically grants repository write permission.",
+      "expect": "refuse; explicit IAM grant required",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "295b72e36425d3e805bbb2bd491c455de4d565b8a37af06cb47ff2a07ab499fb"
+    },
+    {
+      "id": "position-as-player",
+      "kind": "positive",
+      "input": "A vacant Position is Accountable for a controlled process.",
+      "expect": "accept Position player with current bearer resolved externally",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "38d74dddd90c06049e6ffc6e42fb1008c779dcb54a5a54428824545cc59f78b5"
+    },
+    {
+      "id": "raci-one-a-one-r",
+      "kind": "positive",
+      "input": "One A and two R assertions cover one host interval.",
+      "expect": "accept profile cardinality",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "57079c5550d95fb060aa02bc81b731a30f8aa551a03cfee78cdff386191aa0e5"
+    },
+    {
+      "id": "raci-two-accountable",
+      "kind": "negative",
+      "input": "Two simultaneous A assertions cover the same host interval.",
+      "expect": "refuse or resolve interval before acceptance",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "9d8a541cd24b9b6c0e3f953bd1163ea5df26a0ca2ba695f7f09377afaaaa6ed1"
+    },
+    {
+      "id": "raci-no-responsible",
+      "kind": "negative",
+      "input": "An A exists without any R for the host interval.",
+      "expect": "refuse incomplete RACI profile",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "36857fee108553fe648af5a4da86b587d585916d717558fbd5502270a119a238"
+    },
+    {
+      "id": "raci-rule-on-generic-role",
+      "kind": "negative",
+      "input": "Generic PartyRole is rejected because it lacks Accountable.",
+      "expect": "refuse profile leakage; core mixin has no RACI cardinality",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "73758e18c748b622e99b96350709c9d08095949c41aaf4806662808fa3f167e6"
+    },
+    {
+      "id": "sod-conflict-no-exception",
+      "kind": "negative",
+      "input": "One party holds incompatible maker and approver roles.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "4718f8915b89a4034f922ff08c37ef043c696f01cc75cf518facd6e8d37a5ee5"
+    },
+    {
+      "id": "sod-temporary-exception",
+      "kind": "positive",
+      "input": "Conflict has scoped approval, expiry and compensating control.",
+      "expect": "accept only for approved interval",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "81340e9cd09d705aebfaeba917863165d9dd2942426ca45fc233901c2b0bf025"
+    },
+    {
+      "id": "sod-permanent-exception",
+      "kind": "negative",
+      "input": "Conflict exception has no expiry.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "1acc28d4e796b5033a7207d00d4fc4b2de17cb0a9c916381a95b28cb71ff98e7"
+    },
+    {
+      "id": "seat-held-assignment-authority-collapse",
+      "kind": "negative",
+      "input": "Seat delegation, held authority and assignment conveyance are stored as one fact.",
+      "expect": "refuse; keep three planes",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "d55c651d85988d28f6eb497b421c605a30959c743fc141aaa1fbdab408c6f932"
+    },
+    {
+      "id": "pooled-two-half-fte",
+      "kind": "positive",
+      "input": "Two 0.5 FTE occupancies fill a pooled 1.0 FTE seat.",
+      "expect": "accept when headcount and overlap policy also allow",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "6bdc841e2d3aa2af1530be2fc8b6faa63e1d1f1561e241f55dce9473b331b641"
+    },
+    {
+      "id": "single-two-half-fte",
+      "kind": "negative",
+      "input": "Two 0.5 FTE occupancies fill a single seat without overlap rule.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "9cd0c34f7aaceff1af9a79f282e659eea54be5948de5b2dd78b1f027162aa9d7"
+    },
+    {
+      "id": "pooled-over-capacity",
+      "kind": "negative",
+      "input": "Pooled occupancies total 1.2 FTE against 1.0 authorized.",
+      "expect": "refuse absent explicit override outcome",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "6425b8396d59cf3f11b63dcdf0b992fdbf927ef3c37a36143e12ec00312d8889"
+    },
+    {
+      "id": "occupancy-end-rewrites-capacity",
+      "kind": "negative",
+      "input": "Ending occupancy reduces authorized FTE.",
+      "expect": "refuse; release consumed capacity only",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "159bf763283487433afdbd240c84b91213655facd45e5b6f936a9225fc98f388"
+    },
+    {
+      "id": "headcount-plan-as-position",
+      "kind": "negative",
+      "input": "A plan aggregate is assigned the Position identity.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "e8ff13e6e855c84980ef1f975195e01565f451223e40d68da3007f3ea37f364f"
+    },
+    {
+      "id": "budget-line-as-position-plan",
+      "kind": "negative",
+      "input": "A WM-ECO-012 budget line is treated as HeadcountPlan.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "9a7e038caf3be443c951ae2ea1e4932a1bae6ed42e29271f17e9cdf88db966ed"
+    },
+    {
+      "id": "plan-projection",
+      "kind": "positive",
+      "input": "Approved plan revision projects capacity and funding into a seat.",
+      "expect": "accept with immutable plan and approval pins",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "fe981a1741a772c8a4b818e9b3050868dc5221326031165a24b428fc5942f5ab"
+    },
+    {
+      "id": "history-overwrite",
+      "kind": "negative",
+      "input": "Corrected role validity overwrites prior recorded interval.",
+      "expect": "refuse; append superseding assertion",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "1256df9396282354de24a8f4add17c685b2266ead75fa4c44a5c2559688db1c4"
+    },
+    {
+      "id": "standards-conformance",
+      "kind": "negative",
+      "input": "Profile claims certified standards conformance.",
+      "expect": "refuse; alignment-only",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "c934de6854ad035f4ce1c993a6ea08ac5e401f19a57e19e0d4c3c4c1da550d21"
+    }
+  ]
+}
+```

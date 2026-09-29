@@ -1,3 +1,3 @@
-# EM-ORG-06 offline profile dossier
+# EM-ORG-06 offline candidate
 
-Validated profile for position, accountability, decision-right and RACI boundaries over WM-ORG-004 and WM-XCT-023. BusinessRole and HeadcountPlan allocation candidates remain outside this package. No new identifier is created.
+Declarative research profile only. It creates no runtime or model identifier and is not canonically publishable. See `profile-candidate.json` and `fixtures.json`.
