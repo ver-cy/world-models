@@ -1,53 +1,21 @@
 # EM-TEC-06 local synthesis
 
-## Disposition
+## Reconciled disposition
 
-- Complete reserved WM-SFT-016 as one **Service Level Objective and Reliability Commitment** aggregate containing SLI specification, SLO policy/version, SLO evaluation, ErrorBudgetPolicy and effective-dated ObservabilityBinding.
-- Reuse the identifier-unassigned Metric Definition candidate from EM-DAT-05 for formula, population, unit, dimensions and null semantics. WM-SFT-016 does not redefine metric semantics.
-- Reuse WM-MAT-008 for raw observations, absence reasons and time/provenance. SLO evaluations cite observations and retain aggregates/evidence references without becoming a telemetry store.
-- Keep contractual SLA obligations, obligees, enforceability, credits and remedies in WM-ECO-006 and its obligation boundary. SLO policy and evidence may be referenced from a contract but do not become legal obligations by themselves.
-- Leave **User Journey** as an identifier-unassigned candidate because a composite, user-visible outcome across services has independent identity and lifecycle.
-- Allocate no runtime or model identifier.
+Reserved WM-SFT-016 is conditionally completed as one identifier family with four separate consistency boundaries: immutable policy, append-only evaluation, effective-dated observability coverage binding and derived budget state. No new model or runtime identifier is allocated. Policy/evaluation/budget/binding remain internal artifacts.
 
-## Identity and mastership
+Only an identified WM-ACT-004 Service is currently evaluable. Metric Definition still owns formula, population and unit but is identifier-unassigned, so canonical enforceable SLI meaning remains held. WM-MAT-008 owns observations and absence evidence. WM-XCT-009 is the calendar authority. WM-ECO-006 owns contractual SLA obligations, breach mappings, credits and remedies. User Journey remains a specified-deferred-non-normative candidate and cannot receive a verdict.
 
-SLO identity combines subject, SLI specification and purpose. An immutable policy version additionally fixes target, window definition, eligibility, exclusions, minimum coverage and error-budget policy. Changes to formula, predicates, eligibility, exclusions, target or window create a successor version.
+## Applied provider and audit rules
 
-Evaluation identity is policy version plus one concrete window instance. Evaluations are append-only; restatements preserve predecessors. Git or a policy registry masters policy versions; the metric registry masters SLI formulas; WM-MAT-008/telemetry masters observations; the evaluator masters evaluation records. An observability platform is a source, not the master of the commitment.
+Policies immutably pin target unit, window/calendar, eligibility, exclusions and absence-to-failure mapping. Binding versions are coverage-only, unique per Service/SLI/instant and define deterministic multi-stream combination. Every evaluation stamps policy, binding and absence-mapping versions and reports coverage ratio and unknown count. Missing coverage is unknown and budget-neutral unless policy explicitly maps a named absence class to failure. Complete coverage with no eligible events is the distinct budget-neutral `no-eligible-traffic` outcome.
 
-## SLI, SLO, evaluation and budget
+Exclusion means present-but-ineligible and is distinct from absence. Retroactive exclusion appends a superseding evaluation and retains the predecessor. Budget consumption is recomputed from evaluations; any balance is a disposable cache. Window/target changes require contiguous, non-overlapping succession and an immutable reset, carry or prorate transition. Retraction is independent of succession, closes new evaluation and retains invalidated evidence. Service retirement closes policy; rename, merge, split or re-identification requires succession.
 
-SLI specification pins a Metric Definition version and adds the unit of user work, good-event predicate, valid-event predicate, observation point and ObservabilityBinding. SLO policy supplies target, window, eligibility, exclusions, coverage threshold and verdict vocabulary. Evaluation records valid, good, ineligible and indeterminate counts, coverage, attained value, evaluator identity/version and one verdict. Error-budget policy derives budget from target/window and defines reaction rules without creating contractual duties.
+Diagnostics may support triage but never determine verdict, budget or obligation. The SLA firewall applies both ways: WM-SFT-016 creates no contractual breach/remedy, while WM-ECO-006 cannot define SLI/SLO semantics or infer breach from a verdict without an explicit contract-owned mapping.
 
-Commitments normally attach to a Service or User Journey. A system/application SLO is allowed for platform reliability. Instance and component indicators are diagnostic and roll up only through a declared aggregation/additivity rule.
+## Verification and holds
 
-## Missing data, windows and exclusions
+The exact public Grok prompt was sent once and reconciled. One Claude Opus high no-tools frozen audit was run; its blocking findings were remediated without rerun. Fixtures now cover binding succession/overlap/combination, absence mapping, empty populations, retroactive exclusions, retraction, partial-window transitions, Service lifecycle changes, calendar discontinuity, Journey rejection, SLA leakage, verdict coverage reporting and diagnostic misuse.
 
-Below the declared coverage threshold yields `unknown-insufficient-coverage`. Zero eligible traffic yields `no-eligible-traffic`. Unclassifiable attempts remain indeterminate and never count as good. WM-MAT-008 supplies absence and censoring semantics.
-
-Changing window length, alignment, calendar basis or timezone creates a successor policy, closes predecessor windows and records an error-budget transition. The first incomplete successor window is partial. Cross-version comparison requires an explicit reconciliation.
-
-Exclusions are declared before evaluation, authorized, capped, counted and reported. Retroactive exclusions create linked restatements; they never erase events or silently reduce the denominator.
-
-## Acceptance scenario
-
-A checkout journey crosses authentication, pricing and payment services. Its SLI measures end-to-end successful attempts within a latency bound at the user-facing edge. A 30-day rolling window changes to a calendar month, creating a successor policy and partial first window. Missing pricing spans reduce coverage below the 99% threshold, so the evaluation returns `unknown-insufficient-coverage` with counts and gap evidence. Missing spans cannot produce a false reliability success.
-
-## Invariants
-
-1. Every SLO names an SLI version, target and window definition.
-2. No data, no eligible traffic and met are distinct outcomes.
-3. Missing telemetry never becomes a good event.
-4. Metric semantics are referenced, not restated.
-5. Observations remain externally mastered.
-6. Material policy changes mint a successor version.
-7. Error budget never silently crosses a window-definition change.
-8. Exclusions are prior, capped, authorized and visible; retrospective changes create restatements.
-9. Instance indicators are diagnostic; commitment rollups require declared aggregation.
-10. SLO and SLA have different authority bases.
-11. Every evaluation records evaluator, version, coverage and offset-qualified bounds.
-12. Superseded policies and restated evaluations remain resolvable.
-
-## Holds
-
-WM-SFT-016 now has a reviewable completion candidate with SLI/SLO policy, evaluation, error-budget and observability-binding structures, four external relations and seven fixtures. The incorrect WM-ECO-006 parent link is removed; contractual SLA authority remains external. Metric Definition and User Journey remain identifier-unassigned, while WM-MAT-008, WM-ACT-004 and WM-ECO-006 retain their own publication holds. Exact Grok comparison, one frozen semantic audit, package conversion and live verification remain required. This checkpoint makes no canonical completeness or installability claim yet.
+Publication stays held for Metric Definition and User Journey allocation, exclusion-event authority, binding precedence and aggregation contracts, base canonical constraints, executable acceptance and live HTTP/runtime/search/package verification.

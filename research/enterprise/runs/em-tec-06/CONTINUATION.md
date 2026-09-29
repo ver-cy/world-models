@@ -1,9 +1,11 @@
 # EM-TEC-06 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: complete reserved WM-SFT-016 as the SLI/SLO/evaluation/error-budget/observability-binding aggregate; reuse Metric Definition, WM-MAT-008, WM-ACT-004 and WM-ECO-006 by boundary; leave User Journey unassigned. No new runtime/model identifier was allocated.
+Disposition: conditionally complete reserved WM-SFT-016 as one reliability-commitment identifier family with separate policy, evaluation, observability-binding and derived-budget consistency boundaries. Only identified WM-ACT-004 Service subjects are evaluable. User Journey remains identifier-unassigned, specified-deferred-non-normative and non-evaluable. No new runtime or model identifier was allocated.
 
-The complete available WM-ECO-006 and WM-MAT-008 specifications, WM-ACT-004 legacy source, reservations, relations and prior EM-DAT-05/EM-LEG-01/EM-PRD-02 boundary decisions were frozen. Dossier, one Claude Opus high no-tools study, local synthesis, exact unsent Grok prompt and a validated `0.1.0-candidate.1` completion candidate are preserved. The candidate has fifteen invariants, four external boundaries and seven fixtures. Incorrect contract parentage is removed: SLO and contractual SLA are independent aggregates connected by references. Publication remains pending exact Grok comparison, one frozen semantic audit, package conversion and live verification.
+The exact public Grok prompt was sent once and reconciled. One Claude Opus high no-tools frozen audit was completed; all identified defects were remediated without rerunning the audit. The `0.1.0-candidate.2` package now makes version stamps, missing-data/empty-population semantics, exclusion supersession, binding uniqueness and combination, calendar transitions, retraction, Service lifecycle, diagnostic limits and the two-way SLA firewall explicit.
 
-Next contour: EM-TEC-08. Read complete WM-SFT-015 specification and registry reservation.
+Publication remains held for Metric Definition and User Journey allocation, exclusion-event authority, binding and aggregation contracts, base canonical constraints, executable acceptance and live HTTP/runtime/search/package verification.
+
+Next pending Grok contour is selected from the generated queue; do not resend EM-TEC-06.
