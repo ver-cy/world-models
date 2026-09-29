@@ -1,9 +1,9 @@
 # EM-PEO-02 continuation
 
-Checkpoint date: 2026-09-26.
+Completed 2026-09-29T11:22:19.670048Z.
 
-Disposition: reuse WM-PER-001 and WM-ORG-016; profile WM-ORG-005; EmployeeProfile is a new identifier-unassigned candidate. JML stays process-owned.
-
-Complete specs parsed and pinned; dossier, Claude study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by non-canonical parents, candidate relations, WM-ORG-005 review waiver, missing EmployeeProfile allocation and access/JML fixtures.
-
-Next contour: EM-PRD-01. Read complete WM-ECO-021 and WM-ACT-008 specifications plus registry reservations.
+- Grok reconciliation: complete, conditional accept.
+- Single Claude Opus high no-tools frozen audit: REVISE, remediated once without rerun.
+- Decision: PROFILE over WM-PER-001 / WM-ORG-005 / WM-ORG-016 plus identifier-unassigned EmployeeProfile candidate.
+- Candidate revision: 3; local invariants: 26; inherited obligations: 9; declarative fixtures: 46.
+- No runtime or model ID created. Canonical publication remains held.
