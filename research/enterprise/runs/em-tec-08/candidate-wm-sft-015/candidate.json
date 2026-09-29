@@ -4,8 +4,8 @@
   "modelId": "WM-SFT-015",
   "registryId": "vr.wm-sft-015",
   "name": "Test Case / Test Result",
-  "version": "0.1.0-candidate.1",
-  "entryKind": "test-evidence-aggregate",
+  "version": "0.1.0-candidate.2",
+  "entryKind": "standalone-mm",
   "status": "research-candidate",
   "canonicalPublishable": false,
   "sourceSpecSha256": "3e1df50b24b6659fe5bec661cdbe8b425e75667443bddb9598de4bfb3d7ac4f7",
@@ -24,8 +24,9 @@
       "requirement and acceptance-criterion identity to WM-REC-006",
       "build release and tested-artifact identity to WM-SFT-008",
       "defect triage resolution and closure to WM-SFT-014",
-      "runtime environment identity to WM-SFT-010 while Test Environment remains an unassigned specialization",
-      "remediation work to WM-ACT-006"
+      "remediation work to WM-ACT-006",
+      "test-environment mastership remains unresolved; executions embed an immutable environment pin value",
+      "test-defect record mastership remains an explicit out-of-scope gap"
     ],
     "excludes": [
       "learning-activity inheritance from WM-ACT-038",
@@ -63,6 +64,7 @@
         "draft",
         "reviewed",
         "approved",
+        "active",
         "deprecated",
         "retired"
       ]
@@ -72,10 +74,15 @@
         "executionId"
       ],
       "required": [
+        "executionId",
+        "issuingAuthorityRef",
         "testCaseRevisionRef",
+        "testCaseRevisionDigest",
         "subjectArtifactRef",
         "subjectDigest",
-        "environmentRef",
+        "environmentPin",
+        "parametersDigest",
+        "attemptOrdinal",
         "startedAt",
         "executorRef",
         "resolvedParameters",
@@ -83,8 +90,9 @@
       ],
       "optional": [
         "endedAt",
-        "attemptOfRef",
-        "runnerRef"
+        "attemptSetRef",
+        "runnerRef",
+        "assertionMode"
       ],
       "lifecycle": [
         "scheduled",
@@ -96,19 +104,24 @@
     },
     "ObservedOutcome": {
       "identity": [
-        "observationId"
+        "executionRef",
+        "fragmentId"
       ],
       "required": [
         "executionRef",
+        "fragmentId",
+        "attemptOrdinal",
         "observedValue",
         "observedAt",
         "method",
-        "sourceRef"
+        "sourceRef",
+        "recordedAt"
       ],
       "optional": [
         "unitRef",
         "normalization",
-        "confidence"
+        "confidence",
+        "supersedesFragmentRef"
       ],
       "lifecycle": [
         "recorded",
@@ -117,20 +130,26 @@
     },
     "ResultAdjudication": {
       "identity": [
-        "adjudicationId"
+        "executionRef",
+        "fragmentId",
+        "adjudicationSequence"
       ],
       "required": [
         "executionRef",
+        "fragmentId",
+        "adjudicationSequence",
         "verdict",
-        "resultStatus",
+        "adjudicationClass",
+        "nondeterminismClass",
         "adjudicatorRef",
+        "assertionMode",
         "adjudicatedAt",
         "basisRefs"
       ],
       "optional": [
-        "nondeterminismClass",
-        "supersedesAdjudicationId",
-        "reasonCode"
+        "supersedesAdjudicationRef",
+        "reasonCode",
+        "defectLinks"
       ],
       "lifecycle": [
         "asserted",
@@ -143,15 +162,22 @@
         "evidenceManifestId"
       ],
       "required": [
+        "evidenceManifestId",
         "executionRef",
+        "fragmentRefs",
         "items",
         "sealedAt",
         "contentDigest",
-        "custodianRef"
+        "digestAlgorithm",
+        "canonicalizationProfile",
+        "custodianRef",
+        "status"
       ],
       "optional": [
         "redactedExportRefs",
-        "retentionRef"
+        "retentionRef",
+        "supersedingManifestRef",
+        "disposalTombstones"
       ],
       "lifecycle": [
         "open",
@@ -159,14 +185,44 @@
         "superseded",
         "disposed"
       ]
+    },
+    "AttemptSet": {
+      "identity": [
+        "attemptSetId"
+      ],
+      "required": [
+        "testCaseRevisionRef",
+        "definitionDigest",
+        "parametersDigest",
+        "subjectDigest",
+        "environmentPin",
+        "memberExecutionRefs",
+        "classification",
+        "instabilityMeasure",
+        "classifierRef",
+        "classifiedAt",
+        "status"
+      ],
+      "optional": [
+        "supersedesAttemptSetRef"
+      ],
+      "lifecycle": [
+        "open",
+        "classified",
+        "superseded",
+        "withdrawn"
+      ]
     }
   },
   "verdicts": [
     "passed",
     "failed",
-    "inconclusive",
+    "error",
     "blocked",
-    "not-executed"
+    "skipped",
+    "inconclusive",
+    "not-applicable",
+    "untested"
   ],
   "relations": [
     {
@@ -186,12 +242,6 @@
       "relation": "REFERENCE",
       "required": false,
       "purpose": "Raise reproduce or verify defects without sharing lifecycle state."
-    },
-    {
-      "target": "WM-SFT-010",
-      "relation": "REFERENCE",
-      "required": true,
-      "purpose": "Resolve runtime environment identity while a Test Environment specialization remains unassigned."
     },
     {
       "target": "WM-ACT-006",
@@ -233,27 +283,226 @@
     }
   ],
   "invariants": [
-    "Every execution references exactly one immutable test-case revision.",
-    "Every execution identifies an exact tested subject and content digest.",
-    "Every execution references the environment in which observations were produced.",
-    "Observed outcome and adjudicated verdict are distinct records.",
-    "A verdict names the oracle comparison rule tolerance and evidence basis used.",
-    "Passed failed inconclusive blocked and not-executed remain distinct.",
-    "Retry attempts never overwrite prior observations or adjudications.",
-    "Flakiness is classified across attempts and never inferred from one result alone.",
-    "Defect state never becomes test-result state and test-result state never becomes defect state.",
-    "A passing result on an unchanged digest cannot by itself verify a defect fixed.",
-    "Requirement traceability pins the exact requirement revision.",
-    "Environment failure does not become product failure.",
-    "Evidence items are content-addressed and corrected only by supersession.",
-    "Release gating consumes evidence by reference and never rewrites test history.",
-    "Access redaction retention and disposal preserve manifest integrity and provenance."
+    {
+      "id": "INV-SFT015-01",
+      "rule": "Every execution pins one immutable test-case revision and matching definition digest; broken bindings are flagged and never repointed."
+    },
+    {
+      "id": "INV-SFT015-02",
+      "rule": "Expected behavior, oracle and tolerance are separate from executable automation binding and harness revision."
+    },
+    {
+      "id": "INV-SFT015-03",
+      "rule": "Every result fragment has stable run-scoped identity; suite rollups never replace fragments."
+    },
+    {
+      "id": "INV-SFT015-04",
+      "rule": "Raw observations are immutable; adjudication supersedes only adjudication state."
+    },
+    {
+      "id": "INV-SFT015-05",
+      "rule": "Adjudication class is asserted by a named authority and routes only product-defect class toward WM-SFT-014."
+    },
+    {
+      "id": "INV-SFT015-06",
+      "rule": "Test-defect, environment-failure, inconclusive and not-applicable never create a product defect in this contour."
+    },
+    {
+      "id": "INV-SFT015-07",
+      "rule": "Every defect link names defectRef, role, authority and time; verified-fixed requires passed product-defect-cleared adjudication."
+    },
+    {
+      "id": "INV-SFT015-08",
+      "rule": "AttemptSet members have identical definition, parameters, subject and environment-pin digests; set classification never rewrites member verdicts."
+    },
+    {
+      "id": "INV-SFT015-09",
+      "rule": "Flaky and inconclusive do not mean passed and cannot satisfy VerificationEvidence."
+    },
+    {
+      "id": "INV-SFT015-10",
+      "rule": "A zero exit code, empty failure list or absent defect link never implies passed."
+    },
+    {
+      "id": "INV-SFT015-11",
+      "rule": "A run without complete environment evidence records partial or absent completeness and reason and is never called reproducible."
+    },
+    {
+      "id": "INV-SFT015-12",
+      "rule": "Environment failure is error or blocked, not product failed, unless separately adjudicated with product evidence."
+    },
+    {
+      "id": "INV-SFT015-13",
+      "rule": "Every execution pins exact WM-SFT-008 subject identity and digest; tags alone are insufficient."
+    },
+    {
+      "id": "INV-SFT015-14",
+      "rule": "Correcting a definition, oracle, tolerance, harness or adjudication never advances a product-defect lifecycle."
+    },
+    {
+      "id": "INV-SFT015-15",
+      "rule": "Requirement links pin reference, revision and digest; WM-REC-006 remains an external held target."
+    },
+    {
+      "id": "INV-SFT015-16",
+      "rule": "Evidence is sealed and content-addressed; disposal retains classified immutable tombstones and never reopens a manifest."
+    },
+    {
+      "id": "INV-SFT015-17",
+      "rule": "Evidence exports record derivation, omissions and the strictest applicable classification."
+    },
+    {
+      "id": "INV-SFT015-18",
+      "rule": "Any aggregate reports denominator and non-binary counts; silently dropping blocked, error or inconclusive results is invalid."
+    },
+    {
+      "id": "INV-SFT015-19",
+      "rule": "Release gates consume VerificationEvidence by reference and never rewrite test history."
+    },
+    {
+      "id": "INV-SFT015-20",
+      "rule": "No TestResult root, Test Environment ID, replacement parent or test-defect model ID is created here."
+    }
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
-    "Test Environment remains identifier-unassigned; WM-SFT-010 is only the current runtime reference.",
-    "The frozen 33-source specification retains source-pin and clause-verification holds.",
-    "Package conversion and live HTTP/runtime/search/package verification are pending."
-  ]
+    "WM-ACT-038 parent withdrawn; generic activity parent remains unassigned.",
+    "Test Environment remains an OPEN-QUESTION value/mastership gap with no identifier.",
+    "Test-defect record mastership remains out of scope and unallocated.",
+    "WM-REC-006 full specification and requirement-trace target validation remain unresolved.",
+    "Frozen-source pin, citation integrity, artifact identity and clause verification holds remain.",
+    "Canonical publication and live verification are held; no new runtime ID."
+  ],
+  "parentIds": [],
+  "registryReservationVerified": true,
+  "auditDisposition": "direction-accepted-publication-held-remediated-once",
+  "adjudicationClasses": [
+    "product-defect",
+    "test-defect",
+    "environment-failure",
+    "inconclusive",
+    "not-applicable"
+  ],
+  "nondeterminismClasses": [
+    "deterministic",
+    "flaky",
+    "environment-induced",
+    "unclassified"
+  ],
+  "valueObjects": {
+    "EnvironmentPin": {
+      "required": [
+        "pinDigest",
+        "capturedAt",
+        "captureMethod",
+        "reproducibilityCompleteness"
+      ],
+      "optional": [
+        "environmentRef",
+        "baselineRef",
+        "reasonCode",
+        "toolingDigest",
+        "dataDigest",
+        "configurationDigest"
+      ],
+      "rules": [
+        "reproducibilityCompleteness is complete, partial or absent",
+        "reasonCode is required unless complete",
+        "name equality never establishes identity"
+      ]
+    },
+    "EvidenceItem": {
+      "required": [
+        "itemId",
+        "digest",
+        "digestAlgorithm",
+        "mediaType",
+        "role",
+        "capturedAt",
+        "dataClassification"
+      ],
+      "optional": [
+        "personalDataCategories",
+        "retentionClassRef",
+        "lawfulBasisRef",
+        "disposedAt",
+        "disposalAuthorityRef",
+        "disposalBasis"
+      ]
+    }
+  },
+  "transitions": {
+    "TestExecution": [
+      {
+        "from": "scheduled",
+        "to": "running",
+        "operation": "start",
+        "guard": "exact bindings and environmentPin captured"
+      },
+      {
+        "from": "running",
+        "to": "completed",
+        "operation": "complete",
+        "guard": "all fragments immutable"
+      },
+      {
+        "from": "running",
+        "to": "aborted",
+        "operation": "abort",
+        "guard": "reason recorded"
+      }
+    ],
+    "ResultAdjudication": [
+      {
+        "from": "asserted",
+        "to": "superseded",
+        "operation": "reclassify",
+        "guard": "successor preserves raw observation"
+      },
+      {
+        "from": "asserted",
+        "to": "withdrawn",
+        "operation": "withdraw",
+        "guard": "authority and reason recorded"
+      }
+    ],
+    "AttemptSet": [
+      {
+        "from": "open",
+        "to": "classified",
+        "operation": "classify",
+        "guard": "at least two members with identical bindings"
+      },
+      {
+        "from": "classified",
+        "to": "superseded",
+        "operation": "reclassify",
+        "guard": "successor retained"
+      }
+    ],
+    "EvidenceManifest": [
+      {
+        "from": "open",
+        "to": "sealed",
+        "operation": "seal",
+        "guard": "items typed and digested"
+      },
+      {
+        "from": "sealed",
+        "to": "superseded",
+        "operation": "supersede",
+        "guard": "successor manifest named"
+      },
+      {
+        "from": "sealed",
+        "to": "disposed",
+        "operation": "dispose",
+        "guard": "content replaced by immutable disposal tombstones"
+      }
+    ]
+  },
+  "vocabularyCrosswalk": {
+    "verdicts": "restored frozen source tokens",
+    "definitionLifecycle": "draft, reviewed, approved, active, deprecated, retired",
+    "candidateAdditions": "adjudication and nondeterminism classes are contour constraints"
+  }
 }

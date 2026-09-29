@@ -1,3 +1,3 @@
-# EM-TEC-08 offline allocation dossier
+# EM-TEC-08 Test Environment open question
 
-Validated, identifier-unassigned allocation dossier for **Test Environment**, with tests, results, evidence, defects, requirements, work and releases retained in their established masters. No identifier is assigned.
+Identifier-unassigned research material. The candidate is demoted from NEW MODEL to OPEN-QUESTION until identity grain and mastership are proven. It must not be published or allocated.

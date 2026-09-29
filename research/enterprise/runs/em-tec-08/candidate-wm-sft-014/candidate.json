@@ -4,8 +4,8 @@
   "modelId": "WM-SFT-014",
   "registryId": "vr.wm-sft-014",
   "name": "Defect / Bug",
-  "version": "0.1.0-candidate.1",
-  "entryKind": "entity",
+  "version": "0.1.0-candidate.2",
+  "entryKind": "standalone-mm",
   "status": "research-candidate",
   "canonicalPublishable": false,
   "sourceSpecSha256": "9700505b3d284903cd28a7b40a435107f227b4066cf3818cac1a800e1f54ef87",
@@ -25,7 +25,8 @@
       "corrective software change lifecycle to WM-SFT-013",
       "test specification execution result and evidence to WM-SFT-015",
       "requirement and expected-behaviour identity to WM-REC-006",
-      "service incident restoration to WM-ACT-019"
+      "build release and tested-artifact identity and release ordering to WM-SFT-008",
+      "test-defect record mastership remains an explicit out-of-scope gap"
     ],
     "excludes": [
       "inheritance from service case WM-ACT-021",
@@ -42,11 +43,15 @@
         "defectId"
       ],
       "required": [
+        "defectId",
         "systemOfRecordRef",
         "masterRecordId",
         "termOfRecord",
         "deviationBasis",
         "affectedScope",
+        "originatingEvidenceRef",
+        "observedSubjectDigest",
+        "disclosureState",
         "state",
         "reportedAt"
       ],
@@ -56,7 +61,10 @@
         "severityAssertions",
         "priorityAssertions",
         "resolvingChangeRef",
-        "verificationRefs"
+        "verificationRefs",
+        "embargoUntil",
+        "disclosureAuthorityRef",
+        "reopenJustification"
       ],
       "lifecycle": [
         "submitted",
@@ -65,6 +73,7 @@
         "resolved",
         "verified",
         "closed",
+        "reopened",
         "withdrawn"
       ]
     },
@@ -73,9 +82,10 @@
         "scopeAssertionId"
       ],
       "required": [
+        "scopeAssertionId",
         "defectRef",
         "subjectArtifactRef",
-        "versionRange",
+        "subjectDigest",
         "scopeStatus",
         "assertedAt",
         "authorityRef"
@@ -141,9 +151,13 @@
         "verificationAssertionId"
       ],
       "required": [
+        "verificationAssertionId",
         "defectRef",
         "verificationRunRef",
+        "verificationEvidenceRef",
+        "subjectArtifactRef",
         "subjectDigest",
+        "environmentPinDigest",
         "outcome",
         "verifierRef",
         "verifiedAt"
@@ -185,10 +199,10 @@
       "purpose": "Resolve expected behaviour requirements and acceptance criteria."
     },
     {
-      "target": "WM-ACT-019",
+      "target": "WM-SFT-008",
       "relation": "REFERENCE",
-      "required": false,
-      "purpose": "Resolve related service incidents while preserving separate lifecycles."
+      "required": true,
+      "purpose": "Resolve exact affected and verified artifact identity, digest and release ordering."
     }
   ],
   "operations": [
@@ -224,27 +238,123 @@
     }
   ],
   "invariants": [
-    "Defect identity is issued by the designated system of record and is independent of title date severity or affected version.",
-    "Duplicate records remain resolvable and point to one surviving canonical record without deletion.",
-    "A defect asserts deviation from an explicit requirement specification or adjudicated expectation.",
-    "Affected scope assertions identify exact product or artifact versions and their assertion time.",
-    "Severity and priority are distinct revisioned assertions with named scales.",
-    "CVSS or another severity score never becomes work priority by implication.",
-    "Defect state never becomes test-result state and test-result state never becomes defect state.",
-    "A failing test may raise or reproduce a defect but does not prove root cause.",
-    "A corrective change reference does not execute or complete the change lifecycle.",
-    "Resolved is not verified and verified is not closed unless the state policy permits it.",
-    "Verified-fixed requires evidence against a subject digest different from the digest on which the defect was raised.",
-    "Non-fix dispositions require recorded justification and authority.",
-    "Service restoration does not close the underlying defect.",
-    "Reopening retains prior closure resolution and verification history.",
-    "Confidentiality embargo retention and redaction rules preserve evidence integrity and reference resolution."
+    {
+      "id": "INV-SFT014-01",
+      "rule": "Defect identity is issued by its existing system of record and is independent of title, severity, date or affected version."
+    },
+    {
+      "id": "INV-SFT014-02",
+      "rule": "A product Defect is created only from adjudicationClass product-defect with originating evidence and observed subject digest."
+    },
+    {
+      "id": "INV-SFT014-03",
+      "rule": "Test-defect, environment-failure, inconclusive and flaky adjudications never create a product Defect here."
+    },
+    {
+      "id": "INV-SFT014-04",
+      "rule": "Observed subject digest is immutable except by recorded correction and is the verification comparand."
+    },
+    {
+      "id": "INV-SFT014-05",
+      "rule": "Verification advances state only on a distinct subject digest ordered after the originating subject by WM-SFT-008; unresolved order records evidence without transition."
+    },
+    {
+      "id": "INV-SFT014-06",
+      "rule": "Flaky, inconclusive, environment-failure and test-defect evidence cannot verify or close a product Defect."
+    },
+    {
+      "id": "INV-SFT014-07",
+      "rule": "No correction or revision of test definition, oracle, tolerance, harness or adjudication advances, resolves, verifies or closes a product Defect."
+    },
+    {
+      "id": "INV-SFT014-08",
+      "rule": "Resolved is not verified; verified is not closed; task done and service restored imply neither."
+    },
+    {
+      "id": "INV-SFT014-09",
+      "rule": "Reopening retains prior resolution, verification and closure history by supersession."
+    },
+    {
+      "id": "INV-SFT014-10",
+      "rule": "One Defect may reference many result fragments; every link role remains fragment-scoped and independently governed."
+    },
+    {
+      "id": "INV-SFT014-11",
+      "rule": "Affected scope assertions identify exact subject digest and assertion time."
+    },
+    {
+      "id": "INV-SFT014-12",
+      "rule": "Severity and priority are separate revisioned assertions; CVSS never implies priority."
+    },
+    {
+      "id": "INV-SFT014-13",
+      "rule": "Non-fix dispositions require authority and justification and never masquerade as verified-fixed."
+    },
+    {
+      "id": "INV-SFT014-14",
+      "rule": "Embargoed disclosure requires embargo end and disclosure authority; redacted exports preserve reference integrity."
+    },
+    {
+      "id": "INV-SFT014-15",
+      "rule": "Duplicate records remain resolvable and point to a surviving record without deletion."
+    },
+    {
+      "id": "INV-SFT014-16",
+      "rule": "Test-defect mastership is out of scope and remains an explicit unallocated gap."
+    }
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
-    "The embedded source specification has source-pin and clause-verification holds.",
-    "Test Environment remains identifier-unassigned in EM-TEC-08.",
-    "Package conversion and live HTTP/runtime/search/package verification are pending."
-  ]
+    "Test-defect record mastership remains out of scope and unallocated.",
+    "WM-REC-006 full specification remains unresolved.",
+    "Frozen-source pin and clause verification holds remain.",
+    "Canonical publication and live verification are held; no new runtime ID."
+  ],
+  "registryReservationVerified": true,
+  "auditDisposition": "direction-accepted-publication-held-remediated-once",
+  "transitions": {
+    "Defect": [
+      {
+        "from": "submitted",
+        "to": "triaged",
+        "operation": "triage",
+        "guard": "product-defect adjudication and originating evidence recorded"
+      },
+      {
+        "from": "triaged",
+        "to": "assigned",
+        "operation": "assign",
+        "guard": "owner recorded"
+      },
+      {
+        "from": "assigned",
+        "to": "resolved",
+        "operation": "resolve",
+        "guard": "resolution assertion recorded"
+      },
+      {
+        "from": "resolved",
+        "to": "verified",
+        "operation": "verify",
+        "guard": "later ordered distinct digest and qualifying evidence"
+      },
+      {
+        "from": "verified",
+        "to": "closed",
+        "operation": "close",
+        "guard": "closure authority and policy permit"
+      },
+      {
+        "from": "closed",
+        "to": "reopened",
+        "operation": "reopen",
+        "guard": "justification recorded; prior assertions retained"
+      },
+      {
+        "from": "reopened",
+        "to": "assigned",
+        "operation": "reassign",
+        "guard": "new work reference recorded"
+      }
+    ]
+  }
 }
