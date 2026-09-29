@@ -1,11 +1,11 @@
 # EM-PEO-08 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: propose identifier-unassigned Grade Scheme, Role Profile and Grade Assignment roots; keep Grade Level scheme-owned; profile calibration on WM-ACT-034 and WM-REC-010; reuse position, role, competency, qualification, credential and compensation masters. No catalogue/runtime identifier is allocated.
+Disposition: three identifier-unassigned roots — Grade Scheme, Role Profile and Grade Assignment. Grade Level, Track/Axis and Crosswalk remain owned by Grade Scheme. Grade Calibration is WM-ACT-034 moderation plus WM-REC-010 ratification. No catalogue or runtime identifier is allocated.
 
-The full registry scope and complete current position, role, assessment, qualification, decision, employment, compensation and credential specifications plus relevant prior boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Grok returned ACCEPT WITH GAPS and confirmed the root boundary. Reconciliation narrows Grade Assignment to Employment or, only when Employment is absent, a concrete role occupancy. Crosswalks cannot authorize pay or access. Competency-typed expectations are absent until WM-PER-009 has a current specification.
 
-Publication is held by three unallocated roots, missing approved relations, non-canonical bases, the absent WM-PER-009 specification, unresolved calibration-session and performance-rating ownership, and missing crosswalk fixtures and source pins.
+One Claude Opus high no-tools frozen audit returned REVISE at revision 2. All twelve closed checklist groups were remediated once without audit rerun. Revision 3 has 54 stable rules and 61 declarative fixtures; the validator passes.
 
-Next contour: EM-PEO-09. Inspect its full registry scope and complete current compensation, payroll, employment, position, money, valuation, decision, benefit, payment and privacy/aggregation specifications before adjudicating Compensation Band, Compensation Assignment, Benefit Plan, Benefit Enrollment and Compensation Review boundaries.
+Publication remains held by three missing allocations, provisional relations, non-canonical bases, privacy and retention authority, package conversion and live conformance. Next contour: EM-PEO-09.
