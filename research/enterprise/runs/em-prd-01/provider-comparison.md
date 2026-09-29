@@ -1,0 +1,7 @@
+# Provider comparison — EM-PRD-01
+
+Claude and Grok agree on the three-way split: two identifier-unassigned catalogue candidates, proposal-only reuse of WM-ECO-021, and a restrictive WM-ACT-008 Roadmap Item profile with no runtime identity. Both preserve Product across tariff and availability changes, keep Offering market/time scoped, separate commercial tier from Edition, and prohibit roadmap intent from becoming contractual evidence.
+
+Grok narrows Product Family to classification rather than an independently governed commercial object. It keeps Price Plan as a versioned Offering Catalogue component and adds four promotion triggers instead of permanently denying later independent identity. It also corrects the subscription statement: subscription instance mastership belongs to an external agreement/billing domain and must reference the sold Offering plus either a Price Plan version or an accepted quote. A rate-only change versions Price Plan; packaging, entitlement cut, eligibility or market promise creates a successor Offering.
+
+The reconciled disposition creates no identifiers. Product Catalogue and Offering Catalogue remain allocation candidates; Roadmap Item remains a profile. Publication is held on registry allocation, relation contracts, the Product/Edition/Offering/Price Plan decision tree, external subscription authority, source pins, crosswalks and unexecuted fixtures.

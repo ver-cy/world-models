@@ -3,7 +3,7 @@
 ## Disposition
 
 - Create an identifier-unassigned **Product Catalogue** candidate owning Product, Product Family and Edition identity and lifecycle.
-- Create an identifier-unassigned **Offering Catalogue** candidate owning market- and time-scoped Offering identity; keep Price Plan as a versioned component until independent regulatory or external mastership is demonstrated.
+- Create an identifier-unassigned **Offering Catalogue** candidate owning market- and time-scoped Offering identity; keep Price Plan as a non-addressable versioned component reached only through Offering identity, unique plan name and version ordinal.
 - Reuse WM-ECO-021 only for proposal-specific quoted prices and terms. It explicitly excludes product, catalogue and price-list master lifecycles.
 - Profile WM-ACT-008 for Roadmap Item. The profile restricts intent to non-contractual planning and creates no runtime identifier.
 
@@ -18,7 +18,7 @@ Roadmap Item uses WM-ACT-008 intent, schedule, confidence, version and realizati
 1. Product identity does not change because price, tariff, bundle membership or availability changes.
 2. An Offering identifies its product or bundle, market or channel, eligibility and availability period.
 3. Every price amount declares currency, unit or quantity basis and recurrence class; free is explicit zero, not missing data.
-4. Subscription semantics belong to pricing or Offering, never to Product.
+4. Subscription instance mastership belongs to an external agreement/billing domain. Every agreement pins Offering identity plus its contained Price Plan path; a WM-ECO-021 quote is only an additional price/term overlay and cannot introduce entitlement.
 5. Product may exist without an Offering; Offering cannot exist without a product or bundle reference.
 6. Edition continuity requires recorded rationale and entitlement conversion; an independently governed lifecycle creates a new Product.
 7. A bundle is an Offering composition unless it gains durable identity, its own roadmap and independent lifecycle.
@@ -32,4 +32,4 @@ SaaS, devices and internal products share Product semantics. SaaS may use recurr
 
 ## Holds
 
-Both base specifications are non-canonical reviewable drafts. WM-ECO-021 has a single-provider waiver; WM-ACT-008 retains source and multi-profile holds. Semantic crosswalks, registry allocations for the two new candidates, immutable references, comparison-track validation and fixtures are absent. No publication or installability claim is made.
+Both base specifications are pinned non-canonical reviewable drafts. Registry allocations, relation contracts, agreement authority, crosswalks and executable fixtures remain absent. Price Plan is explicitly non-addressable; any future cross-Offering reuse requires a new allocation review. No publication or installability claim is made.
