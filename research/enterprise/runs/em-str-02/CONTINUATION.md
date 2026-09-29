@@ -1,9 +1,7 @@
 # EM-STR-02 continuation
 
-Checkpoint date: 2026-09-26.
+Status: provider-reconciled, single frozen audit remediated once, publication held.
 
-Disposition: profile WM-KNW-011 for Objective/Key Result/Target; use WM-XCT-025 on WM-MAT-008 observations; propose one identifier-unassigned Outcome and Benefit Realization aggregate; profile WM-ACT-034 for Value Assessment and reference EM-DAT-05 metrics. No runtime/model identifier was allocated.
+Decision: profile WM-KNW-011 and WM-ACT-034; treat WM-XCT-025/WM-MAT-008 as a qualified unresolved observation-host usage; reject the combined Outcome+Benefit aggregate; preserve separate non-binding Outcome and Benefit candidate sketches with no allocation.
 
-Complete WM-KNW-011 and WM-XCT-025 specs were parsed and pinned. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by non-canonical bases, missing candidate allocation, crosswalks, relationship contracts and fixtures.
-
-Next contour: EM-TEC-01. Read complete WM-SFT-001, AISMM, WM-SFT-007, WM-SFT-003, WM-SFT-008 and WM-SFT-009 specifications plus registry reservations.
+Publication requires ownership crosswalk, registry allocation, additive metric pin, approved relations and bases, package conversion and live conformance.
