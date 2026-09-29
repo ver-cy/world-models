@@ -1,3 +1,3 @@
-# EM-PEO-03 Person Capability Assertion
+# Person Capability Assertion
 
-Validated identifier-unassigned candidate for attributable, time-bounded capability assertions about persons. No identifier is assigned.
+Identifier-unassigned candidate revision 3 for EM-PEO-03. No model or runtime ID is allocated. Fixtures are declarative and publication remains held.

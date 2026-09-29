@@ -4,18 +4,18 @@
   "modelId": "WM-PER-009",
   "registryId": "vr.wm-per-009",
   "name": "Skill / Competency Definition",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.3",
   "entryKind": "concept-scheme-aggregate",
   "status": "research-candidate",
   "canonicalPublishable": false,
   "purpose": "Represent scheme-scoped Skill and Competency definitions, immutable scheme releases, composition and explicitly lossy mappings without owning person capability assertions, assessments, qualifications, credentials or role assignments.",
   "boundary": {
     "owns": [
-      "skill and competency concept identity qualified by scheme and release",
-      "language-tagged labels definitions and concept type",
-      "competency composition from knowledge skill and applied behaviour references",
-      "context applicability deprecation and successor lineage",
-      "version-pinned directional concept mappings with purpose strength and semantic loss"
+      "scheme and immutable release identity",
+      "scheme-scoped SkillDefinition and CompetencyDefinition identity",
+      "language-tagged labels, definition text, definition type and applicability",
+      "intra-scheme definition structure and deprecation/successor lineage",
+      "version-pinned directional concept mappings with purpose, authority and declared semantic loss"
     ],
     "delegates": [
       "proficiency scale identity and level semantics to an identifier-unassigned Proficiency Scale candidate",
@@ -32,7 +32,10 @@
       "qualification award or credential lifecycle",
       "role occupant assignment",
       "course completion inference",
-      "AI-agent instruction package identity"
+      "AI-agent instruction package identity",
+      "proficiency scale level ownership or level mappings",
+      "cross-scheme identity equivalence",
+      "current competence flag or merged current score"
     ]
   },
   "objects": {
@@ -45,12 +48,16 @@
         "name",
         "authorityRef",
         "version",
-        "issuedAt",
+        "recordedAt",
+        "validFrom",
         "contentDigest",
         "status"
       ],
       "optional": [
-        "supersedesReleaseId"
+        "validTo",
+        "observedAt",
+        "supersedesReleaseId",
+        "withdrawnAt"
       ],
       "lifecycle": [
         "draft",
@@ -62,24 +69,39 @@
     "SkillCompetencyConcept": {
       "identity": [
         "schemeId",
-        "releaseId",
-        "conceptId"
+        "conceptId",
+        "releaseId"
       ],
       "required": [
         "conceptType",
-        "preferredLabels",
+        "preferredLabelsByLanguage",
         "definition",
+        "recordedAt",
+        "validFrom",
         "status"
       ],
       "optional": [
-        "alternativeLabels",
+        "validTo",
+        "observedAt",
+        "alternativeLabelsByLanguage",
         "broaderConceptRefs",
         "narrowerConceptRefs",
         "context",
         "applicability",
         "deprecatedAt",
-        "successorConceptRef"
+        "retiredAt",
+        "successorConceptRefs"
       ],
+      "successorShape": {
+        "conceptRef": "version-pinned",
+        "relationKind": [
+          "replaced-by",
+          "split-into",
+          "merged-into",
+          "narrowed-to"
+        ],
+        "guidanceOnly": "boolean"
+      },
       "lifecycle": [
         "draft",
         "active",
@@ -94,15 +116,30 @@
       "required": [
         "competencyConceptRef",
         "componentRefs",
+        "componentKinds",
         "context",
         "authorityRef",
+        "recordedAt",
         "validFrom",
         "status"
       ],
       "optional": [
         "validTo",
+        "observedAt",
         "compositionRule",
-        "evidenceRefs"
+        "authorityEvidenceRefs",
+        "supersedesCompositionRef"
+      ],
+      "componentKinds": [
+        "knowledge-definition",
+        "skill-definition",
+        "behavior-definition"
+      ],
+      "lifecycle": [
+        "draft",
+        "issued",
+        "superseded",
+        "withdrawn"
       ]
     },
     "ConceptMapping": {
@@ -119,14 +156,22 @@
         "strength",
         "semanticLoss",
         "authorityRef",
-        "issuedAt",
+        "endorsedByTargetAuthority",
+        "recordedAt",
+        "validFrom",
         "status"
       ],
       "optional": [
         "validTo",
-        "evidenceRefs",
+        "observedAt",
+        "authorityEvidenceRefs",
         "successorMappingId"
       ],
+      "semanticLossShape": {
+        "residualDescription": "required non-empty text",
+        "lostDimensions": "array",
+        "unsupportedUses": "array"
+      },
       "lifecycle": [
         "draft",
         "issued",
@@ -144,77 +189,253 @@
     "broader-than",
     "overlaps",
     "related",
-    "purpose-qualified-equivalent"
+    "equivalent-for-declared-purpose"
   ],
   "relations": [
     {
       "target": "WM-ACT-034",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Allow assessment criteria and results to pin immutable skill or competency definitions."
+      "purpose": "Competency Assessment profile pins definitions."
     },
     {
       "target": "WM-ORG-004",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Allow position requirements to pin immutable concept and scale versions without becoming person assertions."
+      "purpose": "Position expectations pin definitions and scale versions."
+    },
+    {
+      "target": "WM-PER-008",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Qualification definitions and awards remain external."
     },
     {
       "target": "WM-XCT-017",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Allow credential evidence to cite concepts while issuance and validity remain credential-owned."
+      "purpose": "Credential evidence remains external."
+    },
+    {
+      "target": "WM-PER-013",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Professional licence profile remains external."
+    },
+    {
+      "target": "candidate:EM-PEO-03/proficiency-scale",
+      "relation": "DELEGATE",
+      "required": false,
+      "purpose": "Pre-allocation review handle only; rewritten after allocation."
+    },
+    {
+      "target": "candidate:EM-PEO-03/person-capability-assertion",
+      "relation": "DELEGATE",
+      "required": false,
+      "purpose": "Pre-allocation review handle only; rewritten after allocation."
+    },
+    {
+      "target": "WM-PER-001",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Person master for downstream assertions."
+    },
+    {
+      "target": "WM-ORG-001",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Party/authority master; pinned source remains held."
     }
   ],
   "operations": [
     {
       "id": "issue-scheme-release",
-      "effect": "Issue an immutable content-addressed concept-scheme release.",
+      "from": "draft",
+      "to": "issued",
+      "authority": "scheme authority"
+    },
+    {
+      "id": "supersede-scheme-release",
+      "from": "issued",
+      "to": "superseded",
+      "authority": "scheme authority"
+    },
+    {
+      "id": "withdraw-scheme-release",
+      "from": [
+        "issued",
+        "superseded"
+      ],
+      "to": "withdrawn",
       "authority": "scheme authority"
     },
     {
       "id": "deprecate-concept",
-      "effect": "Deprecate a concept with successor guidance without rewriting prior references.",
+      "from": "active",
+      "to": "deprecated",
       "authority": "scheme authority"
     },
     {
-      "id": "compose-competency",
-      "effect": "Issue a context-qualified composition of knowledge skill and behaviour references.",
+      "id": "retire-concept",
+      "from": "deprecated",
+      "to": "retired",
       "authority": "scheme authority"
     },
     {
-      "id": "issue-mapping",
-      "effect": "Issue a directional purpose-limited mapping with declared loss.",
+      "id": "issue-composition",
+      "from": "draft",
+      "to": "issued",
+      "authority": "scheme authority"
+    },
+    {
+      "id": "supersede-composition",
+      "from": "issued",
+      "to": "superseded",
+      "authority": "scheme authority"
+    },
+    {
+      "id": "withdraw-composition",
+      "from": [
+        "issued",
+        "superseded"
+      ],
+      "to": "withdrawn",
+      "authority": "scheme authority"
+    },
+    {
+      "id": "issue-concept-mapping",
+      "from": "draft",
+      "to": "issued",
       "authority": "mapping authority"
     },
     {
-      "id": "supersede-mapping",
-      "effect": "Issue a successor mapping while preserving the predecessor.",
+      "id": "supersede-concept-mapping",
+      "from": "issued",
+      "to": "superseded",
+      "authority": "mapping authority"
+    },
+    {
+      "id": "withdraw-concept-mapping",
+      "from": [
+        "issued",
+        "superseded"
+      ],
+      "to": "withdrawn",
       "authority": "mapping authority"
     }
   ],
   "invariants": [
-    "A definition is never a person holding or capability assertion.",
-    "Every concept identity is qualified by scheme and immutable release.",
-    "Skill and competency are distinct concept types rather than aliases.",
-    "Skill denotes an atomic ability; competency composes knowledge skill and applied behaviour in a context.",
-    "Language-tagged labels never replace stable concept identifiers.",
-    "Deprecated concepts remain resolvable and point to explicit successors when available.",
-    "A level value is meaningless without a pinned external scale version.",
-    "Mappings pin both source and target scheme releases.",
-    "Mappings are directional purpose-limited and declare semantic loss.",
-    "Equal labels or numerals never imply exact equivalence across schemes or scales.",
-    "Assessment results never mutate concept definitions.",
-    "Course completion never implies proficiency.",
-    "Credential validity is not current competence.",
-    "Role expectation is not a person capability assertion.",
-    "Human competency and AI-agent instruction packages never share identity."
+    "Concept lineage is schemeId plus conceptId; a pinned address adds releaseId, and conceptType cannot change within a lineage.",
+    "Issued scheme releases are immutable and content-digest verified; version is a non-identifying label.",
+    "Preferred and alternative labels carry BCP-47 tags and only one preferred label exists per tag.",
+    "Definition objects never own a person, level, evidence, assessment, qualification, credential, licence, role or course state.",
+    "Composition components are version-pinned and typed as knowledge, skill or behavior definitions.",
+    "Authority evidence at definition scope never references a person assertion or assessment result.",
+    "Deprecated, retired, superseded and withdrawn objects remain resolvable with lineage and times.",
+    "Concept mappings pin endpoint releases; endpoints resolve inside those releases and self-mapping is forbidden.",
+    "Concept mappings are directional, non-transitive and non-reversible without an independent reverse mapping.",
+    "Equivalent-for-declared-purpose never permits identity merge, deduplication or substitution outside the stated purpose.",
+    "semanticLoss always has a non-empty residualDescription; no none or lossless shortcut is allowed.",
+    "Mapping authority never implies target-scheme endorsement; endorsement is explicit.",
+    "recordedAt and validFrom/validTo remain distinct on every governed object; observedAt is optional and never substitutes for either.",
+    "Human definitions never share identity with AI-agent instruction packages.",
+    "Completing reserved WM-PER-009 allocates no additional identifier and pre-allocation slugs carry no registry claim."
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
-    "Proficiency Scale and Person Capability Assertion remain identifier-unassigned pending independent allocation.",
-    "External ESCO SFIA CTDL CLR Open Badges and VC mappings require pinned source verification.",
-    "Package conversion and live HTTP/runtime/search/package verification are pending."
+    "The WM-PER-009 registered name, entry kind, purpose and boundary are proposed reconstructions pending reserved-row confirmation.",
+    "Agreement between providers is not verification; no invariant or fixture has been executed, domain-approved or registry-approved.",
+    "No approved competency relation rows are available; all relations and delegate handles remain held.",
+    "External standards and named releases require pinned sources; fixtures use placeholders until then.",
+    "Person, party and course/learning ownership require pinned mastering-model confirmation.",
+    "All bases remain reviewable drafts or carry inherited holds; package conversion and live verification remain pending."
+  ],
+  "candidateRevision": 3,
+  "registeredMetadataState": "proposed reconstruction; reserved registry record must be confirmed",
+  "referenceGrammar": {
+    "model": "catalogue model or pre-allocation review slug",
+    "schemeOrScaleId": "owning scheme/scale identity where applicable",
+    "id": "object-local identifier",
+    "releaseOrVersion": "required immutable release/version pin",
+    "digest": "optional fixity pin; required where source policy demands it"
+  },
+  "conceptIdentity": {
+    "lineageKey": [
+      "schemeId",
+      "conceptId"
+    ],
+    "pinnedAddress": [
+      "schemeId",
+      "conceptId",
+      "releaseId"
+    ],
+    "conceptType": "immutable within lineage",
+    "version": "non-identifying display label"
+  },
+  "labelRules": {
+    "languageTag": "BCP-47 required",
+    "preferredPerLanguage": 1,
+    "alternativeLabels": "zero or more per language"
+  },
+  "invariantRegister": [
+    {
+      "id": "W01",
+      "text": "Concept lineage is schemeId plus conceptId; a pinned address adds releaseId, and conceptType cannot change within a lineage."
+    },
+    {
+      "id": "W02",
+      "text": "Issued scheme releases are immutable and content-digest verified; version is a non-identifying label."
+    },
+    {
+      "id": "W03",
+      "text": "Preferred and alternative labels carry BCP-47 tags and only one preferred label exists per tag."
+    },
+    {
+      "id": "W04",
+      "text": "Definition objects never own a person, level, evidence, assessment, qualification, credential, licence, role or course state."
+    },
+    {
+      "id": "W05",
+      "text": "Composition components are version-pinned and typed as knowledge, skill or behavior definitions."
+    },
+    {
+      "id": "W06",
+      "text": "Authority evidence at definition scope never references a person assertion or assessment result."
+    },
+    {
+      "id": "W07",
+      "text": "Deprecated, retired, superseded and withdrawn objects remain resolvable with lineage and times."
+    },
+    {
+      "id": "W08",
+      "text": "Concept mappings pin endpoint releases; endpoints resolve inside those releases and self-mapping is forbidden."
+    },
+    {
+      "id": "W09",
+      "text": "Concept mappings are directional, non-transitive and non-reversible without an independent reverse mapping."
+    },
+    {
+      "id": "W10",
+      "text": "Equivalent-for-declared-purpose never permits identity merge, deduplication or substitution outside the stated purpose."
+    },
+    {
+      "id": "W11",
+      "text": "semanticLoss always has a non-empty residualDescription; no none or lossless shortcut is allowed."
+    },
+    {
+      "id": "W12",
+      "text": "Mapping authority never implies target-scheme endorsement; endorsement is explicit."
+    },
+    {
+      "id": "W13",
+      "text": "recordedAt and validFrom/validTo remain distinct on every governed object; observedAt is optional and never substitutes for either."
+    },
+    {
+      "id": "W14",
+      "text": "Human definitions never share identity with AI-agent instruction packages."
+    },
+    {
+      "id": "W15",
+      "text": "Completing reserved WM-PER-009 allocates no additional identifier and pre-allocation slugs carry no registry claim."
+    }
   ]
 }

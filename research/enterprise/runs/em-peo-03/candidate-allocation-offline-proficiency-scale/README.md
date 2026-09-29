@@ -1,3 +1,3 @@
-# EM-PEO-03 Proficiency Scale
+# Proficiency Scale
 
-Validated identifier-unassigned candidate for governed versioned proficiency scales. No identifier is assigned.
+Identifier-unassigned candidate revision 3 for EM-PEO-03. No model or runtime ID is allocated. Fixtures are declarative and publication remains held.

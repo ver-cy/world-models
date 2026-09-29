@@ -1,5 +1,5 @@
 # WM-PER-009 Skill / Competency Definition candidate
 
-This candidate completes the existing WM-PER-009 reservation as the definition master for scheme-scoped Skill and Competency concepts. Person holdings, assessments, qualifications, credentials, licences and role requirements remain external. Proficiency Scale and Person Capability Assertion remain unassigned pending independent registry allocation.
+Research candidate revision 3 completes the reserved boundary as definition-only. It allocates no new identifier and delegates scale and person-assertion semantics to two pre-allocation candidates. The companion Competency Assessment profile allocates no ID.
 
-The candidate is pending exact Grok comparison, one frozen semantic audit and publication packaging.
+All fixtures are declarative expectations. Registry confirmation, base/relation approvals, source pins, package conversion and live verification remain held.
