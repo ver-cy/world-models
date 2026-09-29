@@ -1,11 +1,11 @@
 # EM-ORG-05 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29T09:38:33.858004Z.
 
-Disposition: PROFILE WM-ORG-003 and REUSE WM-ORG-006; no new ID. TeamAssignment remains team-scoped staffing/participation, while WM-ORG-006 masters governed membership. Inter-company and community profiles separate sponsors, management, containment and record authority.
+Disposition: **PROFILE** over WM-ORG-003 with proposed **REUSE** of WM-ORG-006; no new model or runtime ID. TeamAssignment remains a profile-local alias for the WM-ORG-003 staffing child, while WM-ORG-006 remains the proposed master of governed membership.
 
-Completed evidence: complete current specs parsed and pinned; compact frozen `provider-dossier.json`, Claude Opus high no-tools study, `local-evidence.md`, and exact unsent `grok-prompt.md` are preserved.
+Claude and Grok are reconciled. The single frozen Claude audit returned REVISE and revision 3 applied its checklist once without rerun. The package has 27 modal constraints and 45 declarative semantic cases.
 
-Publication is blocked by WM-ORG-003's containment conflict, WM-ORG-006's absent external review and relation rows, unvalidated employment/access seams and missing fixtures. Grok browser submission requires action-time user confirmation.
+Publication remains held: the inter-company and CommunityOfPractice profiles are not constructible until WM-ORG-003 containment and organization-participant contradictions are adjudicated; proposed sponsor, record-authority, obligation-bearer, scheme and owned-agreement carriers are base gaps; required dependencies and external planes are unpinned; WM-ORG-006 relation rows and inherited holds remain open. fixturesExecuted=false. No blocker was published.
 
-Next contour: EM-ORG-06. Read complete WM-ORG-004 and WM-XCT-023 specifications plus registry reservations.
+Next contour: EM-ORG-06. Fresh action-time confirmation is required before sending its exact Grok prompt.

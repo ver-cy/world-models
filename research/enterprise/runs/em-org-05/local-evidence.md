@@ -40,3 +40,7 @@ A temporary team sponsored by two firms records one authority for the team recor
 ## Holds
 
 Both bases are non-canonical. WM-ORG-003 contains a conflict between mandatory single containment and optional/multiple management. WM-ORG-006 lacks independent external review and approved relation rows. Employment separation and the assignment-to-membership reference need cross-model validation, and scenario fixtures are absent. This checkpoint is not an installable release.
+
+## Provider reconciliation and frozen audit (2026-09-29T09:38:33.858004Z)
+
+Claude and Grok confirm PROFILE/no-new-ID and assignment/membership separation. Grok added the four independent temporal planes and access non-inference. The frozen audit returned REVISE: zero-containment collaboration and sponsor/record-authority/obligation-bearer roles exceed current profile authority. Revision 3 converts them to explicit base gaps, restores complete temporal, authorization, identity and history rules, carries all eleven inherited holds, and binds 45 declarative fixtures to the two immutable base hashes. Inter-company and CommunityOfPractice composition remain publication-held and non-constructible on the frozen bases.

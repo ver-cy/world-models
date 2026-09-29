@@ -1,0 +1,5 @@
+# EM-ORG-05 audit remediation
+
+The single frozen Claude audit confirmed PROFILE over WM-ORG-003 with proposed reuse of WM-ORG-006 and no new identifier, and returned REVISE. Revision 3 applies the closed checklist once without rerun. It removes the unsupported containment relaxation from normative constraints, converts sponsor/record-authority/obligation-bearer/scheme/owned-agreement structures into explicit base gaps, pins registry drift and missing dependencies, completes the assignment alias map, restores bidirectional assignment/membership separation, fences authorization and employment inference, preserves temporal planes and history, carries all inherited holds, and binds declarative fixtures to immutable base hashes.
+
+The inter-company and CommunityOfPractice profiles remain non-constructible until the base contradictions, extension requests, missing relation rows, dependency pins and evidence-tier checks are resolved. No validator code was created because the semantics remain declarative. The audit was not rerun.

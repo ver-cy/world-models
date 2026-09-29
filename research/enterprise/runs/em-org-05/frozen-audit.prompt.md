@@ -1,0 +1,3039 @@
+# Frozen semantic audit: EM-ORG-05 Enterprise Collective, Team and Community
+
+You are the single independent frozen auditor. Use only the material below and no tools. Audit the reconciled profile. Do not invent identifiers or external facts.
+
+Required output:
+1. Verdict ACCEPT or REVISE.
+2. Confirm or reject PROFILE over WM-ORG-003 with REUSE of WM-ORG-006 and no new identifier.
+3. List every defect that could cause assignment/membership conflation, identity drift, invalid inter-company cardinality, roster-derived access or authority, employment inference, WorkingAgreement ownership error, classifier promotion, temporal-plane collapse, history rewrite or unsupported release claims.
+4. Give exact remediation and fixture expectation for every defect.
+5. Identify contradictions among dossier, providers, candidate and fixtures.
+6. End with a closed numbered remediation checklist.
+
+## FROZEN DOSSIER
+```json
+{
+  "contour": {
+    "id": "EM-ORG-05",
+    "name": "Коллективы, команды и членство",
+    "domain": "ORG",
+    "kind": "subject",
+    "wave": "W1",
+    "scope": "Команды, временные коллективы и сообщества практики; временное членство и рабочие соглашения. Не отождествлять членство с наймом или полномочием.",
+    "candidate_types": [
+      "Team",
+      "Collective",
+      "CommunityOfPractice",
+      "Membership",
+      "WorkingAgreement"
+    ],
+    "specific_questions": [
+      "Какие коллективы имеют собственную цель и жизненный цикл?",
+      "Когда TechnicalDomain является классификатором, а когда управляемой практикой?",
+      "Как совместить Collective и WM-ORG-003/006 без копирования участников?"
+    ],
+    "proposed_invariants": [
+      "Членство имеет период и основание",
+      "Участник может состоять в нескольких коллективах",
+      "Права и финансирование не выводятся из списка участников"
+    ],
+    "negative_case": "Участник сообщества практики получает доступ ко всем продуктам его участников.",
+    "acceptance_scenario": "Собрать временную межфирменную команду и постоянное сообщество; проверить независимость членства, трудовых отношений и доступа.",
+    "comparison_tracks": [
+      "W3C ORG: коллективы, роли, членство и позиции",
+      "GLEIF: зарегистрированная идентичность и консолидационные связи",
+      "Сопоставление корпоративного управления, фактической оргструктуры и HR/ERP-представления"
+    ],
+    "vercy_candidates": [
+      {
+        "model_id": "WM-ORG-003",
+        "mapping_status": "conceptual-candidate",
+        "evidence_depth": "index-and-publication-metadata",
+        "note": "Связь требует проверки полного семантического crosswalk; published не означает завершённую независимую экспертизу."
+      },
+      {
+        "model_id": "WM-ORG-006",
+        "mapping_status": "conceptual-candidate",
+        "evidence_depth": "index-and-publication-metadata",
+        "note": "Связь требует проверки полного семантического crosswalk; published не означает завершённую независимую экспертизу."
+      }
+    ],
+    "candidate_properties_from_v1": [
+      {
+        "predecessor": "ORG-06",
+        "fields": [
+          {
+            "name": "team_kind",
+            "value_type": "code",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "mission",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "working_agreement",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "active_period",
+            "value_type": "interval",
+            "status": "candidate-not-normative"
+          }
+        ]
+      },
+      {
+        "predecessor": "PEO-11",
+        "fields": [
+          {
+            "name": "membership_kind",
+            "value_type": "code",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "valid_period",
+            "value_type": "interval",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "role_ref",
+            "value_type": "reference",
+            "status": "candidate-not-normative"
+          },
+          {
+            "name": "admission_basis",
+            "value_type": "text",
+            "status": "candidate-not-normative"
+          }
+        ]
+      }
+    ],
+    "suggested_owner": "Корпоративный секретарь / владелец организационной модели",
+    "candidate_master_systems": "Корпоративный реестр, HRIS, реестры юрлиц",
+    "related_research_contours": [
+      "EM-ORG-01",
+      "EM-ORG-03",
+      "EM-PEO-01",
+      "EM-PEO-02"
+    ],
+    "blocking_decisions": [
+      "Установить границу и решение reuse/extend/new по действующим спецификациям.",
+      "Подтвердить semantic crosswalk, права и source mastership.",
+      "Выбрать immutable refs; провести проверки fixtures до заявления о публикационной готовности."
+    ]
+  },
+  "queue_reservation": {
+    "sequence": 32,
+    "id": "EM-ORG-05",
+    "status": "queued",
+    "claude_status": "not-started",
+    "grok_status": "not-started",
+    "boundary_decision": "pending",
+    "publication_urls": [],
+    "remaining_scope": "Entire research brief pending",
+    "target_model_ids": [
+      "WM-ORG-003",
+      "WM-ORG-006"
+    ]
+  },
+  "registry_reservations": [
+    {
+      "registry_id": "vr.wm-org-006",
+      "record_plane": "world-model",
+      "model_id": "WM-ORG-006",
+      "name": "Membership",
+      "alternate_names": "",
+      "entry_kind": "standalone-mm",
+      "origin": "grok-union-current",
+      "status": "described-previous-version",
+      "review_state": "migration-boundary-review",
+      "nav_path": "NAV.SOC.ORG.MEM",
+      "domain_tags": "SOC.ORG.MEM",
+      "legacy_alias": "O3",
+      "existing_spec_ref": "models/organizations/O3-employment-and-membership.md",
+      "parent_ids": "",
+      "contains_ids": "",
+      "aligned_model_ids": "",
+      "purpose": "Relations between persons and organizations",
+      "owner_or_maintainer": "both parties (bilateral record)",
+      "source_url": "",
+      "namespace_uri": "",
+      "source_version_or_year": "2026-08-22",
+      "source_group": "",
+      "source_category": "",
+      "source_format": "",
+      "composition_role": "",
+      "default_link_type": "",
+      "priority_wave": "1",
+      "priority_score": "77",
+      "priority_method": "cohort-proxy with model-specific robotics check; use TOP-50 sequence",
+      "priority_confidence": "low",
+      "priority_rationale": "High current AI demand and an existing digital system of record",
+      "factor_demand": "0.84",
+      "factor_data": "0.74",
+      "factor_reuse": "0.68",
+      "factor_interop": "0.78",
+      "factor_feasibility": "0.82",
+      "factor_robotics": "0.00",
+      "factor_overlap": "0.08",
+      "possible_duplicate_of": "",
+      "shared_source_with": "",
+      "relations_ref": "",
+      "validation_flags": "",
+      "provenance": "current-112 + Grok review + Claude adversarial audit"
+    },
+    {
+      "registry_id": "vr.wm-org-003",
+      "record_plane": "world-model",
+      "model_id": "WM-ORG-003",
+      "name": "Team",
+      "alternate_names": "",
+      "entry_kind": "standalone-mm",
+      "origin": "grok-union-current",
+      "status": "candidate",
+      "review_state": "first-pass-reviewed",
+      "nav_path": "NAV.SOC.ORG.TEM",
+      "domain_tags": "SOC.ORG.TEM",
+      "legacy_alias": "",
+      "existing_spec_ref": "",
+      "parent_ids": "",
+      "contains_ids": "",
+      "aligned_model_ids": "",
+      "purpose": "Candidate governed context model for Team; boundary questions remain required.",
+      "owner_or_maintainer": "the organization or authoritative register",
+      "source_url": "",
+      "namespace_uri": "",
+      "source_version_or_year": "2026-08-22",
+      "source_group": "",
+      "source_category": "",
+      "source_format": "",
+      "composition_role": "COMPOSE",
+      "default_link_type": "TYPED-EDGES",
+      "priority_wave": "1",
+      "priority_score": "77",
+      "priority_method": "cohort-proxy with model-specific robotics check; use TOP-50 sequence",
+      "priority_confidence": "low",
+      "priority_rationale": "High current AI demand and an existing digital system of record",
+      "factor_demand": "0.84",
+      "factor_data": "0.74",
+      "factor_reuse": "0.68",
+      "factor_interop": "0.78",
+      "factor_feasibility": "0.82",
+      "factor_robotics": "0.00",
+      "factor_overlap": "0.08",
+      "possible_duplicate_of": "",
+      "shared_source_with": "",
+      "relations_ref": "planning/VERCY-MODEL-RELATIONS.csv",
+      "validation_flags": "пробел; не O2",
+      "provenance": "current-112 + Grok review + Claude adversarial audit"
+    }
+  ],
+  "relationship_ledger": [
+    {
+      "source_model_id": "WM-ORG-001",
+      "relation_type": "CONTAINS",
+      "target_model_id": "WM-ORG-003",
+      "instance_semantics": "Organization instance contains team instances",
+      "rationale": "Operational matryoshka",
+      "review_state": "candidate"
+    },
+    {
+      "source_model_id": "WM-ORG-003",
+      "relation_type": "COMPOSE",
+      "target_model_id": "WM-ORG-004",
+      "instance_semantics": "Team is composed through positions and assignments",
+      "rationale": "Positions remain reusable",
+      "review_state": "candidate"
+    }
+  ],
+  "current_specs": {
+    "WM-ORG-003": {
+      "source_file": "publications/wm-org-003-team/spec.yaml",
+      "source_bytes": 252360,
+      "source_sha256": "a42a3ebaeea14fe7b6195a56d57fb34c0b4d6027df4c0ffa7aebf75a79052b0f",
+      "publication": {
+        "status": "published",
+        "adjudicationStatus": "reviewable-draft",
+        "publishableCanonical": false,
+        "generatedAt": "2026-08-24T02:00:48Z",
+        "synthesisSha256": "c626866472ec1be766b3ce256f0e3f375118fb1c462fac4921a367f925ca0bc4",
+        "providerMode": "dual-provider",
+        "providers": [
+          "Claude",
+          "Grok"
+        ],
+        "waivedProviders": []
+      },
+      "metaModel": {
+        "id": "WM-ORG-003",
+        "registryId": "vr.wm-org-003",
+        "name": "Team",
+        "version": "0.3.0-research.1",
+        "previousVersions": [],
+        "entryKind": "aggregate",
+        "family": "World Models",
+        "category": "Society, people and institutions",
+        "industry": [
+          "Cross-industry"
+        ],
+        "domain": [
+          "SOC.ORG.TEM"
+        ],
+        "tags": [
+          "team",
+          "soc.org.tem"
+        ],
+        "status": "published"
+      },
+      "model": {
+        "registry_id": "vr.wm-org-003",
+        "model_id": "WM-ORG-003",
+        "name": "Team",
+        "entry_kind": "aggregate",
+        "purpose": "Provide a format-neutral governed context structure that lets an AI agent identify, constitute, staff, operate, measure, change and retire a team as a bounded working collective, without duplicating the containing organization (WM-ORG-001) or the reusable position catalogue (WM-ORG-004).",
+        "scope_statement": "A Team is a named, bounded collective of two or more actors constituted to perform work together under a shared mandate, whose membership is expressed as time-bounded assignment facts. The model is an aggregate: the team node is the root and the membership-assignment records are governed inside it, following the n-ary reification pattern of org:Membership and FHIR CareTeam.participant. Scope covers identity, classification and capability typing, charter and authority, membership and capability composition, lifecycle and structural change, operating interfaces and footprint, measurement binding, and the governance of team records. Storage and interface (JSON, YAML, Markdown, Git, MCP, MongoDB) are projections and carry no semantics here.",
+        "in_scope": [
+          "Team instance identity, naming, classification and capability tier",
+          "Charter, mandate, decision rights, accountable owner and reporting line",
+          "Time-bounded membership assignments, in-team roles, external and non-human participants",
+          "Capacity, minimum composition constraints, competence coverage and qualification currency",
+          "Team status lifecycle and structural change events (formation, merge, split, transfer, dissolution)",
+          "Operating interfaces, dependencies, site footprint and time coverage",
+          "Binding of team-level metrics and evidence to a stated observation window",
+          "Provenance, access scope, privacy, retention and interoperability projections of team records"
+        ],
+        "out_of_scope": [
+          "Legal-entity attributes, registration, LEI and corporate structure of the containing organization (WM-ORG-001)",
+          "Reusable position definitions, job architecture, grading and job descriptions (WM-ORG-004)",
+          "Person master data, employment contract terms, payroll and benefits (worker/person models and HR Open payroll/compensation domains)",
+          "Project, product, work-item and portfolio semantics; a team is not a project",
+          "Definition of individual competences and occupations, which are referenced to ESCO/ISCO-08 rather than restated",
+          "Metric formulae for human capital disclosure, which are referenced to ISO 30414:2025 rather than restated"
+        ],
+        "boundary_notes": [
+          {
+            "neighbor": "WM-ORG-001 Organization (legal or formal organization)",
+            "distinction": "FHIR states that Organization is 'a formally recognized entity' while a Group 'represents an undifferentiated collection lacking formal legal recognition'; W3C org distinguishes org:FormalOrganization from org:OrganizationalUnit, which is only meaningful as a part of a formal organization. A team instance therefore never carries legal-entity identity or LEI eligibility; it references exactly one containing organization context.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-015"
+            ]
+          },
+          {
+            "neighbor": "WM-ORG-004 Position",
+            "distinction": "org:Post is a reusable position that exists independently of who holds it (org:holds / org:heldBy), whereas the in-team role is the n-ary binding of an agent to this team for a period (org:Membership, CareTeam.participant.role). Position definitions stay in WM-ORG-004; the binding stays in this aggregate.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ]
+          },
+          {
+            "neighbor": "Identity-provider group / SCIM Group",
+            "distinction": "A SCIM Group is an access-control grouping whose membership is authoritative for entitlement, with members mutable only through the Group resource. A team may project to a Group but is not defined by it: teams carry mandate, capability typing and lifecycle that SCIM does not model.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004"
+            ]
+          },
+          {
+            "neighbor": "Undifferentiated cohort or list (FHIR Group, definitional membership)",
+            "distinction": "FHIR Group supports 'definitional' membership by characteristic; a team requires 'enumerated' membership with identified participants and roles. Rule-defined cohorts are not teams under this model.",
+            "source_refs": [
+              "SRC-003"
+            ]
+          },
+          {
+            "neighbor": "Care team / clinical team",
+            "distinction": "FHIR CareTeam is subject-scoped (bound to a Patient or Group) and carries security category Patient. This model is subject-agnostic; subject-scoped teams are an EXTEND profile, not the base case.",
+            "source_refs": [
+              "SRC-002"
+            ]
+          },
+          {
+            "neighbor": "NIMS typed resource team",
+            "distinction": "FEMA types a team definition by minimum capability (Type 1-4) and publishes it as a versioned catalogue entry with its own identifier; that is a team *type* artifact, not a team *instance*. Instance identity must not reuse the typing definition identifier.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-008"
+            ]
+          },
+          {
+            "neighbor": "Public-facing department (schema.org)",
+            "distinction": "schema.org department is intended for divisions with a distinguishable public presence (separate URL, logo or hours). Most internal teams do not qualify, so department is an optional publication projection only.",
+            "source_refs": [
+              "SRC-011"
+            ]
+          }
+        ]
+      },
+      "structure_index": [
+        {
+          "id": "identity-and-boundary",
+          "name": "Identity and boundary",
+          "description": "What makes a team instance the same thing over time, and what it is not.",
+          "layers": [
+            {
+              "id": "team-identity",
+              "name": "Team identity",
+              "description": "Identifier assignment, naming and the entity distinctions that keep a team from collapsing into an organization, a group or a position."
+            },
+            {
+              "id": "team-classification",
+              "name": "Team classification and capability typing",
+              "description": "Two orthogonal axes: what kind of team it is, and what capability tier it can deliver."
+            }
+          ]
+        },
+        {
+          "id": "mandate-and-authority",
+          "name": "Mandate and authority",
+          "description": "Why the team exists, what it may decide, and who is accountable for it.",
+          "layers": [
+            {
+              "id": "charter-and-purpose",
+              "name": "Charter and purpose",
+              "description": "The constituting record: existence, purpose, expected functions, structure and training obligations."
+            },
+            {
+              "id": "authority-and-accountability",
+              "name": "Authority and accountability",
+              "description": "Decision rights, the accountable owner and the placement of the team in reporting structures."
+            }
+          ]
+        },
+        {
+          "id": "composition-and-capability",
+          "name": "Composition and capability",
+          "description": "Who is on the team, in what role, at what capacity, and whether the collective can actually do the work.",
+          "layers": [
+            {
+              "id": "membership-records",
+              "name": "Membership records",
+              "description": "The time-bounded assignment facts that constitute the team."
+            },
+            {
+              "id": "capacity-and-constraints",
+              "name": "Capacity and composition constraints",
+              "description": "How much of each member the team actually has, and the floors the composition must not fall below."
+            },
+            {
+              "id": "capability-and-qualification",
+              "name": "Capability and qualification",
+              "description": "Whether the collective holds the competences required, and whether those competences are currently valid."
+            }
+          ]
+        },
+        {
+          "id": "lifecycle-and-change",
+          "name": "Lifecycle and structural change",
+          "description": "How a team comes into being, changes state, mutates structurally and ends.",
+          "layers": [
+            {
+              "id": "state-and-effective-time",
+              "name": "State and effective time",
+              "description": "The state machine of a team record and the time semantics that make its assertions checkable."
+            },
+            {
+              "id": "structural-change-events",
+              "name": "Structural change events",
+              "description": "Formation, dissolution, merge, split and transfer expressed as first-class events."
+            }
+          ]
+        },
+        {
+          "id": "operations-and-performance",
+          "name": "Operations and performance",
+          "description": "How the team works with others, where and when it operates, and how its performance and conditions are evidenced.",
+          "layers": [
+            {
+              "id": "operating-model",
+              "name": "Operating interfaces and footprint",
+              "description": "External dependencies, contact routes, sites and time coverage."
+            },
+            {
+              "id": "measurement-and-evidence",
+              "name": "Measurement, evidence and working conditions",
+              "description": "What is measured about the team, on what evidence, and what duties protect the people in it."
+            }
+          ]
+        },
+        {
+          "id": "governance-and-interoperability",
+          "name": "Record governance and interoperability",
+          "description": "How the team record itself is provenanced, protected, retained and projected to other systems.",
+          "layers": [
+            {
+              "id": "provenance-access-retention",
+              "name": "Provenance, access and retention",
+              "description": "Custody, disclosure scope and disposal of team records."
+            },
+            {
+              "id": "interoperability-and-alignment",
+              "name": "Interoperability and alignment",
+              "description": "Projections to external schemas and the limits of any conformance claim."
+            }
+          ]
+        }
+      ],
+      "selected_findings": [
+        {
+          "bundle": "identity-and-boundary",
+          "layer": "team-identity",
+          "finding": {
+            "id": "team-identifier-assignment",
+            "name": "Team instance identifier assignment",
+            "description": "A team instance normally has no authoritative external register. SCIM supplies a server-assigned immutable id plus a client-supplied externalId; FHIR CareTeam and Group both carry 0..* business identifiers; GLEIF/ISO 17442 covers legal entities only. Identity therefore resolves in priority order: authoritative master-system identifier (HRIS org-unit key or IdP group id), then a governed IRI in the adopting Dimension's namespace, then a Dimension-minted UUID or ULID. Names and dates are never identifiers.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-004",
+              "SRC-015"
+            ],
+            "questions": [
+              "Which system of record is authoritative for this team's identifier, and what is the key?",
+              "If no master-system key exists, which governed IRI or Dimension-minted UUID/ULID is assigned, and by whom?",
+              "Which alternate business identifiers must be carried, and which are merely correlational?",
+              "When two records are found to describe the same team, which survives and how is the loser tombstoned?"
+            ],
+            "data_elements": [
+              {
+                "id": "team-id",
+                "name": "team_id",
+                "description": "Canonical identifier for the team instance in the adopting Dimension.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "team-external-id",
+                "name": "external_identifier",
+                "description": "Identifier assigned by an external or upstream system, qualified by its issuing system URI.",
+                "value_kind": "identifier",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "team-display-name",
+                "name": "display_name",
+                "description": "Human-readable label; mutable and explicitly not an identifier.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "identity-and-boundary",
+          "layer": "team-identity",
+          "finding": {
+            "id": "team-boundary-and-entity-distinction",
+            "name": "Boundary against organization, group and position",
+            "description": "FHIR states that Organization is a formally recognized entity while Group is an undifferentiated collection lacking formal legal recognition, and that CareTeam participants are differentiated individuals. W3C org separates FormalOrganization, OrganizationalUnit and OrganizationalCollaboration. HR Open publishes no Team noun at all. Each instance must therefore declare which of these it actually is, or be rejected as a team.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-013"
+            ],
+            "questions": [
+              "Is this collective an internal unit of one formal organization, a cross-organization collaboration, or a rule-defined cohort?",
+              "Is membership enumerated by identified participants or defined by characteristics?",
+              "Does the team have any separate legal recognition, and if not, which legal entity bears its obligations?",
+              "What disqualifies this record from being a team under this model?"
+            ],
+            "data_elements": [
+              {
+                "id": "boundary-class",
+                "name": "boundary_class",
+                "description": "Declared class: organizational unit, organizational collaboration, or non-team cohort.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "membership-basis",
+                "name": "membership_basis",
+                "description": "Whether membership is enumerated or definitional.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "containing-organization",
+                "name": "containing_organization_ref",
+                "description": "Reference to the organization context that contains or hosts the team.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "identity-and-boundary",
+          "layer": "team-identity",
+          "finding": {
+            "id": "containing-and-managing-organization",
+            "name": "Containing and managing organization",
+            "description": "Most workplace teams are units of one FormalOrganization or Microsoft tenant. FHIR separately records managingOrganization as the organization responsible for the care team. GitHub teams exist only inside an organization.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-019",
+              "SRC-020",
+              "SRC-021",
+              "SRC-025"
+            ],
+            "questions": [
+              "Which Organization instance contains this team, and is the team a unit with meaning only inside that organization?",
+              "Which organization is responsible for managing the team, if that is different from the containing organization?",
+              "Which tenant, directory or provisioning domain hosts the team record?",
+              "Must every member already belong to the containing organization, as GitHub requires, or may outsiders participate?"
+            ],
+            "data_elements": [
+              {
+                "id": "containing-and-managing-organization-data01",
+                "name": "Containing organization",
+                "description": "Reference to the Organization of which this team is a unit or child.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "containing-and-managing-organization-data02",
+                "name": "Managing organizations",
+                "description": "Organizations responsible for the team, as in FHIR managingOrganization.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "containing-and-managing-organization-data03",
+                "name": "Tenant identifier",
+                "description": "Microsoft Entra tenant or equivalent directory that hosts the team.",
+                "value_kind": "identifier",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "identity-and-boundary",
+          "layer": "team-classification",
+          "finding": {
+            "id": "team-type-and-category",
+            "name": "Team type and category",
+            "description": "FHIR CareTeam carries category 0..* and Group carries a required type from a closed value set; org:classification allows an organization-specific scheme; schema.org offers department and subOrganization as publication projections. Classification is multi-valued and scheme-qualified, never a single free-text label.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-011"
+            ],
+            "questions": [
+              "Which controlled classification schemes apply, and what is the code in each?",
+              "Is the team standing, time-boxed or incident-activated, and what evidence supports that?",
+              "Does the team qualify as a publicly presented department with its own URL, logo or hours?"
+            ],
+            "data_elements": [
+              {
+                "id": "team-category",
+                "name": "category",
+                "description": "Scheme-qualified classification codes for the team.",
+                "value_kind": "code",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "permanence-code",
+                "name": "permanence",
+                "description": "Standing, time-boxed, or activated-on-demand.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "mandate-and-authority",
+          "layer": "charter-and-purpose",
+          "finding": {
+            "id": "team-charter-and-mandate",
+            "name": "Team charter and mandate",
+            "description": "OSHA requires an employer to prepare and maintain a written statement establishing the existence of the brigade, its basic organizational structure, the type, amount and frequency of training, the expected number of members and the functions to be performed. W3C org supplies org:purpose, FHIR supplies CareTeam.reason, FEMA supplies overall function, and the Scrum Guide supplies the pattern of a single shared objective. The charter is the authoritative statement of scope and is versioned.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007",
+              "SRC-016",
+              "SRC-017"
+            ],
+            "questions": [
+              "Is there a written constituting statement, who approved it, and when did it take effect?",
+              "What is the team's purpose and the specific functions it is expected to perform?",
+              "Is any element of the charter mandated by law, regulation or contract rather than chosen?",
+              "What objective is the team accountable for, over what period, and how is attainment judged?",
+              "When must the charter be reviewed or revalidated, and what triggers an out-of-cycle review?"
+            ],
+            "data_elements": [
+              {
+                "id": "purpose-statement",
+                "name": "purpose",
+                "description": "Declared purpose of the team.",
+                "value_kind": "text",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "expected-functions",
+                "name": "expected_functions",
+                "description": "Enumerated functions the team is constituted to perform.",
+                "value_kind": "collection",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "charter-effective-period",
+                "name": "charter_effective_period",
+                "description": "Start and optional end of charter validity, expressed as RFC 3339 instants.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "mandate-obligation-ref",
+                "name": "mandate_obligation_ref",
+                "description": "Citation of any legal or contractual instrument that compels the team's existence or composition.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "mandate-and-authority",
+          "layer": "authority-and-accountability",
+          "finding": {
+            "id": "decision-rights-ownership-and-reporting-line",
+            "name": "Decision rights, ownership and reporting line",
+            "description": "W3C org gives headOf, reportsTo, unitOf and hasPost; FHIR gives CareTeam.managingOrganization 0..* and Group.managingEntity; FEMA requires delegated authorities to be agreed before deployment; the Scrum Guide assigns distinct accountabilities within a single team. NIST separation of duties and least privilege constrain which decision rights may be concentrated in one holder.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-007",
+              "SRC-014",
+              "SRC-016"
+            ],
+            "questions": [
+              "Which single party is accountable for the team's outcomes, and through which post is that held?",
+              "Which organizations manage or co-manage the team, and how are conflicts between them resolved?",
+              "Which decisions may the team make autonomously, which need approval, and up to what threshold?",
+              "Which combinations of decision rights must not be held by the same person?",
+              "Where does the team sit in the reporting structure, and is that line solid or matrixed?"
+            ],
+            "data_elements": [
+              {
+                "id": "accountable-owner-ref",
+                "name": "accountable_owner_ref",
+                "description": "Reference to the party accountable for the team.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "managing-org-ref",
+                "name": "managing_organization_ref",
+                "description": "Organizations that manage the team, allowing more than one for co-managed teams.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "reports-to-ref",
+                "name": "reports_to_ref",
+                "description": "Parent unit or post the team reports to.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "decision-right",
+                "name": "decision_right",
+                "description": "A named decision class with autonomy level, threshold and approver.",
+                "value_kind": "object",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "membership-records",
+          "finding": {
+            "id": "membership-assignment-record",
+            "name": "Membership assignment record",
+            "description": "W3C org expresses membership as an n-ary org:Membership with memberDuring so that duration, remuneration and contract references can be attached; FHIR CareTeam.participant carries role, member, onBehalfOf and coverage; FHIR Group.member carries period and an inactive flag; schema.org OrganizationRole carries roleName with startDate and endDate; SCIM requires membership changes to be applied via the Group resource. Membership is a first-class dated record, never a mutable array of names.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-004",
+              "SRC-011"
+            ],
+            "questions": [
+              "For each member, when did participation start and when did or will it end?",
+              "Which system is authoritative for writing membership, and how are conflicting writes from HR and IdP reconciled?",
+              "Is a departed member marked inactive with a closed period or removed from the record entirely?",
+              "How are backdated or corrected memberships recorded without losing the prior assertion?"
+            ],
+            "data_elements": [
+              {
+                "id": "membership-id",
+                "name": "membership_id",
+                "description": "Identifier of the individual assignment fact.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "member-ref",
+                "name": "member_ref",
+                "description": "Reference to the person, organization or agent participating.",
+                "value_kind": "reference",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "member-during",
+                "name": "member_during",
+                "description": "Closed or open interval of participation with RFC 3339 endpoints.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "member-inactive",
+                "name": "inactive",
+                "description": "Flag marking a retained but no longer effective membership.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "membership-records",
+          "finding": {
+            "id": "role-and-position-binding",
+            "name": "In-team role and position binding",
+            "description": "org:Post is a reusable position held by an agent via holds/heldBy; HR Open OrganizationChart models units, positions and incumbents; CareTeam.participant.role types the participation itself. The in-team role is the binding, and is distinct from the position definition owned by WM-ORG-004 and from the occupation code owned by ESCO/ISCO-08.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-010",
+              "SRC-012"
+            ],
+            "questions": [
+              "Does this member occupy a defined position, or hold only a team-scoped role with no position behind it?",
+              "Which governed occupation code describes the work performed, and under which classification version?",
+              "May one member hold several roles in the same team at once, and how is that recorded?",
+              "Which role carries leadership of the team, and is it the same as the accountable owner?"
+            ],
+            "data_elements": [
+              {
+                "id": "in-team-role",
+                "name": "in_team_role",
+                "description": "Scheme-qualified role played by the member within this team.",
+                "value_kind": "code",
+                "cardinality": "1..n",
+                "required": true
+              },
+              {
+                "id": "position-ref",
+                "name": "position_ref",
+                "description": "Reference to a reusable position governed by WM-ORG-004.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "occupation-uri",
+                "name": "occupation_uri",
+                "description": "Governed occupation identifier such as an ESCO or ISCO-08 URI.",
+                "value_kind": "identifier",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "membership-records",
+          "finding": {
+            "id": "external-and-non-human-participants",
+            "name": "External and non-human participants",
+            "description": "CareTeam.participant.onBehalfOf lets a participant act for another organization; Group.type admits practitioner, device and organization members; SCIM supports nested groups; org:OrganizationalCollaboration covers teams spanning organizations; PROV distinguishes Person, Organization and SoftwareAgent. Contractors, partner-org members, nested sub-teams and software or robotic agents must be representable without pretending they are employees.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-004",
+              "SRC-006"
+            ],
+            "questions": [
+              "On whose behalf does each external participant act, and under which contract?",
+              "Are any participants software agents, devices or robots, and who is the responsible human principal?",
+              "Does the team contain nested sub-teams, and is that permitted by the governing method or policy?",
+              "What data may an external participant see, and what is withheld?"
+            ],
+            "data_elements": [
+              {
+                "id": "participant-kind",
+                "name": "participant_kind",
+                "description": "Person, organization, software agent or device.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "on-behalf-of-ref",
+                "name": "on_behalf_of_ref",
+                "description": "Organization the participant represents when not an employee of the containing organization.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "nested-team-ref",
+                "name": "nested_team_ref",
+                "description": "Reference to a contained sub-team where nesting is permitted.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "membership-records",
+          "finding": {
+            "id": "nesting-and-inherited-membership",
+            "name": "Parent-child and team-of-teams",
+            "description": "GitHub allows one parent team and many children; child teams inherit parent permissions; listed members of a parent include child members but those members are not direct parent members. Secret teams cannot nest. Scrum forbids sub-teams and instead splits oversized teams into multiple teams sharing a Product Goal. SCIM Groups may nest Groups. FHIR CareTeam may have another CareTeam as a participant.",
+            "source_refs": [
+              "SRC-019",
+              "SRC-020",
+              "SRC-022",
+              "SRC-016",
+              "SRC-025"
+            ],
+            "questions": [
+              "What is the parent team, if any, and does this team have exactly one parent as in GitHub or an open unit hierarchy as in ORG?",
+              "Which child teams exist, and do their members count as inherited members of this team for listing, mentions or permissions?",
+              "Is nesting forbidden because this is a Scrum Team, a secret team, or another profile that rejects sub-teams?",
+              "When size or complexity requires change, should the team split into sibling teams sharing a goal rather than adding a child team?"
+            ],
+            "data_elements": [
+              {
+                "id": "nesting-and-inherited-membership-data01",
+                "name": "Parent team",
+                "description": "Reference to a single parent team where the platform uses a tree, such as GitHub parent.",
+                "value_kind": "reference",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "nesting-and-inherited-membership-data02",
+                "name": "Child teams",
+                "description": "Teams nested under this team.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "nesting-and-inherited-membership-data03",
+                "name": "Nesting forbidden",
+                "description": "True when the chosen profile or privacy class, such as Scrum or GitHub secret, forbids parent or child teams.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "membership-records",
+          "finding": {
+            "id": "membership-provisioning-and-sync-authority",
+            "name": "Invitation, synchronization and dynamic rules",
+            "description": "Membership may be pending invitation, locked to an identity-provider group, or computed from a dynamic membership rule. Local writes may be forbidden while synchronization is active.",
+            "source_refs": [
+              "SRC-021",
+              "SRC-026"
+            ],
+            "questions": [
+              "Which invitations to join the team are pending, who invited them, and when were the invitations created?",
+              "Is membership synchronized from an identity-provider group, and does that block local add or remove operations?",
+              "Is membership computed from a directory rule, and is processing on or paused?",
+              "Who may add or remove members when local writes are allowed: organization owner, team maintainer, team owner or another role?"
+            ],
+            "data_elements": [
+              {
+                "id": "membership-provisioning-and-sync-authority-data01",
+                "name": "IdP synchronization enabled",
+                "description": "True when GitHub team synchronization or equivalent binds membership to an identity-provider group.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "membership-provisioning-and-sync-authority-data02",
+                "name": "Dynamic membership rule",
+                "description": "Rule that determines members when the associated group uses dynamic membership.",
+                "value_kind": "text",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "membership-provisioning-and-sync-authority-data03",
+                "name": "Local write blocked",
+                "description": "True when API or local membership changes are rejected because an IdP owns membership.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "composition-and-capability",
+          "layer": "capacity-and-constraints",
+          "finding": {
+            "id": "allocation-and-capacity",
+            "name": "Allocation and capacity",
+            "description": "CareTeam.participant.coverage expresses when a participant is available to the team; ISO 30414 reports workforce availability and productivity at organizational level; HR Open ships Timecard and Compensation domains that hold the underlying worker-level time data. Allocation is a property of the membership, expressed as a fraction or a schedule, and is the only defensible basis for team capacity.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-009",
+              "SRC-012"
+            ],
+            "questions": [
+              "What share of each member's working time is committed to this team, and over which period?",
+              "Which other teams hold competing claims on the same member, and does the total exceed 1.0 FTE?",
+              "During which hours and days is the team required to be staffed?",
+              "Is reported capacity a planned commitment or an observed actual, and from which record?"
+            ],
+            "data_elements": [
+              {
+                "id": "allocation-fraction",
+                "name": "allocation",
+                "description": "Committed share of a member's capacity to this team.",
+                "value_kind": "quantity",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "coverage-window",
+                "name": "coverage_window",
+                "description": "Required staffing window with explicit UTC offsets.",
+                "value_kind": "object",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "headcount",
+                "name": "headcount",
+                "description": "Count of active members at a stated instant.",
+                "value_kind": "number",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-and-change",
+          "layer": "state-and-effective-time",
+          "finding": {
+            "id": "team-status-lifecycle",
+            "name": "Team status lifecycle",
+            "description": "FHIR CareTeam.status is proposed, active, suspended, inactive or entered-in-error, and Group carries a modifier active flag. The entered-in-error value matters: it separates a team that ended from a team that never should have been recorded, which is an erasure-relevant distinction that a simple active boolean cannot express.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003"
+            ],
+            "questions": [
+              "What is the team's current status and since when?",
+              "Which status transitions are permitted, and who may authorise each?",
+              "How is an erroneously created team distinguished from one that ended normally?",
+              "What does suspension mean operationally for memberships, access and obligations?"
+            ],
+            "data_elements": [
+              {
+                "id": "team-status",
+                "name": "status",
+                "description": "Lifecycle status of the team record.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "status-changed-at",
+                "name": "status_changed_at",
+                "description": "Instant the current status took effect.",
+                "value_kind": "timestamp",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-and-change",
+          "layer": "state-and-effective-time",
+          "finding": {
+            "id": "effective-dating-and-time-semantics",
+            "name": "Effective dating and time semantics",
+            "description": "RFC 3339 requires a full date, a full time with seconds and an explicit offset or Z, and reserves -00:00 for an unknown local offset. SCIM meta separates created from lastModified; PROV separates startedAtTime and endedAtTime on activities from generation of records. Event time (when the team changed) must be recorded separately from observation time (when the system learned of it).",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-006"
+            ],
+            "questions": [
+              "For each assertion, when did the fact become true and when was it recorded?",
+              "Is the local UTC offset known for each timestamp, or must -00:00 be used?",
+              "How are open-ended and future-dated periods represented and queried as-of an instant?",
+              "What timestamp precision is required, and where is a date alone acceptable?"
+            ],
+            "data_elements": [
+              {
+                "id": "event-time",
+                "name": "event_time",
+                "description": "RFC 3339 instant at which the asserted fact became true.",
+                "value_kind": "timestamp",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "observed-at",
+                "name": "observed_at",
+                "description": "RFC 3339 instant at which the fact was observed or ingested.",
+                "value_kind": "timestamp",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "validity-interval",
+                "name": "validity_interval",
+                "description": "Interval over which an assertion holds, with explicit open-end handling.",
+                "value_kind": "duration",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-and-change",
+          "layer": "structural-change-events",
+          "finding": {
+            "id": "formation-and-dissolution",
+            "name": "Formation and dissolution",
+            "description": "schema.org supplies foundingDate and dissolutionDate; org:ChangeEvent records organizational change with resultedFrom links; FEMA's ordering specifications frame mobilization and demobilization preconditions. Formation and dissolution are events with their own authority, evidence and downstream obligations, not merely the endpoints of an interval.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-007",
+              "SRC-011"
+            ],
+            "questions": [
+              "Who authorised the team's formation and on what instrument?",
+              "What condition triggers dissolution, and is it time-based, objective-based or discretionary?",
+              "On dissolution, where do open obligations, artifacts and members go?",
+              "What entitlements must be revoked on dissolution, and within what window?"
+            ],
+            "data_elements": [
+              {
+                "id": "formed-at",
+                "name": "formed_at",
+                "description": "Instant the team came into existence.",
+                "value_kind": "timestamp",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "dissolved-at",
+                "name": "dissolved_at",
+                "description": "Instant the team ceased to exist.",
+                "value_kind": "timestamp",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "successor-ref",
+                "name": "successor_ref",
+                "description": "Team or unit that inherits the dissolved team's obligations.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "lifecycle-and-change",
+          "layer": "structural-change-events",
+          "finding": {
+            "id": "merge-split-and-transfer-events",
+            "name": "Merge, split and transfer events",
+            "description": "org:ChangeEvent explicitly links originalOrganization to resultingOrganization so that reorganizations are traceable; PROV wasDerivedFrom carries the same lineage semantics for records; ISO 30414 adds guidance on when multi-unit entities consolidate or report separately, which determines whether merged teams keep separate metric histories.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006",
+              "SRC-009"
+            ],
+            "questions": [
+              "Which predecessor teams produced this team, and which successors did it produce?",
+              "Does the team retain its identifier through the change, or is a new identity minted?",
+              "Are historical metrics and memberships consolidated, split or left with the predecessor?",
+              "When a team moves to a different parent unit, what changes and what must not?"
+            ],
+            "data_elements": [
+              {
+                "id": "change-event-type",
+                "name": "change_event_type",
+                "description": "Formation, merge, split, transfer, rename or dissolution.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "original-team-ref",
+                "name": "original_team_ref",
+                "description": "Predecessor team references for the change event.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "resulting-team-ref",
+                "name": "resulting_team_ref",
+                "description": "Successor team references for the change event.",
+                "value_kind": "reference",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "operations-and-performance",
+          "layer": "operating-model",
+          "finding": {
+            "id": "interfaces-dependencies-and-collaborations",
+            "name": "Interfaces, dependencies and collaborations",
+            "description": "org:linkedTo relates organizations engaged in unspecified relationships and org:OrganizationalCollaboration models teams drawn from several organizations; CareTeam.telecom provides a central contact route for the team as a whole rather than for individuals. Dependencies between teams are typed edges with direction, criticality and an agreed interface.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ],
+            "questions": [
+              "Which other teams does this team depend on, and which depend on it?",
+              "Through what agreed interface and service expectation does each dependency operate?",
+              "What is the authoritative contact route for the team as a whole, distinct from any individual?",
+              "Is the team part of a wider standing collaboration, and who convenes it?"
+            ],
+            "data_elements": [
+              {
+                "id": "dependency-edge",
+                "name": "dependency_edge",
+                "description": "Typed directed edge to another team with criticality and interface reference.",
+                "value_kind": "object",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "team-telecom",
+                "name": "team_contact",
+                "description": "Contact route attributed to the team rather than to a member.",
+                "value_kind": "text",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "governance-and-interoperability",
+          "layer": "provenance-access-retention",
+          "finding": {
+            "id": "access-privacy-and-retention",
+            "name": "Access scope, privacy and retention",
+            "description": "The European Commission states the GDPR principles of purpose limitation, data minimisation, accuracy, storage limitation for the shortest time possible, integrity and confidentiality, and accountability, and notes longer retention is possible for archiving or research with safeguards such as anonymisation. NIST SP 800-53 Access Control and Personnel Security families govern provisioning, least privilege and revocation on transfer or termination. FHIR assigns CareTeam the Patient security category and Group the Business category, showing that team records inherit sensitivity from their members.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-014",
+              "SRC-018"
+            ],
+            "questions": [
+              "What is the default visibility of the team record, and which elements are more restricted?",
+              "For what declared purpose is each personal element held, and what use is out of scope?",
+              "How long is each class of team record retained, and what starts the clock?",
+              "On erasure or objection, which elements are deleted, which anonymised and which must be kept?",
+              "When a membership ends, within what window are entitlements revoked and how is that evidenced?"
+            ],
+            "data_elements": [
+              {
+                "id": "sensitivity-class",
+                "name": "sensitivity_class",
+                "description": "Sensitivity classification inherited from the members and content of the record.",
+                "value_kind": "code",
+                "cardinality": "1",
+                "required": true
+              },
+              {
+                "id": "retention-period",
+                "name": "retention_period",
+                "description": "Retention duration for a record class, with its triggering event.",
+                "value_kind": "duration",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "legal-hold",
+                "name": "legal_hold",
+                "description": "Whether disposal is suspended by a legal hold, with its authority and expiry.",
+                "value_kind": "boolean",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "governance-and-interoperability",
+          "layer": "provenance-access-retention",
+          "finding": {
+            "id": "team-entitlements-and-member-capabilities",
+            "name": "Entitlements and member capabilities",
+            "description": "Teams hold permissions on resources such as repositories, inherit child-team access from parents, and expose member, guest and messaging capability settings. Entitlements are relationships to resources, not the team itself.",
+            "source_refs": [
+              "SRC-020",
+              "SRC-021",
+              "SRC-022",
+              "SRC-025"
+            ],
+            "questions": [
+              "Which resources can the team access, at what permission level, and are those entitlements inherited by child teams?",
+              "What may ordinary members create, update or delete inside the team, such as channels, apps, tabs or connectors?",
+              "What may guests do, and how does that differ from member and owner capabilities?",
+              "What exception grants a person or child team broader access than the team default, and who authorized it?"
+            ],
+            "data_elements": [
+              {
+                "id": "team-entitlements-and-member-capabilities-data01",
+                "name": "Team entitlements",
+                "description": "Permissions the team holds on repositories or other resources.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              },
+              {
+                "id": "team-entitlements-and-member-capabilities-data02",
+                "name": "Member capability settings",
+                "description": "Settings for whether members may create channels, add apps and similar actions.",
+                "value_kind": "object",
+                "cardinality": "0..1",
+                "required": false
+              },
+              {
+                "id": "team-entitlements-and-member-capabilities-data03",
+                "name": "Guest capability settings",
+                "description": "Settings for guest actions inside the team.",
+                "value_kind": "object",
+                "cardinality": "0..1",
+                "required": false
+              }
+            ]
+          }
+        }
+      ],
+      "functions": [
+        {
+          "id": "resolve-team-identity",
+          "name": "Resolve team identity",
+          "description": "Determine the canonical identifier for a team, applying the identity priority order and minting only when no authoritative or governed identifier exists."
+        },
+        {
+          "id": "assert-membership",
+          "name": "Assert membership",
+          "description": "Create a time-bounded membership assignment binding an agent to the team in one or more roles, optionally on behalf of another organization."
+        },
+        {
+          "id": "end-membership",
+          "name": "End membership",
+          "description": "Close a membership by setting its end instant and inactive flag, preserving the historical assertion rather than deleting it."
+        },
+        {
+          "id": "validate-composition",
+          "name": "Validate composition and qualification",
+          "description": "Evaluate current membership against the declared constraint profile, capability tier and credential currency requirements as of a given instant."
+        },
+        {
+          "id": "transition-team-state",
+          "name": "Transition team state",
+          "description": "Move the team between proposed, active, suspended, inactive and entered-in-error, enforcing permitted transitions and authorisation."
+        },
+        {
+          "id": "record-structural-change",
+          "name": "Record structural change",
+          "description": "Register a formation, merge, split, transfer, rename or dissolution as an append-only change event linking predecessor and successor teams."
+        },
+        {
+          "id": "compute-team-metrics",
+          "name": "Compute team metrics",
+          "description": "Compute or ingest team-level metric values bound to a versioned definition and an observation window, applying suppression where the population is too small."
+        },
+        {
+          "id": "evaluate-access-request",
+          "name": "Evaluate access request",
+          "description": "Decide what portion of the team record a requester may see, applying least privilege, purpose limitation and the record's sensitivity class."
+        },
+        {
+          "id": "apply-retention-policy",
+          "name": "Apply retention and disposal",
+          "description": "Apply the retention schedule to each class of team record, honouring legal holds and preferring anonymisation over deletion where history must be preserved."
+        },
+        {
+          "id": "export-alignment-projection",
+          "name": "Export alignment projection",
+          "description": "Emit the team as a named external profile such as W3C org, SCIM Group, FHIR CareTeam or schema.org Organization, disclosing every unmapped element."
+        },
+        {
+          "id": "verify-tier-claim",
+          "name": "Verify capability tier claim",
+          "description": "Test a claimed capability tier against the referenced typing definition, recording verifier identity, method and result."
+        },
+        {
+          "id": "attach-post-and-assign-holder",
+          "name": "Compose via post",
+          "description": "Attach a reusable post to the team and optionally assign a holder for an interval, without creating the post definition."
+        },
+        {
+          "id": "nest-or-reparent-team",
+          "name": "Nest or reparent team",
+          "description": "Set, change or clear a parent team, or split an oversized team into sibling teams sharing a goal."
+        },
+        {
+          "id": "grant-team-entitlement",
+          "name": "Grant team entitlement",
+          "description": "Grant, inherit or revoke a permission held by the team on a resource."
+        },
+        {
+          "id": "provision-from-external-group",
+          "name": "Provision from external group",
+          "description": "Create or update a Team from a SCIM Group or identity-provider group, or bind an existing team to that group."
+        },
+        {
+          "id": "resolve-effective-members",
+          "name": "Resolve effective members",
+          "description": "Compute the effective member set, distinguishing direct, inherited, guest, role-only and nested-group members at an observation time."
+        }
+      ],
+      "composition": [
+        {
+          "target": "WM-ORG-001 (Organization)",
+          "relation": "REFERENCE",
+          "purpose": "Every team instance resolves to exactly one containing organization context that supplies legal recognition, obligations and the formal-organization frame; the Team model never restates legal-entity attributes.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-003",
+            "SRC-015"
+          ]
+        },
+        {
+          "target": "WM-ORG-004 (Position)",
+          "relation": "COMPOSE",
+          "purpose": "Team composition is expressed through reusable positions and their assignments; org:Post remains defined once and is bound to the team through membership records rather than copied into the team.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-012"
+          ]
+        },
+        {
+          "target": "Membership assignment record (nested record type owned by WM-ORG-003)",
+          "relation": "CHILD",
+          "purpose": "The n-ary membership fact is governed inside this aggregate because it carries the team-specific role, period and allocation that no sibling model owns.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-002"
+          ]
+        },
+        {
+          "target": "Person / Worker context model (target model id not yet registered in the vr registry)",
+          "relation": "REFERENCE",
+          "purpose": "Members are referenced, never embedded; personal master data, contract terms and pay remain with the person and employment models to satisfy data minimisation.",
+          "required": true,
+          "source_refs": [
+            "SRC-004",
+            "SRC-018"
+          ]
+        },
+        {
+          "target": "Provenance mix-in aligned to W3C PROV-O",
+          "relation": "MIX-IN",
+          "purpose": "Supplies generation, attribution, derivation and qualified-association semantics to every record in the aggregate without duplicating provenance structure per finding.",
+          "required": true,
+          "source_refs": [
+            "SRC-006"
+          ]
+        },
+        {
+          "target": "W3C Organization Ontology (org:OrganizationalUnit, org:Membership, org:Post, org:ChangeEvent)",
+          "relation": "ALIGN",
+          "purpose": "Primary structural alignment for units, n-ary membership with memberDuring, posts, sites and change events; alignment only, no conformance claimed.",
+          "required": false,
+          "source_refs": [
+            "SRC-001"
+          ]
+        },
+        {
+          "target": "HL7 FHIR R5 CareTeam and Group",
+          "relation": "ALIGN",
+          "purpose": "Alignment for team status lifecycle, participant role and coverage, managing organization, and the enumerated-versus-definitional membership distinction.",
+          "required": false,
+          "source_refs": [
+            "SRC-002",
+            "SRC-003"
+          ]
+        },
+        {
+          "target": "IETF RFC 7643 SCIM Group",
+          "relation": "ALIGN",
+          "purpose": "Alignment for identity-provider projection: immutable server id, externalId, meta versioning and the rule that membership is written through the Group resource.",
+          "required": false,
+          "source_refs": [
+            "SRC-004"
+          ]
+        },
+        {
+          "target": "schema.org Organization and OrganizationRole",
+          "relation": "ALIGN",
+          "purpose": "Publication projection for externally visible teams, including time-qualified roles and founding or dissolution dates; only where the team has a genuine public presence.",
+          "required": false,
+          "source_refs": [
+            "SRC-011"
+          ]
+        },
+        {
+          "target": "ESCO v1.2.1 and ISCO-08 occupation and skill URIs",
+          "relation": "ALIGN",
+          "purpose": "Governed vocabulary for occupations and competences so that capability coverage is expressed in external identifiers rather than local strings.",
+          "required": false,
+          "source_refs": [
+            "SRC-010"
+          ]
+        },
+        {
+          "target": "ISO 30414:2025 human capital reporting",
+          "relation": "ALIGN",
+          "purpose": "Reference frame for metric definitions, materiality declaration and consolidation of multi-unit reporting; metric formulae are cited, not restated.",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "FEMA NIMS resource typing definitions and National Qualification System",
+          "relation": "ALIGN",
+          "purpose": "Reference frame for capability tiering, minimum composition, position qualification and task-book evidence for operationally deployable teams.",
+          "required": false,
+          "source_refs": [
+            "SRC-007",
+            "SRC-008"
+          ]
+        },
+        {
+          "target": "HR Open Standards 4.5R OrganizationChart and Timecard domains",
+          "relation": "ALIGN",
+          "purpose": "Interchange alignment for units, positions and incumbents and for the worker time data underlying allocation; note that no Team noun exists in the suite.",
+          "required": false,
+          "source_refs": [
+            "SRC-012",
+            "SRC-013"
+          ]
+        },
+        {
+          "target": "Subject-scoped care team profile (FHIR CareTeam-aligned specialization)",
+          "relation": "EXTEND",
+          "purpose": "Specialization for teams bound to a specific subject, adding subject reference and the elevated sensitivity handling that entails.",
+          "required": false,
+          "source_refs": [
+            "SRC-002"
+          ]
+        },
+        {
+          "target": "Typed emergency response team profile (NIMS-aligned specialization)",
+          "relation": "EXTEND",
+          "purpose": "Specialization adding mobilization state, ordering specifications, equipment inventory and deployment tracking for typed deployable teams.",
+          "required": false,
+          "source_refs": [
+            "SRC-007"
+          ]
+        }
+      ],
+      "researchAdjudication": {
+        "providerMode": "dual-provider",
+        "activeProviders": [
+          "claude",
+          "grok"
+        ],
+        "waivedProviders": [],
+        "providerPolicy": {},
+        "boundaryDecision": {
+          "entry_kind": "aggregate",
+          "status": "accepted",
+          "rationale": "The base (claude) entry kind stands. Both providers independently model membership as a first-class, time-bounded, separately identified record with its own period, role, state and provenance (claude membership-assignment-record artifact serial:true; grok membership-record artifact serial:true), which is the n-ary reification pattern of org:Membership and FHIR CareTeam.participant. A membership record has no meaning outside its team root and is never referenced independently, which is exactly the aggregate test; grok's own structure satisfies it even though grok labelled the model 'entity'. Grok's 'entity' label is therefore treated as a naming choice, not as contrary evidence, and is rejected without escalating to a critical conflict. Model boundary is fixed before node acceptance: the team node references exactly one containing organization context and never carries legal-entity identity or LEI eligibility (WM-ORG-001), never owns reusable post definitions (WM-ORG-004), and requires enumerated rather than definitional membership, so rule-defined cohorts, access-control-only groups and organization-membered collaborations are rejected as instances."
+        },
+        "decisions": [
+          {
+            "concept": "Base provider selection",
+            "disposition": "claude adopted as base",
+            "rationale": "Claude carries seven source-backed boundary notes against organization, position, SCIM group, definitional cohort, care team, NIMS typed-resource team and public department, plus an explicit disqualification rule for records that are not teams. Its adversarial checks test the sceptical reading that Team is only a view over Organization plus Position and resolve it on evidence. Grok is larger on deployment surface but thinner on boundary derivation; size was not the deciding factor."
+          },
+          {
+            "concept": "Entry kind aggregate versus entity",
+            "disposition": "aggregate retained, entity rejected",
+            "rationale": "Membership is a separately identified, time-bounded, provenance-bearing record with no meaning outside its team root in both packs, which is the aggregate test under the org:Membership and CareTeam.participant n-ary pattern. Grok's own membership-record artifact satisfies the same test, so its entity label is a naming difference, not contrary evidence."
+          },
+          {
+            "concept": "Names, slugs and display labels",
+            "disposition": "accepted from grok into team-identity",
+            "rationale": "The base states only that names are never identifiers and provides no positive structure for preferred label, locale, derived slug or rename authority. The addition is evidence-backed across ORG, FHIR, SCIM and vendor directories and closes a real hole without touching the identity priority rule."
+          },
+          {
+            "concept": "Containing and managing organization",
+            "disposition": "accepted from grok into team-identity",
+            "rationale": "The base leaves the containment edge in prose while modelling only co-management as a question. Separating containing organization from managing organization and adding the hosting tenant makes the single most important team relationship explicit and testable."
+          },
+          {
+            "concept": "Parent-child nesting and inherited membership",
+            "disposition": "accepted from grok into membership-records",
+            "rationale": "Inherited membership changes what the member set means and the base resolves it nowhere; a single nesting question is not sufficient structure for listings, mentions and entitlement inheritance that behave differently for direct and inherited members."
+          },
+          {
+            "concept": "Membership provisioning, invitation and IdP synchronization",
+            "disposition": "accepted from grok into membership-records with a boundary constraint",
+            "rationale": "The base asks how HR and IdP write conflicts are reconciled but supplies no mechanism. Accepted on condition that any directory rule must materialise enumerated identified members, preserving the base rule that definitional rule-defined cohorts are not teams."
+          },
+          {
+            "concept": "Team post establishment and ex-officio membership",
+            "disposition": "accepted from grok into membership-records",
+            "rationale": "Both providers agree post definitions stay in WM-ORG-004, but only grok models org:hasPost attachment, vacant posts and membership arising ex officio from holding a post. Establishment separate from staffing is a genuine gap in the base, and the addition does not breach the sibling-model boundary."
+          },
+          {
+            "concept": "Visibility, discoverability and sensitivity labelling",
+            "disposition": "accepted from grok into provenance-access-retention",
+            "rationale": "The base covers default record visibility and GDPR principles but not discoverability class, sensitivity-label binding to a directory-preconfigured value, or the leakage case where mentioning a hidden team reveals its name. Competing visibility vocabularies are to be recorded side by side, never merged into one code list."
+          },
+          {
+            "concept": "Team entitlements on external resources",
+            "disposition": "accepted from grok into provenance-access-retention",
+            "rationale": "The base access layer is entirely inbound; a team holding and inheriting permissions on resources is a distinct concern that neither provider places out of scope. The granted resources themselves remain out of scope, so only the grant relation and member, guest and owner capability sets are taken."
+          },
+          {
+            "concept": "Grok canonical-team-identity",
+            "disposition": "rejected as duplicative",
+            "rationale": "Identical identity priority order to the base team-identifier-assignment finding, which additionally carries alternate business identifiers and duplicate-record tombstoning. Adding it would create a second identity finding with no new evidence."
+          },
+          {
+            "concept": "Grok defining-purpose",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base team-charter-and-mandate already binds org:purpose, FHIR reason and the shared-objective pattern to a written constituting statement with approval, effective date and review trigger, and is additionally anchored by a binding legal example. The grok finding is a strict subset."
+          },
+          {
+            "concept": "Grok collaboration-versus-unit-boundary",
+            "disposition": "rejected as duplicative",
+            "rationale": "The base resolves this in two boundary notes and in the question asking whether the collective is an internal unit, a cross-organization collaboration or a rule-defined cohort. Promoting it to a finding would duplicate settled boundary work."
+          },
+          {
+            "concept": "Grok roles-accountabilities-and-leadership and size-autonomy-and-accountability",
+            "disposition": "rejected as duplicative",
+            "rationale": "Content is already split across the base role-and-position-binding, decision-rights-ownership-and-reporting-line and minimum-composition-constraints findings, including the lead-role question and the declared constraint profile. Accepting would fragment authority semantics across three layers."
+          },
+          {
+            "concept": "Grok operational-status and archive-error-and-deletion",
+            "disposition": "rejected as duplicative; cascade hazard routed to the mapping specification",
+            "rationale": "Status values, the entered-in-error versus normal-ending distinction, dissolution and retention are all covered by the base. Archive, unarchive and clone are vendor projection operations, and the hazard that deleting a team also destroys its backing directory group belongs in the projection and mapping specification artifact, not in a new lifecycle finding."
+          },
+          {
+            "concept": "Grok site-contact-and-schedule",
+            "disposition": "rejected; shift schedule and virtual-only siting deferred",
+            "rationale": "Sites, distribution, jurisdiction effects and coverage gaps are covered by the base site-footprint finding and the team-level contact route is already modelled. Shift rostering rests on a single tier-2 vendor schedule object and the base deliberately declared rostering an omission; virtual-only teams are flagged as a gap by grok itself."
+          },
+          {
+            "concept": "Grok subject-goal-or-sport",
+            "disposition": "rejected; retained as an EXTEND profile candidate",
+            "rationale": "The base explicitly places subject-scoped teams outside the base case because FHIR CareTeam is subject-bound and carries a patient security category. Accepting a subject binding into the base would contradict a boundary decision made on tier-1 evidence; it is deferred as a profile question instead."
+          },
+          {
+            "concept": "RFC 3339 cited in grok findings without a registered source entry",
+            "disposition": "source reference rewired to the base RFC 3339 entry",
+            "rationale": "Grok asserts RFC 3339 date-time requirements in membership and post-assignment findings while registering no RFC 3339 source in its own pack. The accepted post-establishment addition must be re-pointed at the base RFC 3339 source so no merged node carries an unregistered citation."
+          },
+          {
+            "concept": "Competing hierarchy, visibility and typing vocabularies",
+            "disposition": "recorded as declared conflicts, not merged",
+            "rationale": "Method-level prohibition of sub-teams conflicts with nested groups and unit hierarchy; two vendor visibility vocabularies disagree on their own labels; capability-tier typing and functional classification are orthogonal axes. Each is carried as a declared profile constraint with its source, and collapsing any of them into a single field is prohibited."
+          }
+        ],
+        "publicationHolds": [
+          "Source and live-version verification is unresolved: all twenty-nine distinct URLs across both packs must be re-fetched and re-pinned before publication, with particular attention to fast-moving or forward-dated version strings including schema.org 30.0 dated 2026-03-19, ESCO v1.2.1 dated 2025-12-10, HR Open 4.5 Final and 4.6 Candidate, the GitHub REST API version 2026-03-10, the Microsoft Graph v1.0 page last updated 2024-10-18, the FEMA RTLT tool version, and the NIST SP 800-53 control release 5.2.0.",
+          "Multi-profile domain validation is unresolved: the merged model has not been instantiated against the clinical care-team profile, the workplace-directory profile, the emergency-response typed-resource profile, or the agile-delivery profile. No conformance or alignment language may be published until at least these four profiles have been round-tripped and their loss reports recorded.",
+          "Paywalled and landing-page-only evidence must not be published at clause level: ISO 30414:2025 is cited from a committee announcement, ISO 30400:2022 from a catalogue landing page that does not expose a Team term, and ISO 21502 and ArchiMate business collaboration were never obtained. Every claim resting on these must be marked as unverified at clause level or removed.",
+          "All seven accepted additions and four of the five accepted functions rest wholly or partly on tier-2 vendor documentation. Each must be re-checked against tier-1 sources for contradiction before publication, and vendor-specific vocabularies for visibility, nesting and archive states must be published as projection detail rather than as base semantics.",
+          "Citation provenance for the accepted additions must be repaired: grok asserts RFC 3339 timestamp requirements in membership and post-assignment findings without registering RFC 3339 as a source in its own pack, so every merged node inheriting that claim must be re-pointed at the base RFC 3339 source and re-validated."
+        ],
+        "deferredResearch": [
+          "Virtual and fully distributed teams with no physical site: both providers flag this as a gap and neither found a primary pattern for recording location without inventing a site. Needs an authoritative source before any siting rule is asserted.",
+          "Shift rostering, watch and rotation patterns as a modelled construct at team granularity. Present evidence is a single tier-2 vendor schedule object; the base deliberately omitted it. Aviation, maritime and healthcare crew and watch structures should be sourced together.",
+          "Team economics: budget, cost centre and chargeback assignment to a team as such. No authoritative source was found in either pack; HR interchange compensation and payroll domains are worker-level and cannot be lifted to team granularity without invention.",
+          "Collective representation at team level: works councils, bargaining units and statutory governance bodies. One pack lists labour relations as a reporting topic without team-level structure and the other excludes such bodies outright; the boundary between a team and a statutory body needs primary evidence.",
+          "Subject-scoped teams as an EXTEND profile: decide whether a team bound to a patient, product, event or competition is hosted by this model as a profile or by a sibling model, and source the binding trigger for teams constituted before a subject exists.",
+          "Unfetched team-of-teams and domain registries: ISO 21502 project-team vocabulary, IPTC Sport Schema club and team-membership types, military order-of-battle structures, named scaled-agile team-of-teams constructs, and O*NET-SOC as the non-EU alternative to the ESCO occupation taxonomy.",
+          "Governance of AI-agent and robotic teammates beyond representing them as software agents with a responsible human principal, including qualification, accountability and access semantics for non-human members."
+        ]
+      },
+      "statistics": {
+        "sources": 27,
+        "bundles": 6,
+        "layers": 13,
+        "findings": 31,
+        "questions": 127,
+        "artifacts": 23,
+        "functions": 16
+      }
+    },
+    "WM-ORG-006": {
+      "source_file": "publications/wm-org-006-membership/spec.yaml",
+      "source_bytes": 192055,
+      "source_sha256": "0fd3aeef90ff0dd9a728256ef4f9d6ef57edc4c27b411dde09f377274e210482",
+      "publication": {
+        "status": "published",
+        "adjudicationStatus": "reviewable-draft",
+        "publishableCanonical": false,
+        "generatedAt": "2026-09-06T01:26:35Z",
+        "synthesisSha256": "6dec828608b321023a5496ad17cc217cd90b7e4768668d1b260c6dc71dfca765",
+        "providerMode": "single-provider-waiver",
+        "providers": [
+          "Codex"
+        ],
+        "waivedProviders": [
+          "Claude",
+          "Grok"
+        ]
+      },
+      "metaModel": {
+        "id": "WM-ORG-006",
+        "registryId": "vr.wm-org-006",
+        "name": "Membership",
+        "version": "0.3.0-research.1",
+        "previousVersions": [],
+        "entryKind": "relationship",
+        "family": "World Models",
+        "category": "Society, people and institutions",
+        "industry": [
+          "Cross-industry"
+        ],
+        "domain": [
+          "SOC.ORG.MEM"
+        ],
+        "tags": [
+          "membership",
+          "soc.org.mem"
+        ],
+        "status": "published"
+      },
+      "model": {
+        "registry_id": "vr.wm-org-006",
+        "model_id": "WM-ORG-006",
+        "name": "Membership",
+        "entry_kind": "relationship",
+        "purpose": "Represent one governed, qualified relationship between a member agent and an organization or group, including admission, roles, validity, standing, terms, lifecycle, evidence and privacy without depending on storage or interface format.",
+        "scope_statement": "Owns membership relationship identity, member and organization bindings, governing scheme and type, admission basis and decision effect, role bindings, validity and standing, term references, renewal, suspension, reinstatement and ending events, party assertions, proof projections, privacy and interoperability while external systems own agents, organizations, roles, posts, activities, policies, payments, subscriptions, credentials, access grants, decisions and evidence objects.",
+        "in_scope": [
+          "Membership identity, member and organization or group references, membership scheme, type, classification and non-equivalence boundaries",
+          "Application, nomination, eligibility, authority, admission, role bindings, validity, standing, renewal, suspension, reinstatement, resignation, termination and revocation",
+          "Terms, duties, fee and benefit references, assertions, evidence, attestations, directories, privacy, retention, disputes, provenance and exchange"
+        ],
+        "out_of_scope": [
+          "Employment, office-holding, citizenship, licensing, subscription, participation, affiliation and access-entitlement master lifecycles",
+          "Member, organization, group, role, post, activity, project, policy, payment, credential, access-grant, decision and evidence master records",
+          "Universal eligibility, admission, disciplinary, due-process, fee, privacy or retention rules, or automatic authority for an agent to admit, suspend, revoke or disclose membership"
+        ],
+        "boundary_notes": [
+          {
+            "neighbor": "Employment",
+            "distinction": "Employment is a work relationship with labour-status, term and assignment semantics; Membership is governed belonging under a membership scheme and never imports employment classification or lifecycle.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006"
+            ]
+          },
+          {
+            "neighbor": "Role, Post and Office",
+            "distinction": "A role is a reusable concept, a post or office can exist independently and a membership role binding states what role a member holds through this relationship and when.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-007"
+            ]
+          },
+          {
+            "neighbor": "Participation and Affiliation",
+            "distinction": "Participation is involvement in an activity and affiliation can be informal or broadly asserted; canonical Membership requires a qualified scheme, parties, basis, standing and provenance.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003"
+            ]
+          },
+          {
+            "neighbor": "Subscription, Payment and Benefit",
+            "distinction": "Recurring service and financial records may be conditions or consequences of membership but retain separate identity, state and execution.",
+            "source_refs": [
+              "SRC-004"
+            ]
+          },
+          {
+            "neighbor": "Credential and Directory Entry",
+            "distinction": "A credential, badge, roster or listing is an issuer-controlled proof or projection whose status may diverge from the authoritative membership relationship.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-005"
+            ]
+          },
+          {
+            "neighbor": "Access Entitlement and Policy",
+            "distinction": "Membership may be an input to permission decisions, but policy rules, grants, evaluation and enforcement remain external and membership never guarantees access.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-008"
+            ]
+          }
+        ]
+      },
+      "structure_index": [
+        {
+          "id": "relationship-identity-parties-and-scheme",
+          "name": "Relationship identity, parties and scheme",
+          "description": "Identifies one membership and the member, organization or group and governing membership scheme.",
+          "layers": [
+            {
+              "id": "membership-master-identity",
+              "name": "Membership master identity",
+              "description": "Stable relationship identity, source systems, aliases and successor lineage."
+            },
+            {
+              "id": "parties-type-and-governing-scheme",
+              "name": "Parties, type and governing scheme",
+              "description": "Member and organization bindings plus profile-qualified classification."
+            }
+          ]
+        },
+        {
+          "id": "admission-eligibility-and-authority",
+          "name": "Admission, eligibility and authority",
+          "description": "Explains how membership is proposed, evaluated and admitted under a governing basis.",
+          "layers": [
+            {
+              "id": "application-nomination-and-eligibility",
+              "name": "Application, nomination and eligibility",
+              "description": "External request, sponsorship and eligibility assertions linked to this relationship."
+            },
+            {
+              "id": "decision-basis-and-effective-admission",
+              "name": "Decision, basis and effective admission",
+              "description": "The accountable admission or rejection and its relationship effect."
+            }
+          ]
+        },
+        {
+          "id": "roles-scope-and-participation-context",
+          "name": "Roles, scope and participation context",
+          "description": "Qualifies which roles are held through membership and where they apply.",
+          "layers": [
+            {
+              "id": "role-and-post-binding",
+              "name": "Role and post binding",
+              "description": "Membership roles, scopes and optional post references with their own intervals."
+            },
+            {
+              "id": "participation-affiliation-and-non-equivalence",
+              "name": "Participation, affiliation and non-equivalence",
+              "description": "References activities and adjacent relationships without conflating them with membership."
+            }
+          ]
+        },
+        {
+          "id": "standing-validity-and-lifecycle",
+          "name": "Standing, validity and lifecycle",
+          "description": "Represents current and historic membership condition, intervals and governed transitions.",
+          "layers": [
+            {
+              "id": "validity-state-and-observation",
+              "name": "Validity, state and observation",
+              "description": "Relationship validity intervals, asserted standing and observed freshness."
+            },
+            {
+              "id": "renewal-suspension-and-reinstatement",
+              "name": "Renewal, suspension and reinstatement",
+              "description": "Non-terminal changes and their effect on role, right and duty bindings."
+            },
+            {
+              "id": "resignation-termination-and-revocation",
+              "name": "Resignation, termination and revocation",
+              "description": "Terminal or successor events, reasons, challenge and surviving history."
+            }
+          ]
+        },
+        {
+          "id": "terms-duties-fees-and-benefits",
+          "name": "Terms, duties, fees and benefits",
+          "description": "Links governed terms and economic or non-economic consequences without importing policy, payment or entitlement execution.",
+          "layers": [
+            {
+              "id": "terms-rights-duties-and-constraints",
+              "name": "Terms, rights, duties and constraints",
+              "description": "Versioned rule and policy bindings that qualify membership."
+            },
+            {
+              "id": "fee-benefit-and-entitlement-references",
+              "name": "Fee, benefit and entitlement references",
+              "description": "Economic and service consequences and their independent records."
+            }
+          ]
+        },
+        {
+          "id": "evidence-privacy-dispute-and-trust",
+          "name": "Evidence, privacy, dispute and trust",
+          "description": "Maintains assertions, attestations, conflicts and privacy-safe projections.",
+          "layers": [
+            {
+              "id": "assertions-evidence-and-quality",
+              "name": "Assertions, evidence and quality",
+              "description": "Attributable source statements, observations and reconciliation."
+            },
+            {
+              "id": "credential-directory-and-proof-projections",
+              "name": "Credential, directory and proof projections",
+              "description": "Portable and discoverable representations that remain separate from the source relationship."
+            },
+            {
+              "id": "privacy-access-correction-and-retention",
+              "name": "Privacy, access, correction and retention",
+              "description": "Field-sensitive disclosure and durable lawful history."
+            }
+          ]
+        },
+        {
+          "id": "interoperability-governance-and-agent-operations",
+          "name": "Interoperability, governance and agent operations",
+          "description": "Controls classifications, mappings, validation and safe automated action.",
+          "layers": [
+            {
+              "id": "classification-and-profile-projections",
+              "name": "Classification and profile projections",
+              "description": "Versioned type, role, state and reason vocabularies and mappings."
+            },
+            {
+              "id": "agent-control-and-safe-operation",
+              "name": "Agent control and safe operation",
+              "description": "Authorized operations, invariants, rollback and audit."
+            }
+          ]
+        }
+      ],
+      "selected_findings": [
+        {
+          "bundle": "relationship-identity-parties-and-scheme",
+          "layer": "membership-master-identity",
+          "finding": {
+            "id": "authoritative-membership-identifier-and-master-system",
+            "name": "Authoritative membership identifier and master system",
+            "description": "The stable relationship identifier, issuer, namespace, master system, local keys and resolution status.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for authoritative membership identifier and master system?",
+              "Which member, organization, authority, source and evidence establishes authoritative membership identifier and master system, at what event, valid and knowledge time, and with what confidence?",
+              "How may authoritative membership identifier and master system be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "authoritative-membership-identifier-and-master-system-data",
+                "name": "Authoritative membership identifier and master system data",
+                "description": "Structured, source-qualified answer data for authoritative membership identifier and master system.",
+                "value_kind": "identifier",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "relationship-identity-parties-and-scheme",
+          "layer": "parties-type-and-governing-scheme",
+          "finding": {
+            "id": "member-agent-and-organization-or-group-bindings",
+            "name": "Member agent and organization or group bindings",
+            "description": "Typed references to the member agent and admitting organization or governed group with identity authority and intervals.",
+            "source_refs": [
+              "SRC-001"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for member agent and organization or group bindings?",
+              "Which member, organization, authority, source and evidence establishes member agent and organization or group bindings, at what event, valid and knowledge time, and with what confidence?",
+              "How may member agent and organization or group bindings be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "member-agent-and-organization-or-group-bindings-data",
+                "name": "Member agent and organization or group bindings data",
+                "description": "Structured, source-qualified answer data for member agent and organization or group bindings.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "relationship-identity-parties-and-scheme",
+          "layer": "parties-type-and-governing-scheme",
+          "finding": {
+            "id": "membership-type-profile-classification-and-scheme-version",
+            "name": "Membership type, profile, classification and scheme version",
+            "description": "Versioned type and profile concepts, scheme authority, applicability and class-distinguishing criteria.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for membership type, profile, classification and scheme version?",
+              "Which member, organization, authority, source and evidence establishes membership type, profile, classification and scheme version, at what event, valid and knowledge time, and with what confidence?",
+              "How may membership type, profile, classification and scheme version be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "membership-type-profile-classification-and-scheme-version-data",
+                "name": "Membership type, profile, classification and scheme version data",
+                "description": "Structured, source-qualified answer data for membership type, profile, classification and scheme version.",
+                "value_kind": "collection",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "admission-eligibility-and-authority",
+          "layer": "decision-basis-and-effective-admission",
+          "finding": {
+            "id": "admission-rejection-decision-conditions-and-effective-time",
+            "name": "Admission or rejection decision, conditions and effective time",
+            "description": "Decision maker, authority, reason, conditions, appeal state and distinct decision, effective and knowledge times.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-005",
+              "SRC-006",
+              "SRC-009"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for admission or rejection decision, conditions and effective time?",
+              "Which member, organization, authority, source and evidence establishes admission or rejection decision, conditions and effective time, at what event, valid and knowledge time, and with what confidence?",
+              "How may admission or rejection decision, conditions and effective time be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "admission-rejection-decision-conditions-and-effective-time-data",
+                "name": "Admission or rejection decision, conditions and effective time data",
+                "description": "Structured, source-qualified answer data for admission or rejection decision, conditions and effective time.",
+                "value_kind": "object",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "roles-scope-and-participation-context",
+          "layer": "role-and-post-binding",
+          "finding": {
+            "id": "role-concept-scope-unit-and-validity",
+            "name": "Role concept, scope, unit and validity",
+            "description": "Versioned role reference, organizational or domain scope, effective interval and profile-specific cardinality.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for role concept, scope, unit and validity?",
+              "Which member, organization, authority, source and evidence establishes role concept, scope, unit and validity, at what event, valid and knowledge time, and with what confidence?",
+              "How may role concept, scope, unit and validity be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "role-concept-scope-unit-and-validity-data",
+                "name": "Role concept, scope, unit and validity data",
+                "description": "Structured, source-qualified answer data for role concept, scope, unit and validity.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "roles-scope-and-participation-context",
+          "layer": "participation-affiliation-and-non-equivalence",
+          "finding": {
+            "id": "participation-activity-project-and-contribution-references",
+            "name": "Participation, activity, project and contribution references",
+            "description": "Time-qualified links to externally mastered activities, projects and contributions associated with membership.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for participation, activity, project and contribution references?",
+              "Which member, organization, authority, source and evidence establishes participation, activity, project and contribution references, at what event, valid and knowledge time, and with what confidence?",
+              "How may participation, activity, project and contribution references be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "participation-activity-project-and-contribution-references-data",
+                "name": "Participation, activity, project and contribution references data",
+                "description": "Structured, source-qualified answer data for participation, activity, project and contribution references.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "roles-scope-and-participation-context",
+          "layer": "participation-affiliation-and-non-equivalence",
+          "finding": {
+            "id": "employment-office-subscription-citizenship-licence-and-access-boundary",
+            "name": "Employment, office, subscription, citizenship, licence and access boundary",
+            "description": "Typed non-equivalence and optional relationship links that prevent inference of membership from neighboring statuses.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-006"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for employment, office, subscription, citizenship, licence and access boundary?",
+              "Which member, organization, authority, source and evidence establishes employment, office, subscription, citizenship, licence and access boundary, at what event, valid and knowledge time, and with what confidence?",
+              "How may employment, office, subscription, citizenship, licence and access boundary be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "employment-office-subscription-citizenship-licence-and-access-boundary-data",
+                "name": "Employment, office, subscription, citizenship, licence and access boundary data",
+                "description": "Structured, source-qualified answer data for employment, office, subscription, citizenship, licence and access boundary.",
+                "value_kind": "collection",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "standing-validity-and-lifecycle",
+          "layer": "validity-state-and-observation",
+          "finding": {
+            "id": "proposed-pending-active-suspended-ended-rejected-and-revoked-state",
+            "name": "Proposed, pending, active, suspended, ended, rejected and revoked state",
+            "description": "Profile-qualified relationship state, source, authority, valid interval, confidence and explicit unknown status.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for proposed, pending, active, suspended, ended, rejected and revoked state?",
+              "Which member, organization, authority, source and evidence establishes proposed, pending, active, suspended, ended, rejected and revoked state, at what event, valid and knowledge time, and with what confidence?",
+              "How may proposed, pending, active, suspended, ended, rejected and revoked state be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "proposed-pending-active-suspended-ended-rejected-and-revoked-state-data",
+                "name": "Proposed, pending, active, suspended, ended, rejected and revoked state data",
+                "description": "Structured, source-qualified answer data for proposed, pending, active, suspended, ended, rejected and revoked state.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "standing-validity-and-lifecycle",
+          "layer": "validity-state-and-observation",
+          "finding": {
+            "id": "valid-decision-event-observation-and-knowledge-time",
+            "name": "Valid, decision, event, observation and knowledge time",
+            "description": "Separate time axes and intervals for relationship effect, decisions, events, observations and when assertions became known.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-009"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for valid, decision, event, observation and knowledge time?",
+              "Which member, organization, authority, source and evidence establishes valid, decision, event, observation and knowledge time, at what event, valid and knowledge time, and with what confidence?",
+              "How may valid, decision, event, observation and knowledge time be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "valid-decision-event-observation-and-knowledge-time-data",
+                "name": "Valid, decision, event, observation and knowledge time data",
+                "description": "Structured, source-qualified answer data for valid, decision, event, observation and knowledge time.",
+                "value_kind": "object",
+                "cardinality": "1",
+                "required": true
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "terms-duties-fees-and-benefits",
+          "layer": "terms-rights-duties-and-constraints",
+          "finding": {
+            "id": "permission-prohibition-duty-and-compliance-reference",
+            "name": "Permission, prohibition, duty and compliance reference",
+            "description": "ODRL or profile-specific policy links with assigner, assignee, target, action, constraint and external evaluation evidence.",
+            "source_refs": [
+              "SRC-004"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for permission, prohibition, duty and compliance reference?",
+              "Which member, organization, authority, source and evidence establishes permission, prohibition, duty and compliance reference, at what event, valid and knowledge time, and with what confidence?",
+              "How may permission, prohibition, duty and compliance reference be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "permission-prohibition-duty-and-compliance-reference-data",
+                "name": "Permission, prohibition, duty and compliance reference data",
+                "description": "Structured, source-qualified answer data for permission, prohibition, duty and compliance reference.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        },
+        {
+          "bundle": "terms-duties-fees-and-benefits",
+          "layer": "fee-benefit-and-entitlement-references",
+          "finding": {
+            "id": "benefit-service-resource-and-access-entitlement-reference",
+            "name": "Benefit, service, resource and access-entitlement reference",
+            "description": "Links externally mastered benefits and grants with scope, validity and governing term without treating access as membership proof.",
+            "source_refs": [
+              "SRC-004"
+            ],
+            "questions": [
+              "What exact values, references, qualifiers and explicit unknowns must be recorded for benefit, service, resource and access-entitlement reference?",
+              "Which member, organization, authority, source and evidence establishes benefit, service, resource and access-entitlement reference, at what event, valid and knowledge time, and with what confidence?",
+              "How may benefit, service, resource and access-entitlement reference be validated, challenged, corrected, superseded, retained or disclosed without erasing prior assertions or importing a neighboring model's lifecycle?"
+            ],
+            "data_elements": [
+              {
+                "id": "benefit-service-resource-and-access-entitlement-reference-data",
+                "name": "Benefit, service, resource and access-entitlement reference data",
+                "description": "Structured, source-qualified answer data for benefit, service, resource and access-entitlement reference.",
+                "value_kind": "collection",
+                "cardinality": "0..n",
+                "required": false
+              }
+            ]
+          }
+        }
+      ],
+      "functions": [
+        {
+          "id": "propose-membership",
+          "name": "Propose membership",
+          "description": "Create a proposed relationship with stable identity, parties, scheme, requested type and explicit unknowns."
+        },
+        {
+          "id": "evaluate-eligibility",
+          "name": "Evaluate eligibility",
+          "description": "Record an attributable eligibility assessment and exceptions without importing the assessment process."
+        },
+        {
+          "id": "record-admission-decision",
+          "name": "Record admission decision",
+          "description": "Append authorized admission or rejection with conditions, effect and appeal state."
+        },
+        {
+          "id": "bind-role",
+          "name": "Bind role",
+          "description": "Add, change or end a role binding with scope and validity while preserving membership identity."
+        },
+        {
+          "id": "bind-terms",
+          "name": "Bind terms",
+          "description": "Attach a versioned external term or policy with precedence and applicability."
+        },
+        {
+          "id": "renew-membership",
+          "name": "Renew membership",
+          "description": "Append renewal, extension or revalidation with changed conditions and a new interval."
+        },
+        {
+          "id": "suspend-or-reinstate",
+          "name": "Suspend or reinstate",
+          "description": "Record temporary restriction or restored standing and its effect on roles, rights and duties."
+        },
+        {
+          "id": "end-membership",
+          "name": "End membership",
+          "description": "Record resignation, expiry, termination, removal or revocation with basis, notice, challenge and successor."
+        },
+        {
+          "id": "reconcile-assertions",
+          "name": "Reconcile assertions",
+          "description": "Compare member, organization, issuer and authority assertions and append agreement, disagreement or unresolved state."
+        },
+        {
+          "id": "issue-membership-attestation",
+          "name": "Issue membership attestation",
+          "description": "Create or link a portable proof without treating the credential as the source relationship."
+        },
+        {
+          "id": "issue-minimal-membership-view",
+          "name": "Issue minimal membership view",
+          "description": "Create a purpose-bound directory, roster or verification projection."
+        },
+        {
+          "id": "project-membership-profile",
+          "name": "Project membership profile",
+          "description": "Transform a validated revision into W3C ORG, credential, policy or domain profile with declared loss."
+        }
+      ],
+      "composition": [
+        {
+          "target": "Agent, Organization, Group, Role, Post, Activity, Policy, Payment, Subscription, Credential, Access, Decision and Evidence models",
+          "relation": "REFERENCE",
+          "purpose": "Connect governed membership context while retaining external identity, authority and lifecycle.",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-003",
+            "SRC-004",
+            "SRC-005",
+            "SRC-006"
+          ]
+        },
+        {
+          "target": "W3C Organization Ontology",
+          "relation": "ALIGN",
+          "purpose": "Project qualified member, organization, role and duration relationships while preserving the narrower Vercy boundary.",
+          "required": true,
+          "source_refs": [
+            "SRC-001"
+          ]
+        },
+        {
+          "target": "OWL-Time and RFC 3339",
+          "relation": "ALIGN",
+          "purpose": "Represent intervals and relations and serialize event timestamps with seconds and explicit UTC offset.",
+          "required": true,
+          "source_refs": [
+            "SRC-002",
+            "SRC-009"
+          ]
+        },
+        {
+          "target": "ODRL Information Model 2.2",
+          "relation": "ALIGN",
+          "purpose": "Reference membership-related permissions, prohibitions, duties and constraints without importing policy evaluation.",
+          "required": false,
+          "source_refs": [
+            "SRC-004"
+          ]
+        },
+        {
+          "target": "Verifiable Credentials Data Model 2.0",
+          "relation": "ALIGN",
+          "purpose": "Issue portable membership attestations that remain evidence projections with separate issuer, validity and status.",
+          "required": false,
+          "source_refs": [
+            "SRC-005"
+          ]
+        },
+        {
+          "target": "LegalRuleML and SKOS",
+          "relation": "ALIGN",
+          "purpose": "Qualify authority, jurisdiction and rule metadata and version membership, role, standing and reason concepts.",
+          "required": false,
+          "source_refs": [
+            "SRC-006",
+            "SRC-007"
+          ]
+        }
+      ],
+      "researchAdjudication": {
+        "providerMode": "single-provider-waiver",
+        "activeProviders": [
+          "codex"
+        ],
+        "waivedProviders": [
+          "claude",
+          "grok"
+        ],
+        "providerPolicy": {
+          "contract_version": "1.0.0",
+          "mode": "single-provider-waiver",
+          "effective_at": "2026-09-06T00:00:00Z",
+          "scope": "Canonical single-stream subject-model research after the six-workstream consolidation",
+          "active_providers": [
+            "codex"
+          ],
+          "waived_providers": [
+            {
+              "provider": "claude",
+              "authorized_by": "repository owner",
+              "authorized_at": "2026-09-06T00:00:00Z",
+              "reason": "Claude produced no result on prior 1800-second and 900-second attempts and again timed out on bounded 600-second Sonnet and 300-second Haiku passes. The owner prioritized completion over provider availability."
+            },
+            {
+              "provider": "grok",
+              "authorized_by": "repository owner",
+              "authorized_at": "2026-09-06T00:00:00Z",
+              "reason": "The repository owner authorized completion without Grok when Grok is unavailable, slow or schema-invalid. Grok may still be attempted as a bounded supplemental reviewer, but its failure never blocks a valid Claude plus no-tools result."
+            }
+          ],
+          "review_rule": "Codex may complete source-grounded fallback research after bounded Claude and Grok attempts fail. It requires a separate no-tools adversarial audit and remains reviewable-draft with a visible absence-of-external-review hold.",
+          "supplemental_provider_attempts": [
+            {
+              "provider": "claude",
+              "required": false,
+              "maximum_attempts": 1,
+              "failure_policy": "record-and-continue",
+              "admission_rule": "Use only a locally schema-valid result whose sources and boundaries survive adjudication."
+            },
+            {
+              "provider": "grok",
+              "required": false,
+              "maximum_attempts": 1,
+              "failure_policy": "record-and-continue",
+              "admission_rule": "Use only a locally schema-valid result whose sources and boundaries survive adjudication."
+            }
+          ]
+        },
+        "boundaryDecision": {
+          "entry_kind": "relationship",
+          "status": "accepted as a qualified member-to-organization relationship",
+          "rationale": "The model represents one governed belonging relationship under a named membership scheme. Employment, offices, participation, subscriptions, citizenship, licences, credentials, payments, access grants, parties, roles, posts, policies, decisions and evidence remain distinct linked objects or records."
+        },
+        "decisions": [
+          {
+            "concept": "Membership and employment",
+            "disposition": "accepted as separate models",
+            "rationale": "Membership represents governed belonging and standing under a scheme, while WM-ORG-005 represents a work relationship with labour-status, term and assignment semantics."
+          },
+          {
+            "concept": "Qualified relationship identity",
+            "disposition": "accepted as independently governed",
+            "rationale": "The same member and organization may have several memberships under different schemes, periods or types, so a member-organization pair, role, badge, directory key, credential or payment is not sufficient identity."
+          },
+          {
+            "concept": "W3C ORG alignment",
+            "disposition": "accepted with a narrower canonical boundary",
+            "rationale": "W3C ORG provides a qualified Membership pattern with member, organization, role and duration, but its broad memberOf relation can also represent affiliation and cannot by itself prove governed Vercy Membership."
+          },
+          {
+            "concept": "Member kinds",
+            "disposition": "accepted as profile-constrained agents",
+            "rationale": "W3C ORG permits agents including people and organizations; Vercy also allows governed software-agent references when a membership profile explicitly permits them and does not imply AI subjecthood."
+          },
+          {
+            "concept": "Membership role and post",
+            "disposition": "accepted as distinct linked concepts",
+            "rationale": "A role binding qualifies what the member does through membership, while an independently existing post or office can be vacant, reassigned or governed by another relationship."
+          },
+          {
+            "concept": "Admission and eligibility",
+            "disposition": "accepted as attributable effects and references",
+            "rationale": "Applications, nominations, assessments and decisions retain their own records, while Membership stores the governing basis, evidence links and exact admission or rejection effect."
+          },
+          {
+            "concept": "Validity and standing",
+            "disposition": "accepted as bitemporal assertions",
+            "rationale": "Relationship validity, decision time, event time, observation time and knowledge time may differ and must survive renewal, suspension, reinstatement and retroactive correction."
+          },
+          {
+            "concept": "Terms, fees and benefits",
+            "disposition": "accepted as external bindings",
+            "rationale": "Policies, permissions, duties, fees, payments, subscriptions, benefits and access grants retain independent identity, evaluation and lifecycle; none alone proves current membership."
+          },
+          {
+            "concept": "Credential and directory",
+            "disposition": "accepted as proof or projection",
+            "rationale": "A verifiable credential, badge, roster or directory entry has its own issuer, validity, status and privacy surface and may diverge from the authoritative relationship."
+          },
+          {
+            "concept": "Private membership",
+            "disposition": "accepted with existence privacy",
+            "rationale": "Identifiers, counts, timing, search results and credential-status endpoints can reveal membership even when the detailed payload is hidden, so existence itself is field-policy controlled."
+          },
+          {
+            "concept": "Bilateral provenance and dispute",
+            "disposition": "accepted without unilateral truth ownership",
+            "rationale": "Member, organization, sponsor, issuer and authority assertions remain separately attributable, and no steward may silently erase disagreement, correction or appeal evidence."
+          },
+          {
+            "concept": "Approved registry composition",
+            "disposition": "held pending relation governance",
+            "rationale": "The approved relation ledger contains no WM-ORG-006 rows, so all proposed links to agents, organizations, roles, policies, payments, credentials, access and evidence remain draft."
+          }
+        ],
+        "publicationHolds": [
+          "Claude and Grok timed out during their bounded attempts, so independent external review is absent and explicitly waived for this published reviewable draft.",
+          "The previous O3 card combined Employment and Membership, while the current registry requires separate WM-ORG-005 and WM-ORG-006 boundaries; this publication defines only Membership.",
+          "The approved relationship ledger contains no WM-ORG-006 rows, so all proposed sibling composition remains draft.",
+          "Company, cooperative, association, union, professional-body, standards-body, club, community, family, religious, political and machine-agent membership profiles require specialist review.",
+          "Certified W3C ORG, OWL-Time, ODRL, Verifiable Credentials, LegalRuleML, SKOS, directory and domain-schema crosswalks, conformance fixtures and privacy tests remain unverified.",
+          "Independent external review was explicitly waived by the repository owner; this codex-only result remains a reviewable draft."
+        ],
+        "deferredResearch": [
+          "Develop domain profiles for voluntary, statutory, professional, corporate, cooperative, community, family, standards, political and machine-agent memberships.",
+          "Approve model identifiers and relation cardinalities for agents, organizations, roles, posts, activities, policies, payments, subscriptions, credentials, access grants, decisions and evidence.",
+          "Create deterministic fixtures for duplicate memberships, multiple schemes, concurrent roles, non-contiguous validity, suspension, reinstatement, appeal, private existence and stale credential status.",
+          "Validate certified organization, policy, credential, legal-rule, directory and domain projections with explicit loss, correlation-risk and round-trip tests."
+        ]
+      },
+      "statistics": {
+        "sources": 9,
+        "bundles": 7,
+        "layers": 16,
+        "findings": 32,
+        "questions": 96,
+        "artifacts": 32,
+        "functions": 12
+      }
+    }
+  },
+  "evidence_limits": [
+    "Both publications are reviewable drafts with publishableCanonical false.",
+    "WM-ORG-006 is Codex-only under a single-provider waiver and has no independent external review.",
+    "Complete specs parsed and pinned; selected findings form the compact reviewer projection.",
+    "Registry relationships and Enterprise v1 fields are non-normative."
+  ]
+}
+
+```
+
+## CLAUDE STUDY
+```md
+# Independent boundary review — EM-ORG-05 vs WM-ORG-003 / WM-ORG-006
+
+## Verdict per model/type
+
+| Candidate type | Verdict |
+|---|---|
+| Team | **PROFILE** of WM-ORG-003 (two profiles: single-org unit; inter-company collaboration) |
+| Temporary inter-company team | **PROFILE** of WM-ORG-003 — blocked until the containing-organization cardinality conflict below is resolved |
+| Collective | **REUSE ONLY** — no independent identity or lifecycle is shown; it is an abstraction over WM-ORG-003 `boundary_class` + `permanence`, not a model |
+| CommunityOfPractice | **PROFILE** composing WM-ORG-003 (identity, charter, lifecycle) with WM-ORG-006 (participation). Independent identity/lifecycle is *not* proven on this dossier, so a new identifier is refused; escalation test stated below |
+| Membership | **REUSE ONLY** WM-ORG-006, subject to its holds |
+| WM-ORG-003 nested membership-assignment | **PROFILE / rename**, not a duplicate to retire — distinct identity and lifecycle (see Membership mastership) |
+| WorkingAgreement | **REUSE ONLY** — owned charter component in WM-ORG-003, with external-instrument reference; no model |
+| TechnicalDomain | **REUSE ONLY** — classifier; never a model (test below) |
+
+## Evidence state
+
+Both specs are `reviewable-draft`, `publishableCanonical: false`. WM-ORG-006 is single-provider (Codex) with Claude and Grok waived, so it carries no independent external review; its registry row is `described-previous-version` / `migration-boundary-review` and still points at the legacy O3 card that fused Employment with Membership. WM-ORG-003 is dual-provider but rests heavily on tier‑2 vendor documentation for exactly the accepted additions used here (nesting, IdP sync, entitlements). The `relationship_ledger` contains no WM-ORG-006 row at all and no WM-ORG-003↔WM-ORG-006 row, so every mapping below is a draft proposal, not an approved relation. Vercy candidate linkage is `conceptual-candidate` at index depth. Nothing here is canonical, approved or installable.
+
+**Material spec conflict found inside WM-ORG-003:** `composition` and the `team-boundary-and-entity-distinction` finding require exactly one containing organization (cardinality 1, required), while the later accepted `containing-and-managing-organization` finding sets containing organization to 0..1 and managing organizations to 0..n. The frozen spec is internally inconsistent on its single most load-bearing edge.
+
+## Root identities and lifecycle
+
+Three distinct roots survive the test:
+
+1. **Collective root (WM-ORG-003)** — identity from a master-system key or governed IRI; lifecycle `proposed → active → suspended → inactive`, plus `entered-in-error`, with formation/merge/split/transfer/dissolution events. Purpose and mandate are its own.
+2. **Membership relationship root (WM-ORG-006)** — identity of one governed belonging under a named scheme; lifecycle proposed → pending → active → suspended → ended/rejected/revoked, with renewal, reinstatement, appeal and surviving history.
+3. **Person/Worker and Employment roots** — external; referenced only.
+
+Collective and CommunityOfPractice fail the independent-root test against WM-ORG-003: nothing in the dossier gives them an identity rule, a state machine or change events that WM-ORG-003 does not already carry. **Escalation test for a future CoP identifier:** it must survive the dissolution of every hosting organization, admit members with no collective-scoped assignment, and hold a lifecycle event class (e.g. charter succession across sponsors) that WM-ORG-003's event set cannot express. Until such evidence exists, no identifier may be minted.
+
+## Membership mastership
+
+WM-ORG-003's nested record and WM-ORG-006 are **not duplicates**, and the collision is in the *name*, not the referent.
+
+- **Team assignment (WM-ORG-003, aggregate child):** staffing/participation. Carries in-team role, period, allocation, coverage, position and on-behalf-of. It has no meaning outside its team root, dies with the team, and grants no standing. It is not admitted, not suspended for discipline, not appealable, not attested.
+- **Membership (WM-ORG-006, relationship root):** governed belonging. Carries scheme, admission basis and decision, standing, terms, renewal, appeal, attestation, provenance and bilateral assertions. It outlives any assignment and is referenced, never embedded.
+
+Rule: rename the nested record to **team assignment** in profile; mastership of assignment stays with WM-ORG-003, mastership of scheme-governed membership stays with WM-ORG-006. Where a collective admits people under a scheme (community, association, panel), the admission fact **must** be a WM-ORG-006 record referenced by the collective — participants are never copied. Where staffing is by employment or contract with no scheme admission, no WM-ORG-006 record exists. A single person in a community who is also staffed on its working group has exactly one membership and one assignment, linked, not merged.
+
+## Inter-company and community profile
+
+Exactly-one containing organization does prevent an inter-company collective: no single formal organization contains a team drawn from peers, and forcing one misstates legal containment and obligation-bearing. The profile fix, consistent with the boundary note that already admits `org:OrganizationalCollaboration` as a `boundary_class`:
+
+- `containing_organization_ref` → **0..1**, populated only when `boundary_class = organizational unit`.
+- `sponsor_organization_ref` **1..n** and `managing_organization_ref` **0..n** for the collaboration profile, each with its own period and mandate instrument.
+- `record_authority_org_ref` **exactly 1**, always — the single organization whose system of record writes the collective record. This preserves single record authority without asserting legal containment, and is the invariant that replaces the discarded one.
+- Obligation bearer must be named separately; a collaboration bears none by itself.
+
+CommunityOfPractice = collaboration profile with `permanence = standing`, admission via WM-ORG-006, no allocation or capacity floors, and no delivery mandate. The base spec's requirement of enumerated, identified members holds for both profiles; directory rules must materialise enumerated members.
+
+## Working agreement and technical domain
+
+**WorkingAgreement** is an owned, versioned component of the charter layer when it states this collective's own conduct and is approved with the charter (it maps to the non-normative v1 `working_agreement` field and sits under `charter_effective_period`). It becomes a **referenced** artifact in two cases: a reusable template owned elsewhere, and a multi-party inter-company agreement, which is an instrument and binds via `mandate_obligation_ref`. Inter-company profiles will normally have both: a referenced instrument plus an owned local agreement.
+
+**TechnicalDomain test:** a domain is a governed practice subject only if something can be *admitted to it, suspended from it, or dissolve it*. A concept in a versioned scheme cannot. Therefore TechnicalDomain is always a scheme-qualified classifier (SKOS concept, ESCO/ISCO URI, or local scheme with version); governance, stewardship and lifecycle attach to the community that stewards the domain, which references the code. Never carry a steward, charter or members on the classifier.
+
+## Invariants
+
+1. Membership has identity, member ref, organization/group ref, scheme, type, admission basis, validity interval, standing, role binding and provenance; missing any one = not a membership.
+2. No membership, assignment or participant list confers employment, funding, product access or authority. Entitlement is a separate grant with its own authority and validity.
+3. Access decisions may read membership as input; membership never guarantees, and effective-member resolution output must not be used as an authorization grant.
+4. Participants are referenced, never duplicated between a collective and a membership record.
+5. Exactly one record-authority organization per collective; containment is optional and only for units.
+6. Every assignment and membership separates event time from observation/knowledge time; corrections append, never overwrite.
+7. A member may hold many memberships and many assignments concurrently; total assignment allocation is checked, membership count is not.
+8. Entitlement inheritance follows only an explicit parent-child tree inside one record-authority domain; it never crosses organizations.
+9. Ending an assignment does not end a membership; ending a membership does not end employment; dissolving a collective does not revoke members' other relationships.
+10. A classifier cannot be admitted, suspended or dissolved.
+
+## Scenario walkthrough
+
+**Negative case.** A community member claims access to all products of other members' employers. Blocked at four points: membership is a belonging relationship whose benefits are external references (invariant 2/3); the community is a collaboration with no containing organization and therefore owns nothing belonging to member firms; entitlements in WM-ORG-003 are permissions the *collective* holds on named resources, not permissions members hold; and inheritance is tree-scoped inside one authority domain (invariant 8). The only conforming path is an explicit grant per product by each owning firm, with its own basis and validity. Any implementation that resolves the participant list into a grant is a conformance failure, not a configuration choice.
+
+**Acceptance case.** Two firms (illustrative, unnamed) form a six-month joint team: `boundary_class = organizational collaboration`, `permanence = time-boxed`, sponsors = both firms, record authority = one firm, charter with an inter-company agreement referenced as the mandate instrument. Staffing is assignments with `on_behalf_of` naming each participant's employer, allocation fractions, and no scheme admission — no WM-ORG-006 records are created. Employment stays with each employer and is untouched by dissolution; at dissolution, assignments close and each firm revokes its own grants on its own clock. In parallel, a permanent practice community: standing, sponsor-hosted, admission per scheme, each participant holding one WM-ORG-006 membership with standing and validity; two of them are also on the joint team, so they hold one membership plus one assignment each, independently dated. Changing standing in the community changes nothing on the team; ending the team changes nothing in the community; neither changes employment or any grant.
+
+## Migration/profile shape
+
+- Profile A: WM-ORG-003 single-organization unit (base, unchanged).
+- Profile B: WM-ORG-003 inter-company collaboration — sponsor/managing/record-authority cardinalities as above; capacity and qualification optional.
+- Profile C: CommunityOfPractice — Profile B plus mandatory WM-ORG-006 reference for every participant; assignment records prohibited except within working groups.
+- Rename the nested child to team assignment; add a prohibition on scheme, admission basis and standing fields appearing on it.
+- Map v1 `ORG-06` fields (team_kind → category; mission → purpose; working_agreement → charter component; active_period → charter/validity) and `PEO-11` fields (membership_kind → scheme type; valid_period → validity; role_ref → role binding; admission_basis → admission basis) onto WM-ORG-006, all candidate-not-normative.
+- Draft relation rows required before any of this is usable: WM-ORG-003 → WM-ORG-006 REFERENCE, and WM-ORG-006 → Agent/Organization/Access/Evidence.
+
+## Gaps and publication holds
+
+Carry forward every existing hold on both specs. Add: (1) the containing-organization cardinality contradiction inside WM-ORG-003 must be adjudicated before any collaboration profile is written; (2) WM-ORG-006 has no approved relation rows, so the assignment↔membership link is unproven; (3) WM-ORG-006 lacks independent review and still shadows the fused O3 employment/membership card — the Employment boundary must be confirmed against its own model, which is not in this dossier; (4) no fixtures exist for dual-held membership-plus-assignment, inter-company dissolution, or the negative access case; (5) Collective and CommunityOfPractice have no source-grounded evidence pack in this dossier at all, so their profile verdicts rest on WM-ORG-003 evidence only. No canonical status, approved relation or installability is claimed.
+
+```
+
+## GROK STUDY
+```md
+**Verdict.** PROFILE WM-ORG-003 and REUSE WM-ORG-006. No new catalogue or runtime ID. Team, Collective and CommunityOfPractice are 003 profiles. TeamAssignment is the renamed 003 nested staffing record, not a second membership type. Membership stays 006. WorkingAgreement is a 003 charter component or a referenced instrument. TechnicalDomain is a classifier. This is standards alignment, not a W3C ORG, FHIR or SCIM conformance claim.
+
+**Assignment / membership mastership.** Source facts: the card forbids conflating membership with employment or authority; rights and funding are not derived from the member list. 003 already stores time-bounded participation (role, period, allocation, `onBehalfOf`) and states that entitlements are relationships to resources, not the team. 006 already owns scheme, admission, standing, validity, terms, role and evidence, and typed non-equivalence to employment, office, subscription, licence and access.
+
+- **TeamAssignment (003 component).** Staffing/participation of an agent on a team instance: `agentRef`, `teamRef`, team-scoped role, valid interval, allocation/FTE, employer or `onBehalfOf`, assignment status. Does not own admission scheme, community standing, dues, access grants or employment. Lifecycle is bound to the team; retiring the team closes open assignments. It does not end 006 memberships elsewhere.
+
+- **Membership (006).** Governed belonging to a scheme-bearing body. Owns scheme, admission decision/basis, standing (proposed/active/suspended/ended/revoked), validity, terms, membership-role and evidence. May **outlive** any TeamAssignment. One agent may hold many 006 memberships and many 003 assignments (card invariant).
+
+Temporary project/delivery teams: TeamAssignment is sufficient; 006 is optional. CommunityOfPractice / standing collaboration with admission rules: participants hold 006 memberships; TeamAssignment exists only if they also staff a working team. Fail if 003 copies a 006 member list, or if adding an assignment silently admits the agent to a community scheme.
+
+**Verdict per type.**
+
+| Type | Disposition |
+|---|---|
+| Team | 003 subject. Stable collective identity. Boundary class unit / collaboration / cohort. |
+| Collective | 003 collaboration profile. Not a second master. |
+| CommunityOfPractice | 003 standing-collaboration profile whose participants hold 006 memberships. |
+| Membership | REUSE 006. Not nested in 003. |
+| TeamAssignment | Renamed 003 nested record. PROFILE component, not a new ID. |
+| WorkingAgreement | Owned charter component or referenced instrument. Not a new ID. |
+| TechnicalDomain | Classifier. Governance stays with the stewarding community. |
+
+**Inter-company cardinalities.** A two-company team is a 003 collaboration profile.
+
+1. **Containment** — 0..1 FormalOrganization / tenant. A cross-company delivery team often has none. Containment is not administrative placement of a 002 unit (EM-ORG-04 already forbids that).
+2. **Sponsors** — 1..n organizations that authorize, fund or charter the collective. Sponsor ≠ automatic employer of participants.
+3. **Managing organizations** — 0..n. Day-to-day coordination. May be a subset of sponsors or a third-party PMO. Distinct from containing org and from each participant’s 005 employer.
+4. **Record authority** — exactly 1. Steward of the 003 record. Dual authority is refused.
+
+Participants are not those four slots; they appear as TeamAssignments and/or 006 memberships. Fail if sponsor is inferred from the roster, or if containment is invented so the team can sit on an admin org-chart axis. W3C ORG alignment: `org:OrganizationalCollaboration` is neither a FormalOrganization nor a sub-unit.
+
+**Community profile.** A CoP has its own purpose and standing lifecycle — named, versioned charter, not a project with a baked-in end date. Participants hold 006 memberships. A person may belong to several communities and hold concurrent assignments. Product access, repo entitlements and budget lines are external grant records. Membership standing ≠ entitlement.
+
+**Working-agreement / domain boundary.** WorkingAgreement is an owned 003 charter component when the text is collective-specific (this team’s ways of working, this CoP’s admission bylaws), versioned with the collective. It is a referenced instrument when reusable or multi-party (company-wide framework, multi-sponsor MoU, executed contract): the collective stores a pin (instrument id + edition), not a copy of normative text.
+
+TechnicalDomain classifies the community (and optionally agreement scope). It is not an aggregate and not a second collective. Who may change methods or admit experts lives on 006 roles plus the community’s WorkingAgreement, not on the classifier code. Split trigger: a domain that needs its own lifecycle, methods and stewards as a practice object — and it still must not reuse the community’s 003 id.
+
+**Access prohibitions.** Roster union never grants rights. Card invariant: rights and funding are not derived from the member list. 003 already treats entitlements as resource relationships.
+
+1. 006 membership in community C authorises only what C’s own WorkingAgreement / entitlement records name. It does not union other members’ product ACLs, repositories, tenants or contracts.
+2. TeamAssignment to temporary team T authorises only T’s scoped resources. It does not inherit other assignees’ employer entitlements.
+3. Access grant is a separately dated fact. Grant validity is independent of membership standing and of assignment interval. Revoking membership does not silently delete a separately issued grant; ending a grant does not end membership.
+4. Funding and cost-centre rights are likewise not inferred from the roster.
+
+**Scenario results.**
+
+*Negative — CoP member gains access to other members’ products.* Engineer E of member-org M1 joins CoP C. M2 also belongs and owns product P. Correct: E receives only C-scoped entitlements. No grant to P is minted. Building a P ACL from the CoP roster fails the card.
+
+*Acceptance — temporary two-company team T + permanent community C.* T: two TeamAssignments (E1 `onBehalfOf` Co-A, E2 `onBehalfOf` Co-B), intervals I1/I2, no 006 required, optional referenced multi-party WorkingAgreement, exactly one record authority, sponsors ≥1. C: 006 memberships with scheme + admission + standing; community-specific charter owned as a WorkingAgreement component. Employment 005 of E1 at Co-A starts before T and may continue after T ends. Access: T-resource grants dated to I1/I2; C-resource grants dated to membership standing; Co-A product grants unchanged by T or C.
+
+Four independently dated planes: employment (005), TeamAssignment (003), membership (006), access grant. As-of queries apply one `(valid-time, knowledge-time)` pair to each plane. Missing on one plane is `unknown`, not copied. `onBehalfOf` does not create 005 employment. 006 standing does not create employment with sponsors. Ending 005 employment may trigger review of open assignments/memberships/grants; it does not auto-rewrite them.
+
+**Migration relations.**
+
+- 003 nested membership-assignment → rename TeamAssignment. Fields stay on 003.
+- Admission / standing / terms jammed into that nested record → optional 006 reference.
+- Collective *is* the 003 instance; it does not copy members from 003 or 006.
+- Do not treat WM-ORG-016 as the team roster unless an assignment is explicitly work assigned *to the team as a body of work*; 016 remains that master and 003 holds a team-side index.
+- No new IDs for TeamAssignment, Collective, CommunityOfPractice, WorkingAgreement or TechnicalDomain.
+
+**Publication blockers.** Both bases are non-canonical reviewable drafts. 006 has no independent external review and an empty relation ledger — community-profile reuse is therefore a hold, not a closed composition. 003 still names the nested record “membership assignment,” which collides with 006 until the TeamAssignment rename lands. No executable fixtures for: assignment-only temp team; CoP requiring 006; inter-company cardinalities (0..1 / 1..n / 0..n / exactly 1); independently dated 005 / assignment / 006 / grant planes; CoP roster that must not mint product ACLs. Alignments to W3C ORG, FHIR CareTeam and SCIM Group are alignments only. Do not invent Vercy identifiers.
+```
+
+## PROVIDER COMPARISON
+```md
+# EM-ORG-05 provider comparison
+
+Claude and Grok converge on **PROFILE** over `WM-ORG-003` and **REUSE** of `WM-ORG-006`, with no new identifier. Both distinguish team-scoped assignment from governed membership, keep employment and access external, support temporary inter-company teams and standing communities, and refuse roster-derived authority, funding or entitlement.
+
+Grok sharpened inter-company cardinalities, the four independently dated employment/assignment/membership/grant planes, and the owned-versus-referenced WorkingAgreement rule. Claude supplied the stronger identity/lifecycle test, the base containment contradiction and the missing-relation review holds. References to neighboring identifiers not present in the frozen dossier are treated as explanatory only and are not adopted as verified dependencies.
+
+```
+
+## RECONCILED CANDIDATE REVISION 2
+```json
+{
+  "format": "vercy-enterprise-profile-candidate/v1",
+  "contourId": "EM-ORG-05",
+  "name": "Enterprise Collective, Team and Community",
+  "decision": "PROFILE",
+  "newRuntimeId": false,
+  "bases": [
+    "WM-ORG-003",
+    "WM-ORG-006"
+  ],
+  "candidateRevision": 2,
+  "candidateStatus": "provider-reconciled-awaiting-frozen-audit",
+  "publishableCanonical": false,
+  "fixturesExecuted": false,
+  "basePins": [
+    {
+      "modelId": "WM-ORG-003",
+      "registryId": "vr.wm-org-003",
+      "modelVersion": "0.3.0-research.1",
+      "sourceFile": "publications/wm-org-003-team/spec.yaml",
+      "sourceBytes": 252360,
+      "sourceSha256": "a42a3ebaeea14fe7b6195a56d57fb34c0b4d6027df4c0ffa7aebf75a79052b0f",
+      "synthesisSha256": "c626866472ec1be766b3ce256f0e3f375118fb1c462fac4921a367f925ca0bc4",
+      "adjudicationStatus": "reviewable-draft",
+      "publishableCanonical": false,
+      "providerMode": "dual-provider",
+      "registryStatus": "candidate",
+      "registryReviewState": "first-pass-reviewed",
+      "invalidationRule": "Any source, synthesis or reservation drift invalidates this candidate."
+    },
+    {
+      "modelId": "WM-ORG-006",
+      "registryId": "vr.wm-org-006",
+      "modelVersion": "0.3.0-research.1",
+      "sourceFile": "publications/wm-org-006-membership/spec.yaml",
+      "sourceBytes": 192055,
+      "sourceSha256": "0fd3aeef90ff0dd9a728256ef4f9d6ef57edc4c27b411dde09f377274e210482",
+      "synthesisSha256": "6dec828608b321023a5496ad17cc217cd90b7e4768668d1b260c6dc71dfca765",
+      "adjudicationStatus": "reviewable-draft",
+      "publishableCanonical": false,
+      "providerMode": "single-provider-waiver",
+      "registryStatus": "described-previous-version",
+      "registryReviewState": "migration-boundary-review",
+      "invalidationRule": "Any source, synthesis or reservation drift invalidates this candidate."
+    }
+  ],
+  "constraints": [
+    "WM-ORG-003 MUST remain the sole master of collective identity, charter, lifecycle and team-scoped assignments.",
+    "WM-ORG-006 MUST remain the sole master of governed admission-based membership, scheme, standing, validity, terms, roles and evidence.",
+    "TeamAssignment MUST be a renamed WM-ORG-003 aggregate child and MUST NOT carry scheme, admission, standing, renewal, appeal or membership terms.",
+    "Membership MUST be referenced, never embedded or copied into WM-ORG-003, and MAY outlive any TeamAssignment.",
+    "A temporary delivery team MAY use TeamAssignments without creating WM-ORG-006 memberships.",
+    "A CommunityOfPractice MUST be a standing WM-ORG-003 collaboration profile whose governed participants reference WM-ORG-006 memberships.",
+    "Collective, CommunityOfPractice, TeamAssignment, WorkingAgreement and TechnicalDomain MUST NOT receive new model or runtime identifiers in this contour.",
+    "Collaboration containment MUST be 0..1, sponsors 1..n, managing organizations 0..n, and record authority exactly 1; these roles MUST remain distinct.",
+    "Containment MUST NOT be invented to place an inter-company collaboration on an administrative organization chart.",
+    "Sponsor, manager, containing organization, employer, obligation bearer and record authority MUST NOT be inferred from one another or from the roster.",
+    "WorkingAgreement MUST be owned and versioned with the collective when collective-specific; reusable or multi-party normative instruments MUST be referenced by immutable identity and edition pin.",
+    "TechnicalDomain MUST remain a scheme-qualified classifier and MUST NOT own people, memberships, charters, methods or governance lifecycle.",
+    "Membership, TeamAssignment and participant lists MUST NOT grant employment, funding, product access, repository access, tenant access or authority.",
+    "Access grants MUST remain separately identified and dated; membership or assignment change MUST NOT silently create, revoke or rewrite a grant.",
+    "Employment, TeamAssignment, Membership and AccessGrant MUST be queried as four independent valid-time and knowledge-time planes; missing data MUST remain unknown.",
+    "Ending employment MAY trigger review but MUST NOT auto-rewrite open assignments, memberships or grants.",
+    "Dissolving a collective MUST close its open TeamAssignments but MUST NOT end employment, unrelated memberships or external grants.",
+    "Participants MUST be referenced without copying person data; one participant MAY hold concurrent assignments and memberships.",
+    "Corrections MUST append superseding assertions and preserve event time, valid time and knowledge time.",
+    "All standards references MUST remain alignment-only; no W3C ORG, FHIR or SCIM conformance claim is permitted.",
+    "Publication MUST be refused while the WM-ORG-003 containment contradiction, WM-ORG-006 external-review and relation-ledger gaps, dependency pins or required semantic fixtures remain unresolved."
+  ],
+  "profileTypes": {
+    "Team": {
+      "disposition": "profile-local label over WM-ORG-003",
+      "registryId": null,
+      "runtimeId": null
+    },
+    "Collective": {
+      "disposition": "collaboration profile over WM-ORG-003",
+      "registryId": null,
+      "runtimeId": null
+    },
+    "CommunityOfPractice": {
+      "disposition": "standing collaboration profile over WM-ORG-003 with referenced WM-ORG-006 membership",
+      "registryId": null,
+      "runtimeId": null
+    },
+    "Membership": {
+      "disposition": "reuse WM-ORG-006 relationship root",
+      "registryId": "vr.wm-org-006",
+      "runtimeId": null
+    },
+    "TeamAssignment": {
+      "disposition": "renamed WM-ORG-003 aggregate child",
+      "registryId": null,
+      "runtimeId": null
+    },
+    "WorkingAgreement": {
+      "disposition": "owned charter component or immutable reference",
+      "registryId": null,
+      "runtimeId": null
+    },
+    "TechnicalDomain": {
+      "disposition": "scheme-qualified classifier",
+      "registryId": null,
+      "runtimeId": null
+    }
+  },
+  "interCompanyContract": {
+    "containment": "0..1",
+    "sponsors": "1..n",
+    "managingOrganizations": "0..n",
+    "recordAuthority": "exactly 1",
+    "participantRepresentation": "TeamAssignment and/or referenced Membership",
+    "obligationBearer": "explicit external reference"
+  },
+  "timePlanes": [
+    "employment",
+    "teamAssignment",
+    "membership",
+    "accessGrant"
+  ],
+  "publicationHolds": [
+    "Both bases are non-canonical reviewable drafts.",
+    "WM-ORG-003 contains conflicting containment cardinalities.",
+    "WM-ORG-006 lacks independent external review and approved relation rows.",
+    "Employment and access seams are not pinned in this frozen dossier.",
+    "Required declarative semantic fixtures have not been executed."
+  ],
+  "provenance": {
+    "claudeStudy": "claude-study.raw.md",
+    "grokStudy": "grok-study.raw.md",
+    "comparison": "provider-comparison.md",
+    "audit": "pending"
+  }
+}
+
+```
+
+## DECLARATIVE FIXTURES REVISION 2
+```json
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "profileName": "Enterprise Collective, Team and Community",
+  "fixtureRevision": 2,
+  "fixturesExecuted": false,
+  "cases": [
+    {
+      "id": "temp-team-assignment-only",
+      "kind": "positive",
+      "input": "Temporary two-company team uses dated TeamAssignments only.",
+      "expect": "accept; no Membership invented",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "0142bc3e23b4f899753433eaff3cb94fa89b180cd1478af4a6b7a5bfe4e37aef"
+    },
+    {
+      "id": "community-governed-membership",
+      "kind": "positive",
+      "input": "Standing community admits a practitioner under a named scheme.",
+      "expect": "accept referenced WM-ORG-006 Membership",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "1c84c733a4a8b9143836a78c448feb96846179e23d650379114ae3320a58b835"
+    },
+    {
+      "id": "dual-context-person",
+      "kind": "positive",
+      "input": "One person has a community Membership and a delivery TeamAssignment.",
+      "expect": "keep two independently dated facts",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "3392c9bf43427b79a1af2976dad6b4b21812c55f27e04ff1ad6507f7fb39a933"
+    },
+    {
+      "id": "membership-grants-product-access",
+      "kind": "negative",
+      "input": "Community roster is used to grant another member organization product access.",
+      "expect": "refuse; explicit owner-issued grant required",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "a864e9a1ae5f4b77841efa675f5d45d2632bd6ff6dcd57f2e5e7fd8d58f71109"
+    },
+    {
+      "id": "assignment-grants-employment",
+      "kind": "negative",
+      "input": "TeamAssignment is used as proof of employment.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "2f522b27399c91c0e049c32406824707537801902f67e58bdace3082383a5b13"
+    },
+    {
+      "id": "membership-grants-employment",
+      "kind": "negative",
+      "input": "Community Membership is used as proof of employment with a sponsor.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "73d3c653b250b2c71fec85db9431ee03130a40050f759f75b15cc088e435feef"
+    },
+    {
+      "id": "team-end-terminates-employment",
+      "kind": "negative",
+      "input": "Closing a temporary team terminates employment.",
+      "expect": "refuse; close assignment only",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "a0fb52f847c47b14483e950b2507cb800b07660e48d939795371c6928a9100a0"
+    },
+    {
+      "id": "membership-end-revokes-independent-grant",
+      "kind": "negative",
+      "input": "Ending Membership silently revokes a separately issued grant.",
+      "expect": "refuse; grant lifecycle remains independent",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "7036d0dd204961aaf24058431abc078750668e631b9c477d0ed9a24131d01712"
+    },
+    {
+      "id": "intercompany-cardinality",
+      "kind": "positive",
+      "input": "Peer collaboration has no containing org, two sponsors, one manager and one record authority.",
+      "expect": "accept",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "787356d845815f2eb6e07ab9868990756bbe34af9068168e4500322ebec55fa0"
+    },
+    {
+      "id": "dual-record-authority",
+      "kind": "negative",
+      "input": "Two organizations are concurrent record authorities.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "00f23e51f56a7e13b579360356a9f60a5843c714deda86c6f305b29c4e455372"
+    },
+    {
+      "id": "roster-implies-sponsor",
+      "kind": "negative",
+      "input": "Sponsor is derived from participant employers.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "c79ea5047940495871820c4991a029b486e3382d7be5c710818818f66be7ff5c"
+    },
+    {
+      "id": "cop-teamassignment-only",
+      "kind": "negative",
+      "input": "Standing CoP records participants only as TeamAssignments despite governed admission.",
+      "expect": "refuse; Membership required",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "2fa6d7ac2e50f85f7adf194e805dba8267b111894fd37a0d8132f7a2e470d19d"
+    },
+    {
+      "id": "working-agreement-owned",
+      "kind": "positive",
+      "input": "Collective-specific conduct rules are approved with the charter.",
+      "expect": "own and version as charter component",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "16b37388dd5198603aa43187c83ff261f1734dbe4f77e82f93d1c837f1ffc226"
+    },
+    {
+      "id": "working-agreement-multipart-copy",
+      "kind": "negative",
+      "input": "A multi-party normative agreement is copied into the collective.",
+      "expect": "refuse; immutable external pin required",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "cc93513f60d786c750c7b55a54cac2a7fbf9e2faac1ac8d321f38bb7f30087f8"
+    },
+    {
+      "id": "technical-domain-root",
+      "kind": "negative",
+      "input": "Classifier is given members and a lifecycle.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "9c17e34a2cefbca46c71e733963abba53aa579831ca0eee772b4863ecad332cc"
+    },
+    {
+      "id": "four-plane-asof",
+      "kind": "positive",
+      "input": "Employment, assignment, membership and grant are queried at one valid/knowledge pair.",
+      "expect": "return independent results; missing remains unknown",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "2af5b845d989283159973b15240368fffbbb525de545268ff3b7b508c0a379bb"
+    },
+    {
+      "id": "onbehalfof-employment",
+      "kind": "negative",
+      "input": "onBehalfOf is used to create employment.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "d99f999cbbf0e7a78de7dccb474130433ff0647c45e5790137e52deb24af3360"
+    },
+    {
+      "id": "membership-copy",
+      "kind": "negative",
+      "input": "Membership scheme and standing are copied into TeamAssignment.",
+      "expect": "refuse",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "3f7be968302257fd2794d54f10e30debfb9391d39a4a2baccb3ce9c4c4c275a3"
+    },
+    {
+      "id": "collective-dissolution",
+      "kind": "positive",
+      "input": "Collective dissolves while external membership and grants remain active.",
+      "expect": "close assignments only; preserve external records",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "0cba278c94bc3f8c63f2ae09dce60d539886a33c6388f3dcfaa24ca40a638913"
+    },
+    {
+      "id": "standards-conformance",
+      "kind": "negative",
+      "input": "Profile claims certified W3C ORG/FHIR/SCIM conformance.",
+      "expect": "refuse; alignment-only",
+      "digestMeaning": "SHA-256 of canonical JSON case definition only; no execution meaning",
+      "sha256": "b765176b8a5f8c634f90e94cffaa4ca6c53a1ed2e72c53d0a3b37dd32734736b"
+    }
+  ]
+}
+
+```
