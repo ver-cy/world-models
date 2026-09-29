@@ -1,11 +1,11 @@
 # EM-PEO-04 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: propose identifier-unassigned Recruitment Requisition and Candidacy roots; complete and narrow WM-ORG-008 to asserted Vacancy / Opening; reuse WM-ACT-039; keep Hiring Stage process-owned; profile Interview Assessment over WM-ACT-025 plus WM-ACT-034 and employment Offer over WM-ECO-021. No catalogue/runtime identifier is allocated.
+Disposition: reconciled and single-audited research checkpoint. Recruitment Requisition and Candidacy remain identifier-unassigned roots. Reserved WM-ORG-008 must be completed and narrowed to asserted Opening; WM-ACT-039 is reused for process and dependent Posting/Recommendation records; Interview Assessment remains split across WM-ACT-025 and WM-ACT-034; Employment Offer profiles WM-ECO-021; WM-REC-010 owns approval and selection decisions. No catalogue or runtime identifier is allocated.
 
-The complete available target reservation, current WM-ACT-039 specification and all complete relevant position, person, employment, session, assessment, decision and offer specifications and prior boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Claude and Grok converged. The sole Claude Opus high no-tools frozen audit returned REVISE at revision 2. Revision 3 applies all 32 requested semantic remediation groups once, with 39 stable invariant rules and 63 declarative fixtures. The audit was not rerun because the program permits one independent frozen audit per contour.
 
-Publication is held by the missing WM-ORG-008 specification and source, absent approved relations, missing WM-ORG-016 reservation, two unallocated roots, non-canonical bases, unverified interoperability crosswalks and missing source pins and fixtures.
+Publication remains held by the missing WM-ORG-008 specification/source, provisional WM-ORG-008 and WM-ACT-039 relation contracts, identifier allocation, non-canonical bases, privacy/fairness/jurisdiction review and executable conformance work.
 
-Next contour: EM-PEO-05. Read the complete WM-ACT-038 specification and registry reservation plus relevant learning, qualification, development-plan, career-path and succession specifications and adjudicate learning, development and succession boundaries.
+Next contour: EM-PEO-05. Its exact Grok prompt is prepared and requires a fresh action-time user confirmation before browser send.
