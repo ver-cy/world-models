@@ -5,6 +5,7 @@
 - Profile WM-ACT-036 Research Study for Analytical Study. It already owns question, protocol, population, sampling, applied analysis, estimates, findings and limitations. WM-ACT-034 contributes assessment/sampling mechanics but is not the master because analytical inquiry need not have a criteria catalogue or conformity verdict.
 - Keep Analysis Method as an identifier-unassigned reusable definition candidate. WM-ACT-036 records the pinned method version, parameters, software and execution used by one study.
 - Reuse WM-KNW-007 for Analytical Findings and recommendation statements. A recommendation is a deontic claim with an explicit non-acceptance marker until decision authorities act.
+- Require independent `claimMood` and `claimKind` discriminators. This profile creates no Recommendation type or identifier.
 - Reuse WM-KNW-010 for decision content and WM-ACT-024 for the decision/approval occurrence. Reports reuse WM-REC-002 and do not replace finding justification.
 - Allocate no runtime or model identifier.
 
@@ -25,6 +26,8 @@ Sampling records frame, inclusion/exclusion stages and reasons, achieved versus 
 ## Recommendation and decision
 
 A recommendation declares proposed action, addressee, supporting findings, scope, confidence and deontic modality. It has no deciding authority, disposition, effect onset or approval event. Acceptance requires WM-KNW-010 to compare alternatives and record rationale, plus WM-ACT-024 to record the authorized occurrence and effective outcome. Rejection leaves the recommendation resolvable with its ground.
+
+Deontic mood is only a semantic property of a WM-KNW-007 claim and confers no permission, competence or effect. A recommendation may have zero or more decisions, and decision content may exist without a prior recommendation.
 
 ## Acceptance scenario
 
@@ -47,4 +50,4 @@ One study observes increased ticket counts in a single opt-in support channel. C
 
 ## Holds
 
-All bases remain non-canonical reviewable drafts with single-provider limitations and unsettled relation contracts. Analysis Method lacks registry allocation; the deontic recommendation specialization is a declared gap; source pins, crosswalks and fixtures remain incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+All bases remain non-canonical reviewable drafts with unsettled relation contracts. Analysis Method lacks registry allocation. Sample and dataset identity required by the four-part finding pin are unresolved. Conflict-link, defeater, successor and assessment-mechanics vocabularies are unregistered. Fixtures are specified but not executed. This checkpoint makes no canonical completeness, installability or publication claim.
