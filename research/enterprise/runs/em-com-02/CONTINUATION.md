@@ -1,9 +1,9 @@
 # EM-COM-02 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: profile WM-ECO-026/021/027 with cross-model pursuit, Party, proposal, attribution and outcome bindings; leave AttributionClaim world-model authority identifier-unassigned. No new runtime/model identifier was allocated.
+Disposition: provider-reconciled and independently audited PROFILE over WM-ECO-026, WM-ECO-021 and WM-ECO-027. PursuitLink, PartyLinkAssertion, ProposalBinding, AttributionClaim and OutcomeBinding are observer-dimension-scoped profile-local records. Attribution Claim is an OPEN-QUESTION registry gap; no model, registry or runtime identifier is allocated.
 
-All three complete current specifications, registry reservations, relation subset and EM-COM-01 boundary evidence were frozen. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by AttributionClaim allocation, upstream assurance, relation/crosswalk gaps, external order/legal/consent boundaries and fixtures.
+Grok accepted the profile with holds and rejected independent world-model identity for AttributionClaim. One Claude Opus high no-tools frozen audit was run and its remediation was applied once without rerun. Canonical publication remains held by upstream non-canonical bases, unsettled relation rows, missing commercial-scope derivation and unresolved forecast/attribution methodology.
 
-Next contour: EM-COM-03. Read complete WM-ECO-020 and WM-ECO-022 specifications and registry reservations.
+Next contour remains selected by the canonical Grok audit queue.

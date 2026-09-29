@@ -1,3 +1,3 @@
-# EM-COM-02 Attribution Claim delta
+# EM-COM-02 offline checkpoint
 
-Profiles existing campaign, pursuit and proposal masters and preserves Attribution Claim as an identifier-unassigned analytical assertion authority. No identifier is allocated.
+Provider-reconciled and independently audited profile checkpoint. No model, registry or runtime ID is allocated. Canonical publication remains held.
