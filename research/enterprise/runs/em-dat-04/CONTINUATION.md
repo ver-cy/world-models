@@ -1,9 +1,9 @@
 # EM-DAT-04 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-29.
 
-Disposition: complete WM-DAT-007 as the purpose-qualified Data Quality Evaluation aggregate; reuse external rule, metric, observation and issue masters; keep Coverage Assessment as an assessment kind with a mandatory versioned frame and explicit denominator state. No new runtime/model identifier was allocated.
+Disposition: COMPLETE RESERVED MODEL candidate WM-DAT-007 at 0.3.1-candidate.2. CoverageAssessment is an assessment kind, not a new identity. Metric formulas remain external to the identifier-unassigned Metric Definition candidate. No model, registry or runtime identifier was allocated.
 
-The complete WM-DAT-007 and adjacent assessment/rule/observation/issue specifications, reservations/relations and prior Metric Definition/Pipeline studies were frozen. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. The minimal English candidate and seven adversarial fixtures are now under `candidate/`. The incorrect WM-DAT-001 parent signal is removed, and six non-owning relation rows are recorded. Publication is held by non-canonical bases, pending Grok reconciliation and frozen audit, unresolved Metric Definition allocation, and unverified pins/crosswalks.
+Exact Grok review and one Claude Opus high no-tools frozen audit are complete. Remediation was applied once without rerun. Canonical publication and sync execution remain held by Metric Definition allocation, unnamed frame-versioning authority, candidate-only relations and inherited upstream assurance gaps.
 
-Next contour: EM-DAT-07. Read complete WM-ACT-034 Assessment / Evaluation and WM-KNW-007 Claim / Proposition specifications and registry reservations.
+Next contour remains selected by the canonical Grok audit queue.

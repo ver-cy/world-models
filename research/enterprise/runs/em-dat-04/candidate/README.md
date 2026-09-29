@@ -1,5 +1,5 @@
 # WM-DAT-007 Data Quality Evaluation candidate
 
-This candidate completes the reserved WM-DAT-007 aggregate without allocating a new model or runtime ID. It owns the purpose-qualified evaluation and verdict. Reusable rules, metric definitions, observations, issues and remediation stay external. Coverage Assessment is an assessment kind with a mandatory frame and explicit denominator state.
+This provider-reconciled and independently audited candidate completes the reserved WM-DAT-007 aggregate without allocating a new model or runtime ID. Coverage Assessment is a constrained assessment kind. Metric formulas and versioned frames remain externally mastered.
 
-Run `python validate_candidate.py`. Grok reconciliation and one frozen semantic audit remain required before publication.
+Candidate version 0.3.1-candidate.2 remains non-canonical and non-syncable while Metric Definition, frame authority and relation assurance holds remain open.

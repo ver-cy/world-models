@@ -1,0 +1,5 @@
+# Frozen semantic audit — EM-DAT-04
+
+Verdict: REVISE the encoding while accepting the reserved WM-DAT-007 disposition. Publication and sync remain held. The audit found that the candidate did not structurally encode CoverageAssessment containment, frame-sensitive identity, ratio-bearing frame rules, dimension result slots, layered result vocabularies, lifecycle transitions, verdict outcomes and current holds.
+
+Applied once without rerun: the existing registry reservation is explicitly evidenced; no identifier was allocated. Assessment kind, frame/version identity, conditional dimension requirements, layered value/result/evaluability states, uncertainty descriptor, lifecycle transition table, purpose-qualified verdicts and successor lineage were added. Fixtures now cover frame changes, ratios, sampling, independent truth, freshness, lifecycle and no issue closure. The manual reserved sync plan is preserved and explicitly non-executable while canonical publication is held.
