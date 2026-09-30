@@ -1,5 +1,5 @@
-# Offline delta: EM-FIN-02 / Chart of Accounts and Accounting Policy
+# EM-FIN-02 offline allocation package
 
-Identifier-unassigned governance aggregate for chart taxonomy, hierarchy, mappings and accounting-policy revisions, plus a cross-ledger profile over existing account, entry and position masters. No identifier is guessed or allocated.
+Provider-reconciled, declarative and non-publishable. The unassigned Chart of Accounts / Accounting Policy candidate masters Chart revisions, Ledger Accounts, ledger adoption and accounting-policy revisions. WM-ECO-015 remains bank/custody only; WM-ECO-016 owns entries/postings; WM-ECO-017 owns qualified balances. The Enterprise profile is correspondence-only and allocates no runtime ID. Registry allocation and canonical publication are held.
 
-Publication remains conditional on exact Grok reconciliation, registry allocation, frozen audit and live verification.
+Exactly one frozen audit required revision 3; all defects were remediated without rerun. Package remains non-instantiable and non-publishable.

@@ -2,50 +2,36 @@
 
 ## Disposition
 
-- Reuse WM-ECO-015 for externally serviced Financial Accounts and for a constrained Ledger Account profile. A ledger account suppresses holder, servicer, protection, switching and dormancy facets and uses ledger-scoped, effective-dated account identity.
-- Reuse WM-ECO-016 for Journal Entry and contained Posting lines.
-- Treat Financial Transaction as a correlation reference to the external economic event, payment, invoice or other source master; do not create another transaction root.
-- Reuse WM-ECO-017 for time-bound positions/balances.
-- Add an identifier-unassigned Chart of Accounts / Accounting Policy candidate because neither WM-ECO-015 nor WM-ECO-016 owns taxonomy, hierarchy, permitted mappings, recognition policy or governance lifecycle.
-- Add a thin identifier-unassigned Enterprise cross-ledger profile; allocate no runtime/model identifier.
+- Reuse WM-ECO-015 only for externally serviced Financial Accounts such as bank and custody accounts.
+- Reuse WM-ECO-016 for ledger-local Financial Transaction / Journal Entry and contained Posting lines.
+- Reuse WM-ECO-017 for derived, time-bound balances and positions; treasury position and GL balance remain distinct.
+- Introduce an identifier-unassigned **Chart of Accounts / Accounting Policy** candidate that masters CoA versions, Ledger Accounts, ledger adoption and effective accounting rules.
+- Define a thin correspondence-only Enterprise Financial Event and Multi-Ledger Binding profile. It allocates no identity or runtime ID.
 
-## Account boundary and mastership
+## Identity and mastership
 
-A bank, custody or payment account is party-bound, externally addressable and mastered by its servicing institution. A ledger account is mastered by ERP/finance and identified by ledger plus account code plus effective-dated version; account code alone is not globally stable. A balance is a separate as-of assertion in WM-ECO-017.
+Financial Account identity is issuer/custodian plus external identifier and is mastered by WM-ECO-015. Ledger Account identity is ledger plus effective Chart node/version and interval and is mastered only by the unassigned candidate. WM-ECO-016 owns one-ledger entries and their posting lines. WM-ECO-017 owns balances qualified by ledger, account, currency, scope and as-of time. External events, payments and invoices keep their own masters and are referenced only by pinned correlation.
 
-Correct the existing specification contradiction: WM-ECO-015 owns ledger-account identity, denomination, state and declared balance observations; WM-ECO-016 owns postings, balance derivation and reconciliation; Chart of Accounts and Accounting Policy belong to neither current model.
+## Boundary rules
 
-## Economic event, entry and posting
+A posting target is always a Ledger Account, never a raw WM-ECO-015 Financial Account. A Ledger Account may optionally map to at most one externally serviced backing account for a declared context and interval; the mapping is not identity. Account codes are never global and code equality across ledgers or chart revisions proves no equivalence.
 
-One external economic event can generate zero or more journal entries in each ledger. Each journal entry belongs to one ledger and contains at least two posting lines. Posting identity is entry plus line number. The source event link has correlation semantics only and never forces identical recognition, currency, accounts or dates across ledgers.
+One external event may correlate to sibling entries in several ledgers. Every sibling belongs to one ledger, cites the event, records a divergence reason when amount, timing, account, policy or currency differs, and balances independently. No cross-ledger netting, plugging, tolerance or correction is permitted.
 
-Each cross-ledger sibling link records event identity, reciprocal entry references and divergence reason. Payment, invoice and other source models retain their own lifecycle.
+## Currency, close and correction
 
-## Currency, balancing and period correction
+Balancing is evaluated only within one ledger, declared balancing currency role, scope and tolerance. Settlement currency, transaction currency, functional currency and presentation currency remain explicit roles. Translation residuals post inside the same ledger.
 
-Balancing occurs only inside one entry, one ledger, one declared balancing currency, scope and tolerance. Transaction, functional and reporting currency roles remain explicit with rate, rate type, date and source. Debits and credits from different ledgers can never offset each other.
+Posted entries and lines are immutable. A correction appends a linked same-ledger entry. An open book reverses or adjusts in an open period. A hard-closed book uses the earliest permitted later period or an explicitly authorised hard-close exception. Correcting one sibling does not change another. Closed WM-ECO-017 balances remain immutable and successor balance assertions carry their own as-of time.
 
-Posted entries are immutable. A reversal or correction creates a linked entry with reason, original-entry reference, post-close/restatement indicators and authorization. A hard-closed period rejects posting without an explicit exception grant; a correction may post in the earliest permitted period. Each ledger corrects independently.
+## Provider reconciliation
 
-## Acceptance scenario
-
-Event EV-1 is recognized in statutory ledger L-STAT as EUR 100,000 and management ledger L-MGMT as USD 44,000 under a different recognition rule. Entries S1 and M1 reference EV-1 and each other with the divergence reason; each balances independently. After statutory hard close, a scope correction creates S2 in an allowed open period and references immutable S1. Management correction M2 follows its own calendar. Original entries remain resolvable.
-
-## Invariants
-
-1. Financial Account, Ledger Account, Journal Entry, Posting, source event and Position identities remain distinct.
-2. Every posting line belongs to one entry and one ledger.
-3. Every entry balances within one ledger, currency, scope and tolerance.
-4. No balancing scope spans ledgers.
-5. Cross-ledger links express correlation, not arithmetic equality.
-6. One event may generate zero or more entries per ledger.
-7. Posted entries are immutable; correction appends a linked entry.
-8. Hard-close posting requires a recorded exception grant.
-9. Posting pins the ledger-account version effective on its accounting date.
-10. Bank account identifiers never serve as ledger-account codes.
-11. Balance observations state as-of time and derivation authority.
-12. Initiator and authorizer are separated or an explicit compensating control is recorded.
+Grok conditionally accepted the reuse split but rejected Ledger Account as a WM-ECO-015 profile. The reconciled candidate owns Ledger Account under the Chart-of-Accounts lifecycle. The profile now records only source-pinned correspondence and optional backing mappings and cannot master or mutate any source object.
 
 ## Holds
 
-Both bases remain non-canonical reviewable drafts; WM-ECO-015 has a single-provider waiver and unverified/restricted sources, while WM-ECO-016 retains privacy, profile-validation and conformance holds. Relationship vocabulary and several registry edges conflict or remain empty. The Chart of Accounts / Accounting Policy candidate and Enterprise profile lack allocation; accounting-regime profiles, immutable pins, crosswalks and fixtures are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
+The candidate has no registry allocation. WM-ECO-015/016/017 remain reviewable drafts with contradictory ownership text. Financial Transaction naming, currency roles, scope dimensions, tolerance units, CoA-to-ledger cardinality and hard-close policy need canonical adjudication. No publication or installability claim is made.
+
+## Frozen-audit remediation
+
+Exactly one Claude Opus high no-tools audit returned REJECT FOR ALLOCATION and required candidate revision 3. All twenty-one material defects were remediated without rerun: definition/instance mastership is separated; LedgerPeriod owns close state; WM-ECO-016 owns closed-kind correction links; Ledger Account has stable identity plus versions; interval/code uniqueness and exact posting target are explicit; context-qualified backing mappings are representable; lifecycle, adoption and policy precedence are closed; accountingDate/recordedAt, currency roles, FX pins, scope vector and exact-zero balancing are explicit; event correlation is many-to-many; all balance assertions are immutable; the profile has an unassigned required base, non-subject local binding keys and stable constraint ids; thirty-eight stable-id fixtures cover the rules. Allocation and publication remain held.
