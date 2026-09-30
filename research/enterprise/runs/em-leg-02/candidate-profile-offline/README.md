@@ -1,3 +1,3 @@
-# EM-LEG-02 offline publication delta
+# EM-LEG-02 offline profile
 
-Profiles external norms, attributable interpretations, applicability assessments and derived obligations over existing masters. Jurisdiction remains an external governed reference; no runtime or model identifier is allocated.
+Provider-reconciled and once-audited profile over WM-POL-001, WM-ACT-034, WM-KNW-012 and WM-XCT-029. Jurisdiction remains external and no identifier is allocated.
