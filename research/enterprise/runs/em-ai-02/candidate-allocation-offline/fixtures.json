@@ -1,13 +1,118 @@
 {
-  "format":"vercy-enterprise-allocation-fixtures/v1",
-  "candidateName":"Reusable Training Recipe",
-  "cases":[
-    {"id":"shared-recipe-two-runs","kind":"positive","input":"Runs R1 and R2 use the same approved recipe revision with different datasets and resolved configurations.","expect":"The recipe is shared while R1 and R2 remain distinct runs with separate lineage, rights, configuration digests and outcomes."},
-    {"id":"checkpoint-promotion","kind":"positive","input":"A run checkpoint is selected and promoted into a release artifact.","expect":"Promotion creates a WM-SFT-004 artifact revision linked to the checkpoint; selection, release and deployment remain separate."},
-    {"id":"shared-compute-grant","kind":"positive","input":"Two runs draw from one external compute reservation and report different observed GPU-hours.","expect":"The grant, each run request and WM-FLW-015 actuals remain distinct and unused capacity is not inferred as consumption."},
-    {"id":"recipe-is-run","kind":"negative","input":"A reusable recipe and each execution share one identifier and lifecycle.","expect":"The merge is rejected because reusable specification and execution occurrence have independent identity and lifecycle."},
-    {"id":"digest-only-identity","kind":"negative","input":"An artifact digest is used as the sole business identity for model, artifact and registry entry.","expect":"The merge is rejected; digest verifies bytes while governed identities remain distinct."},
-    {"id":"seed-only-reproducibility","kind":"negative","input":"A run claims reproducibility because it records one random seed but omits software and hardware pins.","expect":"The claim is rejected as unbounded and under-specified."},
-    {"id":"endpoint-merges-rights","kind":"negative","input":"Artifacts trained under different dataset restrictions are served by one endpoint and their restrictions are collapsed.","expect":"The collapse is rejected; shared serving never merges lineage or relaxes rights."}
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Reusable Training Recipe",
+  "cases": [
+    {
+      "id": "shared-recipe-two-runs",
+      "kind": "positive",
+      "conditional": true,
+      "blockedBy": "allocationState=unassigned",
+      "gatesProfile": false,
+      "invariants": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "pins": {
+        "recipeRevision": "rev-1",
+        "runs": [
+          "R1",
+          "R2"
+        ],
+        "effectiveConfigDigests": [
+          "sha256:cf01",
+          "sha256:cf02"
+        ]
+      },
+      "input": "Runs R1 and R2 cite future recipe revision rev-1 with distinct resolved effective-configuration digests.",
+      "expect": "Accepted only after allocation; rev-1 is shared while R1 and R2 remain distinct runs and no run fact becomes a recipe property."
+    },
+    {
+      "id": "recipe-is-run",
+      "kind": "negative",
+      "conditional": true,
+      "blockedBy": "allocationState=unassigned",
+      "gatesProfile": false,
+      "invariants": [
+        5,
+        6
+      ],
+      "pins": {
+        "recipeRevision": "rev-1",
+        "run": "R1"
+      },
+      "input": "Recipe revision rev-1 and execution R1 are assigned one identifier and lifecycle.",
+      "expect": "Rejected; reusable specification and execution occurrence cannot share identity or lifecycle."
+    },
+    {
+      "id": "recipe-identifier-assumed",
+      "kind": "negative",
+      "invariants": [
+        16
+      ],
+      "conditional": false,
+      "gatesProfile": false,
+      "pins": {
+        "recipeRef": "any",
+        "allocationState": "unassigned"
+      },
+      "input": "An artifact references Reusable Training Recipe as an identified object while allocationState is 'unassigned'.",
+      "expect": "The reference is rejected. The candidate has no assigned identifier and no present independent identity; no identifier may be guessed or minted."
+    },
+    {
+      "id": "recipe-revision-draft-without-effective-from",
+      "kind": "positive",
+      "conditional": true,
+      "blockedBy": "allocationState=unassigned",
+      "gatesProfile": false,
+      "invariants": [
+        16
+      ],
+      "pins": {
+        "revisionStatus": "draft",
+        "effectiveFrom": null,
+        "currentRevisionRef": null
+      },
+      "input": "A recipe in status 'draft' holds a revision in status 'draft' with no effectiveFrom and no currentRevisionRef.",
+      "expect": "Accepted once the candidate is allocated. effectiveFrom is required only from status 'effective' onward and currentRevisionRef only when some revision is effective."
+    },
+    {
+      "id": "recipe-superseded-without-successor",
+      "kind": "negative",
+      "conditional": true,
+      "blockedBy": "allocationState=unassigned",
+      "gatesProfile": false,
+      "invariants": [
+        16
+      ],
+      "pins": {
+        "revisionStatus": "superseded",
+        "successorRef": null,
+        "effectiveTo": null
+      },
+      "input": "A recipe revision is set to 'superseded' with no successorRef and no effectiveTo.",
+      "expect": "Rejected. successorRef and effectiveTo are required when status is 'superseded'; a retired or superseded revision identifier remains resolvable and is never recycled."
+    },
+    {
+      "id": "recipe-inherits-run-outcome",
+      "kind": "negative",
+      "conditional": true,
+      "blockedBy": "allocationState=unassigned",
+      "gatesProfile": false,
+      "invariants": [
+        16
+      ],
+      "pins": {
+        "recipeRevision": "rev-1",
+        "runs": [
+          "R1",
+          "R2"
+        ],
+        "metricSource": "R1"
+      },
+      "input": "R1's metrics, checkpoints and compute actuals are recorded against recipe revision rev-1 and read as properties of R2.",
+      "expect": "Rejected. Recipe identity never inherits execution outcomes, checkpoints, metrics or resource actuals; two executions of one recipe remain two independently identified runs."
+    }
   ]
 }

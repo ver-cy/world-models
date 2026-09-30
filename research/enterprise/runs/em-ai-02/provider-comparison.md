@@ -1,0 +1,17 @@
+# EM-AI-02 provider comparison
+
+Claude and Grok agree on the reuse-only boundary: WM-AI-007 owns registry identity, WM-SFT-004 owns immutable model artifacts, WM-AI-006 owns training or fine-tuning runs and their resolved effective configuration, WM-DAT-001 owns dataset snapshots, WM-AI-001 owns the AI system, WM-FLW-015 owns observed consumption, and requested or granted compute stays with external demand, capacity and reservation authorities. Model family and architecture remain classifications. No catalogue, model or runtime identifier is allocated.
+
+Both reviews keep registry entry, artifact, run, evaluation, deployment, endpoint and system distinct. Equal names do not prove equal weights; artifact digests pin bytes without replacing governed identity. Two fine-tunes from one checkpoint remain two runs and two artifact lineages even when served through one endpoint. Dataset rights, licences and restrictions remain bound to each run and derived artifact and never merge through shared serving.
+
+The apparent Training Recipe difference is resolved conservatively. Claude says a reusable recipe may justify independent identity only when evidence demonstrates a lifecycle, governance, approval and reuse independent of executions. Grok finds no such evidence in this increment and says the recipe does not need independent identity now. Therefore Reusable Training Recipe remains a conditional identifier-unassigned allocation candidate, not an allocated root or current independent identity. Every run still pins its complete resolved configuration; a recipe can never substitute for that snapshot.
+
+Grok sharpens serving and compute semantics: endpoint bindings must pin an artifact digest and pass rights checks; endpoint creation or retargeting creates neither a run nor an artifact; requested, granted and observed compute remain separately mastered and a shared endpoint cannot share run actuals. It also requires the full reconstruction pin set and treats missing pins as non-reproducibility rather than permission to merge identities.
+
+Publication remains held by unapproved required relations, unresolved reproducibility ownership, missing frozen evaluation/deployment/endpoint authorities, incomplete rights-at-bind enforcement, single-provider base drafts and the conditional unallocated recipe candidate. The result is a reviewable profile-plus-conditional-allocation dossier with no installability or publication-readiness claim.
+
+## Divergences and resolution
+
+Claude kept checkpoints run-contained; Grok treated every checkpoint as a WM-SFT-004 artifact. The frozen resolution keeps same-run checkpoints contained but requires promotion to a checkpoint-role WM-SFT-004 artifact before cross-run use or extended retention. Grok's universal artifact position was not adopted because it over-identifies ephemeral checkpoints; Claude's unrestricted cross-run derivation was not adopted because it leaves lineage pointing at an unresolvable object.
+
+Claude propagated restrictions through all derivation inputs; Grok said restrictions do not inherit from a parent checkpoint. The frozen resolution adopts union-of-input restrictions along derivation edges, including seed checkpoint and base artifact. Grok's non-inheritance is retained only for sibling-run, family, architecture, alias, registry-entry and endpoint edges, preventing restriction laundering while avoiding unrelated propagation.

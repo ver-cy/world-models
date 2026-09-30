@@ -1,0 +1,432 @@
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "contourId": "EM-AI-02",
+  "cases": [
+    {
+      "id": "checkpoint-promotion",
+      "kind": "positive",
+      "invariants": [
+        7,
+        10
+      ],
+      "pins": {
+        "producingRun": "R0",
+        "step": 18000,
+        "checkpointDigest": "sha256:ck01",
+        "promotedArtifact": "sha256:ck01"
+      },
+      "input": "R0 checkpoint sha256:ck01 at step 18000 is promoted before use by R1.",
+      "expect": "One checkpoint-role WM-SFT-004 artifact is created with derivation to R0 at step 18000; the run-contained checkpoint remains unchanged."
+    },
+    {
+      "id": "shared-compute-grant",
+      "kind": "positive",
+      "invariants": [
+        5,
+        14
+      ],
+      "pins": {
+        "grant": "G1",
+        "grantedGpuHours": 120.0,
+        "runR1Observed": 45.5,
+        "runR2Observed": 30.0
+      },
+      "input": "R1 and R2 reference grant G1 and report 45.5 and 30.0 observed GPU-hours.",
+      "expect": "G1, both EM-WRK-05 demands and reservations, and two WM-FLW-015 actuals remain distinct; 44.5 unused GPU-hours are not consumption."
+    },
+    {
+      "id": "digest-only-identity",
+      "kind": "negative",
+      "invariants": [
+        1,
+        2,
+        11
+      ],
+      "pins": {
+        "digest": "sha256:aa01",
+        "registryEntry": "REG1",
+        "artifact": "ART1"
+      },
+      "input": "Digest sha256:aa01 is used as the sole identity of REG1 and ART1.",
+      "expect": "Rejected; the digest pins bytes while registry and artifact identities remain distinct."
+    },
+    {
+      "id": "seed-only-reproducibility",
+      "kind": "negative",
+      "invariants": [
+        4,
+        13
+      ],
+      "pins": {
+        "seed": 42,
+        "environment": null,
+        "dependencies": null
+      },
+      "input": "Run R1 claims reproducibility from seed 42 while environment and dependency pins are absent.",
+      "expect": "Rejected; R1 is recorded non-reproducible."
+    },
+    {
+      "id": "endpoint-merges-rights",
+      "kind": "negative",
+      "invariants": [
+        9
+      ],
+      "pins": {
+        "endpoint": "E",
+        "artifactA": "sha256:aa01",
+        "artifactB": "sha256:aa02",
+        "restrictionB": "no-commercial-use"
+      },
+      "input": "Endpoint E collapses restrictions of sha256:aa01 and sha256:aa02.",
+      "expect": "Rejected; co-serving remains HELD and each invocation retains the selected artifact restriction set."
+    },
+    {
+      "id": "equal-names-different-digests",
+      "kind": "negative",
+      "invariants": [
+        2,
+        15
+      ],
+      "pins": {
+        "displayName": "acme-instruct-7b",
+        "aliasA": "latest",
+        "artifactA": "sha256:aa01",
+        "artifactB": "sha256:aa02",
+        "familyRef": "acme-instruct"
+      },
+      "input": "Two artifacts share displayName 'acme-instruct-7b', alias 'latest' and family 'acme-instruct' but hold digests sha256:aa01 and sha256:aa02.",
+      "expect": "Equality is rejected. The two artifacts remain distinct WM-SFT-004 identities; name, alias and family carry no identity weight."
+    },
+    {
+      "id": "full-pin-set-complete",
+      "kind": "positive",
+      "invariants": [
+        3,
+        4,
+        13
+      ],
+      "pins": {
+        "baseArtifact": "sha256:aa00",
+        "tokenizer": "sha256:tk01",
+        "datasetSnapshot": "D1@2026-01-04",
+        "split": "train=0.9/val=0.1",
+        "codeRevision": "rev-7f",
+        "dependencyLock": "sha256:dp01",
+        "seed": 20260105,
+        "environment": "cuda-12.4/driver-550/h100",
+        "effectiveConfigDigest": "sha256:cf01"
+      },
+      "input": "A run declares every pinned value above and one effective-configuration digest.",
+      "expect": "The run is accepted as reconstructable within its declared limits; exactly one effective-configuration digest is recorded."
+    },
+    {
+      "id": "pin-set-missing-environment",
+      "kind": "negative",
+      "invariants": [
+        4,
+        13
+      ],
+      "pins": {
+        "seed": 20260105,
+        "codeRevision": "rev-7f",
+        "environment": null,
+        "dependencyLock": null
+      },
+      "input": "A run pins seed and code revision but omits resolved dependencies and the framework/compiler/driver/hardware environment, and asserts reproducibility.",
+      "expect": "The reproducibility assertion is rejected as under-specified. The run is recorded as non-reproducible; no identity merge or substitution is authorised by the omission."
+    },
+    {
+      "id": "grant-implies-nothing",
+      "kind": "negative",
+      "invariants": [
+        5,
+        6
+      ],
+      "pins": {
+        "grantId": "external-reservation-fixture-1",
+        "grantedGpuHours": 500.0,
+        "effectiveFrom": "2026-01-01T00:00:00+00:00",
+        "effectiveTo": "2026-03-31T23:59:59+00:00"
+      },
+      "input": "A compute grant of 500.0 GPU-hours is used to assert that a person is employed, that an agent identity exists, that a deployment is live, and that 500.0 GPU-hours were consumed.",
+      "expect": "All four inferences are rejected. A grant asserts capacity only; employment, agent identity, deployment state and consumption each require their own evidenced assertion."
+    },
+    {
+      "id": "requested-inferred-from-observed",
+      "kind": "negative",
+      "invariants": [
+        5
+      ],
+      "pins": {
+        "observedGpuHours": 45.5,
+        "requestedGpuHours": null,
+        "grantedGpuHours": 120.0
+      },
+      "input": "A run has no recorded requested quantity; 45.5 observed GPU-hours are written back as the requested quantity.",
+      "expect": "The write-back is rejected. Requested, granted and observed remain three independently sourced assertions and are never derived from one another in either direction."
+    },
+    {
+      "id": "requested-is-external-demand",
+      "kind": "positive",
+      "invariants": [
+        5
+      ],
+      "pins": {
+        "demandRef": "em-wrk-05-demand-fixture-1",
+        "requestedGpuHours": 120.0,
+        "runRef": "R1"
+      },
+      "input": "A run's requested compute of 120.0 GPU-hours is recorded as an EM-WRK-05 demand assertion referencing R1.",
+      "expect": "Accepted. WM-AI-006 holds a non-owning typed reference to the demand assertion and stores no owned requested quantity."
+    },
+    {
+      "id": "quantity-kinds-not-summed",
+      "kind": "negative",
+      "invariants": [
+        14
+      ],
+      "pins": {
+        "gpuHours": 45.5,
+        "energyKwh": 310.0,
+        "emissionsKgCo2e": 96.2,
+        "currencyUsd": 480.0,
+        "elapsedHours": 12.25
+      },
+      "input": "GPU-hours 45.5, energy 310.0 kWh, emissions 96.2 kgCO2e, cost 480.00 USD and elapsed 12.25 h are aggregated into one total.",
+      "expect": "The aggregation is rejected. Each quantity kind reports separately with its unit, interval, method and uncertainty; any conversion is a separate evidenced assertion."
+    },
+    {
+      "id": "endpoint-repoint-creates-nothing",
+      "kind": "positive",
+      "invariants": [
+        8,
+        11
+      ],
+      "pins": {
+        "endpoint": "E",
+        "aliasBefore": "sha256:aa01",
+        "aliasAfter": "sha256:aa02",
+        "at": "2026-02-10T14:00:00+00:00"
+      },
+      "input": "Endpoint E is repointed from artifact sha256:aa01 to sha256:aa02 at 2026-02-10T14:00:00+00:00, and a second serving region is added.",
+      "expect": "No training run and no artifact revision are created. Only an authority-qualified external deployment observation is recorded; both artifacts retain their own digests and restrictions."
+    },
+    {
+      "id": "quantization-creates-successor",
+      "kind": "positive",
+      "invariants": [
+        10
+      ],
+      "pins": {
+        "sourceArtifact": "sha256:aa01",
+        "resultArtifact": "sha256:aa03",
+        "transform": "int8-quantization"
+      },
+      "input": "Artifact sha256:aa01 is int8-quantized, producing sha256:aa03.",
+      "expect": "A new WM-SFT-004 artifact revision sha256:aa03 is created with a derivation edge to sha256:aa01 and the union of its restrictions. No training run is created."
+    },
+    {
+      "id": "in-place-weight-rewrite",
+      "kind": "negative",
+      "invariants": [
+        1,
+        10
+      ],
+      "pins": {
+        "artifact": "sha256:aa01",
+        "attemptedNewBytesDigest": "sha256:aa04"
+      },
+      "input": "The payload bytes behind artifact sha256:aa01 are replaced in place while the artifact record is retained.",
+      "expect": "The mutation is rejected. Payload bytes are immutable; a changed digest is a new artifact revision with lineage."
+    },
+    {
+      "id": "registry-entry-is-not-artifact",
+      "kind": "negative",
+      "invariants": [
+        11
+      ],
+      "pins": {
+        "registryEntry": "registry-entry-fixture-1",
+        "artifact": "sha256:aa01",
+        "run": "R1",
+        "evaluation": "eval-fixture-1",
+        "deployment": "E"
+      },
+      "input": "One identifier is used for the registry entry, the artifact, the run, the evaluation and the deployment.",
+      "expect": "The collapse is rejected. Registry entry, artifact, run, evaluation and deployment are five distinct identities with distinct lifecycles."
+    },
+    {
+      "id": "weights-in-public-catalogue",
+      "kind": "negative",
+      "invariants": [
+        12
+      ],
+      "pins": {
+        "registryEntry": "registry-entry-fixture-1",
+        "embeddedPayload": "weight-bytes",
+        "embeddedDossier": "confidential"
+      },
+      "input": "A public catalogue entry embeds weight bytes and confidential dossier content rather than referencing the artifact.",
+      "expect": "The embedding is rejected under deny-by-default. The catalogue may reference the artifact and its digest only; weights, training data, secrets and checkpoints stay outside."
+    },
+    {
+      "id": "family-as-identity",
+      "kind": "negative",
+      "invariants": [
+        15
+      ],
+      "pins": {
+        "family": "acme-instruct",
+        "architecture": "decoder-only-transformer",
+        "artifactA": "sha256:aa01",
+        "artifactB": "sha256:aa02"
+      },
+      "input": "Family 'acme-instruct' with architecture 'decoder-only-transformer' is used as the identity of a registry entry and to equate sha256:aa01 with sha256:aa02.",
+      "expect": "Both uses are rejected. Family and architecture classify registry entries and artifact lineage and identify nothing."
+    },
+    {
+      "id": "cross-run-checkpoint-binding-requires-promotion",
+      "kind": "negative",
+      "invariants": [
+        7
+      ],
+      "pins": {
+        "producingRun": "R0",
+        "checkpointStep": 18000,
+        "checkpointDigest": "sha256:ck01",
+        "consumingRun": "R1"
+      },
+      "input": "Run R1 binds checkpoint sha256:ck01 at step 18000, which remains run-contained in R0 and was never promoted.",
+      "expect": "The binding is rejected. A checkpoint consumed outside its producing run must first be promoted to a WM-SFT-004 revision with role 'checkpoint' and derivation to R0 at step 18000."
+    },
+    {
+      "id": "promoted-checkpoint-seeds-two-runs",
+      "kind": "positive",
+      "invariants": [
+        7,
+        10
+      ],
+      "pins": {
+        "producingRun": "R0",
+        "checkpointArtifact": "sha256:ck01",
+        "runs": [
+          "R1",
+          "R2"
+        ],
+        "outputs": [
+          "sha256:aa01",
+          "sha256:aa02"
+        ]
+      },
+      "input": "Checkpoint sha256:ck01 is promoted to a checkpoint-role artifact, then seeds R1 and R2 producing sha256:aa01 and sha256:aa02.",
+      "expect": "Accepted. Three artifacts and three runs exist; both derivation edges terminate on the promoted artifact, and no lineage edge terminates on a run-contained object."
+    },
+    {
+      "id": "derived-restrictions-are-union",
+      "kind": "positive",
+      "invariants": [
+        9
+      ],
+      "pins": {
+        "baseArtifact": "sha256:ck01",
+        "baseRestriction": "research-only",
+        "dataset": "D2",
+        "datasetRestriction": "no-commercial-use",
+        "output": "sha256:aa02"
+      },
+      "input": "Run R2 binds seed artifact sha256:ck01 (research-only) and dataset D2 (no-commercial-use), producing sha256:aa02.",
+      "expect": "sha256:aa02 carries both research-only and no-commercial-use. Derivation never relaxes a restriction."
+    },
+    {
+      "id": "sibling-run-restriction-leak",
+      "kind": "negative",
+      "invariants": [
+        9
+      ],
+      "pins": {
+        "runA": "R1",
+        "datasetA": "D1",
+        "restrictionA": "permissive",
+        "runB": "R2",
+        "datasetB": "D2",
+        "restrictionB": "no-commercial-use",
+        "output": "sha256:aa01"
+      },
+      "input": "Artifact sha256:aa01 from R1/D1 is assigned D2's no-commercial-use restriction because R2 shares the same seed checkpoint and family.",
+      "expect": "The assignment is rejected. Restrictions propagate along derivation edges only, never along sibling-run, family, alias, registry-entry or endpoint edges."
+    },
+    {
+      "id": "co-serving-divergent-rights-is-held",
+      "kind": "negative",
+      "invariants": [
+        9
+      ],
+      "pins": {
+        "endpoint": "E",
+        "artifactA": "sha256:aa01",
+        "restrictionA": "permissive",
+        "artifactB": "sha256:aa02",
+        "restrictionB": "no-commercial-use"
+      },
+      "input": "Endpoint E is bound to both sha256:aa01 and sha256:aa02 and the binding is asserted compliant.",
+      "expect": "The compliance assertion is rejected as unowned. No EM-AI-02 base holds a bind-time rights evaluation; the binding records HELD, and per-invocation restrictions remain those of the selected artifact digest."
+    },
+    {
+      "id": "unratified-required-relation",
+      "kind": "negative",
+      "invariants": [
+        11
+      ],
+      "pins": {
+        "from": "WM-AI-007",
+        "to": "WM-SFT-004",
+        "baseCardinality": "required",
+        "ledgerEdge": null
+      },
+      "input": "A profile constraint is validated against WM-AI-007's required composition to WM-SFT-004, for which the relation ledger holds no approved edge.",
+      "expect": "The validation is rejected. Cardinality is overridden to conditional in the profile and the binding is recorded as a publication blocker."
+    },
+    {
+      "id": "stale-evidence-on-digest-change",
+      "kind": "negative",
+      "invariants": [
+        13
+      ],
+      "pins": {
+        "evidenceRef": "evidence-fixture-1",
+        "referencedDigestBefore": "sha256:aa01",
+        "referencedDigestAfter": "sha256:aa04",
+        "at": "2026-02-18T08:30:00+00:00"
+      },
+      "input": "Evidence bound to sha256:aa01 is used to support a release transition after the referenced digest changes to sha256:aa04.",
+      "expect": "The transition is rejected. The evidence is status 'stale' and supports no lifecycle, rights or reproducibility claim until re-asserted against sha256:aa04; the original record remains resolvable."
+    },
+    {
+      "id": "timestamp-without-offset",
+      "kind": "negative",
+      "invariants": [
+        13
+      ],
+      "pins": {
+        "submitted": "2026-01-05T09:00:00",
+        "started": "2026-01-05T09:04:12+00:00"
+      },
+      "input": "A run records submitted time '2026-01-05T09:00:00' with no UTC offset and compares it to started time.",
+      "expect": "The record is rejected. Every instant requires RFC 3339 with seconds precision and an explicit offset; no offset is inferred."
+    },
+    {
+      "id": "cross-clock-arithmetic",
+      "kind": "negative",
+      "invariants": [
+        13
+      ],
+      "pins": {
+        "completed": "2026-01-05T21:15:00+00:00",
+        "ingested": "2026-01-07T11:00:00+00:00",
+        "released": "2026-01-09T10:00:00+00:00"
+      },
+      "input": "Elapsed run duration is computed as released minus completed, and knowledge currency as ingested minus completed.",
+      "expect": "Both computations are rejected. Duration and ordering comparisons are valid only within one clock kind; cross-clock arithmetic is rejected, not coerced."
+    }
+  ]
+}
