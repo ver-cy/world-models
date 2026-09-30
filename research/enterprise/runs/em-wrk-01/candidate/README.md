@@ -1,3 +1,3 @@
-# WM-ACT-006 Task / Work Item candidate
+# EM-WRK-01 validation copy
 
-Reviewable completion candidate for EM-WRK-01. It preserves tracker-native state, pins workflow semantics, separates completion from acceptance, and keeps project, requirement, backlog and iteration identities outside the aggregate. No new identifier is allocated.
+Validated copy of the WM-ACT-006 WorkItem candidate 0.1.0-candidate.2.

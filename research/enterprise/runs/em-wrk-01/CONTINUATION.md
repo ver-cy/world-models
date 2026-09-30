@@ -1,11 +1,9 @@
 # EM-WRK-01 continuation
 
-Checkpoint date: 2026-09-29.
+Checkpoint date: 2026-09-30.
 
-Disposition: profile WM-ACT-006 as WorkItem and WM-ACT-003 as WorkflowDefinition; keep WorkItemType as vocabulary and Estimate as a Task assertion; leave Backlog and Iteration identifier-unassigned; reference requirement/project/program masters. No new runtime/model identifier was allocated.
+Third exact Grok submission succeeded after two preserved provider failures. Reconciliation keeps WM-ACT-006 as the WorkItem identity, moves lifecycle-definition authority to WM-XCT-021, leaves WM-ACT-003 as deferred alignment, and demotes Backlog and Iteration to non-normative correlated views without identifiers.
 
-The complete WM-ACT-006 specification, WM-ACT-003 legacy source, relevant reservations/relations and prior requirement/project/task boundaries were frozen. Dossier, one Claude Opus high no-tools study and the validated `0.1.0-candidate.1` completion candidate remain preserved. The exact public Grok prompt was submitted on 2026-09-29 and failed after approximately twenty minutes. After fresh user confirmation, the built-in retry resubmitted the same prompt and failed again after approximately twelve minutes. Neither attempt produced a final semantic response. The conversation URL and both failures are retained. No provider comparison or frozen audit was fabricated.
+Exactly one Claude Opus high no-tools audit was run. Its D1-D13 findings were remediated in `0.1.0-candidate.2`: immutable native natural keys, effective aliases, source-native transition identity, bitemporality and ordinal ordering, occurrence-time lifecycle selection, open-world outcome supersession, versioned crosswalk succession and loss, scoped observations, observed-deletion tombstones, actor redaction, write provenance, conflict surfacing and governed estimate units. Fifteen fixtures cover the required edge cases.
 
-Next action for this contour: another exact retry or model change only after fresh action-time user confirmation. Publication remains pending a successful Grok response, provider comparison, one frozen semantic audit, parent completion, package conversion and live verification.
-
-Independent analysis of other contours may continue without waiting for this retry.
+No new model or runtime ID was allocated. Canonical publication remains held by base specifications, relation approval and adapter-specific actual-effort authority. The research checkpoint and offline packages are complete and reviewable.

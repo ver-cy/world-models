@@ -1,60 +1,21 @@
-# EM-WRK-01 local synthesis
+# EM-WRK-01 reconciled synthesis
 
-## Disposition
+## Decision
 
-- Define WorkItem as a tracker-facing profile over WM-ACT-006 Task. Jira and other tracker issue types remain adapter mappings.
-- Use a governed, versioned WorkItemType vocabulary rather than separate entity subclasses.
-- Profile WM-ACT-003 Process / Workflow for WorkflowDefinition. Permitted transitions belong to the definition; occurred transitions are append-only task history entries.
-- Give **Backlog** and **Iteration** independent identities and lifecycles outside the Task aggregate. Both remain identifier-unassigned candidates.
-- Keep Estimate as an identified, revisioned assertion inside Task. Actual effort and elapsed time stay in their own source masters.
-- Reference WM-REC-006 for requirement/value intent, WM-ACT-005 for Project and WM-ACT-029 for Program/Portfolio.
-- Allocate no runtime or model identifier.
+EM-WRK-01 is a restrictive profile over reserved WM-ACT-006. No new model or runtime identifier is allocated. WM-XCT-021 is the current lifecycle-definition and permitted-transition authority; WM-ACT-003 remains a deferred process-shaped alignment. WorkItemType is a governed versioned vocabulary. Estimate and evidence-bearing outcomes are append-only task assertions.
 
-## Identity and mastership
+Grok and Claude agree on canonical Task reuse, external Requirement/Project/Program mastership, idempotent import and the separation of native status, canonical state and outcome. Grok challenged independent Backlog and Iteration identity. The reconciled model therefore registers Backlog as an ordered selection view and Iteration as a timeboxed WM-ACT-008 Plan view. Rank and membership are mastered as scoped view facts, and Kanban does not require Iteration.
 
-The producing tracker masters WorkItem identity, native status and tracker-container membership. Its stable correlation key is source system, source container and source item ID. PPM masters project/program identities and baselines. Requirement management masters verifiable intent and acceptance criteria. Acceptance protocols master acceptance decisions and evidence.
+## Audited integration semantics
 
-Epic, Feature and Initiative are WorkItem container roles when their authority is delivery decomposition and workflow. A record is a Requirement when it states verifiable intent, owns criteria and baseline membership. A tracker project, board or epic tree becomes a Project/Program reference only after resolving to those authoritative masters.
+WM-ACT-006 `taskId` is canonical. Each source uses an immutable internal native ID as its natural key; mutable human keys and container paths are effective-dated aliases. Source transition identity never includes mapped canonical states. It prefers a native event ID and otherwise uses an immutable native fingerprint plus occurrence time and source ordinal. Occurrence time selects the lifecycle version; retrospective mappings are marked.
 
-## Workflow and outcomes
+Every mapped value carries the producing crosswalk version. Compatible and breaking crosswalk succession are explicit; remapping appends a superseding assertion and never changes the source event. Unmapped values create retained, queryable loss records. Import observations record credential scope, distinguish absent from empty, create tombstones only for observed deletion, retain identity through actor redaction, tag write provenance, suppress echo and surface equal-authority conflicts.
 
-Each WorkItem retains three separate layers:
+Outcomes are open-world append-only assertions with asserter, authority, basis, evidence and explicit supersession or retraction. Closed is never accepted by inference. Estimate revisions declare unit scheme version, estimate kind and grain; actual effort remains under a named external authority.
 
-1. native source status/resolution with pinned workflow version;
-2. canonical task state plus optional business-status nuance;
-3. evidence-bearing normalized outcome: done, accepted, cancelled or rejected.
+Fifteen executable fixtures cover repeat import, crosswalk succession, tied transitions, key changes, conflicting masters, closure without acceptance, reopening, unmapped values, scoped absence, omission versus deletion, multi-context rank, Kanban, estimate unit changes, echo suppression and historical lifecycle versions.
 
-Closed is only a workflow state. `accepted` requires an explicit acceptance record naming criteria version, accepting authority, evidence digests and decision time. Cancellation claims no delivered result. Rejection remains distinct and records whether execution occurred.
+## Publication state
 
-## Backlog, iteration and estimate
-
-Backlog owns an ordered, revisioned membership set. Rank belongs to one backlog revision and is never WorkItem identity. Iteration owns its time box, capacity, planning-close commitment and closure record. Membership changes after planning close become scope-change records.
-
-Estimate carries value, unit/scale, basis, method, estimator, effective time and revision. Re-estimation supersedes without overwriting. Actual effort never overwrites estimate; velocity and capacity are derived views.
-
-## Idempotent import scenario
-
-Tracker A statuses and resolution values map into Tracker B while preserving the original workflow version. Closed/Fixed with acceptance evidence maps to accepted; without evidence it maps to done. Closed/Won't Do maps to cancelled; Closed/Declined maps to rejected. Re-import upserts by the source correlation key, rejects stale revisions and appends no duplicate transition or identity.
-
-## Invariants
-
-1. Closed is not an outcome; accepted requires evidence.
-2. Native status/resolution remain alongside canonical state.
-3. Cancelled, rejected, done and accepted remain distinct.
-4. Tracker containers are not projects/programs without authoritative resolution.
-5. Estimate is never actual effort.
-6. Backlog rank belongs to a backlog revision.
-7. Iteration commitment is sealed at planning close; later change is explicit.
-8. Re-import is idempotent on the source correlation key.
-9. WorkItem closure does not prove Requirement satisfaction.
-10. Priority and estimate values name their scales.
-11. State, assignment, estimate and outcome changes record actor, reason, event time and recording time.
-
-## Holds
-
-WM-ACT-006 retains noncanonical source, profile and retention holds; WM-ACT-003 lacks a current specification; WM-REC-006 lacks a verified specification and has a view-classification conflict; WM-ACT-005/029 relation maturity is incomplete; Backlog and Iteration lack registry allocation; normalized-outcome sources, crosswalk fixtures and round-trip migration tests are incomplete. This checkpoint makes no canonical completeness, installability or publication claim.
-
-
-## WM-ACT-006 completion candidate
-
-The reserved Task boundary now has a reviewable candidate owning stable source identity, native and canonical state, append-only transitions, assignments, estimates and evidence-bearing outcomes. It references workflow, requirement, project, program and plan masters; Backlog and Iteration remain unassigned. Seven fixtures cover acceptance evidence, cancellation, rejection, idempotent import, stale updates and estimate/actual separation.
+The candidate is provider-reconciled and remediated after one frozen Claude audit. It remains noncanonical while parent specifications, approved relations and adapter-specific actual-effort authority are incomplete. No blocker is published as a model release.

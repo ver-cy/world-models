@@ -4,39 +4,47 @@
   "modelId": "WM-ACT-006",
   "registryId": "vr.wm-act-006",
   "name": "Task / Work Item",
-  "version": "0.1.0-candidate.1",
+  "version": "0.1.0-candidate.2",
   "entryKind": "work-item-aggregate",
-  "status": "research-candidate",
+  "status": "research-candidate-audited",
   "canonicalPublishable": false,
-  "purpose": "Represent a bounded unit of work with stable source identity, workflow pin, assignment, append-only transitions, evidence-bearing outcome and revisioned estimates without owning project, requirement, workflow-definition, backlog or iteration identity.",
+  "purpose": "Represent a bounded unit of work using canonical WM-ACT-006 identity, immutable source-natural keys, governed lifecycle mappings, append-only evidence and loss-aware round-trip integration.",
   "boundary": {
     "owns": [
-      "task or work-item identity and lifecycle",
-      "source correlation identifiers and import revision",
-      "native status and resolution snapshots",
-      "canonical task-state assertions pinned to workflow definition",
-      "append-only occurred transition history",
-      "assignment history and responsibility references",
+      "canonical task or work-item identity",
+      "source aliases and import observations",
+      "native status snapshots",
+      "canonical state mapping assertions",
+      "append-only transition history",
+      "assignment history",
       "revisioned estimate assertions",
-      "evidence-bearing normalized outcome assertions"
+      "open-world outcome assertions",
+      "deletion tombstones, loss and conflict records"
     ],
     "delegates": [
-      "workflow definition and permitted transitions to WM-ACT-003",
-      "requirement and acceptance-criteria identity to WM-REC-006",
-      "project identity and baseline to WM-ACT-005",
-      "program or portfolio identity to WM-ACT-029",
-      "plan or schedule identity to WM-ACT-008",
-      "backlog and iteration identity to identifier-unassigned candidates"
+      "lifecycle definitions and permitted transitions to WM-XCT-021",
+      "process-shaped alignment to deferred WM-ACT-003",
+      "requirement and acceptance criteria to WM-REC-006",
+      "project to WM-ACT-005",
+      "program or portfolio to WM-ACT-029",
+      "plan or schedule to WM-ACT-008",
+      "actual effort to an explicitly named external authority"
     ],
     "excludes": [
-      "backlog or iteration aggregate identity",
-      "project program portfolio or requirement mastership",
-      "inference of acceptance from closed status",
+      "independent Backlog or Iteration identity",
+      "project, program, portfolio or requirement mastership",
+      "acceptance inference from closure",
       "actual effort or payroll mastership",
-      "mutable replacement of transitions estimates or outcomes",
-      "tracker label as universal semantic identity"
+      "silent remapping or overwrite",
+      "human-readable tracker keys as canonical identity"
     ]
   },
+  "identityResolutionRules": [
+    "taskId is the canonical WM-ACT-006 identity.",
+    "A source natural key is source namespace plus immutable internal native item identifier and resolves to exactly one taskId.",
+    "Human-readable keys and container paths are effective-dated aliases and may change without changing taskId.",
+    "Alias roles use a pinned scheme/version/code and at most one alias may assert master for an interval."
+  ],
   "objects": {
     "Task": {
       "identity": [
@@ -44,10 +52,10 @@
       ],
       "required": [
         "sourceSystemRef",
-        "sourceContainerRef",
-        "sourceItemId",
+        "immutableSourceItemId",
+        "sourceAliasSet",
         "workItemTypeRef",
-        "workflowDefinitionRef",
+        "lifecycleDefinitionRef",
         "nativeStatus",
         "canonicalState",
         "status"
@@ -78,22 +86,30 @@
       ],
       "required": [
         "taskRef",
-        "fromState",
-        "toState",
-        "workflowDefinitionRef",
+        "sourceTransitionKey",
+        "nativeFromState",
+        "nativeToState",
         "occurredAt",
-        "recordedAt",
-        "actorRef",
-        "sourceRevision"
+        "observedAt",
+        "sourceOrdinal",
+        "lifecycleDefinitionVersionRef",
+        "crosswalkVersionRef",
+        "mappingMode",
+        "observingScopeRef"
       ],
       "optional": [
+        "sourceEventId",
+        "actorRef",
         "reason",
-        "nativeStatus",
-        "nativeResolution"
+        "canonicalFromState",
+        "canonicalToState",
+        "writeProvenanceRef",
+        "supersedesMappingAssertionRef"
       ],
       "lifecycle": [
         "recorded",
-        "superseded-by-correction"
+        "mapping-superseded",
+        "redacted"
       ]
     },
     "Assignment": {
@@ -106,7 +122,8 @@
         "responsibilityRole",
         "validFrom",
         "authorityRef",
-        "status"
+        "status",
+        "observingScopeRef"
       ],
       "optional": [
         "validTo",
@@ -127,16 +144,19 @@
       "required": [
         "taskRef",
         "value",
-        "unitOrScaleRef",
+        "unitSchemeVersionRef",
+        "estimateKind",
+        "grain",
         "basis",
         "method",
-        "estimatorRef",
+        "assertedBy",
         "effectiveAt",
         "revision"
       ],
       "optional": [
         "supersedesEstimateId",
-        "confidence"
+        "confidence",
+        "actualEffortAuthorityRef"
       ],
       "lifecycle": [
         "asserted",
@@ -152,18 +172,85 @@
         "taskRef",
         "outcome",
         "assertedAt",
+        "assertedBy",
         "authorityRef",
-        "evidenceRefs"
+        "assertionBasis",
+        "evidenceRefs",
+        "observingScopeRef"
       ],
       "optional": [
         "criteriaRevisionRef",
         "supersedesOutcomeAssertionId",
+        "retractsOutcomeAssertionId",
         "reason"
       ],
       "lifecycle": [
         "asserted",
         "superseded",
-        "withdrawn"
+        "retracted"
+      ]
+    },
+    "ImportObservation": {
+      "identity": [
+        "importObservationId"
+      ],
+      "required": [
+        "sourceRef",
+        "observedAt",
+        "credentialScopeRef",
+        "sourceRevision",
+        "contentDigest"
+      ],
+      "optional": [
+        "writeProvenanceRef",
+        "sourceOrdinalRange"
+      ]
+    },
+    "LossRecord": {
+      "identity": [
+        "lossRecordId"
+      ],
+      "required": [
+        "taskRef",
+        "sourceField",
+        "nativeValue",
+        "crosswalkVersionRef",
+        "reason",
+        "retentionClassRef",
+        "observedAt"
+      ],
+      "optional": [
+        "candidateMappingRefs"
+      ]
+    },
+    "ConflictRecord": {
+      "identity": [
+        "conflictRecordId"
+      ],
+      "required": [
+        "taskRef",
+        "assertionRefs",
+        "conflictKind",
+        "surfacedAt",
+        "status"
+      ],
+      "optional": [
+        "resolutionRef"
+      ]
+    },
+    "DeletionTombstone": {
+      "identity": [
+        "tombstoneId"
+      ],
+      "required": [
+        "taskRef",
+        "sourceRef",
+        "observedDeletionAt",
+        "evidenceRef",
+        "retentionClassRef"
+      ],
+      "optional": [
+        "redactedActorRef"
       ]
     }
   },
@@ -175,22 +262,28 @@
   ],
   "relations": [
     {
-      "target": "WM-ACT-003",
+      "target": "WM-XCT-021",
       "relation": "REFERENCE",
       "required": true,
-      "purpose": "Pin the workflow definition and permitted state model."
+      "purpose": "Pin occurrence-time-valid lifecycle definition and permitted transition semantics."
+    },
+    {
+      "target": "WM-ACT-003",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Deferred process-shaped alignment only; it is not current lifecycle authority."
     },
     {
       "target": "WM-REC-006",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Trace work to immutable requirement revisions and acceptance criteria."
+      "purpose": "Trace immutable requirement and acceptance-criteria revisions."
     },
     {
       "target": "WM-ACT-005",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Resolve an authoritative project identity."
+      "purpose": "Resolve authoritative project identity."
     },
     {
       "target": "WM-ACT-029",
@@ -202,63 +295,73 @@
       "target": "WM-ACT-008",
       "relation": "REFERENCE",
       "required": false,
-      "purpose": "Resolve governing plan or schedule identity."
+      "purpose": "Resolve governing plan or schedule identity and timeboxed view facts."
     }
   ],
   "operations": [
     {
-      "id": "create-task",
-      "effect": "Mint a task from an authoritative source correlation key.",
+      "id": "resolve-task",
+      "effect": "Resolve immutable source natural key to one canonical taskId while retaining effective-dated aliases.",
       "authority": "producing tracker or work authority"
     },
     {
-      "id": "transition-state",
-      "effect": "Append a state transition under the pinned workflow definition.",
-      "authority": "workflow authority or authorized actor"
-    },
-    {
-      "id": "assign-work",
-      "effect": "Append an effective-dated responsibility assignment.",
-      "authority": "work owner"
+      "id": "record-transition",
+      "effect": "Append a source-native transition, then append its version-stamped canonical mapping.",
+      "authority": "source lifecycle authority"
     },
     {
       "id": "revise-estimate",
-      "effect": "Append a superseding estimate without overwriting prior assertions.",
+      "effect": "Append a typed estimate revision without overwriting prior assertions or actual effort.",
       "authority": "authorized estimator"
     },
     {
       "id": "assert-outcome",
-      "effect": "Record done accepted cancelled or rejected with evidence and authority.",
-      "authority": "performer or acceptance authority as applicable"
+      "effect": "Append, supersede or retract an open-world evidence-bearing outcome assertion.",
+      "authority": "performer or acceptance authority"
     },
     {
-      "id": "import-revision",
-      "effect": "Idempotently apply a newer source revision and reject stale or duplicate updates.",
+      "id": "import-observation",
+      "effect": "Apply a scoped source observation idempotently, recording loss, conflict, provenance and tombstones.",
       "authority": "authorized integration"
     }
   ],
+  "crosswalkRules": [
+    "Every mapped value stores the producing crosswalk version.",
+    "Crosswalk succession declares compatible or breaking change.",
+    "A version change appends a superseding mapping assertion and never changes source-event identity.",
+    "Unmapped values create queryable LossRecord entries and never default to a canonical state."
+  ],
+  "deferredPlanningTerms": {
+    "Backlog": "Non-normative ordered-selection view; rank is mastered per context and item without independent identity.",
+    "Iteration": "Non-normative timeboxed Plan view; membership, dates and commitment are Plan facts without independent identity.",
+    "Plan": "Lexical reference to WM-ACT-008; Kanban flows need no Iteration."
+  },
   "invariants": [
-    "The producing source correlation key identifies the imported work item; re-import never mints a second task.",
-    "Native status and native resolution are preserved alongside canonical state.",
-    "Every canonical transition pins the workflow-definition revision used.",
-    "Occurred transitions are append-only and ordered by source revision and event time.",
-    "Closed status alone never implies done or accepted.",
-    "Accepted requires an acceptance authority criteria revision and evidence references.",
-    "Done accepted cancelled and rejected remain distinct outcomes.",
-    "Cancellation asserts no delivered result.",
-    "Task closure never proves requirement satisfaction.",
-    "A tracker container never becomes a project program or portfolio without authoritative resolution.",
-    "Every estimate identifies value unit or scale basis method estimator effective time and revision.",
-    "Actual effort never overwrites an estimate.",
-    "Assignment changes preserve effective periods authority actor and reason.",
-    "Stale source revisions are rejected and duplicate imports append no transitions.",
-    "Priority estimate state assignment and outcome changes retain event time and recording time."
+    "WM-ACT-006 taskId is canonical; immutable native IDs are natural keys resolving to it.",
+    "Human-readable keys are historical aliases and project moves never fork identity.",
+    "Alias roles are governed, effective-dated and allow at most one master per interval.",
+    "Transition identity uses source-native terms; canonical mapped states never participate in its key.",
+    "Occurrence and observation times are distinct and source ordinal breaks timestamp ties.",
+    "Historical transitions use the lifecycle version valid at occurrence or are marked retrospective.",
+    "Native status, canonical state and outcome assertion remain distinct.",
+    "Outcome assertions are append-only and open-world; absence of evidence is not a negative outcome.",
+    "Closed never implies accepted; reopen supersedes or retracts prior outcomes explicitly.",
+    "Crosswalk remapping preserves source event identity and records versioned supersession and loss.",
+    "Omission from an export is not deletion; only observed deletion creates a tombstone.",
+    "Actor redaction preserves event identity and retention metadata.",
+    "Every assertion records observing credential scope; absent data is never treated as empty.",
+    "Mirror aliases inherit origin access policy.",
+    "Write provenance suppresses echo and equal-authority conflicts create surfaced ConflictRecord entries.",
+    "Estimate revisions name unit scheme version, estimate kind, grain and asserter.",
+    "Actual effort remains under a named external authority and never overwrites estimates.",
+    "Backlog rank is context-item scoped and Iteration facts are Plan-view facts; neither implies independent identity.",
+    "Kanban flows derive full task state and outcome without Iteration.",
+    "Tracker containers never become project, program, portfolio or requirement masters by inference."
   ],
   "holds": [
-    "Exact Grok review and provider reconciliation are pending.",
-    "One frozen no-tools semantic audit of the reconciled candidate is pending.",
-    "Backlog and Iteration remain identifier-unassigned.",
-    "WM-ACT-005 and WM-ACT-029 retain their own publication holds.",
-    "Package conversion and live HTTP/runtime/search/package verification are pending."
+    "WM-ACT-006 and referenced parent specifications retain canonical publication holds.",
+    "Backlog and Iteration remain deferred non-normative terms without registry allocation.",
+    "Actual-effort authority must be named by each adapter.",
+    "Canonical publication and live HTTP/runtime/search/package verification remain pending base readiness."
   ]
 }
