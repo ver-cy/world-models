@@ -1,5 +1,5 @@
-# Offline delta: EM-COM-03 / Consumption Entitlement
+# EM-COM-03 provider-reconciled offline dossier
 
-Identifier-unassigned candidate for a subject-, scope- and period-bounded right to consume, plus a thin profile connecting orders, subscriptions, offers, fulfilment, invoices and payments. Usage and remaining allowance remain external evidence and projection. No identifier is guessed or allocated.
+Identifier-unassigned, non-publishable dossier for a correspondence-only Order–Subscription seam and a parked Consumption Entitlement identity hypothesis. Exact Grok review and exactly one Claude Opus frozen audit are reconciled. Seventeen audit defects were remediated without rerun through 17 profile constraints, 12 allocation invariants and 35 trace-linked declarative fixtures.
 
-Publication remains conditional on exact Grok reconciliation, registry allocation, frozen audit and live verification.
+No model or runtime identifier is assigned. Identity evidence may open registry adjudication but never allocates an identifier.

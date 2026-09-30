@@ -1,9 +1,11 @@
 # EM-COM-03 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: reuse WM-ECO-020/022, reference proposal/invoice/payment masters, and leave a thin Enterprise binding profile plus Consumption Entitlement identifier-unassigned; Renewal remains a lifecycle assertion. No new runtime/model identifier was allocated.
+Exact Grok review conditionally accepted reuse of WM-ECO-020/022 and the separation of fulfilment, invoice, payment, entitlement and usage. Renewal is rejected as a type and remains a WM-ECO-022 predecessor-to-successor version link. The Enterprise profile is correspondence-only and mints no identity or state.
 
-The complete WM-ECO-020/022 and adjacent WM-ECO-021 specifications, relevant reservations/relations and prior sales/payment/product boundaries were frozen. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is blocked by profile/entitlement allocation, relationship contracts, source/provider holds, crosswalks and fixtures.
+Consumption Entitlement remains an identifier-unassigned parked hypothesis. Reconstructable grants receive no key; any one independent beneficiary/clock, subscription-free grant, surviving balance, transfer/split/pool lineage or external licence-authority case may open registry adjudication but never allocates an identifier.
 
-Next contour: EM-DAT-02. Read complete WM-DAT-008 specification and registry reservation.
+Exactly one Claude Opus high no-tools audit returned ACCEPT WITH CORRECTIONS. Its seventeen material defects were remediated without rerun through twelve allocation invariants, seventeen profile constraints and thirty-five trace-linked declarative fixtures. Usage is exclusively WM-FLW-015-owned, the candidate shape is conditional, head/revision mastership and successor rules are explicit, WM-ECO-020 is only the provisional fulfilment-evidence master pending WM-ECO-024, and monetary consequences remain WM-ECO-008-owned.
+
+All bases remain reviewable drafts under waiver; relation contracts, crosswalks and executable fixtures remain unresolved. The package is explicitly non-publishable and assigns no model or runtime identifier.
