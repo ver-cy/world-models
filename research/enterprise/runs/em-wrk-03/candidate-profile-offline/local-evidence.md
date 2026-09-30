@@ -49,7 +49,7 @@ Program closure records handover, benefit owner and residual obligations. It doe
 
 ## Acceptance result
 
-Program PGM-1 contains projects P-A and P-B plus transition to operation OPS-1. Benefit B-J depends on both project outputs and sustained operational adoption. P-A closes first; its membership ends, but B-J remains forecast with `measurement-pending` because project closure proves neither outcome nor benefit. P-B continues. The program tranche gate does not affect either project's phase gates. OPS-1 later accepts the pinned transition-plan release; realization observations start only after adoption. Attribution remains unadjudicated until shares reconcile, and a support-load increase is recorded separately as a disbenefit.
+Program PGM-1 owns membership assertions referencing externally mastered projects P-A and P-B plus a transition reference to externally mastered operation OPS-1. Benefit B-J depends on both project outputs and sustained operational adoption. P-A closes first; no membership-end event is inferred, and B-J remains forecast with `measurement-pending` because project closure proves neither outcome nor benefit. P-B continues. The program tranche gate does not affect either project's phase gates. OPS-1 later accepts the pinned transition-plan release; realization observations start only after adoption. Attribution remains unadjudicated until shares reconcile, and a support-load increase is recorded separately as a disbenefit.
 
 ## Required invariants
 
@@ -70,3 +70,7 @@ Program PGM-1 contains projects P-A and P-B plus transition to operation OPS-1. 
 ## Holds
 
 The external Outcome / Benefit Realization master has no registry allocation. WM-ACT-029 is recorded with WM-ACT-005 as both parent and contained model, creating a containment contradiction that must be resolved. Relevant relation rows remain unapproved, and reused bases remain non-canonical drafts with source and provider holds. No installability or publication-readiness claim is made.
+
+## Audit remediation
+
+The provider-reconciled profile encodes role-separated bases, composite identities for program-owned assertions, explicit non-containment, mandatory intended-aim reference, explicit membership termination, causal-hypothesis ownership, WM-ACT-034 attribution authority, time and absent-reason vocabularies, historical retention and independent versioning. Non-project and sustainment cases remain held because their external masters are unbound.
