@@ -1,69 +1,21 @@
-# EM-LEG-06 local synthesis
+# EM-LEG-06 reconciled local evidence
 
-## Disposition
+## Decision
 
-- Propose one identifier-unassigned independent **Processing Activity / Processing Register Entry** aggregate. It is the accountability root spanning purposes, operations, controller/processor roles, datasets, systems, recipients, transfers and retention assignments.
-- Profile WM-ACT-021 Service Case for Data Subject Request. It already owns requester/representative, intake, verification blockers, SLA clock, evidence, communications, outcome, appeal, retention and tombstone semantics.
-- Treat Purpose and Processing Basis as separate attributable dependent assertions of the activity. Consent is one possible basis represented by WM-XCT-002, never a universal prerequisite.
-- Represent Retention Rule through WM-KNW-012 policy, instantiate duties through WM-XCT-029 and bind them to datasets/records/instruments. WM-XCT-003 remains output-shape authority.
-- A ROPA is a projection of the processing activity, not another aggregate. Allocate no identifier before registry adjudication.
+Create one identifier-unassigned Processing Activity / Processing Register Entry candidate and profile WM-ACT-021 for Data Subject Request. Purpose and Processing Basis remain separate attributable assertions. Retention policy and instantiated duty remain mastered by WM-KNW-012 and WM-XCT-029. ROPA is a read-only projection. No model or runtime identifier is allocated.
 
-## Identity and mastership
+## Reconciled semantics
 
-WM-POL-001 owns source norms, WM-KNW-012 internal rules, WM-XCT-029 instantiated duties, WM-XCT-002 permission/consent instruments and WM-XCT-003 disclosure shapes. WM-DAT-001 and WM-REC-001 own payload datasets and records; WM-DAT-004 owns schema semantics; WM-PER-001 owns the person reference. The Processing Activity owns only its accountability identity, lifecycle and bindings.
+ProcessingActivity has stable identity and immutable, non-overlapping revisions. Purpose, basis, party role and dataset-system location bindings are revisioned. A purpose requires an accepted basis over the same interval before activation. Consent basis cites a WM-XCT-002 instrument; withdrawal closes only assertions citing that instrument and never deletes history.
 
-The activity has a lifecycle independent of any dataset, system, consent grant or report version. One purpose without an accepted basis blocks activation and remains explicitly unresolved.
+Every erasure target is a dataset-system tuple with an explicit owner and optional record set. The WM-ACT-021 profile records one outcome per tuple. Case closure does not imply universal erasure or activity retirement. Jurisdiction profiles supply deadlines, pauses and extensions; the base profile defaults to no pause.
 
-## Purpose, basis and consent
+Statutory retention floor and legal hold are distinct authority-backed constraints. If their disposition effects conflict and no precedence owner resolves them, execution is refused. Suppress-and-retain moves the required subset under a separately governed restricted-purpose ProcessingActivity with its own accepted basis and expiry.
 
-Purpose is a governed taxonomy term plus activity assertion carrying wording, taxonomy version and granularity. Storage system and dataset are asset references and cannot imply purpose. Colocation does not merge purposes.
+Derived data receives the intersection of input purpose ceilings and may only preserve or narrow it. A broader analytics purpose requires a new ProcessingActivity. WM-XCT-003 can narrow shape but cannot add purpose or basis.
 
-Processing Basis is a separate time-qualified assertion linking purpose, basis class, cited provision, asserting role, assessment and effective interval. WM-XCT-002 may carry consent or a declared access basis but does not adjudicate non-consent lawfulness.
-
-Consent withdrawal terminates only instruments whose declared basis is consent, prospectively from its effective time. It does not erase processing supported by a different basis or defeat a statutory retention duty.
-
-## Data Subject Request profile
-
-The WM-ACT-021 profile adds statutory deadline/extension semantics, identity verification as a clock-pausing condition, per-location outcomes and location-specific refusal grounds. The request case references the person; WM-PER-001 must not duplicate case management.
-
-A single request can be partially granted. Each target location records resolution, determination, execution, evidence, propagation and appealability independently.
-
-## Retention and erasure
-
-Erasure proceeds through target discovery, per-location determination, execution, proof and downstream propagation. A retention floor prevents early disposition; a legal hold temporarily suspends disposition. They remain distinct and identify their authority and precedence owner.
-
-Execution can destroy, de-identify or suppress-and-retain under obligation. Retained data is restricted to the obligation purpose and assigned a future expiry. Proof retains a tombstone, disposition method, authority, event time and non-reversible integrity digest, never the erased payload.
-
-## Projection and analytics
-
-Derived datasets inherit a purpose ceiling equal to the intersection of input purposes unless an authorized compatibility assessment records a widening. WM-XCT-003 can only narrow disclosure shape; its purpose binding must remain within the activity's permitted purpose.
-
-Aggregate analytics projections set microdata permission false and reference cohort-floor/privacy controls. Erasure changes cohort membership, so floor satisfaction and cross-release linkability are re-evaluated.
-
-## Roles and parties
-
-Controller, joint controller and processor are time-qualified role assertions per party, activity and purpose. The same party can hold different roles for different purposes. These roles do not collapse into WM-XCT-002 grantor/grantee/access roles. Recipients and subprocessors remain explicit references.
-
-## Acceptance scenario
-
-An erasure request opens a DSR case and identity verification pauses its clock. The marketing dataset is destroyed and leaves a tombstone. Accounting records remain suppressed from ordinary use under a statutory duty, restricted to compliance purpose and scheduled for later destruction. A minimal aggregate analytics projection survives only after its cohort floor and linkability are rechecked. The consent instrument is terminated and its minimized evidence retained. The case closes partially granted with reasons per location.
-
-## Invariants
-
-1. Every processing operation resolves to an activity and at least one declared purpose.
-2. Purpose and basis are separate attributable assertions.
-3. A system, dataset or storage location never implies purpose.
-4. Consent is one basis and withdrawal is prospective and basis-scoped.
-5. A projection never widens permitted purpose.
-6. Derived data preserves an explicit purpose ceiling.
-7. Every erasure request has scope, per-location determination and confirmation.
-8. Erasure proof never retains erased payload.
-9. Retention floor and legal hold remain distinct.
-10. Retained-under-obligation data is restricted to the obligation purpose.
-11. Controller and processor roles are scoped by activity, purpose and interval.
-12. Event, effective and record time remain distinct.
-13. No model silently asserts legal compliance or lawfulness.
+Durable tombstones are mastered by WM-DAT-001 or WM-REC-001 and referenced by the case. Their retention is independent of case retention. The digest covers disposition metadata, not erased payload; subject-derived digest input requires a secret key held outside the proof.
 
 ## Holds
 
-Processing Activity has no allocated identifier. WM-XCT-002, WM-XCT-003 and WM-ACT-021 remain non-canonical drafts; relationship, source-pin and fixture gaps persist. Legal-hold precedence conflicts across adjacent models directly block executable erasure semantics. WM-PER-001 overlaps request execution, and processing-operation vocabulary plus technical-measures coverage remain unowned. Jurisdiction-specific profiles require specialist review. This checkpoint makes no legal, canonical or publication-readiness claim.
+Registry allocation is pending. Cross-model legal-hold precedence, purpose-taxonomy and ROPA-edition mastership, cohort-control and derivation-lineage mastership, processing-operation vocabulary, technical-measure ownership and jurisdiction profiles remain unresolved. WM-XCT-002, WM-XCT-003 and WM-ACT-021 remain non-canonical drafts. WM-PER-001 subject-rights overlap must be reduced to a person-to-case reference. These holds prevent publication and executable erasure claims.

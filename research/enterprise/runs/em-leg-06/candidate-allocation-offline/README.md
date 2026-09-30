@@ -1,3 +1,3 @@
-# EM-LEG-06 Processing Activity delta
+# EM-LEG-06 offline allocation package
 
-Profiles data-subject requests, consent, retention and disclosure over existing masters and preserves Processing Activity / Processing Register Entry as an identifier-unassigned accountability root. No identifier is allocated.
+Reconciled candidate for an identifier-unassigned Processing Activity plus a WM-ACT-021 DSR profile. The package is declarative only, allocates no ID and remains held for registry and canonical adjudication.
