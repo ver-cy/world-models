@@ -59,3 +59,17 @@ An audit covers Process A and Process B while excluding Site 3. Criteria are pin
 ## Holds
 
 WM-ACT-033, WM-ECO-035 and WM-KNW-014 are non-canonical provider drafts. The WM-ACT-033/WM-ECO-035 dual-root conflict blocks boundary sign-off. WM-ECO-035 parentage under WM-ACT-036 and WM-KNW-014 parentage under WM-ACT-021 remain suspect. WM-ACT-034 overlap and the WM-XCT-027 split remain unadjudicated. Procedure Definition has no allocated identifier. Relation contracts, source pins, crosswalks and fixtures are incomplete. No installable release or assurance conclusion is claimed.
+
+
+## Provider reconciliation
+
+Grok conditionally accepts the boundary and confirms ProcedureDefinition as the only independent new identity. The dual-root conflict is resolved in this candidate by exclusive composition: WM-ECO-035 owns engagement/mandate/scope/exclusions/opinion; WM-ACT-033 owns commissioned execution/test/observation/evidence/finding. One execution belongs to one engagement and never out-scopes or outlives it. Opinion limitations enumerate every exclusion and frame gap. Closure requires a new independent retest; no task, response, action or opinion closes a finding.
+
+
+## Provider reconciliation
+
+Grok conditionally accepts the boundary and confirms ProcedureDefinition as the only independent new identity. The dual-root conflict is resolved in this candidate by exclusive composition: WM-ECO-035 owns engagement/mandate/scope/exclusions/opinion; WM-ACT-033 owns commissioned execution/test/observation/evidence/finding. One execution belongs to one engagement and never out-scopes or outlives it. Opinion limitations enumerate every exclusion and frame gap. Closure requires a new independent retest; no task, response, action or opinion closes a finding.
+
+## Frozen-audit remediation
+
+Exactly one Claude Opus high no-tools audit conditionally passed the decisions and found twenty-four contract defects. All were remediated without rerun in revision 3: single methodology master; criteria/method separation; version-only authorization with effective non-overlap; engagement-owned criteria binding and issued report; execution-owned sampling and response; retained record semantics; engagement-scoped opinion issuance identity and supersession; issuance-authority closure; successor-cell equivalence; evidence item/package/reference split; stable engagement-scoped finding identity; complete sampling fields and vocabularies; append-only artifacts; separate timestamps; WM-KNW-012 base; and forty-five stable-id fixtures including the end-to-end scenario. Allocation and publication remain held.
