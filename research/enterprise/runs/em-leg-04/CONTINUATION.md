@@ -1,9 +1,7 @@
 # EM-LEG-04 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: retain WM-POL-004 as the authorization case; propose an identifier-unassigned Regulatory Authorization / Granted Permission root with Permit/Licence classes and dependent scope/conditions; use WM-XCT-017 only as grant evidence; keep regulatory, commercial and IP rights separate. WM-POL-014 is not completed for this purpose. No runtime/model identifier was allocated.
+Exact Grok review accepted the independent Regulatory Authorization / Granted Permission boundary and explicitly rejected WM-POL-014 stewardship as grant master. The candidate remains identifier-unassigned; Permit and Licence are jurisdiction-qualified classes, with dependent scope and conditions.
 
-The complete WM-POL-004 and adjacent credential, subscription, professional-credential, legal-norm and assessment specifications plus registry reservations/relations and related research were frozen. Dossier, one Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is held by the unallocated grant identity, ambiguous WM-POL-014 reservation, non-canonical bases, missing relations, pins, crosswalks, jurisdiction profiles and fixtures.
-
-Next contour: EM-LEG-06. Read the complete WM-XCT-002 and WM-XCT-003 specifications and registry reservations.
+Exactly one Claude Opus high no-tools audit was run. Its object-model findings were remediated without rerun: authority-qualified unique key, grant versions and validity, AuthorizationTransition, register observations, verbatim plus structured scope, non-normative loss-aware classifier mappings, closed-world scope, dependent typed conditions, waiver acts and party roles. Eighteen fixtures cover the required edge cases. No model or runtime ID was allocated. Publication waits for registry adjudication, canonical case-to-grant write rules and specialist legal review.

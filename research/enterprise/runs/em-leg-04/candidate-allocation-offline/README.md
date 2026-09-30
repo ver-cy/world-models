@@ -1,3 +1,3 @@
-# EM-LEG-04 Regulatory Authorization delta
+# EM-LEG-04 offline candidate
 
-Profiles case and credential bindings and preserves Regulatory Authorization / Granted Permission as an identifier-unassigned public-authority grant. No identifier is allocated.
+Provider-reconciled and once-audited identifier-unassigned Regulatory Authorization candidate. No registry or runtime identifier is allocated.

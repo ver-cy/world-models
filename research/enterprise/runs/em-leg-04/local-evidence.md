@@ -1,61 +1,21 @@
-# EM-LEG-04 local synthesis
+# EM-LEG-04 provider-reconciled synthesis
 
-## Disposition
+## Decision
 
-- Keep WM-POL-004 as the application-to-decision Authorization Case. Its specification explicitly excludes the permission-bearing grant and its current status.
-- Propose one identifier-unassigned independent **Regulatory Authorization / Granted Permission** model. Permit and Licence are jurisdiction-qualified classes of this root; PermitCondition and LicenceScope are dependent grant components.
-- Do not complete WM-POL-014 for this purpose: its reservation concerns broad rights/entitlements and legacy ownership/stewardship semantics, with no available specification and a boundary-review flag.
-- Use WM-XCT-017 only for the credential or document that evidences the grant. Its own boundary excludes the permit-grant lifecycle.
-- Keep regulatory permission separate from WM-ECO-022 commercial subscription/consumption entitlement and from an intellectual-property licence. Allocate no identifier before registry adjudication.
+Regulatory Authorization / Granted Permission remains an identifier-unassigned NEW MODEL candidate. Its identity and lifecycle are independent of WM-POL-004 cases, WM-XCT-017 credentials, WM-ECO-022 entitlements, IP licences and WM-POL-014 stewardship. Permit and Licence are jurisdiction-qualified classes of the same grant kind. Scope, conditions, mappings, register observations and transitions are grant-dependent records. No identifier is allocated.
 
-## Identity and mastership
+## Audited shape
 
-The authorization case, granted permission, condition, scope version and credential have distinct identities. The grant is identified in the issuing authority's namespace and register, with authority-issued grant key and version. Permit number, holder, activity code, dates, decision document and file digest do not independently identify it.
+The authority-qualified natural key is issuing authority, jurisdiction, instrument class and authority-local grant key. It is unique and never recycled. Holder, validity and operative state revisions use append-only grant versions. Status is derived from the latest effective AuthorizationTransition. Each transition names authority, legal basis, grounds, decision/effect/record times, resulting state, affected scope, appeal route and originating WM-POL-004 case when present.
 
-The enterprise representation is a source-qualified mirror of the authority register. It records observation time, source as-of and freshness and cannot assert current validity from a stale certificate or closed favorable case.
+Operative scope retains authoritative verbatim text and a subordinate structured decomposition. Versioned classifier mappings are explicitly non-normative and loss-aware. Scope is closed-world: silence authorizes nothing. Conditions are typed, versioned, scope-bound dependent records; waivers require authority acts. Register observations carry observed-at, source-as-of, freshness and digest, so stale credentials cannot establish current status.
 
-## Case versus grant
+## Separation rules
 
-Application and grant lifecycles are independent. A favorable decision can create or change a grant only when the competent authority's master records the effect. Renewal, variation, suspension, revocation and surrender may run as WM-POL-004 cases, while the grant records resulting authority events and never infers a transition from case status.
+Case decision, credential, commercial entitlement, IP licence, ownership and stewardship never become the grant. Affiliates, successors, new holders, activities, sites, assets and territories gain no permission by inference. Expiry, revocation, surrender and annulment remain distinct. Suspension preserves identity and disables exercise; reinstatement never widens scope.
 
-## Regulatory, commercial and IP rights
+The candidate now has 20 invariants and 18 fixtures covering natural-key collision, transition completeness, distinct ending grounds, reinstatement and supersession lineage, holder change, closed-world absence, typed conditions, waiver acts, lossy mappings, stale observation and IP substitution.
 
-Regulatory permission comes from a competent public authority and legal enabling power; without it, the regulated activity is unlawful or sanctionable. Commercial entitlement comes from an agreement and controls consumption or service access. An IP licence comes from a right holder and controls use of protected subject matter. Their scopes, transfer rules and consequences differ, and none creates or cures another.
+## Publication state
 
-## Scope, activity and conditions
-
-Each scope version enumerates the authorized activity, product/substance/resource, site/installation/asset, equipment or method, quantity/capacity/quota limits, territory, interval and explicit exclusions. Unlisted activity, location, asset or holder is outside scope.
-
-Where no stable classifier exists, preserve the authority's verbatim activity text pinned to the decision and legal basis; add a structured decomposition of act, object, method, threshold and site; attach optional classifier mappings with scheme version, mapping relation, confidence and information loss. Classifier mappings are non-normative.
-
-Conditions are authority-imposed dependent components typed as precondition, continuing duty, limit, reporting/monitoring duty, prohibition, exception or waiver. They record source, responsible party, trigger, deadline, evidence requirement, breach consequence and effective interval. A waiver is an authority act, not a boolean.
-
-## Lifecycle and parties
-
-Grant states include in force, suspended, expired, revoked, annulled, surrendered, reinstated and superseded. Transitions preserve authority, basis, grounds, due process, affected scope, decision/effect/record times, appeal route and originating case. Variation creates new scope or condition versions; history remains append-only.
-
-The grant names one holder and may separately reference operator, owner and beneficiary. Corporate ownership, control, trade names and contracts never extend it to subsidiaries, affiliates, branches, contractors, additional sites or successors. Extension requires an explicit authority act.
-
-## Acceptance scenario
-
-A grant binds holder H, site S1 and activity A1. S2 is outside scope. A temporary suspension records authority, grounds, interval and affected scope without erasing the grant or extending validity. New activity A2 remains unauthorized even when H's registration carries a matching industry code; it requires a variation or new application.
-
-## Invariants
-
-1. An activity classifier is never permission, grant identity or scope.
-2. Every grant and transition identifies issuing authority and legal basis.
-3. Authorization case state and grant state are distinct and non-inferable.
-4. Scope is enumerative; unlisted activity, site, asset or party is unauthorized.
-5. Conditions are authority-sourced, typed, dated and versioned.
-6. Suspension, expiry, revocation, annulment and surrender remain distinct.
-7. Only an authority act changes grant state.
-8. The grant is non-transferable unless an authority holder-change decision says otherwise.
-9. Subsidiaries and successors receive no permission by relationship traversal.
-10. Regulatory, commercial and IP rights never substitute for one another.
-11. Current status requires a fresh authoritative-register observation.
-12. Credentials evidence grants but do not own or create them.
-13. Grant and scope history remains append-only and citable.
-
-## Holds
-
-The independent grant candidate has no allocated identifier. WM-POL-004 and WM-XCT-017 are non-canonical reviewable drafts with single-provider and relationship-ledger holds. WM-POL-014 lacks a current specification and its legacy intent conflicts with permit non-transferability. Jurisdiction-specific classes, renewal identity, transfer, due process and appeal require specialist review. Crosswalks, immutable pins and acceptance fixtures are absent. This checkpoint makes no publication-readiness claim.
+Grok accepted the independent candidate and rejected WM-POL-014 as its owner. One frozen Claude audit found object-model gaps; all concrete defects were remediated without rerunning the audit. Registry allocation, canonical case-to-grant contract and specialist legal review remain required before publication.
