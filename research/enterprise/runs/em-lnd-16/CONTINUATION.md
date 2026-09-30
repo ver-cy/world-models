@@ -1,11 +1,9 @@
 # EM-LND-16 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: Knowledge Landscape is a governed profile declaration over existing knowledge and record masters; Decision Dependency View is a reproducible projection. No new catalogue or runtime identifier was allocated.
+Exact Grok review accepted Knowledge Landscape as a non-mastering profile declaration and Decision Dependency View as a reproducible projection. Neither receives subject, catalogue or runtime identity. Policy handles and fingerprints are governance coordinates only.
 
-The complete WM-KNW-006, WM-KNW-010 and WM-REC-001 specifications, adjacent claim/citation/decision-record/concept-scheme specifications, registry reservations, relation ledger and prior EM-KNW-01/02 research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Exactly one Claude Opus high no-tools audit was run. Its seventeen material findings were remediated without rerun through nineteen normative constraints and thirty-nine discrete fixtures. The final shape adds role-separated bases, a class-to-master map, concept/designation pins, current-policy fail-closed replay, tracked recheck findings, authority attestations, declared projection losses and indistinguishable suppression markers.
 
-Publication is held by non-canonical bases, incomplete crosswalks and relation ledgers, provider waivers, unresolved access/deduplication/timestamp semantics and the identifier-unassigned Evidence Artifact / Source Work boundary.
-
-Next contour: EM-LND-17. Read the complete WM-BLT-006 and WM-BLT-008 specifications and registry reservations.
+Evidence Artifact / Source Work remains identifier-unassigned. All bases remain non-canonical and crosswalk, relation, authority and rights contracts remain unresolved. The candidate is explicitly `publishable: false`; no model or runtime ID was allocated.
