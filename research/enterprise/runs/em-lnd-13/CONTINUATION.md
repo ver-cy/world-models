@@ -1,9 +1,7 @@
 # EM-LND-13 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: Data Landscape is a governed projection and Analytical Lineage View a WM-DAT-006 profile over data, metric, report, analysis and claim masters. Definitions and executions/releases remain distinct; lineage, completeness, freshness and rights are explicit. No runtime/model identifier was allocated.
+Exact Grok review confirmed that Data Landscape is an issued-at snapshot projection and Analytical Lineage View a WM-DAT-006 profile; neither gets independent identity. Provider reconciliation pins immutable observed sets, keeps handles non-owning, separates definition and occurrence identities, returns typed impact sets, preserves strict comparability and completeness semantics, and pins source rights.
 
-The complete WM-DAT-001/005/006/008 specifications plus schema, measurement, projection, study and claim specs, reservations/relations and related data research checkpoints were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is held by non-canonical bases, candidate relations, missing WM-REC-002 publication spec, unallocated Metric Definition, lineage/source gaps and absent fixtures.
-
-Next contour: EM-LND-15. Read the complete WM-XCT-027, WM-KNW-015 and WM-ACT-033 specifications and registry reservations.
+Exactly one Claude Opus high no-tools audit was run. Its findings were remediated without rerun through twenty normative constraints and thirty-four discrete fixtures. WM-REC-002, EM-DAT-05 Metric Definition and WM-DAT-006 perimeter semantics remain conditional dependencies. No model or runtime ID was allocated. Publication remains held for those canonical prerequisites.

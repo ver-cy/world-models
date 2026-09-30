@@ -1,3 +1,3 @@
-# EM-LND-13 offline publication delta
+# EM-LND-13 offline profile package
 
-Defines Data Landscape and Analytical Lineage View as governed profiles and projections over existing data, metric, report, analysis and claim masters. No runtime or model identifier is allocated.
+Provider-reconciled declarative profile for issued Data Landscape snapshots and Analytical Lineage View. It allocates no identifier and keeps conditional dependencies explicit.
