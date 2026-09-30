@@ -1,0 +1,9 @@
+# EM-TEC-07 provider comparison
+
+Claude and Grok agree on the core boundary: reuse WM-SFT-006 as the sole Vulnerability root; keep source-qualified product/version/configuration affectedness and VEX there; use a WM-ACT-034 profile as a first-class deployed-instance Exposure Assessment; use WM-ACT-006 only for remediation work; and retain fix availability, build inclusion, deployment and instance verification in their respective masters.
+
+Both reviews preserve the separations among advisory, weakness and vulnerability; product affectedness and deployed exposure; CVSS, EPSS, KEV, SSVC, environmental risk and local priority; public exploitation signal, Exploit Artifact, exploitation observation and incident; and work closure versus verified remediation. Both reject transitive or SBOM presence as proof of exploitability or incident and reject a closed ticket or fixed build as proof that a still-old deployment is remediated.
+
+Grok resolves two open calls. Instance exposure has independent identity as the WM-ACT-034 profile and must not be a field on vulnerability, component, SBOM, build or instance masters. Exploit Artifact also has independent candidate identity but remains identifier-unassigned; no identifier is minted. VEX mastership belongs only to WM-SFT-006 as a source-qualified product/version/configuration assertion. Instance exposure may cite VEX but cannot rewrite it, and VEX is not owned by the instance, remediation task, artifact or incident.
+
+The remaining blockers are structural: prevent dual writes of VEX, prevent conflation of WM-ACT-034 remediation status with WM-ACT-006 workflow state, require explicit conditional predicates and reachability evidence, bar claim carriers from turning inventory edges or work closure into exploitation or incident conclusions, preserve all separate clocks, and keep every referenced draft explicitly non-canonical.

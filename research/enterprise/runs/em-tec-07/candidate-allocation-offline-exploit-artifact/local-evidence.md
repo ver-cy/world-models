@@ -55,3 +55,9 @@ Component C 2.4.1 is affected only when feature F is enabled. Build B contains f
 ## Holds
 
 WM-SFT-006 and adjacent bases are non-canonical reviewable drafts. VEX ownership conflicts between WM-SFT-008 and WM-SFT-012. WM-SFT-007 duplicates affectedness/remediation verdicts. Reachability ownership and staleness propagation are unresolved. WM-SFT-006 has no approved outgoing relation contracts. The Exploit Artifact candidate has no registry allocation. Crosswalks and fixtures for CVE, NVD, OSV, CSAF, VEX, STIX, CWE and CVSS are unverified. No installability or publication-readiness claim is made.
+
+## Frozen semantic audit remediation (2026-09-30)
+
+The sole Claude Opus frozen audit accepted the disposition and reported 17 material binding defects. All 17 were remediated without a rerun. VEX is now exclusively mastered on WM-SFT-006 while conflicting base texts remain explicit holds. The WM-ACT-034 exposure profile now has opaque independent identity, lifecycle, disjoint instance vocabulary, revision pinning, derived staleness, evidence expiry, typed predicates, fixed mastership splits, privacy rules and a normative LS-1…LS-16 invariant set. Exploit Artifact now has deterministic artifact-versus-rendition versioning, product/component target scope, inbound-only estate relations, separate handling and lifecycle axes, disposal semantics and an explicitly pending mastership authority.
+
+The fixture corpus is split into allocation and profile sets with deterministic oracles, fixed time, invariant references, expected statuses and rejection reasons. The candidate remains identifier-unassigned and every named base remains a non-canonical draft.
