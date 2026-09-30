@@ -1,3 +1,3 @@
 # EM-WRK-04 offline allocation dossier
 
-Validated, identifier-unassigned allocation dossier for **Selection Criteria Set**, with portfolio membership, prioritization, allocation and scenarios retained inside the WM-ACT-029 Portfolio profile. No identifier is assigned.
+Provider-reconciled and once-audited identifier-unassigned allocation dossier for **Selection Criteria Set**, accompanied by the WM-ACT-029 Portfolio profile. All 14 frozen-audit defects are deterministically remediated. No catalogue, registry, model or runtime identifier is assigned. Canonical publication remains held.

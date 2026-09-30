@@ -1,11 +1,9 @@
 # EM-WRK-04 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: profile Portfolio over WM-ACT-029; keep PortfolioComponent, Prioritization, InvestmentAllocation and PortfolioScenario as portfolio-owned releases; propose identifier-unassigned Selection Criteria Set. Reuse project, initiative, budget, objective and decision masters. No catalogue/runtime identifier is allocated.
+Disposition: profile Portfolio over WM-ACT-029; keep PortfolioComponent, Prioritization, InvestmentAllocation, PortfolioScenario and ApprovedCompositionAndAllocationBaseline as portfolio-owned releases; retain one independently identified but identifier-unassigned Selection Criteria Set candidate. No catalogue, registry, model or runtime identifier is allocated.
 
-The complete WM-ACT-029 specification and reservation plus all complete relevant Project, Initiative, Budget, Goal/Objective and decision-triad specifications and reservations were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+The exact Grok response was reconciled. One Claude Opus high no-tools frozen audit was completed exactly once and found 14 material artifact defects. All 14 were deterministically remediated without a rerun. The allocation/profile artifacts now separate criteria and weighting, externalize set mastership, disable Program inheritance, make share basis explicit and non-exhaustive, bind decision evidence, preserve upstream lifecycle disruptions prospectively and hold all unverified bases.
 
-Publication is held by the unallocated Selection Criteria Set and other referents, the WM-ACT-029↔WM-ACT-005 containment contradiction, the WM-ACT-030 parent conflict, unapproved relation rows and non-canonical base drafts.
-
-Next contour: EM-WRK-05. Read the complete WM-ORG-016 and WM-ECO-012 specifications and registry reservations and adjudicate ResourceDemand, ResourcePool, CapacityPlan, ResourceAllocation and AllocationScenario boundaries.
+Publication remains held by the missing criteria-set allocation, unverified base pins, WM-ACT-029 and WM-ACT-030 contradictions, unallocated Funding Source and adjacent referents, unapproved relations and non-canonical bases. Do not rerun the frozen audit. Subsequent Grok sends require fresh action-time confirmation.

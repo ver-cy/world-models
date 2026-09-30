@@ -34,7 +34,7 @@ Alternative comparison includes constraints and a do-nothing comparator or justi
 
 InvestmentAllocation is portfolio-scoped intent within an approved envelope. It is distinct from budget authority, funding availability, commitment, obligation, accounting actual and component funding.
 
-Every allocation declares source, destination, amount or share, currency, price base, valuation basis, interval, restrictions, authority and residual rule. Allocations against one released source and period may not exceed the source amount. Residuals reconcile, and consolidated reporting counts the component once while each portfolio reports only its declared share.
+Every allocation declares source, destination, amount or share, currency, price base, valuation basis, interval, restrictions, authority and residual rule. Allocations against one released source and period may not exceed the source amount. Residuals reconcile, and consolidated reporting never derives actuals, capacity, outcomes or benefits from allocation shares.
 
 ## Scenarios and decisions
 
@@ -54,7 +54,7 @@ Review cadence combines a declared interval with event triggers such as funding 
 
 ## Acceptance result
 
-PF-1 and PF-2 both admit initiative INI-1 with shares 0.6 and 0.4 from distinct released funding sources. Each membership and allocation is independent and neither converts INI-1 into a project. PF-1 selects scenario SC-3, pinning criteria set CS-v2, weighting W-v1, candidates, horizon, price base and capacity. Decision D-7 approves it and issues REC-7. Later score or criteria revisions create successors; SC-3, D-7 and REC-7 remain reproducible. Consolidated reporting counts INI-1 once and no source is exceeded. Unrelated PF-1 components do not become a Program.
+PF-1 and PF-2 both admit initiative INI-1 with shares 0.6 and 0.25, both with shareBasis capital, from distinct released funding sources. Each membership and allocation is independent and neither converts INI-1 into a project. PF-1 selects scenario SC-3, pinning criteria set CS-v2, weighting W-v1, candidates, horizon, price base and capacity. Decision D-7 approves it and issues REC-7. Later score or criteria revisions create successors; SC-3, D-7 and REC-7 remain reproducible. Consolidated reporting counts INI-1 once and no source is exceeded. Unrelated PF-1 components do not become a Program.
 
 ## Required invariants
 
@@ -77,3 +77,7 @@ PF-1 and PF-2 both admit initiative INI-1 with shares 0.6 and 0.4 from distinct 
 ## Holds
 
 Selection Criteria Set has no registry allocation. Metric Definition, Outcome / Benefit Realization, Product, Operation, Resource / Capacity and several funding referents also remain unallocated. WM-ACT-029 records WM-ACT-005 as both parent and contained model, while WM-ACT-030's project parent conflicts with initiative-is-not-project semantics. Relation rows are unapproved and reused bases remain non-canonical drafts with source and provider holds. No installability or publication-readiness claim is made.
+
+## Audit remediation
+
+The reconciled artifacts separate criteria and weighting identities, bind criterion fields and time axes, externalize criteria-set mastership, disable inherited Program semantics, require explicit non-exhaustive share basis, pin decision-triad references, make baseline a distinct release, hold unverified bases and Funding Source enforcement, and specify prospective handling of cancelled, split, merged or re-mastered components.
