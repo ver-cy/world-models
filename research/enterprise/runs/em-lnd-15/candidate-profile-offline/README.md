@@ -1,3 +1,3 @@
-# EM-LND-15 offline publication delta
+# EM-LND-15 offline profile package
 
-Defines Risk Landscape and Assurance Coverage as governed views over existing risk, requirement, assessment and evidence masters, with Control explicitly pending. No runtime or model identifier is allocated.
+Provider-reconciled and independently audited declarative profile for Risk Landscape snapshots and Assurance Coverage Projection. It allocates no identifier, keeps Control pending and holds canonical publication until provisional bases and relationship contracts are resolved.

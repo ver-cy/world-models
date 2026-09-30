@@ -3,7 +3,7 @@
 ## Disposition
 
 - Define Risk Landscape as a governed view definition with immutable snapshots over risk, requirement, control, assessment, audit, finding, obligation and evidence masters.
-- Define Assurance Coverage View as a projection of that landscape with explicit denominator and caveats.
+- Define Assurance Coverage Projection as a projection of that landscape with explicit denominator and caveats.
 - Both need artifact/view identity for reproducibility but no independent subject-model identity. Allocate no runtime/model identifier.
 
 ## Identity and mastership
@@ -53,7 +53,21 @@ Control C-1 is designed and implemented but has no required execution in the per
 
 ## Minimal profile shape
 
-Risk Landscape records viewpoint/questions, perimeter, requirement/control/criteria pins, cut-off, membership/construction rules, comparability/caveats, denominators/exclusions, gap sets, pending-master markers, owner/reviewer, snapshot digest, access and retention. Assurance Coverage Projection records parent view, quantity, denominator, numerator rule, per-cell states, caveats and digest.
+Risk Landscape records viewpoint/questions, perimeter, requirement/control/criteria pins, cut-off, membership/construction rules, comparability/caveats, denominators/exclusions, gap sets, pending-master markers, owner/reviewer, snapshot digest, access and retention. Assurance Coverage Projection records parent view and exact definition version, valid-time as-of, ingest cut-off, scenario, currency-evaluation instant, one measure type, denominator, numerator rule, undetermined/disputed/excluded counts with reasons, comparability verdict and axes, per-cell states, caveats and digest.
+
+## Provider reconciliation
+
+Registry and citation identity for a definition, snapshot or projection run is not subject-model identity. These artifacts cannot bear obligations, own residual risk, become control targets or mint subject facts. A snapshot binds the exact view-definition version, as-of time and scenario; its body, included references, exclusions and caveats are immutable, while currency is derived at read time.
+
+Each projection carries exactly one measure type, an explicit denominator and numerator rule. A numerator member must belong to that denominator and have a current in-scope determination for the stated criterion. Missing applicability is first-class undetermined and remains outside both binding obligation and denominator. Control remains unresolved: pending-master markers are mandatory until allocation or re-homing, and the view cannot manufacture a Control subject. Caveats must survive UI and export.
+
+## Frozen-audit remediation
+
+Snapshots use bitemporal pinning: valid-time as-of plus record/ingest cut-off. Late-arriving records enter only later snapshots. The currency rule names its clock, and each read or projection records its evaluation instant and snapshot ID. Digest mismatch makes a snapshot non-citable.
+
+`not-exercised-in-period` is distinct from applicability-undetermined: the control stays in the coverage denominator and is explicitly excluded from the effectiveness denominator. Disputed applicability is separately countable with declared denominator placement. Every projection publishes undetermined, disputed and excluded counts with reasons. Aggregating projections store the comparability verdict and covered axes. Snapshot and projection outputs are non-evidence for control facets, compliance and assurance.
+
+Effectiveness conclusions require method, vocabulary, validity and invalidation triggers. Assurance conclusions require scope, method, exclusions and assurance level. Findings remain engagement-owned; observations do not self-promote. Expiry or supersession puts dependent conclusions into revalidation-pending and suspends reliance. WM-ACT-034 and WM-XCT-027 are provisional bases; Control remains pending-master and all dependent quantities are labelled provisional.
 
 ## Holds
 

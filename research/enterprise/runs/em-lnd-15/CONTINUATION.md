@@ -1,9 +1,9 @@
 # EM-LND-15 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-09-30.
 
-Disposition: Risk Landscape is a governed view with immutable snapshots and Assurance Coverage View its explicit-denominator projection. Coverage, compliance, assurance and residual risk remain distinct; Control stays identifier-unassigned. No runtime/model identifier was allocated.
+Exact Grok review accepted Risk Landscape as a governed view definition with immutable snapshots and Assurance Coverage Projection as an explicit-denominator projection. Neither receives independent subject identity. Registry/citation identifiers remain governance handles only.
 
-The complete WM-XCT-027, WM-KNW-015 and WM-ACT-033 specifications plus adjacent assessment, requirement, obligation, observation specs, reservations/relations and related research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved. Publication is held by non-canonical bases, unresolved WM-XCT-027 split, pending control master, missing relations, source pins, crosswalks and fixtures.
+Exactly one Claude Opus high no-tools audit was run. Its eleven material findings were remediated without rerun through nineteen normative constraints and thirty-two discrete fixtures. The final shape adds valid-time plus ingest cut-off, recorded currency evaluation, `not-exercised-in-period`, disputed applicability, mandatory exclusion counts, projection-level comparability, non-evidence rules, conclusion metadata and expiry propagation.
 
-Next contour: EM-LND-16. Read the complete WM-KNW-006, WM-KNW-010 and WM-REC-001 specifications and registry reservations.
+Control remains identifier-unassigned. WM-XCT-027 and WM-ACT-034 remain provisional bases with unresolved contracts. No model or runtime ID was allocated. Canonical publication remains held until Control is allocated or re-homed and the provisional base contracts are reconciled.
