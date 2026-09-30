@@ -1,6 +1,402 @@
-{"format":"vercy-model-allocation-candidate/v1","contourId":"EM-FIN-07","proposedName":"Tax Registration / Account","modelId":null,"registryId":null,"allocationState":"unassigned","decision":"NEW MODEL","canonicalPublishable":false,
-"identityTest":{"stableIdentity":"An authority-created tax registration or account persists across periods, returns, assessments and payments independently of legal-entity registration.","versionIdentity":"Tax type, filing frequency, group membership, account state or jurisdictional basis changes append effective-dated revisions and assertions.","independentLifecycle":["pending","registered","active","suspended","deregistered","closed"],"mastership":"competent tax authority or authoritative tax-registration system"},
-"boundary":{"owns":["stable tax registration or account identity","authority-issued identifiers","tax type and filing frequency","account state and group membership","deregistration and successor lineage","time-qualified residence, source/place and nexus basis assertions"],"references":[{"target":"WM-POL-011","purpose":"Tax obligations and authority assessments"},{"target":"WM-ECO-032","purpose":"Return revisions, filing attempts and acknowledgements"},{"target":"WM-ORG-001","purpose":"Taxpayer identity"},{"target":"WM-ORG-010","purpose":"Legal registration kept distinct from tax registration"},{"target":"WM-POL-001","purpose":"Versioned legal rules supporting jurisdictional bases"},{"target":"WM-ECO-009","purpose":"Payments and allocation to obligations"}],"excludes":["legal-entity registration","tax obligation and balance","return or filing attempt","assessment and notice","payment and dispute lifecycle"]},
-"objects":{"TaxRegistrationAccount":{"identity":["taxRegistrationAccountId"],"required":["taxpayerRef","authorityRef","jurisdictionRef","taxTypeRef","status","currentRevisionRef"],"optional":["authorityIdentifier","successorRef"],"lifecycle":["pending","registered","active","suspended","deregistered","closed"]},"RegistrationRevision":{"identity":["taxRegistrationAccountId","revision"],"required":["filingFrequency","effectiveFrom","contentDigest"],"optional":["effectiveTo","groupMembership","supersedesRevision"]},"JurisdictionalBasisAssertion":{"identity":["basisAssertionId"],"required":["basisKind","subjectRef","taxTypeRef","jurisdictionRef","ruleVersionRef","evidenceRefs","validFrom"],"optional":["validTo","confidence","supersedesRef"]}},
-"invariants":["Legal registration and tax registration remain distinct.","Registration, residence, source/place and nexus never collapse.","Residence, source/place and nexus are separately evidenced assertions.","An address never derives an obligation or registration by itself.","Concurrent jurisdictional bases coexist without implicit ranking or netting.","Every basis states authority, rule version, evidence and interval.","Registration never replaces obligation, return, assessment or payment identity.","Taxpayer identity remains externally mastered.","Authority-issued identifiers are scoped to authority, jurisdiction and tax type.","State changes are effective-dated and preserve history.","Deregistration never erases prior returns or obligations.","Official acts require competent authority.","Privacy and access controls follow taxpayer and authority policy.","Retired identifiers and revisions remain resolvable and are never recycled."],
-"holds":["Registry allocation is pending and no identifier may be guessed.","Independent Grok review is pending.","WM-POL-011, WM-ECO-032 and WM-ACT-052 aggregate overlap requires adjudication.","Rate-schedule ownership, jurisdiction profiles, frozen audit and crosswalks remain incomplete."]}
+{
+  "format": "vercy-model-allocation-candidate/v1",
+  "contourId": "EM-FIN-07",
+  "proposedName": "TaxRegistrationAccount",
+  "displayName": "Tax registration account",
+  "forbiddenNames": [
+    "Tax Registration / Account",
+    "Tax Registration/Account"
+  ],
+  "modelId": null,
+  "registryId": null,
+  "allocationState": "unassigned",
+  "decision": "NEW-MODEL-CANDIDATE",
+  "allocationApproved": false,
+  "allocationGate": "registry allocation not requested; modelId and registryId remain null and may not be inferred",
+  "canonicalPublishable": false,
+  "installable": false,
+  "publicationHold": "reviewable research; no installability, conformance or publication-readiness claim",
+  "identityTest": {
+    "stableIdentity": "An authority-created tax registration account persists across periods, returns, assessments and payments independently of legal-entity registration.",
+    "versionIdentity": "Authority-recorded state, identifier, filing frequency, group membership and basis changes append effective-and-knowledge-time assertions.",
+    "independentLifecycle": [
+      "applied",
+      "application-refused",
+      "application-withdrawn",
+      "active",
+      "suspended",
+      "deregistered",
+      "archived"
+    ],
+    "mastership": "competent tax authority",
+    "recordingSources": [
+      {
+        "kind": "authoritative-tax-registration-system",
+        "precedence": 2
+      }
+    ],
+    "authorityPrecedence": 1
+  },
+  "cardinalityDecision": "one account per authorityRef, jurisdictionRef and taxTypeRef; one authority handle may map to several non-merged account identities",
+  "identifierKey": [
+    "authorityRef",
+    "jurisdictionRef",
+    "taxTypeRef",
+    "authorityIdentifier",
+    "effectiveFrom",
+    "effectiveTo"
+  ],
+  "readContract": "as_of(effectiveInstant, knowledgeInstant), both arguments mandatory",
+  "boundary": {
+    "owns": [
+      "non-authoritative local account record identity",
+      "append-only revision chain and lineage links",
+      "recorded assertion of authority-issued identifiers (master: issuing authority)",
+      "recorded assertion of tax type and optional filing frequency (master: issuing authority)",
+      "recorded assertion of account state (master: issuing authority)",
+      "basis assertions with independent local identities, resolvable with or without an account"
+    ],
+    "references": [
+      {
+        "target": "WM-POL-011",
+        "purpose": "Tax obligation, authority assessment, due components and knowledge-timed balance positions"
+      },
+      {
+        "target": "WM-ECO-032",
+        "purpose": "Return revisions, filing attempts and authority responses"
+      },
+      {
+        "target": "WM-ACT-052",
+        "purpose": "Thin case correlation only; no economic fact ownership"
+      },
+      {
+        "target": "WM-ORG-001",
+        "purpose": "Taxpayer identity"
+      },
+      {
+        "target": "WM-ORG-010",
+        "purpose": "Legal registration kept distinct"
+      },
+      {
+        "target": "WM-POL-001",
+        "purpose": "Versioned legal rule pins"
+      },
+      {
+        "target": "WM-ECO-009",
+        "purpose": "Payment and allocation to obligation"
+      }
+    ],
+    "excludes": [
+      "legal-entity registration",
+      "tax obligation",
+      "balance or due position of any kind",
+      "return or filing attempt",
+      "assessment and notice",
+      "payment and dispute lifecycle",
+      "locally copied rate or threshold value"
+    ]
+  },
+  "objects": {
+    "TaxRegistrationAccount": {
+      "identity": [
+        "taxRegistrationAccountId"
+      ],
+      "identityProperties": {
+        "taxRegistrationAccountId": {
+          "authoritative": false,
+          "externallyResolvable": false,
+          "externalUseForbidden": true
+        }
+      },
+      "required": [
+        "taxpayerRef",
+        "authorityRef",
+        "jurisdictionRef",
+        "taxTypeRef",
+        "currentRevisionRef"
+      ],
+      "optional": [
+        "authorityIdentifier"
+      ],
+      "currentState": {
+        "derived": true,
+        "writable": false,
+        "expression": "as_of(now, now).accountState"
+      },
+      "instantiationPreconditions": [
+        "authority-issued handle received",
+        "explicit account-opening or application event with named authority"
+      ]
+    },
+    "RegistrationRevision": {
+      "identity": [
+        "taxRegistrationAccountId",
+        "revision"
+      ],
+      "required": [
+        "accountState",
+        "effectiveFrom",
+        "knowledgeTime",
+        "assertedBy",
+        "changeClass",
+        "changeReason",
+        "changeAuthorityRef",
+        "changeSet",
+        "contentDigest"
+      ],
+      "optional": [
+        "effectiveTo",
+        "authorityRecordedAt",
+        "authorityIdentifier",
+        "filingFrequency",
+        "groupMembership",
+        "supersedesRef"
+      ],
+      "states": [
+        "applied",
+        "application-refused",
+        "application-withdrawn",
+        "active",
+        "suspended",
+        "deregistered",
+        "archived"
+      ],
+      "transitions": {
+        "applied": [
+          "application-refused",
+          "application-withdrawn",
+          "active"
+        ],
+        "active": [
+          "suspended",
+          "deregistered"
+        ],
+        "suspended": [
+          "active",
+          "deregistered"
+        ],
+        "deregistered": [
+          "archived"
+        ],
+        "archived": []
+      },
+      "changeClasses": [
+        "correction",
+        "amendment",
+        "supersession",
+        "withdrawal",
+        "authority-initiated",
+        "administrative"
+      ],
+      "contentDigest": {
+        "algorithm": "sha-256",
+        "canonicalForm": "jcs",
+        "scope": [
+          "accountState",
+          "effectiveFrom",
+          "effectiveTo",
+          "authorityIdentifier",
+          "filingFrequency",
+          "groupMembership",
+          "changeClass",
+          "changeReason",
+          "changeAuthorityRef",
+          "changeSet",
+          "supersedesRef"
+        ],
+        "identifying": false
+      }
+    },
+    "JurisdictionalBasisAssertion": {
+      "identity": [
+        "basisAssertionId"
+      ],
+      "required": [
+        "basisKind",
+        "subjectKind",
+        "subjectRef",
+        "taxTypeRef",
+        "jurisdictionRef",
+        "authorityRef",
+        "ruleVersionRef",
+        "evidenceRefs",
+        "effectiveFrom",
+        "knowledgeTime",
+        "assertedBy"
+      ],
+      "optional": [
+        "effectiveTo",
+        "accountRef",
+        "confidence",
+        "supersedesRef"
+      ],
+      "accountRefCardinality": "0..1",
+      "evidenceRefs": {
+        "minItems": 1
+      },
+      "subjectKinds": [
+        "Taxpayer",
+        "Activity",
+        "Supply"
+      ],
+      "basisSubjectTable": {
+        "residence": [
+          "Taxpayer"
+        ],
+        "place-of-supply": [
+          "Supply"
+        ],
+        "source": [
+          "Supply",
+          "Activity"
+        ],
+        "nexus": [
+          "Activity"
+        ]
+      }
+    },
+    "Calculation": {
+      "identity": [
+        "calculationId"
+      ],
+      "required": [
+        "calculationOwnerKind",
+        "calculationOwnerRef",
+        "origin",
+        "knowledgeTime"
+      ],
+      "ownerKinds": [
+        "ReturnRevision",
+        "Obligation"
+      ],
+      "origins": [
+        "self-assessed",
+        "declared",
+        "estimate",
+        "authority-assessed",
+        "reassessment"
+      ],
+      "authorityAssessedRequires": "assessmentRef"
+    },
+    "AuthorityResponse": {
+      "master": "WM-ECO-032",
+      "identity": [
+        "authorityResponseId"
+      ],
+      "required": [
+        "attemptRef",
+        "responseClass",
+        "authorityRecordedAt",
+        "knowledgeTime"
+      ],
+      "responseClasses": [
+        "receipt",
+        "schema-rejection",
+        "business-rejection",
+        "acceptance-for-processing",
+        "acknowledgement"
+      ],
+      "attemptCardinality": "0..n",
+      "perAttemptResponseClassMax": 1,
+      "ordering": [
+        "authorityRecordedAt",
+        "knowledgeTime",
+        "authorityResponseId"
+      ]
+    },
+    "PinnedExternalVersion": {
+      "required": [
+        "pinKind",
+        "authorityRef",
+        "versionId",
+        "effectiveFrom",
+        "knowledgeTime",
+        "sourcePin"
+      ],
+      "optional": [
+        "effectiveTo"
+      ],
+      "pinKinds": [
+        "legal-rule",
+        "rate-schedule",
+        "formula",
+        "form",
+        "schema",
+        "taxonomy",
+        "code-set"
+      ]
+    },
+    "TaxProfile": {
+      "persists": false,
+      "masters": []
+    }
+  },
+  "invariantRules": [
+    "Balance and every due position are obligation-scoped, knowledge-timed assertions mastered by WM-POL-011 and never owned by a tax registration account.",
+    "A jurisdictional basis never entails registration, and an address alone entails neither registration nor obligation.",
+    "Each residence, source, place-of-supply or nexus basis remains independently identified, evidenced and resolvable with or without an account.",
+    "Residence, source, place-of-supply and nexus remain distinct and obey the closed basis-to-subject-kind table.",
+    "Concurrent jurisdictional bases coexist without implicit ranking, suppression or netting.",
+    "Every time-varying assertion is read with mandatory effective and knowledge instants; authority timestamps remain separately recorded.",
+    "Account state is revision-owned; currentState is derived and cannot be mutated in place.",
+    "Version lineage is backward supersedesRef only, acyclic, single-parent and never identified by content digest.",
+    "Authority identifiers are interval-qualified by authority, jurisdiction and tax type; local identities are never recycled.",
+    "A balance is neither a second master of an assessment or payment nor erasable into either.",
+    "A procedure case and an authority response correlate facts but never own obligations, assessments, notices, acknowledgements or economic amounts.",
+    "Every calculation has exactly one owner: ReturnRevision or Obligation; an authority-assessed calculation remains Obligation-owned and requires assessmentRef.",
+    "Equal amounts or digests never merge calculations, returns, assessments, obligations or accounts.",
+    "Registration never implies an obligation and a basis never implies registration.",
+    "All candidate objects are restricted by default; reads are purpose-bound, actor-bound and knowledge-time logged.",
+    "A taxable event, obligation and payment may coexist with zero tax registration accounts and zero return revisions.",
+    "An account is instantiated only from an authority handle or an explicit opening/application event naming the authority.",
+    "Every rule, rate, formula, form, schema, taxonomy and code-set dependency is an opaque effective-and-knowledge-time version pin; local rate copies are forbidden.",
+    "Deregistration archives by tombstone and never erases prior obligations, returns, assessments, responses or lineage.",
+    "Retention is at least the maximum of an externally pinned statutory minimum and any active legal hold.",
+    "Return class is declared explicitly and never inferred from account, taxpayer, period or payload similarity.",
+    "TaxProfile is a non-storing view with no masters; obligation scope uses taxTypeRef and obligationClass instead."
+  ],
+  "rejectCodes": [
+    "CALCULATION_MULTIPLE_OWNERS",
+    "BASIS_SUBJECT_KIND_MISMATCH",
+    "BASIS_WITHOUT_EVIDENCE",
+    "MISSING_KNOWLEDGE_TIME_PIN",
+    "IN_PLACE_STATE_MUTATION",
+    "ILLEGAL_STATE_TRANSITION",
+    "PHANTOM_ACCOUNT_INSTANTIATION",
+    "IDENTIFIER_LOOKUP_WITHOUT_INTERVAL",
+    "LINEAGE_CYCLE",
+    "LINEAGE_FORK",
+    "DIGEST_USED_AS_IDENTITY",
+    "DUPLICATE_RESPONSE_CLASS",
+    "LOCAL_RATE_COPY",
+    "UNPINNED_RATE_REFERENCE",
+    "ACCESS_WITHOUT_PURPOSE_BINDING"
+  ],
+  "privacy": {
+    "defaultClassification": "restricted",
+    "authorityIdentifierClassification": "restricted-identifier",
+    "readRequires": [
+      "purpose",
+      "actorRef",
+      "knowledgeTime"
+    ],
+    "purposes": [
+      "tax-administration",
+      "filing",
+      "payment-reconciliation",
+      "audit",
+      "legal-dispute",
+      "statutory-reporting"
+    ],
+    "deletion": "archive tombstone only",
+    "retentionFloor": "max(external statutory-minimum pin, active legal hold)"
+  },
+  "holds": [
+    "Independent Grok review received; recorded in provider-comparison.",
+    "Frozen semantic audit executed once and spent; no further provider run may be requested for EM-FIN-07.",
+    "WM-POL-011, WM-ECO-032 and WM-ACT-052 overlap remains unresolved at canonical relation level.",
+    "Registry parent_ids and empty relation ledger contradict each other.",
+    "No canonical master is allocated for rate-schedule, formula, form, schema, taxonomy or code-set; pins remain opaque.",
+    "TaxRegistrationAccount identifier remains unassigned and no identifier may be guessed."
+  ]
+}

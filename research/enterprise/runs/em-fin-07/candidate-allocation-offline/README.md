@@ -1,3 +1,3 @@
-# EM-FIN-07 Tax Registration / Account delta
+# EM-FIN-07 offline dossier
 
-Profiles existing obligation, return, filing and payment masters and preserves Tax Registration / Account as an identifier-unassigned authority lifecycle. No identifier is allocated.
+Reviewable profile plus identifier-unassigned `TaxRegistrationAccount` candidate. The candidate is optional and never a mandatory bridge. `invariants.json` is normative; all model and registry identifiers remain null. Canonical publication is held.
