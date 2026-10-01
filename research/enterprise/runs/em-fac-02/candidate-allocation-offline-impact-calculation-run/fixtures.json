@@ -1,1 +1,237 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Environmental Impact Calculation Run","cases":[{"id":"dual-method-runs","kind":"positive","input":"One activity record produces location- and market-based results.","expect":"Two non-additive results pin their own factor and market-evidence inputs."},{"id":"successor-run","kind":"positive","input":"A factor correction requires recalculation.","expect":"A successor run preserves original inputs and results."},{"id":"shared-asset-residual","kind":"positive","input":"A shared asset is allocated 90 percent across targets.","expect":"Results total 0.9 and the remaining 0.1 is exposed as residual."},{"id":"missing-as-zero","kind":"negative","input":"Unreported activity is silently treated as zero.","expect":"The run is rejected because missing coverage must remain explicit."},{"id":"cross-boundary-netting","kind":"negative","input":"Supplier Scope 1 is netted against buyer Scope 3.","expect":"The run is rejected because counterparty inventories are not netted."},{"id":"mutate-completed-run","kind":"negative","input":"A corrected factor replaces results inside a completed run.","expect":"The mutation is rejected; a successor run is required."},{"id":"run-is-posting","kind":"negative","input":"An impact result is recorded as a ledger posting without a journal entry.","expect":"The substitution is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v2",
+  "candidateName": "Environmental Impact Calculation Run",
+  "cases": [
+    {
+      "id": "dual-method-runs",
+      "kind": "positive",
+      "input": "One activity record produces location- and market-based results.",
+      "expect": "Two non-additive results pin their own factor and market-evidence inputs.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Location- and market-based results are non-additive.",
+      "closesDefect": null
+    },
+    {
+      "id": "successor-run",
+      "kind": "positive",
+      "input": "A factor correction requires recalculation.",
+      "expect": "A successor run preserves original inputs and results.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Runs are immutable and corrected by successors.",
+      "closesDefect": null
+    },
+    {
+      "id": "shared-asset-residual",
+      "kind": "positive",
+      "input": "A shared asset is allocated 90 percent across targets.",
+      "expect": "Results total 0.9 and the remaining 0.1 is exposed as residual.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Coverage and exclusions accompany aggregates.",
+      "closesDefect": null
+    },
+    {
+      "id": "missing-as-zero",
+      "kind": "negative",
+      "input": "Unreported activity is silently treated as zero.",
+      "expect": "The run is rejected because missing coverage must remain explicit.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Missing data is never zero.",
+      "closesDefect": null,
+      "expectedCode": "RUN_MISSING_AS_ZERO"
+    },
+    {
+      "id": "cross-boundary-netting",
+      "kind": "negative",
+      "input": "Supplier Scope 1 is netted against buyer Scope 3.",
+      "expect": "The run is rejected because counterparty inventories are not netted.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Counterparty inventories are not netted across boundaries.",
+      "closesDefect": null,
+      "expectedCode": "CROSS_COUNTERPARTY_NETTING"
+    },
+    {
+      "id": "mutate-completed-run",
+      "kind": "negative",
+      "input": "A corrected factor replaces results inside a completed run.",
+      "expect": "The mutation is rejected; a successor run is required.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "Runs are immutable and corrected by successors.",
+      "closesDefect": null,
+      "expectedCode": "COMPLETED_RUN_MUTATED"
+    },
+    {
+      "id": "run-is-posting",
+      "kind": "negative",
+      "input": "An impact result is recorded as a ledger posting without a journal entry.",
+      "expect": "The substitution is rejected.",
+      "target": "Environmental Impact Calculation Run",
+      "violates": "A run is neither a disclosure nor a financial posting.",
+      "closesDefect": null,
+      "expectedCode": "RUN_AS_FINANCIAL_POSTING"
+    },
+    {
+      "id": "unallocated-dependency-declared",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "A run requires a GWP characterization set but no characterization-set master is allocated.",
+      "expect": "The run declares GWPCharacterizationSet in unallocatedDependencies with allocationState unassigned and blocksRun true, invents no identifier, and does not execute.",
+      "violates": "A required reference whose master is unallocated is declared in unallocatedDependencies and blocks the run; no identifier is invented to satisfy it.",
+      "closesDefect": "D4"
+    },
+    {
+      "id": "characterization-ref-invented",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "characterizationSetRef is populated with a plausible but unallocated registry-style identifier.",
+      "expect": "The run is rejected because the identifier was not allocated.",
+      "violates": "A required reference whose master is unallocated is declared in unallocatedDependencies and blocks the run; no identifier is invented to satisfy it.",
+      "closesDefect": "D4",
+      "expectedCode": "IDENTIFIER_NOT_ALLOCATED"
+    },
+    {
+      "id": "method-edition-unpinned",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A run executes with activity revisions and factor set versions pinned but methodEditionRef absent.",
+      "expect": "The run is blocked because the method edition is not pinned.",
+      "violates": "Every result pins boundary, method, factor and characterization versions.",
+      "closesDefect": "D4",
+      "expectedCode": "METHOD_EDITION_UNPINNED"
+    },
+    {
+      "id": "bridge-decomposition",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "Run R3 on equity-share boundary B2 with a 2025 factor set is compared to baseline run R1 on operational-control boundary B1 with a 2024 factor set.",
+      "expect": "R3 carries one ComparabilityBridge citing R1 with boundary, method, factor and activity effects plus residualUnexplained reconciling the difference exactly, and R1 and R3 are marked non-comparable.",
+      "violates": "A run that changes boundary revision, method or factor set version relative to a cited baseline carries one ComparabilityBridge whose effects plus residualUnexplained reconcile the difference exactly.",
+      "closesDefect": "D5"
+    },
+    {
+      "id": "non-additive-sum",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A consumer sums the location-based result of R1 and the market-based result of R2 into one Scope 2 total.",
+      "expect": "The aggregation is rejected because the two results are declared non-additive.",
+      "violates": "Results whose runs differ in method, boundary revision or factor set version are never summed or averaged.",
+      "closesDefect": "D5",
+      "expectedCode": "NON_ADDITIVE_AGGREGATION"
+    },
+    {
+      "id": "bridge-residual-undeclared",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A bridge lists boundary, method, factor and activity effects that do not sum to the observed difference, and omits residualUnexplained.",
+      "expect": "The bridge is rejected because the unexplained remainder must be declared.",
+      "violates": "A run that changes boundary revision, method or factor set version relative to a cited baseline carries one ComparabilityBridge whose effects plus residualUnexplained reconcile the difference exactly.",
+      "closesDefect": "D5",
+      "expectedCode": "BRIDGE_RESIDUAL_UNDECLARED"
+    },
+    {
+      "id": "market-based-with-retirement",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "A market-based Scope 2 result cites a specific retired energy attribute certificate.",
+      "expect": "The result carries marketInstrumentRetirementRef, omits residualMixFactorVersionRef, and the retirement reference supports no other result in any run.",
+      "violates": "One retirement or cancellation reference supports at most one market-based result across all runs and all organizations.",
+      "closesDefect": "D6"
+    },
+    {
+      "id": "market-based-residual-fallback",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "A market-based Scope 2 result exists for a site with no contractual instrument.",
+      "expect": "The result carries residualMixFactorVersionRef, omits marketInstrumentRetirementRef, and sets limitationDisclosed true.",
+      "violates": "A market-based result without a uniquely retired instrument uses a pinned residual mix and discloses the limitation.",
+      "closesDefect": "D6"
+    },
+    {
+      "id": "market-claim-no-evidence",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A market-based result carries neither a retirement reference nor a residual-mix factor version.",
+      "expect": "The run is blocked because the market-based method lacks required evidence.",
+      "violates": "A market-based result carries exactly one of a retirement reference or a pinned residual-mix factor version.",
+      "closesDefect": "D6",
+      "expectedCode": "MARKET_CLAIM_EVIDENCE_MISSING"
+    },
+    {
+      "id": "instrument-claimed-twice",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "One retired certificate is cited by market-based results in two different organizations' runs.",
+      "expect": "The second claim is rejected because the retirement reference is already consumed.",
+      "violates": "One retirement or cancellation reference supports at most one market-based result across all runs and all organizations.",
+      "closesDefect": "D6",
+      "expectedCode": "MARKET_INSTRUMENT_CLAIM_NOT_UNIQUE"
+    },
+    {
+      "id": "cost-as-result-quantity",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "An impact result records quantity 1200000 with unit USD and quantityKind massCo2e.",
+      "expect": "The result is rejected because a monetary amount is never an impact quantity and no monetary field is admitted on a result.",
+      "violates": "Financial cost never substitutes for impact quantity.",
+      "closesDefect": "D7",
+      "expectedCode": "MONETARY_AMOUNT_AS_IMPACT_QUANTITY"
+    },
+    {
+      "id": "results-only-on-completed",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "A run transitions planned to running to completed and then is superseded by a corrected successor.",
+      "expect": "Results appear only at completed, remain readable through superseded, and the transition set permits no return to running.",
+      "violates": "Environmental impact result instances exist only on a run whose status is completed, superseded or retired.",
+      "closesDefect": "D9"
+    },
+    {
+      "id": "results-on-running-run",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "Partial results are written to a run whose status is running.",
+      "expect": "The write is rejected because results exist only on a completed, superseded or retired run.",
+      "violates": "Environmental impact result instances exist only on a run whose status is completed, superseded or retired.",
+      "closesDefect": "D9",
+      "expectedCode": "RESULT_OUTSIDE_COMPLETED_RUN"
+    },
+    {
+      "id": "retired-run-unresolvable",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A run retired after supersession is made unresolvable while a published disclosure revision still cites it.",
+      "expect": "The retirement is rejected because a cited run remains permanently resolvable.",
+      "violates": "retired closes a run to new citation and never makes it unresolvable; a run cited by any disclosure revision remains resolvable permanently.",
+      "closesDefect": "D9",
+      "expectedCode": "CITED_RUN_NOT_RESOLVABLE"
+    },
+    {
+      "id": "assurance-external-pin",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "positive",
+      "input": "A limited-assurance engagement reaches a conclusion on specified Scope 1 and 2 results of run R1.",
+      "expect": "The engagement is externally mastered and unallocated, pins the run and result identities, and changes nothing inside R1.",
+      "violates": "Assurance and filing never mutate, re-open or re-state a closed run; they reference pinned run and result identities.",
+      "closesDefect": "D11"
+    },
+    {
+      "id": "assurance-mutates-run",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "An assurance adjustment rewrites a Scope 1 result inside completed run R1.",
+      "expect": "The mutation is rejected; a successor run is required.",
+      "violates": "Assurance and filing never mutate, re-open or re-state a closed run; they reference pinned run and result identities.",
+      "closesDefect": "D11",
+      "expectedCode": "CLOSED_RUN_MUTATED_BY_ASSURANCE"
+    },
+    {
+      "id": "gas-conflated-with-category",
+      "target": "Environmental Impact Calculation Run",
+      "kind": "negative",
+      "input": "A result carries the single field gasOrImpactKind with value CH4.",
+      "expect": "The result is rejected because impactCategory, gas and characterizationBasis are separate required and optional fields.",
+      "violates": "Impact category, gas and characterization basis are distinct fields and are never conflated.",
+      "closesDefect": "D14",
+      "expectedCode": "IMPACT_CATEGORY_GAS_CONFLATED"
+    }
+  ]
+}

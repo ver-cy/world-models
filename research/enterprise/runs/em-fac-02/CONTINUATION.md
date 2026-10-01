@@ -1,11 +1,9 @@
 # EM-FAC-02 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-10-01.
 
-Disposition: reuse WM-ECO-034 for Sustainability Disclosure; profile Activity Data on WM-FLW-015/WM-MAT-008; propose identifier-unassigned Inventory Boundary, Emission Factor Registry and Environmental Impact Calculation Run roots. No catalogue/runtime identifier is allocated.
+Disposition: reuse WM-ECO-034 for Sustainability Disclosure; profile Activity Data over WM-FLW-015 and WM-MAT-008; keep Inventory Boundary, Emission Factor Registry, and Environmental Impact Calculation Run as identifier-unassigned roots. Results are run-contained and factor versions set-contained. No catalogue or runtime identifier is allocated.
 
-The complete target specification and reservation plus all complete relevant observation, consumption, dataset, organization, relationship, asset and rule specifications and prior Enterprise boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Claude and Grok agree on the boundary. Grok hidden browsing is excluded. One frozen Claude Opus high no-tools audit found 14 artifact defects; all were remediated without rerun. Its exact JSON contains 38 additional fixtures despite a narrative count of 36; the exact array is preserved. The packages contain 59 fixtures: 22 positive and 37 negative.
 
-Publication is held by three unallocated roots, WM-ECO-034 boundary overlap, missing characterization-set and assurance masters, incomplete uncertainty/consolidation links, unapproved relations and non-canonical drafts.
-
-Next contour: EM-FIN-04. Read the complete WM-ECO-018 specification and registry reservation and adjudicate FinancialStatement, ConsolidationScope, ConsolidationRun and EliminationEntry boundaries.
+Publication remains held by unallocated roots and dependencies, non-canonical bases, unapproved relations and unresolved WM-ECO-034/WM-MAT-008/WM-ORG-012 base defects.

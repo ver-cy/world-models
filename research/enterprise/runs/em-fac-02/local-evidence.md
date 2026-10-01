@@ -91,3 +91,7 @@ Run R1 uses operational-control boundary v2, location-based grid factors and AR6
 ## Holds
 
 Inventory Boundary, Emission Factor Registry and Environmental Impact Calculation Run have no registry allocations. WM-ECO-034's scope overlaps external metric, factor and calculation masters despite contrary boundary notes. No allocated home exists for GWP characterization sets or assurance-engagement identity. WM-MAT-008 uncertainty linkage and WM-ORG-012 consolidation relations remain incomplete. Relations, fixtures and source pins are unapproved or missing, and the bases remain non-canonical drafts. No installability or publication-readiness claim is made.
+
+## Reconciled provider and audit result (2026-10-01)
+
+The exact visible Grok response independently confirms the three-root boundary, disclosure/activity reuse, run-contained results, set-contained factors and non-netting semantics. Hidden browsing is excluded. One frozen Claude Opus high no-tools audit upheld the boundary, found 14 deterministic artifact defects and supplied an exact JSON array of 38 unique additional fixtures; its narrative table incorrectly says 36. All exact JSON fixtures were preserved and all defects were remediated without rerun. No identifier was allocated and no publication readiness is claimed.
