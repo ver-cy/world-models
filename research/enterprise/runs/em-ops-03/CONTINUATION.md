@@ -1,11 +1,9 @@
 # EM-OPS-03 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-10-01.
 
-Disposition: Asset Instance and Custody profile WM-OBJ-001; WM-OBJ-022/WM-ECO-011 remain views; WM-ACT-007 remains the authorization master. Maintenance Plan, Maintenance Event and Calibration Event are identifier-unassigned new-model candidates. The Operational Responsibility Assignment candidate is reused from EM-LND-17.
+Disposition: Asset Instance profiles WM-OBJ-001; Custody is an independently identified effective-dated relationship record inside that boundary and allocates no model/runtime ID. WM-OBJ-022 and WM-ECO-011 remain projection/aligned-view only. WM-ACT-007 authorizes work and never proves execution. Maintenance Plan, Maintenance Event and Calibration Event remain identifier-unassigned independent roots. Operational Responsibility Assignment is reused from EM-LND-17. WM-OBJ-023 is a reserved completion dependency.
 
-The complete available WM-ECO-011 legacy document and WM-ACT-007 specification plus adjacent physical-item, assessment and observation specifications, reservations, relation ledger and EM-LND-17 research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+The exact public Grok prompt was sent under fresh user confirmation. Its visible conditional acceptance was reconciled; hidden reasoning, team coordination and sources were excluded. One frozen Claude Opus high no-tools audit accepted the boundary and found 20 artifact defects. All 20 were remediated deterministically without rerun. The fixture set now has 64 cases: 22 positive and 42 negative.
 
-Publication is held by the missing current WM-ECO-011 spec/crosswalk, K11 duplication, incomplete measuring-instrument boundary, non-canonical bases and missing registry allocations for the three new candidates.
-
-Next contour: EM-ORG-03. Read the complete WM-ORG-018, WM-ORG-012 and WM-ECO-038 specifications and registry reservations.
+Publication remains held by registry allocation for the three roots, WM-OBJ-023 completion, the missing WM-ECO-011 current specification/crosswalk and enterprise title authority, K11 duplication, incomplete approved relations/base canonicalization, package promotion and live verification.

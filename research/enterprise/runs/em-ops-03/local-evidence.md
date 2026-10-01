@@ -38,3 +38,7 @@ The negative case fails: a successful calibration applies only to the identified
 ## Holds
 
 WM-ECO-011 lacks a current complete specification and semantic crosswalk. WM-ACT-007 and WM-ACT-013 have an unresolved K11 duplication. WM-OBJ-023 and the three new candidates lack complete specs/allocations; enterprise title mastership is unresolved. Existing bases remain non-canonical reviewable drafts with relation and provider holds. No new identifier or installable release is created.
+
+## Reconciliation and frozen audit — 2026-10-01
+
+Grok conditionally accepted the boundary and clarified custody record identity. The single frozen Claude audit accepted the settled record-within-boundary resolution and identified 20 deterministic artifact defects. All defects were remediated without rerun. Exact fixture total: 64 (22 positive, 42 negative). No identifier was allocated.
