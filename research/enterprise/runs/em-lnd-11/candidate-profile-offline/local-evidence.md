@@ -75,4 +75,8 @@ Recalled component lot L yields three serialized units with event-backed consump
 
 ## Holds
 
-Nine required subject/event boundaries remain unallocated. Registry parent signals for shipment, movement, trace, fulfilment, BOM and stock conflict with their specs. WM-ACT-007 is maintenance-scoped and has an unresolved legacy duplication. EPCIS, CBV and UBL pins diverge. Most drafts are single-provider and all are non-canonical; crosswalks and fixtures are absent. No installability or publication-readiness claim is made.
+Nine required subject/event boundaries remain unallocated. Registry parent signals for shipment, movement, trace, fulfilment, BOM and stock conflict with their specs. WM-ACT-007 is maintenance-scoped and has an unresolved legacy duplication. EPCIS, CBV and UBL pins diverge. Most drafts are single-provider and all are non-canonical; crosswalks are absent and fixtures are specified but not executed. No installability or publication-readiness claim is made.
+
+## Grok reconciliation and frozen audit
+
+Grok confirmed both candidates as non-roots. Proven-affected quantity is bounded by the cited consumed quantity; a network or landscape edge cannot close an unknown-origin break. The single frozen audit found D1-D30 and all deterministic remediations were applied. Final suite: 119 cases (32 positive, 87 negative).
