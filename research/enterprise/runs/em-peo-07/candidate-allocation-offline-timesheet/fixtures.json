@@ -1,1 +1,156 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Timesheet","cases":[{"id":"approved-period","kind":"positive","input":"A submitted period pins five worklogs and is approved by an authorized reviewer.","expect":"Member digest, approval scope, authority and decision time are immutable."},{"id":"post-approval-adjustment","kind":"positive","input":"One worklog is corrected after approval.","expect":"A linked adjustment or successor revision preserves the original approved period."},{"id":"returned-period","kind":"positive","input":"A reviewer returns a timesheet for clarification.","expect":"Return is recorded without approval or deletion."},{"id":"approval-proves-quality","kind":"negative","input":"Approved timesheet is used as proof of work quality.","expect":"The inference is rejected."},{"id":"edit-approved-members","kind":"negative","input":"An approved member set is edited in place.","expect":"The mutation is rejected."},{"id":"approval-is-payment","kind":"negative","input":"Timesheet approval is treated as completed payroll payment.","expect":"The inference is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Timesheet",
+  "cases": [
+    {
+      "id": "approved-period",
+      "kind": "positive",
+      "input": "A submitted period pins five worklogs and is approved by an authorized reviewer.",
+      "expect": "Member digest, approval scope, authority and decision time are immutable.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "post-approval-adjustment",
+      "kind": "positive",
+      "input": "One worklog is corrected after approval.",
+      "expect": "A linked adjustment or successor revision preserves the original approved period.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "returned-period",
+      "kind": "positive",
+      "input": "A reviewer returns a timesheet for clarification.",
+      "expect": "Return is recorded without approval or deletion.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "approval-proves-quality",
+      "kind": "negative",
+      "input": "Approved timesheet is used as proof of work quality.",
+      "expect": "The inference is rejected.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": "inv-worklog-not-presence-productivity-quality",
+      "expectedCode": "EM-PEO-07-TSH-101"
+    },
+    {
+      "id": "edit-approved-members",
+      "kind": "negative",
+      "input": "An approved member set is edited in place.",
+      "expect": "The mutation is rejected.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": "inv-approved-immutable",
+      "expectedCode": "EM-PEO-07-TSH-102"
+    },
+    {
+      "id": "approval-is-payment",
+      "kind": "negative",
+      "input": "Timesheet approval is treated as completed payroll payment.",
+      "expect": "The inference is rejected.",
+      "target": "Timesheet",
+      "closesDefect": 15,
+      "violates": "inv-timesheet-not-entitlement-or-payment",
+      "expectedCode": "EM-PEO-07-TSH-103"
+    },
+    {
+      "id": "tsh-approval-declared",
+      "target": "Timesheet",
+      "kind": "positive",
+      "input": "A submitted revision pinning five worklogs is approved by an authorized reviewer who is not the performer.",
+      "expect": "A TimeApproval is written at timesheetId plus approvalSequence 1 with scope period, authorityRef, approverRef, decision approved, decidedAt and the frozen memberDigest.",
+      "violates": null,
+      "closesDefect": 9,
+      "expectedCode": null
+    },
+    {
+      "id": "tsh-approval-as-root",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "TimeApproval is given a standalone root identity and is resolved without its timesheetId.",
+      "expect": "The identity is rejected; TimeApproval is identified only as timesheetId plus approvalSequence inside the aggregate.",
+      "violates": "inv-time-approval-scoped-inside-timesheet",
+      "closesDefect": 9,
+      "expectedCode": "EM-PEO-07-TSH-001"
+    },
+    {
+      "id": "tsh-self-approval",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "Under an applicable separation-of-duties rule, approverRef equals the timesheet personRef.",
+      "expect": "The approval is rejected; the approver must be distinct from the performer where separation of duties applies.",
+      "violates": "inv-time-approval-scoped-inside-timesheet",
+      "closesDefect": 9,
+      "expectedCode": "EM-PEO-07-TSH-002"
+    },
+    {
+      "id": "tsh-approval-entry-overwritten",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "An existing TimeApproval at approvalSequence 1 is overwritten with a later rejection decision.",
+      "expect": "The overwrite is rejected; approvals are append-only and a later decision is a new sequence referencing the prior one.",
+      "violates": "inv-approved-immutable",
+      "closesDefect": 9,
+      "expectedCode": "EM-PEO-07-TSH-003"
+    },
+    {
+      "id": "tsh-unverified-base-reference",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "The candidate asserts a reference to an issued-record model that appears in no admitted evidence for this contour, and routes approval mastership to it.",
+      "expect": "The reference is rejected; references must be grounded in admitted evidence and approval mastership stays inside the Timesheet aggregate.",
+      "violates": "inv-evidence-grounded-reference",
+      "closesDefect": 10,
+      "expectedCode": "EM-PEO-07-TSH-004"
+    },
+    {
+      "id": "tsh-revision-immutable",
+      "target": "Timesheet",
+      "kind": "positive",
+      "input": "Revision 1 is approved; a later reporting change opens revision 2 with supersedesRevision 1.",
+      "expect": "Revision 1 keeps its memberWorklogRefs, memberDigest, contentDigest, revisionStatus approved and its approval sequences; Timesheet.status is derived from the latest revision.",
+      "violates": null,
+      "closesDefect": 16,
+      "expectedCode": null
+    },
+    {
+      "id": "tsh-root-status-independent-write",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "Timesheet.status is written directly to draft while the latest revision carries revisionStatus approved.",
+      "expect": "The write is rejected; Timesheet.status is derived from the latest revision and is never independently written.",
+      "violates": "inv-approved-immutable",
+      "closesDefect": 16,
+      "expectedCode": "EM-PEO-07-TSH-005"
+    },
+    {
+      "id": "tsh-period-missing-tz",
+      "target": "Timesheet",
+      "kind": "negative",
+      "input": "The reporting period is recorded as two local dates with no tzid and no tzdbRelease.",
+      "expect": "The period is rejected; period bounds carry explicit offsets and the period carries tzid and tzdbRelease.",
+      "violates": "inv-interval-pins-offset-tz-release",
+      "closesDefect": 4,
+      "expectedCode": "EM-PEO-07-TSH-006"
+    },
+    {
+      "id": "tsh-post-approval-supersession",
+      "target": "Timesheet",
+      "kind": "positive",
+      "input": "After approval of revision 1, one member worklog is superseded by a corrected worklog reducing it by two hours.",
+      "expect": "The approved memberDigest and total of revision 1 are unchanged; a linked adjustment entry carries the two-hour delta with reason, classification and authorising agent, and the prior approval remains retrievable.",
+      "violates": null,
+      "closesDefect": 8,
+      "expectedCode": null
+    }
+  ]
+}

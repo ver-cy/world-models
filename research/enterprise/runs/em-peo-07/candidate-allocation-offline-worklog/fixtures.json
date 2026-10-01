@@ -1,1 +1,146 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Worklog","cases":[{"id":"reported-project-time","kind":"positive","input":"A worker reports two hours against a project task with result and ingestion times.","expect":"The worklog is attributable without proving presence or quality."},{"id":"overlapping-logs","kind":"positive","input":"Two project worklogs overlap by thirty minutes.","expect":"Both remain, an overlap finding is emitted and capacity is not doubled."},{"id":"explicit-zero","kind":"positive","input":"A worker explicitly reports zero time for a required period.","expect":"Zero is distinguished from missing."},{"id":"worklog-proves-presence","kind":"negative","input":"Reported time is treated as verified physical presence.","expect":"The inference is rejected."},{"id":"missing-is-zero","kind":"negative","input":"No worklog is interpreted as zero work.","expect":"The collapse is rejected."},{"id":"silent-overlap-merge","kind":"negative","input":"Overlapping records are silently merged into one.","expect":"The mutation is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Worklog",
+  "cases": [
+    {
+      "id": "reported-project-time",
+      "kind": "positive",
+      "input": "A worker reports two hours against a project task with result and ingestion times.",
+      "expect": "The worklog is attributable without proving presence or quality.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "overlapping-logs",
+      "kind": "positive",
+      "input": "Two project worklogs overlap by thirty minutes.",
+      "expect": "Both remain, an overlap finding is emitted and capacity is not doubled.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "explicit-zero",
+      "kind": "positive",
+      "input": "A worker explicitly reports zero time for a required period.",
+      "expect": "Zero is distinguished from missing.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": null,
+      "expectedCode": null
+    },
+    {
+      "id": "worklog-proves-presence",
+      "kind": "negative",
+      "input": "Reported time is treated as verified physical presence.",
+      "expect": "The inference is rejected.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": "inv-worklog-not-presence-productivity-quality",
+      "expectedCode": "EM-PEO-07-WKL-101"
+    },
+    {
+      "id": "missing-is-zero",
+      "kind": "negative",
+      "input": "No worklog is interpreted as zero work.",
+      "expect": "The collapse is rejected.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": "inv-missing-is-unknown",
+      "expectedCode": "EM-PEO-07-WKL-102"
+    },
+    {
+      "id": "silent-overlap-merge",
+      "kind": "negative",
+      "input": "Overlapping records are silently merged into one.",
+      "expect": "The mutation is rejected.",
+      "target": "Worklog",
+      "closesDefect": 15,
+      "violates": "inv-overlaps-retained-not-collapsed",
+      "expectedCode": "EM-PEO-07-WKL-103"
+    },
+    {
+      "id": "wkl-correction-supersedes",
+      "target": "Worklog",
+      "kind": "positive",
+      "input": "A reported worklog of 6 hours is corrected to 4 hours after submission.",
+      "expect": "A new worklogId records 4 hours with supersedesWorklogRef; the predecessor transitions to superseded with its reported 6 hours, its reportedAt and its method intact and bidirectionally linked.",
+      "violates": null,
+      "closesDefect": 8,
+      "expectedCode": null
+    },
+    {
+      "id": "wkl-in-place-correction",
+      "target": "Worklog",
+      "kind": "negative",
+      "input": "The quantity on a reported worklog is overwritten from 6 to 4 hours on the same worklogId.",
+      "expect": "The mutation is rejected; a Worklog is immutable once reported and corrections create a superseding record.",
+      "violates": "inv-corrections-additive-linked",
+      "closesDefect": 8,
+      "expectedCode": "EM-PEO-07-WKL-001"
+    },
+    {
+      "id": "wkl-duration-kind-exact",
+      "target": "Worklog",
+      "kind": "positive",
+      "input": "Work spanning the Europe/Athens spring-forward transition is reported with durationKind exact, bounded instants carrying offsets +02:00 and +03:00, and a separately stated nominalDuration of one working day.",
+      "expect": "Exact elapsed duration and nominal duration are both retained and neither is derived from the other.",
+      "violates": null,
+      "closesDefect": 5,
+      "expectedCode": null
+    },
+    {
+      "id": "wkl-nominal-as-exact",
+      "target": "Worklog",
+      "kind": "negative",
+      "input": "A worklog reports one nominal working day and the value is read as exact elapsed clock time in a duration sum.",
+      "expect": "The substitution is rejected; nominal and exact durations are never interchanged.",
+      "violates": "inv-nominal-exact-distinct",
+      "closesDefect": 5,
+      "expectedCode": "EM-PEO-07-WKL-002"
+    },
+    {
+      "id": "wkl-observation-period-basis",
+      "target": "Worklog",
+      "kind": "positive",
+      "input": "A weekly aggregate of 20 hours is reported with observationPeriod, basis, unit hour and no interval.",
+      "expect": "The record is accepted with exactly one of interval or observationPeriod present, and its phenomenon, result and ingestion times remain distinct.",
+      "violates": null,
+      "closesDefect": 12,
+      "expectedCode": null
+    },
+    {
+      "id": "wkl-quantity-without-unit",
+      "target": "Worklog",
+      "kind": "negative",
+      "input": "A worklog reports quantity 7.5 with no unit, no code system and no basis.",
+      "expect": "The record is rejected; every quantity declares unit, code system and basis.",
+      "violates": "inv-quantity-declares-unit-and-basis",
+      "closesDefect": 12,
+      "expectedCode": "EM-PEO-07-WKL-003"
+    },
+    {
+      "id": "wkl-ambiguous-local-fall-back",
+      "target": "Worklog",
+      "kind": "negative",
+      "input": "A worklog on the Europe/Athens fall-back day starts at local 03:30 with no offset, so the instant is ambiguous between the +03:00 and +02:00 occurrences.",
+      "expect": "The entry is rejected and flagged as an anomaly; the ambiguity is never silently resolved to either occurrence.",
+      "violates": "inv-interval-pins-offset-tz-release",
+      "closesDefect": 4,
+      "expectedCode": "EM-PEO-07-WKL-004"
+    },
+    {
+      "id": "wkl-overlap-reduces-availability",
+      "target": "Worklog",
+      "kind": "negative",
+      "input": "Two overlapping worklogs on different charge targets are used to reduce the person's plannedAvailability for the day.",
+      "expect": "The reduction is rejected; worklogs are retained and flagged as observations and never consume availability, capacity or residual.",
+      "violates": "inv-worklog-excluded-from-capacity",
+      "closesDefect": 3,
+      "expectedCode": "EM-PEO-07-WKL-005"
+    }
+  ]
+}

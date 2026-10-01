@@ -48,3 +48,7 @@ A half-time worker has two 0.25 allocations. During a spring-forward week, the c
 ## Holds
 
 WM-ACT-008 and adjacent bases remain non-canonical drafts. FTE/effort basis, precision, working-time law and collective-agreement semantics are unresolved. Absence, Worklog and Timesheet need registry allocation, independent source research, relation contracts and fixtures. No new identifier or installable release is created.
+
+## Reconciled provider and audit delta
+
+Grok independently confirmed the three candidate identities, derived Work Calendar and Availability, aggregate-owned Time Approval and reference-only WM-ACT-008. The frozen audit added closed residual arithmetic, explicit projection manifests, structural medical separation, typed DST intervals, additive revisions and deterministic fixtures without changing the disposition.
