@@ -78,3 +78,7 @@ On the same frozen graph, an API change traverses interface and package dependen
 ## Holds
 
 Dependency Type Registry and Impact Scenario have no registry allocations. WM-XCT-037 contains unresolved contradictions between its declared boundary and implemented type/impact functions, plus conflicting weak versus first-class identity statements, duplicate completeness rules and unverified pins. Relations remain unapproved and adjacent drafts remain non-canonical single-provider work. No installability or publication-readiness claim is made.
+
+## Provider reconciliation and frozen-audit remediation
+
+Grok accepted the boundary with corrections. The sole Claude audit retained the identity decision and found 16 material artifact defects. Revision 2 closes all defects without rerun: type and propagation releases are explicit, inverses and heterogeneous composition are licensed, epistemic states block traversal deterministically, snapshots are externally minted and reproducibly pinned, scenario bytes are immutable with status overlays, outputs remain candidate exposure, and the WM-ACT-034 profile separates affectedness from criticality. Publication remains held by registry allocation and base/relation readiness.
