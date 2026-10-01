@@ -1,11 +1,18 @@
 # EM-LND-03 continuation
 
-Reconciled checkpoint date: 2026-09-27.
+## State
 
-Disposition: Workforce Scope is a versioned population, counting, access and disclosure profile; Workforce Landscape is its immutable pinned projection. Claude and Grok agree that neither has independent subject identity or lifecycle, so no runtime/model identifier was allocated.
+Claude and Grok independently selected **PROFILE / PROJECTION, no new model or runtime identity**. Workforce Scope is a versioned population, counting, access and disclosure profile. Workforce Landscape is an immutable result projected from one scope revision and pinned source revisions.
 
-The Grok Heavy response is preserved with an exact prompt/response manifest. Reconciliation adds deterministic source precedence for typed FTE, canonical headcount names, typed capacity, immutable source/access/disclosure/engine pins, transient WM-PER-001-derived deduplication anchors, cross-employer access checks, release-level temporal comparability and explicit contractor inclusion rules.
+The exact Grok response, provider comparison and one frozen Claude no-tools audit are preserved. Deterministic remediation after the audit added source precedence for typed FTE, canonical headcount names, typed capacity, immutable source/access/disclosure/engine pins, transient person-deduplication anchors, cross-employer access checks and temporal comparability.
 
-One Claude Opus high no-tools frozen audit returned REVISE. All six findings were remediated once and fixtures were expanded; the audit was not repeated. Publication remains held by non-canonical WM-ORG-005/016 composition, absent normative FTE/headcount crosswalks, canonical source fixtures and disclosure-policy validation.
+The bounded English adoption profile is published as version `0.1.0`. It is declarative, allocates no model/runtime identifier and contains no executable code.
 
-Next Grok contour is selected from the generated queue and requires fresh action-time user confirmation before browser submission.
+## Holds
+
+- WM-ORG-005 and WM-ORG-016 remain reviewable drafts and their composition relation is not approved.
+- Normative FTE/headcount crosswalks, canonical source fixtures and disclosure-policy validation remain open.
+
+## Publication decision
+
+The Enterprise research/adoption artifact may be cited and reviewed at its public URL. It is not canonical or installable; canonical promotion remains held until the base and measurement authorities are reconciled.
