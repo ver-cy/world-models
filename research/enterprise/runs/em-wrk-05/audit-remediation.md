@@ -1,0 +1,3 @@
+# EM-WRK-05 frozen-audit remediation
+
+The sole Claude Opus high no-tools audit returned REVISE with 25 material defects. All were remediated without rerun. The revised artifacts add explicit demand and pool versions; orthogonal state axes; joined resource and quantity vocabularies; quantity character; fully pinned interval, calendar, timezone and unit semantics; effective membership; exact availability and overbooking arithmetic; exclusivity precedence; derived reservation lapse; assignment-request boundaries; scenario rebase rules; separate aggregate and member conflict predicates; and an explicit Capacity Plan / AllocationScenario / ResourceAllocation profile. All 88 audit fixtures are retained alongside bounded positive and detection cases.

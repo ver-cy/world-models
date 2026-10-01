@@ -73,3 +73,7 @@ Projects A and B each request one specialist and GPU-hours. In scenario S1, SPEC
 ## Holds
 
 Resource Demand and Resource Pool have no registry allocations. WM-ACT-008's resource-assignment/contention scope overlaps cross-plan contention and must be narrowed. WM-FLW-015 planned consumption overlaps Capacity Plan and needs an explicit forecast-consumption versus capacity-commitment split. WM-ORG-016 lacks a grounded canonical FTE or headcount definition. Relation rows remain unapproved and reused bases retain non-canonical, source and provider holds. No installability or publication-readiness claim is made.
+
+## Provider reconciliation and frozen-audit remediation
+
+Grok accepted the identity split with conditions and identified four enforceability gaps. The single frozen Claude audit retained the identity decision and found 25 material artifact defects. Candidate revision 2 remediates all defects without rerun or identifier allocation. Resource Demand and Resource Pool remain independent unassigned roots; Capacity Plan, AllocationScenario and ResourceAllocation are now explicit declarative profile objects with immutable pins. Overlap and window-aggregate conflicts are separate, currency is excluded from resource quantities, reservation lapse is derived, and no planning assertion writes to a source master. Publication remains held by registry allocation and base/relation readiness.
