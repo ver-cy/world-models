@@ -1,5 +1,3 @@
-# EM-LND-17 offline allocation dossier
+# EM-LND-17 — Asset Placement Episode
 
-Validated, identifier-unassigned allocation dossier for **Asset Placement Episode**. It also records the no-ID **Asset Place Landscape and Occupancy View** profile and preserves the exact independent-review prompt and synthesis.
-
-No identifier is assigned. Apply only after registry allocation, provider reconciliation, privacy review, parent-boundary approval and one frozen audit.
+Held identifier-unassigned allocation candidate plus the shared no-identity landscape projection definition. Grok review is reconciled; the single frozen semantic audit was remediated without rerun. Canonical publication remains blocked by recorded registry and base constraints.

@@ -1,1 +1,413 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Operational Responsibility Assignment","cases":[{"id":"carrier-custody-separate","kind":"positive","input":"A carrier has custody during transit while the operator remains operationally responsible.","expect":"Custody and responsibility remain separate effective assignments."},{"id":"responsibility-transfer","kind":"positive","input":"Responsibility transfers from Site A operations to Site B operations after commissioning.","expect":"The prior assignment closes and a successor starts with authority and history."},{"id":"delegated-maintenance","kind":"positive","input":"The accountable operator delegates a bounded inspection task to a contractor.","expect":"Delegation is recorded without replacing accountability or asserting work completion."},{"id":"custody-implies-responsibility","kind":"negative","input":"The current custodian is automatically made operationally responsible.","expect":"The inference is rejected."},{"id":"address-implies-responsibility","kind":"negative","input":"A company's registered address makes that office responsible for all assets.","expect":"The inference is rejected."},{"id":"work-order-proves-completion","kind":"negative","input":"A work order addressed to the responsible party is treated as completed maintenance.","expect":"The inference is rejected."},{"id":"silent-transfer","kind":"negative","input":"A placement move silently rewrites the responsible party.","expect":"The update is rejected without an authorized successor assignment."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Operational Responsibility Assignment",
+  "cases": [
+    {
+      "id": "carrier-custody-separate",
+      "kind": "positive",
+      "input": "A carrier has custody during transit while the operator remains operationally responsible.",
+      "expect": "Custody and responsibility remain separate effective assignments."
+    },
+    {
+      "id": "responsibility-transfer",
+      "kind": "positive",
+      "input": "Responsibility transfers from Site A operations to Site B operations after commissioning.",
+      "expect": "The prior assignment closes and a successor starts with authority and history."
+    },
+    {
+      "id": "delegated-maintenance",
+      "kind": "positive",
+      "input": "The accountable operator delegates a bounded inspection task to a contractor.",
+      "expect": "Delegation is recorded without replacing accountability or asserting work completion."
+    },
+    {
+      "id": "custody-implies-responsibility",
+      "kind": "negative",
+      "input": "The current custodian is automatically made operationally responsible.",
+      "expect": "The inference is rejected."
+    },
+    {
+      "id": "address-implies-responsibility",
+      "kind": "negative",
+      "input": "A company's registered address makes that office responsible for all assets.",
+      "expect": "The inference is rejected."
+    },
+    {
+      "id": "work-order-proves-completion",
+      "kind": "negative",
+      "input": "A work order addressed to the responsible party is treated as completed maintenance.",
+      "expect": "The inference is rejected."
+    },
+    {
+      "id": "silent-transfer",
+      "kind": "negative",
+      "input": "A placement move silently rewrites the responsible party.",
+      "expect": "The update is rejected without an authorized successor assignment."
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "missing-governing-basis",
+      "kind": "negative",
+      "input": {
+        "responsiblePartyRef": "party/P2",
+        "assetScopeRef": "asset/A1",
+        "responsibilityRole": "operator",
+        "validFrom": "2026-03-01T00:00:00Z",
+        "authorityRef": "authority/G1",
+        "governingBasisRef": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "RESPONSIBILITY_MISSING_GOVERNING_BASIS"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "transfer-without-successor",
+      "kind": "negative",
+      "input": {
+        "status": "transferred",
+        "successorRef": null,
+        "validTo": "2026-04-01T00:00:00Z"
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "TRANSFER_MISSING_AUTHORIZED_SUCCESSOR"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "delegation-names-delegate",
+      "kind": "positive",
+      "input": {
+        "accountable": {
+          "id": "ora/1",
+          "responsiblePartyRef": "party/OP",
+          "status": "active"
+        },
+        "delegation": {
+          "delegatedFromRef": "ora/1",
+          "delegateRef": "party/C1",
+          "delegatedScope": "inspection",
+          "validFrom": "2026-03-02T00:00:00Z",
+          "authorityRef": "authority/G1"
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "accountableUnchanged": true,
+        "workPerformedAsserted": false
+      }
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "delegation-without-delegate",
+      "kind": "negative",
+      "input": {
+        "id": "ora/1",
+        "delegationConstraints": "inspection only",
+        "delegateRef": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "DELEGATION_MISSING_DELEGATE_PARTY"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "suspension-interval",
+      "kind": "positive",
+      "input": {
+        "status": "suspended",
+        "suspension": {
+          "from": "2026-05-01T00:00:00Z",
+          "until": null,
+          "authorityRef": "authority/G1",
+          "reason": "safety-hold"
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "resumptionCreatesVersion": true,
+        "suspensionHistoryRetained": true,
+        "distinctFromRevoked": true
+      }
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "revocation-as-end",
+      "kind": "negative",
+      "input": {
+        "status": "ended",
+        "revocation": {
+          "authorityRef": "authority/G1",
+          "reason": "authority-withdrawn"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "REVOCATION_MISREPRESENTED_AS_END"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "scope-composition-undeclared",
+      "kind": "negative",
+      "input": {
+        "assetScopeRef": "asset/A1",
+        "locusScopeRef": "site/S1",
+        "scopeKind": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "SCOPE_COMPOSITION_UNDECLARED"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "locus-qualified-scope",
+      "kind": "positive",
+      "input": {
+        "scopeKind": "asset-instance-while-at-locus",
+        "assetScopeRef": "asset/A1",
+        "locusScopeRef": "site/S1",
+        "authorityRef": "authority/G1",
+        "governingBasisRef": "agreement/A9"
+      },
+      "expect": {
+        "accepted": true,
+        "placementChangeTransfersResponsibility": false,
+        "outOfScopeLapseExplicit": true
+      }
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "undeclared-same-role-overlap",
+      "kind": "negative",
+      "input": {
+        "existing": {
+          "status": "active",
+          "responsibilityRole": "operator",
+          "assetScopeRef": "asset/A1",
+          "validFrom": "2026-01-01T00:00:00Z"
+        },
+        "incoming": {
+          "status": "active",
+          "responsibilityRole": "operator",
+          "assetScopeRef": "asset/A1",
+          "responsiblePartyRef": "party/P3",
+          "validFrom": "2026-02-01T00:00:00Z",
+          "jointAccountability": null
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "UNDECLARED_OVERLAPPING_SAME_ROLE_ASSIGNMENT"
+    },
+    {
+      "target": "OperationalResponsibilityAssignment",
+      "id": "natural-person-no-disclosure",
+      "kind": "negative",
+      "input": {
+        "responsiblePartyRef": "person/N1",
+        "partyKind": "natural-person",
+        "disclosureClass": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PERSONAL_PARTY_MISSING_DISCLOSURE_CLASS"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "reproducible-asof",
+      "kind": "positive",
+      "input": {
+        "asOf": "2026-03-31T23:59:59Z",
+        "pinnedInputs": [
+          {
+            "candidate": "AssetPlacementEpisode",
+            "recordAsOf": "2026-04-01T00:00:00Z"
+          },
+          {
+            "candidate": "OperationalResponsibilityAssignment",
+            "recordAsOf": "2026-04-01T00:00:00Z"
+          }
+        ],
+        "disclosurePolicyRef": "policy/DISC1",
+        "digest": "sha256:…"
+      },
+      "expect": {
+        "accepted": true,
+        "independentIdentity": false,
+        "rerunDigestStable": true
+      }
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "unpinned-inputs",
+      "kind": "negative",
+      "input": {
+        "asOf": "2026-03-31T23:59:59Z",
+        "pinnedInputs": [],
+        "digest": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_INPUTS_UNPINNED"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "refine-withheld-locus",
+      "kind": "negative",
+      "input": {
+        "sourceRendition": {
+          "locusKind": "place",
+          "granularity": "jurisdiction",
+          "whereaboutsState": "withheld"
+        },
+        "output": {
+          "locusKind": "building",
+          "locusRef": "building/B7"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_LOCATION_REFINEMENT"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "small-cell-occupancy",
+      "kind": "negative",
+      "input": {
+        "aggregation": "count",
+        "cell": {
+          "locusKind": "building",
+          "locusRef": "building/B7"
+        },
+        "count": 1,
+        "minimumCell": 5
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "SUPPRESSION_THRESHOLD_BREACH"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "cross-rendition-differencing",
+      "kind": "negative",
+      "input": {
+        "operation": "join",
+        "asOf": "2026-03-31T23:59:59Z",
+        "renditions": [
+          {
+            "disclosureClass": "public",
+            "granularity": "jurisdiction"
+          },
+          {
+            "disclosureClass": "public",
+            "granularity": "facility",
+            "aggregate": {
+              "count": 1
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "DIFFERENCING_DISCLOSURE"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "withheld-marked-not-absent",
+      "kind": "positive",
+      "input": {
+        "source": {
+          "whereaboutsState": "withheld"
+        },
+        "disclosurePolicyRef": "policy/DISC1"
+      },
+      "expect": {
+        "accepted": true,
+        "output": {
+          "locus": null,
+          "marker": "withheld",
+          "distinctFrom": [
+            "absent",
+            "unknown",
+            "disposed",
+            "never-observed"
+          ]
+        }
+      }
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "availability-stored-timeless",
+      "kind": "negative",
+      "input": {
+        "store": {
+          "assetRef": "asset/A1",
+          "available": true,
+          "purpose": null,
+          "asOf": null
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "AVAILABILITY_NOT_PURPOSE_BOUND"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "view-identity-allocation",
+      "kind": "negative",
+      "input": {
+        "occupancyView": {
+          "requestIndependentIdentifier": true
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_IDENTITY_FORBIDDEN"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "responsibility-from-placement",
+      "kind": "negative",
+      "input": {
+        "derive": {
+          "responsiblePartyRef": "operatorOf(effectivePlacement.locus)"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "RESPONSIBILITY_INFERRED_FROM_PLACEMENT"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "completion-from-order",
+      "kind": "negative",
+      "input": {
+        "derive": {
+          "maintenanceStatus": "completed",
+          "from": [
+            "workOrderRef",
+            "activeResponsibilityAssignment"
+          ]
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "COMPLETION_INFERRED_FROM_ORDER"
+    }
+  ]
+}

@@ -1,5 +1,3 @@
-# EM-LND-17 offline allocation dossier
+# EM-LND-17 — Operational Responsibility Assignment
 
-Validated, identifier-unassigned allocation dossier for **Operational Responsibility Assignment**. It preserves the exact independent-review prompt and local synthesis shared by the EM-LND-17 boundary study.
-
-No identifier is assigned. Apply only after registry allocation, provider reconciliation, authority crosswalk approval and one frozen audit.
+Held identifier-unassigned allocation candidate plus the shared no-identity landscape projection definition. Grok review is reconciled; the single frozen semantic audit was remediated without rerun. Canonical publication remains blocked by recorded registry and base constraints.
