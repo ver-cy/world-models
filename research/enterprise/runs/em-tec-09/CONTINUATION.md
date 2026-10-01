@@ -1,11 +1,11 @@
 # EM-TEC-09 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-10-01.
 
-Disposition: propose identifier-unassigned Technology, Technology Adoption and Architecture Exception roots. Profile WM-KNW-012/013 as Architecture Standard and rules, WM-ACT-034 as Conformance Assessment, and reuse the decision triad for ADR. No catalogue/runtime identifier is allocated.
+Disposition: Technology, Technology Adoption, and Architecture Exception remain identifier-unassigned independent roots. Architecture Standard profiles WM-KNW-012 and references WM-KNW-013; Conformance Assessment profiles WM-ACT-034; ADR reuses WM-KNW-010 / WM-ACT-024 / WM-REC-010. Architecture Exception is the waiver master and renewal creates a new grant. No catalogue or runtime identifier is allocated.
 
-The full contour scope, all complete relevant normative, assessment, decision and software specifications and reservations, legacy WM-REC-005 document, relation ledger and prior Enterprise technology/decision work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Claude and Grok agree on the boundary. Grok's visible response is provider-truncated and hidden browsing is excluded. One frozen Claude Opus high no-tools audit found 16 artifact defects; all were remediated without rerun. The resulting packages contain 60 fixtures: 29 positive and 31 negative.
 
-Publication is held by three unallocated roots, non-canonical and legacy bases, overlapping waiver semantics, unapproved and contradictory relations, missing adoption-stage scheme, incomplete assessment/exception operations, access mappings, crosswalks and fixtures.
+Publication remains held by unallocated roots, non-canonical bases, unapproved relations, an absent adoption-stage scheme, and the unverified deployment boundary.
 
-Next contour: EM-TEC-10. It has no target IDs; inspect its full registry scope and all complete relevant cloud, tenant, region, account, subscription, quota, cost and runtime candidates before boundary analysis.
+Next pending Grok contour is determined by the generated audit queue.

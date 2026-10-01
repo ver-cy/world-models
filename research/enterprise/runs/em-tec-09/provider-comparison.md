@@ -1,0 +1,3 @@
+# EM-TEC-09 provider comparison
+
+Claude and Grok independently preserve three identifier-unassigned roots: Technology, Technology Adoption, and Architecture Exception. Both profile Architecture Standard over WM-KNW-012 with WM-KNW-013 rules by reference, profile Conformance Assessment over WM-ACT-034, reuse the decision triad for ADR, and keep adoption, conformance, exception, assessment, nonconformity, and risk acceptance separate. Grok's visible response was provider-truncated and its hidden browsing is excluded. The single frozen audit upheld the boundary and found 16 artifact defects; all were remediated without rerun.
