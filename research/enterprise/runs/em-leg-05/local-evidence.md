@@ -76,3 +76,7 @@ Dispute D over contract C-441 has proceeding P1. Claim CL-1 seeks 100,000; count
 ## Holds
 
 Reserved WM-POL-019, WM-POL-020 and WM-POL-021 have no complete specifications, yet WM-POL-009 requires them as CHILD components. WM-POL-022 is reserved as Sanction / Sentence, contradicting the apparent Appeal / Review expectation; WM-POL-023 enforcement references are incomplete. Candidate CONTAINS relations lack approved lifecycle and cardinality contracts. WM-KNW-010 has conflicting CHILD, EXTEND and ALIGN edges to WM-KNW-007. Evidence custody/admissibility remains a declared gap. Crosswalks, source pins and fixtures are unverified. Base drafts are non-canonical, so no installability or publication-readiness claim is made.
+
+## Provider reconciliation and frozen audit
+
+Grok confirmed the independent Dispute / Matter boundary and the WM-POL-009 proceeding profile. The frozen audit preserved the boundary and supplied 69 exact fixtures. Twenty-four artifact defects were remediated deterministically without rerun. Final fixtures: 76 (29 positive, 47 negative).
