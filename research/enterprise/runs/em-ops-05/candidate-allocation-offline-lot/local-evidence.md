@@ -74,3 +74,8 @@ Raw lot L is consumed by T, producing S1–S10, one blended co-product lot and s
 ## Holds
 
 Lot, Transformation Event, production work order, handling unit, as-built assembly, occurrence/event and inspection authority remain unallocated or absent. Registry parent/containment signals conflict with model specifications. Registry/spec entry-kind axes are inconsistent. EPCIS and UBL pins diverge, WM-ACT-007 is maintenance-scoped, and flow drafts contain template leakage. Crosswalks, fixtures and independent review are absent. No installability or publication-readiness claim is made.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently upheld Lot and Transformation Event as identifier-unassigned roots, reused WM-OBJ-020 and WM-FLW-011, rejected Logistics Event as a root and kept Inventory–Genealogy as a thin profile. The sole frozen Claude audit preserved that decision and identified 35 mechanical artifact defects; all 35 are remediated without rerun. Its exact 51-case fixture array is retained, producing 63 cases with the twelve prior cases preserved and one moved to its correct profile scope. No catalogue, model, registry or runtime identifier is allocated, and no canonical publishability claim is made.

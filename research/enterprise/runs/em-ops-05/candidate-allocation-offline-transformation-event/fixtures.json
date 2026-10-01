@@ -1,1 +1,223 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Transformation Event","cases":[{"id":"raw-to-assemblies","kind":"positive","input":"Raw lot L is consumed to produce serialized items S1-S10, a blended co-product and scrap.","expect":"Inputs, outputs, yield, scrap, units, authority and evidence are captured under one event identity."},{"id":"corrected-quantity","kind":"positive","input":"A validated quantity is later corrected from 99 to 100 units.","expect":"A successor assertion preserves the original event record."},{"id":"partial-shipment-after-production","kind":"positive","input":"Six outputs are dispatched but only five are received.","expect":"Transformation, stock, shipment, receipt and acceptance remain separate."},{"id":"routing-proves-event","kind":"negative","input":"A routing plan is used as proof that the transformation occurred.","expect":"The claim is rejected."},{"id":"event-is-work-order","kind":"negative","input":"The production work order and actual execution share identity.","expect":"The identity merge is rejected."},{"id":"output-means-accepted","kind":"negative","input":"Produced output is treated as delivered and accepted.","expect":"Both inferences are rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v2",
+  "candidateName": "Transformation Event",
+  "cases": [
+    {
+      "id": "raw-to-assemblies",
+      "kind": "positive",
+      "input": "Raw lot L is consumed to produce serialized items S1-S10, a blended co-product and scrap.",
+      "expect": "Inputs, outputs, yield, scrap, units, authority and evidence are captured under one event identity.",
+      "target": "Transformation Event",
+      "violates": null,
+      "closesDefect": "preserved-prior"
+    },
+    {
+      "id": "corrected-quantity",
+      "kind": "positive",
+      "input": "A validated quantity is later corrected from 99 to 100 units.",
+      "expect": "The original assertion retains quantity 99, status becomes superseded with supersededByRef set; the successor asserts 100 with supersedesRef, a later recordTime and an unchanged eventTime; no value is overwritten.",
+      "target": "Transformation Event",
+      "violates": null,
+      "closesDefect": "preserved-prior"
+    },
+    {
+      "id": "routing-proves-event",
+      "kind": "negative",
+      "input": "A routing plan is used as proof that the transformation occurred.",
+      "expect": "The claim is rejected.",
+      "target": "Transformation Event",
+      "violates": "The claim is rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCode": "TRX-ROUTING-NOT-EVENT-EVIDENCE"
+    },
+    {
+      "id": "event-is-work-order",
+      "kind": "negative",
+      "input": "The production work order and actual execution share identity.",
+      "expect": "The identity merge is rejected.",
+      "target": "Transformation Event",
+      "violates": "The identity merge is rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCode": "TRX-WORK-ORDER-IDENTITY-MERGE"
+    },
+    {
+      "id": "output-means-accepted",
+      "kind": "negative",
+      "input": "Produced output is treated as delivered and accepted.",
+      "expect": "Both inferences are rejected separately: output creation does not establish delivery and does not establish acceptance; each rejection is emitted with its own code.",
+      "target": "Transformation Event",
+      "violates": "Both inferences are rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCodes": [
+        "TRX-OUTPUT-NOT-DELIVERY",
+        "TRX-OUTPUT-NOT-ACCEPTANCE"
+      ],
+      "expectedCode": "TRX-OUTPUT-NOT-DELIVERY-OR-ACCEPTANCE"
+    },
+    {
+      "id": "F-TRX-01",
+      "target": "Transformation Event",
+      "kind": "positive",
+      "input": "T consumes 400 kg of L and outputs ten serialized items of 36 kg each, a 30 kg co-product lot and 10 kg scrap.",
+      "expect": "inputs[0].consumedQuantity 400 kg net; outputs total 360 kg serialized plus 30 kg co-product plus 10 kg scrap; quantityReconciliation.method mass-balance with basis, pinned unit code list and declared tolerance; the reconciliation closes to 400 kg with no unlabelled residual.",
+      "violates": null,
+      "closesDefect": "D26"
+    },
+    {
+      "id": "F-TRX-02",
+      "target": "Transformation Event",
+      "kind": "positive",
+      "input": "T consumes 400 kg of a 1000 kg lot L.",
+      "expect": "inputs[0].consumptionCompleteness partially-consumed with residualAssertedOnLot present; L is neither exhausted nor closed by the event and its residual 600 kg remains traceable.",
+      "violates": null,
+      "closesDefect": "D27"
+    },
+    {
+      "id": "F-TRX-03",
+      "target": "Transformation Event",
+      "kind": "positive",
+      "input": "T occurs 2026-03-01T08:00:00+01:00 and is recorded 2026-03-04T17:20:00+01:00.",
+      "expect": "eventTime and recordTime are both stored with explicit offsets and remain distinct; knowledgeTimeRange.from equals the recordTime; no later status alters eventTime.",
+      "violates": null,
+      "closesDefect": "D25"
+    },
+    {
+      "id": "F-TRX-04",
+      "target": "Transformation Event",
+      "kind": "positive",
+      "input": "A recorded transformation is corrected, then the correction is itself corrected.",
+      "expect": "Three assertions form a bidirectionally resolvable chain: each superseded assertion carries both supersedesRef and supersededByRef, only the newest has status validated, and no assertion is its own successor.",
+      "violates": null,
+      "closesDefect": "D30"
+    },
+    {
+      "id": "F-TRX-05",
+      "target": "Transformation Event",
+      "kind": "positive",
+      "input": "A transformation recorded in error is voided with reason wrong-work-centre by the production authority.",
+      "expect": "status voided with voidRecord carrying voidReason, voidAuthorityRef and recordTime; the prior assertion and its genealogy edges remain readable and are not deleted.",
+      "violates": null,
+      "closesDefect": "D29"
+    },
+    {
+      "id": "F-TRX-06",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "A transformation is recorded with inputs and outputs but no yield and no scrap.",
+      "expect": "The record is refused; yield and scrap are required and may be empty only with a stated reason, never absent.",
+      "violates": "TransformationEvent.invariants[5]",
+      "closesDefect": "D26",
+      "expectedCode": "TRX-YIELD-SCRAP-MISSING"
+    },
+    {
+      "id": "F-TRX-07",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "A transformation is recorded with eventTime only.",
+      "expect": "The record is refused; recordTime is required and is never defaulted from eventTime.",
+      "violates": "TransformationEvent.invariants[6]",
+      "closesDefect": "D25",
+      "expectedCode": "TRX-RECORD-TIME-MISSING"
+    },
+    {
+      "id": "F-TRX-08",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "A transformation is recorded with a performing agent but no authorityRef.",
+      "expect": "The record is refused; authority is required on the event and is never inferred from a later status or from the performing agent.",
+      "violates": "TransformationEvent.invariants[2]",
+      "closesDefect": "D28",
+      "expectedCode": "TRX-AUTHORITY-REF-MISSING"
+    },
+    {
+      "id": "F-TRX-09",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "An input element states consumedQuantity 400 with no unit and no basis.",
+      "expect": "The element is refused; every quantity carries unit, basis and scope with a pinned unit code-list version and no unit is inferred.",
+      "violates": "TransformationEvent.invariants[1]",
+      "closesDefect": "D27",
+      "expectedCode": "TRX-QUANTITY-UNIT-MISSING"
+    },
+    {
+      "id": "F-TRX-10",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "status is set to voided with no voidRecord.",
+      "expect": "The transition is refused; a void requires reason, authority and record time, and never removes the prior assertion.",
+      "violates": "TransformationEvent.invariants[7]",
+      "closesDefect": "D29",
+      "expectedCode": "TRX-VOID-REASON-MISSING"
+    },
+    {
+      "id": "F-TRX-11",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "A WM-ACT-007 maintenance work order is cited as the production authority for T.",
+      "expect": "The citation is refused; WM-ACT-007 is maintenance-scoped and restricted, and the production-work-order boundary is unallocated.",
+      "violates": "TransformationEvent.invariants[2]",
+      "closesDefect": "D31",
+      "expectedCode": "TRX-WORK-ORDER-SCOPE-INVALID"
+    },
+    {
+      "id": "F-TRX-12",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "A mass-balance-inferred output edge of a blended co-product is promoted to edgeAssertionClass asserted so it reads as an observed fact.",
+      "expect": "The promotion is refused; inferred, mass-balance-inferred, stale and incomplete edges retain their class and reason permanently.",
+      "violates": "TransformationEvent.invariants[10]",
+      "closesDefect": "D35",
+      "expectedCode": "TRX-INFERRED-EDGE-ASSERTED"
+    },
+    {
+      "id": "F-TRX-13",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "One expected output of T was never recorded; a yield calculation treats that output as 0.",
+      "expect": "The calculation is refused; the missing output yields incomplete or indeterminate genealogy and an indeterminate yield, never zero.",
+      "violates": "TransformationEvent.invariants[11]",
+      "closesDefect": "D35",
+      "expectedCode": "TRX-INCOMPLETE-NOT-ZERO"
+    },
+    {
+      "id": "F-TRX-14",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "Consumption of a consignment-stock input lot by T is treated as transferring title of that lot to the producer.",
+      "expect": "The transfer is refused; consumption changes neither custody nor title and no ownership effect is derived from a transformation.",
+      "violates": "TransformationEvent.invariants[8]",
+      "closesDefect": "D35",
+      "expectedCode": "TRX-CONSUMPTION-NOT-TITLE-TRANSFER"
+    },
+    {
+      "id": "F-TRX-15",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "An exposure traversal over T's output edges is emitted as a recall decision for S1..S10.",
+      "expect": "The emission is refused; traversal yields proven and reason-coded potential sets only, and recall, alert and enforcement authority is external to this contour.",
+      "violates": "TransformationEvent.invariants[12]",
+      "closesDefect": "D35",
+      "expectedCode": "TRX-EXPOSURE-NOT-RECALL-AUTHORITY"
+    },
+    {
+      "id": "F-TRX-16",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "T is recorded with an evidenceDigest but no sourceSystem, assertingAgentRef or method.",
+      "expect": "The record is refused; provenance is required and a digest alone does not establish who asserted the event or how.",
+      "violates": "TransformationEvent.invariants[3]",
+      "closesDefect": "D32",
+      "expectedCode": "TRX-PROVENANCE-MISSING"
+    },
+    {
+      "id": "F-TRX-17",
+      "target": "Transformation Event",
+      "kind": "negative",
+      "input": "An assertion is set to status superseded with no supersededByRef.",
+      "expect": "The transition is refused; supersession requires a resolvable successor reference in both directions.",
+      "violates": "TransformationEvent.invariants[7]",
+      "closesDefect": "D30",
+      "expectedCode": "TRX-SUPERSESSION-LINK-MISSING"
+    }
+  ]
+}
