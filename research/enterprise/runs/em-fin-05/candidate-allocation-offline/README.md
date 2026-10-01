@@ -1,5 +1,3 @@
-# EM-FIN-05 offline publication delta
+# EM-FIN-05 offline candidate
 
-This reviewable package profiles existing price, usage, observation, invoice, ledger and budget boundaries while proposing one identifier-unassigned Cost Allocation aggregate. It allocates no identifier and makes no canonical publication claim.
-
-The exact public Grok prompt is preserved but remains unsent until action-time confirmation. Canonical sync must preserve registry review, base holds, frozen audit and immutable source evidence.
+Reviewable held Cost Allocation cluster plus a source and unit-cost observation profile. Registry identifiers remain unassigned. The sole normative set is `invariants.json`; `fixtures.json` contains the 78 frozen-audit cases.
