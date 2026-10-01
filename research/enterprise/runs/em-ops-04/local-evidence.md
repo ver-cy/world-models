@@ -72,3 +72,7 @@ Design D has revisions R1 and R2. EBOM B2 for R2 adds one approved alternate wit
 ## Holds
 
 MBOM/Manufacturing Plan, As-Built Assembly, Lot/Batch, Actual Transformation Event and Production Work Order remain unallocated. WM-OBJ-019/002 relations conflict across parent, COMPOSE and REFERENCE; WM-OBJ-018 parentage conflicts with its reference boundary; software CHILD/REFERENCE edges disagree; several referenced object/action models are absent; CLASSIFIES is missing from the relation enum; WM-ACT-007 is maintenance-only with unresolved duplication. Most drafts are single-provider and all non-canonical; crosswalks and fixtures are absent. No installability or publication-readiness claim is made.
+
+## Provider reconciliation and frozen audit
+
+Grok confirmed the definition-side scope cut and identified the effectivity-authority gap. Frozen evidence rejected five missing-root claims because current draft masters exist. The single audit supplied 87 exact fixtures and 27 deterministic remediations. Final fixtures: 107 (40 positive, 67 negative).
