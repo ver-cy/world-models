@@ -47,3 +47,8 @@ Two runs pin the same design but different input snapshots and random seeds. One
 ## Holds
 
 WM-ACT-022 now has a reviewable candidate with explicit run, manifest, attempt and deviation structures, six external relation contracts and seven fixtures. WM-ACT-036 and WM-KNW-009 retain their own publication holds, and relations remain candidate-only. Cross-study Experiment Design and Evidence Artifact remain identifier-unassigned. Exact Grok comparison, one frozen semantic audit, package conversion and live verification are still required; no installable release is claimed yet.
+
+
+## Reconciled identity clarification
+
+Research Finding has composed instance identity through WM-KNW-007/008 and WM-ACT-036 while minting no new model identity. Reusable cross-study Experiment Design requires independent identity but remains registry-unassigned. Post-hoc hypotheses are new WM-KNW-009 instances; only refinement before first result access may create a revision.
