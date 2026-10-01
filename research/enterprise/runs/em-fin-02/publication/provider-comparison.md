@@ -1,0 +1,9 @@
+# EM-FIN-02 provider comparison
+
+Claude and Grok agree that WM-ECO-015 owns externally serviced bank and custody accounts, WM-ECO-016 owns journal entries and posting lines, WM-ECO-017 owns time-bound per-ledger balances, and external payment, invoice or economic-event identities remain correlation references. Both require ledger-local balancing, immutable posted history, append-only corrections, explicit hard-close handling and an identifier-unassigned Chart of Accounts / Accounting Policy candidate.
+
+Grok exposes one material defect in the initial Claude synthesis: Ledger Account cannot safely profile WM-ECO-015. Its identity is ledger, effective Chart-of-Accounts node and interval; a Financial Account is identified by issuer or custodian and an external account identifier. Their intersection is a mapping, never subtype identity. The reconciled candidate therefore masters Ledger Account as a governed Chart node. WM-ECO-015 owns no CoA membership, hierarchy, rollup or posting eligibility.
+
+The Enterprise profile is correspondence-only. It records pinned external-event correlation, sibling-entry grouping, divergence reasons, optional Financial-Account backing and cross-ledger mapping evidence. It mints no account, ledger, entry, posting, balance, policy or event identity and performs no balancing. Each entry balances only inside one ledger, currency role, scope and tolerance. Corrections are same-ledger successor entries; a hard-closed book accepts only a next-period correction or an explicitly authorised exception. Closed WM-ECO-017 balances remain immutable.
+
+No identifier or runtime ID is allocated. The candidate and profile remain non-publishable while registry allocation, base contradictions, currency-role semantics, CoA-to-ledger cardinality, hard-close policy and executable fixtures remain unresolved.

@@ -1,0 +1,52 @@
+# Independent adjudication — EM-PEO-04 Recruitment and Hiring
+
+## Verdict
+Six candidates, six dispositions, no identifiers allocated. **RecruitmentRequisition — new root** (identifier unassigned), profiling WM-REC-010 for the approval act only. **Vacancy — complete reserved WM-ORG-008**, narrowed to the opening alone. **Application — new root** (Candidacy), identifier unassigned. **HiringStage — no root; process-owned** in WM-ACT-039 (stage definition in the frozen design release, stage occurrence as an event). **InterviewAssessment — no single root; a profile pair** over WM-ACT-034 (result) and WM-ACT-025 (session), typed-linked, never fused. **Offer — profile WM-ECO-021** as an explicit employment-offer profile. Person reuses WM-PER-001; employment reuses WM-ORG-005; positions reuse WM-ORG-004.
+
+## Evidence
+WM-ACT-039 is a complete reviewable draft that already declares Vacancy, Person, Candidate, Application, Assessment, Interview, Decision, Offer, Contract and Employment **external masters** and owns only process-scoped links — so the aggregate presupposes masters that the dossier does not supply. WM-ORG-008 is present only as index and publication metadata: `described-previous-version`, `migration-boundary-review`, legacy O6 reference, no spec, no source URL, no relations. WM-ORG-004 excludes vacancy notice and recruiting workflow and exposes an `authorize-fill` function producing a fill authorization "a JobPosting or requisition may reference". WM-REC-010's boundary notes flag standing authorisations with independent holders and validity as a probable sibling model — the requisition case exactly.
+
+## Identity/mastership
+Sixteen things stay separately identified: approved hiring need; requisition; position; derived seat-vacancy; asserted opening; posting; person; candidate identity; candidacy; process/campaign; stage definition; stage occurrence; interview session; assessment result; selection decision; offer proposal; contract; assignment; employment. Masters: employer authority for requisitions and openings; unit/position steward for positions; the person for personal-sphere data and the registrar for civil identity; assessor for results; decision authority for selection; issuer for offers; both parties bilaterally for employment. ATS holds process and candidacy records; HRIS holds employment and position; neither becomes master of the person.
+
+## Requisition/position/vacancy
+A requisition is an authorization to hire *n* seats with reason, budget and target start; it has identity, versions, and its own lifecycle (drafted, approved, funded, partially filled, closed, cancelled) and therefore cannot be a WM-REC-010 decision record, which is the approval act, not the standing authorization. It references WM-REC-010 for each approval and WM-ORG-004 for the positions it funds. `requisition_code`, `headcount`, `hiring_reason`, `target_start` remain candidate-not-normative properties of that root.
+
+Critical distinction: WM-ORG-004 defines vacancy as **derived** (authorized capacity minus consumed capacity, computed with an as-of instant, never persisted). WM-ORG-008 must own the **asserted opening** — a governed decision to recruit against a position or requisition, with opening/closing times, opening count, eligibility scope and status. Completed WM-ORG-008 must not re-persist derived vacancy state, or two sources of truth appear.
+
+**Does WM-ORG-008 currently collapse Vacancy, Application and Matching?** Yes. Its purpose string — "Vacancies, applications, matching, placement" — bundles four independently identified things with different owners (posting organization vs. candidate-side self-owned, as its own reservation concedes). Completed, it must own only the opening; application moves to the Candidacy root, matching becomes a scored, purpose-qualified assertion (a WM-ACT-034 profile), and placement is WM-ORG-016 assignment plus WM-ORG-005 employment.
+
+Posting stays process-owned in WM-ACT-039: WM-ORG-004 already characterises a posting as a time-bounded projection referencing zero, one or many positions.
+
+## Person/candidate/application
+WM-PER-001 is the anchor; three candidacies produce one anchor. Candidate identity is a purpose-scoped role assertion over that anchor, not a second person. Unverified sourced candidates get a provisional reference with an assurance level and remain proposed links — never merged on name, email or name-plus-date-of-birth, per WM-PER-001's identity-priority rule and EM-PEO-01's linking rules. Candidacy is the new root: one person, one opening, one process, with submission/receipt times, documents, declarations, status history, withdrawal and outcome. It survives process closure and is the lineage anchor for rehire.
+
+## Process/stages
+WM-ACT-039 is accepted as the campaign aggregate, unchanged in kind. Stage definition belongs to the frozen design release (ordered, versioned, criterion-bound); stage occurrence is a per-candidacy event citing the exact design release version. Recommendations and rankings are bounded outputs, never decisions. One requisition may drive one process with two openings, or two processes; both must be expressible.
+
+## Interview/assessment/decision
+Interview session profiles WM-ACT-025: participants, capacity, presence intervals, accommodations, capture with notification and consent basis, record obligation. Assessment result profiles WM-ACT-034: pinned criteria version, method, evidence linkage, criterion outcomes, scale, conclusion, assessor competence and impartiality, moderation, immutable finalisation. A panel of three produces one session and three results. Selection decision profiles WM-REC-010: author, authority, pinned criteria, reasons, dissent, recusal, validity, challenge route. Score → recommendation → decision remain three assertions.
+
+## Offer/employment
+Yes — the hiring offer can profile WM-ECO-021, provided the profile (a) binds the offered subject to a Position/Vacancy/Candidacy reference instead of a product line, (b) marks the SKU/GTIN, tax, allowance, charge and total findings not-applicable rather than repurposing them, and (c) carries compensation as referenced terms, not a priced line. What justifies reuse is the machinery that would otherwise be rebuilt badly: immutable issued versions, contingencies, expiry, and attributable withdrawal, revocation, rejection, counter-offer and acceptance events, with the explicit refusal to infer contract formation from acceptance. Acceptance → contract → employment (WM-ORG-005) → assignment (WM-ORG-016) remain four steps.
+
+## Privacy/retention
+CV possession is not consent. Each candidacy carries purpose, controller, lawful basis, notice version and rights route. Group companies are separate controllers: reuse across them requires a separate basis and an explicit talent-pool grant with scope and expiry; sourcing never implies eligibility or consent. Retention triggers are per data class: process closure, rejection plus challenge window, withdrawal, consent expiry, vetting-data destruction. Withdrawal stops future processing but does not erase decision evidence needed for defence; refused erasure is itself a recorded decision. Legal hold suspends disposition; disposition never cascades to person, position or employment masters. Disclosure is minimum-necessary and logged.
+
+## Time/provenance
+Distinguish: requisition approval; opening open/close; posting publication; application submission and receipt; stage occurrence; interview session; assessment result; recommendation; decision; offer issue, expiry and response; contract; employment effective start. Plus observation, ingestion and knowledge times. RFC 3339 with seconds and explicit offset; event time never overwritten by record time; corrections append attributable successors.
+
+## Governance/fairness
+Adverse-impact measurement is aggregate and lawful-only; the four-fifths ratio is a US enforcement heuristic, not proof, and never labels an individual. Automated screening records system, version, human oversight and contest route; EU AI Act and GDPR Article 22 apply within scope only. Accommodations, accessible alternatives, complaint and appeal routes are first-class. Assessor impartiality and recusal are recorded.
+
+## Acceptance scenario
+One requisition authorizes two seats → two positions (or one pooled position, headcount 2) → openings under WM-ORG-008. Three candidacies over one Person anchor: A, B, C. C receives an offer v1; withdrawal is appended as an attributable event against v1 — v1 stays resolvable, C's candidacy closes as offer-withdrawn. Eighteen months later C reapplies: new candidacy referencing the prior one, same anchor, new offer, new employment; EmployeeProfile reused. No duplicate Person at any point.
+
+## Invariants
+1. A candidacy binds one person, one opening, one process and an interval. 2. Offer ≠ employment. 3. Every decision has author, pinned criteria and reasons. 4. One requisition may authorize many openings. 5. Asserted opening ≠ derived vacancy. 6. Issued offer versions are immutable. 7. Score ≠ recommendation ≠ decision. 8. Posting is a projection, not the opening. 9. Consent is per purpose, controller and period. 10. Lineage survives withdrawal and rehire.
+
+## Minimal model set
+WM-PER-001; WM-ORG-004; WM-ORG-008 (completed, narrowed); WM-ACT-039; WM-ACT-034; WM-ACT-025; WM-REC-010; WM-ECO-021 (profiled); WM-ORG-005; WM-ORG-016; plus two unallocated roots — Requisition and Candidacy.
+
+## Holds
+WM-ORG-008 has no specification, no source, no relations, and is a previous-version record under migration review — everything above about it is a requirement, not a reading. WM-ACT-039, WM-ECO-021 and WM-ORG-005 are single-provider waivered drafts; WM-ACT-034 is Claude-only with an over-claimed access dimension and a retention gap; WM-ACT-025 carries over-claimed retention, access, temporal and identity dimensions. **Relation gaps:** no approved relation touches WM-ORG-008 or WM-ACT-039; the WM-ACT-039→WM-ORG-008 parent link is a candidate hold; no Person↔Employment, Person↔Candidacy, Requisition↔Position, Vacancy↔Posting, Decision↔Offer or Offer↔Employment rows exist; WM-ORG-016 is referenced throughout but absent from the reservations. Two roots are unallocated. Jurisdictional legal review, fairness and assessment-science review, and HR Open/ESCO/Schema.org crosswalk round-trip tests are outstanding. No claim of canonical completeness, installability or publication readiness.

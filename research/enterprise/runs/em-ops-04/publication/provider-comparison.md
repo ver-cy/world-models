@@ -1,0 +1,3 @@
+# EM-OPS-04 provider comparison
+
+Claude and Grok agree on the definition-side boundary: ItemDefinition splits between product type and engineering definition; SKU is party-scoped; Engineering Revision is contained in WM-OBJ-018; WM-OBJ-019 is reused for EBOM only; BOM Line and Substitution Rule remain baseline-scoped. The five execution-side roots remain identifier-unassigned. Frozen evidence rejects Grok's missing-root claims for Variant, Occurrence, Serialized Item, Firmware Release and SBOM because current draft masters exist. Grok's valid effectivity-authority gap is closed in the profile. No identifier is allocated.

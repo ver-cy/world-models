@@ -1,0 +1,466 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Sourcing Event",
+  "cases": [
+    {
+      "id": "criterion-addendum",
+      "kind": "positive",
+      "input": "Three bids arrive under criteria v1 and a material criterion change is published.",
+      "expect": "An addendum and criteria v2 create a successor round while the v1 round remains readable.",
+      "expectedCode": "EMOPS02-EVT-01",
+      "covers": [
+        1
+      ]
+    },
+    {
+      "id": "conflicted-evaluator",
+      "kind": "positive",
+      "input": "An evaluator discloses an interest and is independently recused.",
+      "expect": "Affected results remain, exclusions are explicit and a replacement round is attributable.",
+      "expectedCode": "EMOPS02-EVT-02",
+      "covers": [
+        2
+      ]
+    },
+    {
+      "id": "single-source",
+      "kind": "positive",
+      "input": "One supplier is considered under an authorized single-source ground.",
+      "expect": "A real one-alternative set, justification and waiver are recorded without simulated competition.",
+      "expectedCode": "EMOPS02-EVT-03",
+      "covers": [
+        3
+      ]
+    },
+    {
+      "id": "open-before-witness",
+      "kind": "negative",
+      "input": "A sealed bid is exposed before the witnessed opening event.",
+      "expect": "The disclosure is rejected.",
+      "expectedCode": "EMOPS02-EVT-04",
+      "covers": [
+        4
+      ]
+    },
+    {
+      "id": "rewrite-finalized-round",
+      "kind": "negative",
+      "input": "Criteria v1 outcomes are recomputed in place after criteria v2 publication.",
+      "expect": "The mutation is rejected.",
+      "expectedCode": "EMOPS02-EVT-05",
+      "covers": [
+        5
+      ]
+    },
+    {
+      "id": "winner-is-contract",
+      "kind": "negative",
+      "input": "Selecting a winning bid automatically creates a signed contract and order.",
+      "expect": "Both transitions are rejected.",
+      "expectedCode": "EMOPS02-EVT-06",
+      "covers": [
+        6
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "round-states-are-round-scoped",
+      "kind": "positive",
+      "input": "Round 1 is finalized under criteria v1 while round 2 is open under criteria v2 in the same sourcing event.",
+      "expect": "Both round states coexist and the event status is 'evaluating'; no event-level seal or opening state is asserted.",
+      "expectedCode": "EMOPS02-ROUND-STATE-SCOPED-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "event-seal-state-blocks-second-round",
+      "kind": "negative",
+      "input": "The event is set to status 'sealed' while round 2 must be 'open', using the event lifecycle to represent round state.",
+      "expect": "Rejected: seal and opening states belong to SourcingRound, not SourcingEvent.",
+      "expectedCode": "EMOPS02-EVENT-STATE-CONFLATION",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingRound",
+      "id": "opening-requires-witness-and-instant",
+      "kind": "negative",
+      "input": "A round transitions to 'opened' with no openedAt and no openingWitnessRef.",
+      "expect": "Rejected: a witnessed opening record with an explicit instant is mandatory for the 'opened' state.",
+      "expectedCode": "EMOPS02-OPENING-WITNESS-MISSING",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/BidReceipt",
+      "id": "receipt-seal-opening-instants-distinct",
+      "kind": "positive",
+      "input": "A bid is received at 2026-10-01T09:14:00+02:00, sealed on receipt, and opened at 2026-10-08T10:00:00+02:00 under a named witness.",
+      "expect": "Receipt, seal and opening instants are stored separately and all three remain resolvable.",
+      "expectedCode": "EMOPS02-TIME-TRIAD-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/BidReceipt",
+      "id": "evaluation-read-before-opening",
+      "kind": "negative",
+      "input": "A BidEvaluation outcome is recorded for a bid whose receipt sealState is still 'sealed'.",
+      "expect": "Rejected: sealed content is unreadable for evaluation until a witnessed opening is recorded against that round.",
+      "expectedCode": "EMOPS02-SEAL-READ-VIOLATION",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/BidReceipt",
+      "id": "receipt-without-content-digest",
+      "kind": "negative",
+      "input": "A sealed bid receipt is recorded with no per-bid contentDigest, relying on the round-level digest instead.",
+      "expect": "Rejected: each sealed submission carries its own content digest; a round digest cannot evidence per-bid integrity.",
+      "expectedCode": "EMOPS02-BID-DIGEST-MISSING",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/BidReceipt",
+      "id": "late-submission-disposition-recorded",
+      "kind": "positive",
+      "input": "A bid arrives after submissionWindow.closesAt and is admitted under a recorded waiver.",
+      "expect": "Admissibility is 'late-admitted' with a waiving role, rule waived and reason retained; the original receipt instant is unchanged.",
+      "expectedCode": "EMOPS02-LATE-DISPOSITION-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/BidReceipt",
+      "id": "buyer-reminted-bid-identity",
+      "kind": "negative",
+      "input": "The buyer assigns its own bid identifier on receipt and stores it as the bid's identity.",
+      "expect": "Rejected: bid identity is supplier-issued; the buyer may hold only a receipt binding to bidRef and bidVersion.",
+      "expectedCode": "EMOPS02-BID-IDENTITY-REMINT",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingRound",
+      "id": "timestamp-without-offset",
+      "kind": "negative",
+      "input": "submissionWindow.closesAt is recorded as '2026-10-08 17:00' with no seconds and no UTC offset.",
+      "expect": "Rejected: every instant is RFC 3339 with seconds and an explicit offset.",
+      "expectedCode": "EMOPS02-TIME-FORMAT-INVALID",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingRound",
+      "id": "criteria-release-without-effective-from",
+      "kind": "negative",
+      "input": "A criteria set version is published with a version label but no criteriaEffectiveFrom.",
+      "expect": "Rejected: every criteria release carries a version and an effective time that outcomes can pin.",
+      "expectedCode": "EMOPS02-CRITERIA-EFFECTIVE-FROM-MISSING",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingRound",
+      "id": "remediation-round-pins-same-criteria",
+      "kind": "positive",
+      "input": "A recusal triggers a round with roundKind 'remediation' that pins criteria v2 and the identical bid versions, with no new submission window.",
+      "expect": "Accepted: the remediation round is attributable, binds the same criteria version, and reopens no submissions.",
+      "expectedCode": "EMOPS02-REMEDIATION-ROUND-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/Addendum",
+      "id": "addendum-notifies-full-participant-scope",
+      "kind": "positive",
+      "input": "A material criterion change issues an addendum notified at one instant to every participant in the round's participant scope.",
+      "expect": "Accepted: notifiedParticipantRefs equals the round participant scope; criteria v2 and a successor round are created.",
+      "expectedCode": "EMOPS02-EQUAL-NOTIFICATION-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/Addendum",
+      "id": "addendum-notifies-subset",
+      "kind": "negative",
+      "input": "An addendum changing a criterion is notified only to the two participants the buyer deems affected, out of five in scope.",
+      "expect": "Rejected: post-publication changes are notified to all participants in the round's participant scope.",
+      "expectedCode": "EMOPS02-NOTIFICATION-SUBSET",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "procedure-kind-outside-enum",
+      "kind": "negative",
+      "input": "procedureKind is recorded as the free-text value 'expedited sourcing exercise'.",
+      "expect": "Rejected: procedureKind is one of open, restricted, negotiated, single-source.",
+      "expectedCode": "EMOPS02-PROCEDURE-KIND-INVALID",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "single-source-without-ground-or-authority",
+      "kind": "negative",
+      "input": "procedureKind is 'single-source' with a one-alternative set but no justificationGround and no decidingAuthorityRef.",
+      "expect": "Rejected: single-source requires a justification ground, a competent deciding authority and a mandate scope.",
+      "expectedCode": "EMOPS02-SINGLE-SOURCE-JUSTIFICATION-MISSING",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "single-source-valid-without-waiver",
+      "kind": "positive",
+      "input": "A single-source event records one real alternative, a justification ground, deciding authority and mandate scope, and no waiver.",
+      "expect": "Accepted: the waiver is optional; no dummy bid or simulated competitive round is created.",
+      "expectedCode": "EMOPS02-SINGLE-SOURCE-OK",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "awarded-state-without-award-reference",
+      "kind": "negative",
+      "input": "The event status is set to 'awarded' with no awardDecisionRef.",
+      "expect": "Rejected: the 'awarded' state requires a referential award decision link and asserts no agreement or order.",
+      "expectedCode": "EMOPS02-AWARDED-STATE-UNANCHORED",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "event-without-authorizing-request",
+      "kind": "negative",
+      "input": "A sourcing event is published with neither an authorizingRequestRef nor a declared noRequestGround.",
+      "expect": "Rejected: an event cites exactly one authorizing request or an explicit enumerated ground for having none.",
+      "expectedCode": "EMOPS02-AUTHORIZING-REQUEST-MISSING",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/SourcingEvent",
+      "id": "rejected-request-authorizes-event",
+      "kind": "negative",
+      "input": "A request in status 'rejected' is used as the authorizingRequestRef of a published event.",
+      "expect": "Rejected: a rejected or withdrawn request cannot authorize a sourcing event.",
+      "expectedCode": "EMOPS02-REJECTED-REQUEST-AUTHORIZATION",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-sourcing-event/validation-policy.json",
+      "id": "invariant-without-fixture-coverage",
+      "kind": "negative",
+      "input": "An invariant set of twelve entries is submitted with fixtures covering nine of them under requiresInvariantCoverage.",
+      "expect": "Rejected: every invariant maps to at least one fixture.",
+      "expectedCode": "EMOPS02-INVARIANT-COVERAGE-GAP",
+      "covers": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        12,
+        15
+      ]
+    }
+  ]
+}

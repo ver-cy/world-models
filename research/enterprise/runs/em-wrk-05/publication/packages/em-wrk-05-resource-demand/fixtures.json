@@ -1,0 +1,220 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Resource Demand",
+  "cases": [
+    {
+      "id": "unmet-specialist",
+      "kind": "positive",
+      "input": {
+        "requestMode": "competence",
+        "resourceClass": "specialist",
+        "quantity": {
+          "amount": 1
+        },
+        "interval": "I1"
+      },
+      "expect": "Open demand remains without assignment.",
+      "expectedCode": "OK_UNMET_DEMAND"
+    },
+    {
+      "id": "named-preference-nonbinding",
+      "kind": "positive",
+      "input": {
+        "requestMode": "named-preference",
+        "namedPreferenceRef": "P1",
+        "resourceClass": "specialist"
+      },
+      "expect": "Preference remains non-binding.",
+      "expectedCode": "OK_NAMED_PREFERENCE"
+    },
+    {
+      "id": "sum-fte-currency",
+      "kind": "negative",
+      "input": {
+        "quantities": [
+          "1 FTE",
+          "100 EUR"
+        ]
+      },
+      "expect": "Rejected as incomparable.",
+      "expectedCode": "E-DEMAND-CROSS-KIND"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "named-request-mode-declared",
+      "kind": "positive",
+      "input": "Demand carries requestMode=named-preference, names SPEC-1 via WM-PER-001, and still declares resourceClass, competence, quantityKind, unit and unitSchemeVersion.",
+      "expect": "Accepted as a non-binding preference. No exclusivity, no reservation, no assignment; matching still yields a scored candidacy."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "named-request-without-mode",
+      "kind": "negative",
+      "input": "Demand references a WM-PER-001 person with no requestMode declared.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-REQUEST-MODE-MISSING"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "named-request-implies-allocation",
+      "kind": "negative",
+      "input": "A named-preference demand is read as reserving that person's capacity.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-NAMED-IMPLIES-ALLOCATION"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "named-request-asserts-mastership",
+      "kind": "negative",
+      "input": "Demand closure updates the referenced WM-PER-001 or WM-ORG-016 record.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-MASTER-WRITE"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "no-interval-no-deadline",
+      "kind": "negative",
+      "input": "Demand declares neither interval nor deadline.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-TIMEBOUND-MISSING"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "both-interval-and-deadline",
+      "kind": "negative",
+      "input": "Demand declares both an interval and a conflicting deadline with no precedence rule.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-TIMEBOUND-AMBIGUOUS"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "unit-scheme-version-missing",
+      "kind": "negative",
+      "input": "Demand asserts 100 GPU-hour with no unitSchemeVersion.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-UNIT-SCHEME-VERSION-MISSING"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "divisibility-inferred",
+      "kind": "negative",
+      "input": "divisibility is omitted and the matcher treats the demand as divisible.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-DIVISIBILITY-INFERRED"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "priority-scheme-unnamed",
+      "kind": "negative",
+      "input": "Two demands with priority 1 and priority high are ranked against each other with no named priority scheme.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-PRIORITY-SCHEME-MISSING"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "demand-version-addressable",
+      "kind": "positive",
+      "input": "Quantity rises from 100 to 140 GPU-hours.",
+      "expect": "A DemandVersion keyed [resourceDemandId, version] is created with contentDigest, validFrom and supersedesVersion; the prior version stays resolvable and unchanged."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "scenario-pins-demand-id-only",
+      "kind": "negative",
+      "input": "A released scenario pins the demand by resourceDemandId with no version.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-VERSION-UNPINNED"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "approval-fulfilment-split",
+      "kind": "positive",
+      "input": "Demand is approved while nothing can satisfy it.",
+      "expect": "approvalState=approved and fulfilmentState=open coexist; approval asserts nothing about supply."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "candidacy-sets-fulfilment",
+      "kind": "negative",
+      "input": "A scored candidacy assertion sets fulfilmentState=covered.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-MATCH-IS-NOT-FULFILMENT"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "lapse-without-deadline",
+      "kind": "negative",
+      "input": "A demand with no deadline transitions to lapsed.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-LAPSE-WITHOUT-DEADLINE"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "fulfilment-from-non-baseline",
+      "kind": "negative",
+      "input": "A confirmed allocation inside non-baseline scenario S1 advances fulfilmentState to covered.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-FULFILMENT-FROM-NON-BASELINE"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "fulfilment-from-baseline-decision",
+      "kind": "positive",
+      "input": "S2 is selected as baseline by an authorized decision and its confirmed allocations cover the demanded quantity.",
+      "expect": "fulfilmentState advances with fulfilmentBasisRef pinning the scenario release and the decision; S1 has no effect on the root."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "currency-as-quantity-kind",
+      "kind": "negative",
+      "input": "Demand declares quantityKind=currency with amount 50000 EUR as a resource requirement.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-CURRENCY-NOT-RESOURCE-KIND"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "conversion-yields-new-quantity",
+      "kind": "positive",
+      "input": "100 GPU-hours is valued in currency using a pinned conversion factor with evidence.",
+      "expect": "A new, separately identified quantity is produced; the original demand quantity is unchanged and the two are never summed."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "uncertainty-range-preserved",
+      "kind": "positive",
+      "input": "Demand asserts 80 to 140 GPU-hours with a declared distribution.",
+      "expect": "The range is retained on the assertion and carried into planning without collapse."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "uncertainty-collapsed",
+      "kind": "negative",
+      "input": "The 80 to 140 range is collapsed to its mean for a capacity check.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-UNCERTAINTY-COLLAPSED"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "requesting-work-ref-target-undeclared",
+      "kind": "negative",
+      "input": "requestingWorkRef is populated with no declared target master.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-REF-TARGET-UNDECLARED"
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "withdrawal-preserves-history",
+      "kind": "positive",
+      "input": "An approved, partially covered demand is withdrawn.",
+      "expect": "Prior approvals, candidacies and scenario references remain resolvable; no external master is written."
+    },
+    {
+      "target": "ResourceDemand",
+      "id": "approved-demand-as-supply",
+      "kind": "negative",
+      "input": "Approved demand is counted as available supply in a capacity figure.",
+      "expect": "Rejected.",
+      "expectedCode": "E-DEMAND-NOT-SUPPLY"
+    }
+  ]
+}

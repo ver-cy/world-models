@@ -1,0 +1,3 @@
+# EM-OPS-03 provider comparison
+
+Claude and Grok agree on the three independent identifier-unassigned roots, the separation of title, custody, responsibility, location and access, work-order authorization versus performed work, and configuration-bound calibration. Grok correctly required independent record identity for custody; the frozen audit reconciled this as a temporal relationship record governed inside WM-OBJ-001 without a new model or runtime identifier. Grok's request to allocate configuration identity was rejected because WM-OBJ-023 is already a reserved completion dependency. Hidden Grok reasoning, team coordination and sources are excluded.
