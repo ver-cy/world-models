@@ -1,1 +1,166 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Consolidation Run","cases":[{"id":"two-ledger-run","kind":"positive","input":"A run pins statutory EUR and management USD books, mapping M1, rate set FX1 and cutoff T1.","expect":"Each source revision remains immutable and the run records transformations into the consolidation book."},{"id":"paired-elimination","kind":"positive","input":"An intercompany sale and cost are eliminated with a documented FX residual.","expect":"The balanced elimination cites both legs, match key and residual explanation."},{"id":"late-adjustment","kind":"positive","input":"A late adjustment is discovered after statement A1.","expect":"A successor run and statement version preserve A1 and prior knowledge-time reproduction."},{"id":"source-rewrite","kind":"negative","input":"A consolidation adjustment edits a source-ledger posting.","expect":"The mutation is rejected."},{"id":"one-sided-elimination","kind":"negative","input":"An unmatched receivable is silently eliminated on one side.","expect":"The entry is rejected and exposed as a break."},{"id":"current-rate-replay","kind":"negative","input":"A historical run is reproduced using today's FX rate set.","expect":"The reproduction is rejected because the pinned historical rate set is required."},{"id":"overwrite-run","kind":"negative","input":"A correction rewrites a completed run.","expect":"The mutation is rejected; a successor run is required."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "contourId": "EM-FIN-04",
+  "candidateKey": "candidate-allocation-offline-consolidation-run",
+  "cases": [
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "run-complete-pin-set",
+      "kind": "positive",
+      "input": "Run R1 pins S-1 revision 2, framework IFRS-2026, taxonomy TX-2026, mapping M1, rate set FX-2026Q2, tolerance policy TOL-1, books L-STAT (EUR) revision 118 and L-MGMT (USD) revision 64, cutoff 2026-06-30T23:59:59+02:00, knowledgeCutAt 2026-07-05T09:00:00+02:00, executorRef U-41, authorizationRef U-07, contentDigest present.",
+      "expect": "The run is accepted and reproducible from its pins alone.",
+      "invariantRefs": [
+        "Every run pins scope, framework, taxonomy, rates, mappings, cutoff and source revisions"
+      ],
+      "expectedCode": "RUN_COMPLETE_PIN_SET"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "run-missing-taxonomy-pin",
+      "kind": "negative",
+      "input": "Run R4 pins framework IFRS-2026 but records no taxonomyRef and no tolerancePolicyRef.",
+      "expect": "The run is rejected as unreproducible; the pin set is incomplete.",
+      "invariantRefs": [
+        "Every run pins scope, framework, taxonomy, rates, mappings, cutoff and source revisions"
+      ],
+      "expectedCode": "RUN_MISSING_TAXONOMY_PIN"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "unversioned-external-pin",
+      "kind": "negative",
+      "input": "Run R5 pins the rate set as identifier 'FX-2026Q2' with no version and no digest.",
+      "expect": "The pin is rejected; external references must be version-addressable with a digest.",
+      "invariantRefs": [
+        "Rate value, type, date, source and set version are pinned"
+      ],
+      "expectedCode": "UNVERSIONED_EXTERNAL_PIN"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "elimination-discriminator-required",
+      "kind": "negative",
+      "input": "An entry is posted to consolidation book CB-GRP-STAT with no bookClass and no consolidationRunRef.",
+      "expect": "The entry is rejected; without the discriminator a consolidation adjustment is indistinguishable from a source posting.",
+      "invariantRefs": [
+        "Adjustments post only to consolidation books",
+        "Source postings remain immutable in their books"
+      ],
+      "expectedCode": "ELIMINATION_DISCRIMINATOR_REQUIRED"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "elimination-within-tolerance",
+      "kind": "positive",
+      "input": "Elimination E1 in CB-GRP-STAT (EUR), run R1, adjustmentClass intercompanyRevenueCost, removes revenue 100000.00 EUR and cost 70000.00 EUR, cites legs L-STAT entry 9912 line 3 and L-MGMT entry 4471 line 1, matchKey IC-8841, matchedAmount 100000.00 EUR, unmatchedAmount 120.00 EUR, residualReason fx, tolerance policy TOL-1 threshold 250.00 EUR, initiatorRef U-41, authorizationRef U-07.",
+      "expect": "The elimination is accepted; the 120.00 EUR residual is recorded with its reason and evaluated against TOL-1.",
+      "invariantRefs": [
+        "Every elimination cites paired evidence and explains residuals",
+        "Each entry balances within one consolidation book and one currency against one pinned tolerance policy revision"
+      ],
+      "expectedCode": "ELIMINATION_WITHIN_TOLERANCE"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "elimination-tolerance-unpinned",
+      "kind": "negative",
+      "input": "Elimination E2 carries unmatchedAmount 120.00 EUR and residualReason fx but no tolerancePolicyRef.",
+      "expect": "The elimination is rejected; tolerance is not implicit.",
+      "invariantRefs": [
+        "Each entry balances against one pinned tolerance policy revision"
+      ],
+      "expectedCode": "ELIMINATION_TOLERANCE_UNPINNED"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "cross-book-netting",
+      "kind": "negative",
+      "input": "Elimination E3 nets a leg in source book L-STAT against a leg in consolidation book CB-GRP-STAT.",
+      "expect": "The entry is rejected; no cross-book netting and no posting into a source book.",
+      "invariantRefs": [
+        "Eliminations post only to consolidation books",
+        "No cross-book or cross-currency netting"
+      ],
+      "expectedCode": "CROSS_BOOK_NETTING"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "cross-currency-balance",
+      "kind": "negative",
+      "input": "Elimination E4 balances a 100000.00 EUR leg against a 108000.00 USD leg with no transaction, functional and presentation currency roles and no rate pin.",
+      "expect": "The entry is rejected; balancing is single-currency and currency roles plus rate pins are explicit.",
+      "invariantRefs": [
+        "Transaction, functional and presentation currencies remain explicit"
+      ],
+      "expectedCode": "CROSS_CURRENCY_BALANCE"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "failed-run-not-citable",
+      "kind": "negative",
+      "input": "Statement edition A1.1 cites run R6 whose status is failed.",
+      "expect": "The citation is rejected; a failed run emits no citable output.",
+      "invariantRefs": [
+        "A failed run emits no citable output"
+      ],
+      "expectedCode": "FAILED_RUN_NOT_CITABLE"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "retired-run-citation-durability",
+      "kind": "positive",
+      "input": "Run R1 is retired on 2026-12-01T09:00:00+02:00 after A1.1 has cited it.",
+      "expect": "R1 remains immutable and resolvable; the existing citation stays valid and the identifier is never recycled.",
+      "invariantRefs": [
+        "A retired run remains immutable and resolvable for every statement that already cites it",
+        "Run identifiers and contained steps are never recycled"
+      ],
+      "expectedCode": "RETIRED_RUN_CITATION_DURABILITY"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "successor-lineage-bidirectional",
+      "kind": "positive",
+      "input": "Run R2 corrects R1 with restatementClass 'errorCorrection' and a recorded restatementReason.",
+      "expect": "R2 records supersedesRunRef R1 and R1 records successorRunRef R2; both runs resolve independently and neither is overwritten.",
+      "invariantRefs": [
+        "A successor resolves its predecessor and never replaces it",
+        "Completed runs are immutable and corrected by successors"
+      ],
+      "expectedCode": "SUCCESSOR_LINEAGE_BIDIRECTIONAL"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "post-cutoff-adjustment-authorized",
+      "kind": "negative",
+      "input": "A transformation step applying an adjustment dated 2026-07-12T10:00:00+02:00, after cutoff 2026-06-30T23:59:59+02:00, carries no authorizationRef.",
+      "expect": "The step is rejected; post-cutoff adjustments are dated and authorized and are never backdated into R1.",
+      "invariantRefs": [
+        "Post-cutoff adjustments are dated and authorized"
+      ],
+      "expectedCode": "POST_CUTOFF_ADJUSTMENT_AUTHORIZED"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "initiator-equals-authorizer",
+      "kind": "negative",
+      "input": "Run R7 records executorRef U-41 and authorizationRef U-41 with no compensatingControlRef.",
+      "expect": "The run is rejected; initiator and authorizer are separated or a compensating control is recorded.",
+      "invariantRefs": [
+        "initiatorRef differs from authorizerRef, or compensatingControlRef is present"
+      ],
+      "expectedCode": "INITIATOR_EQUALS_AUTHORIZER"
+    },
+    {
+      "candidateKey": "candidate-allocation-offline-consolidation-run",
+      "id": "comparability-bridge-required",
+      "kind": "positive",
+      "input": "R2 pins S-1 revision 3, which removes a disposed subsidiary, and is compared with R1 on S-1 revision 2.",
+      "expect": "A ComparabilityBridge for (R2, R1) records scopeDelta, methodDelta, rateDelta, activityDelta and a nonComparabilityMarker; results across the two scope revisions are not additive.",
+      "invariantRefs": [
+        "Scope changes produce comparability bridges"
+      ],
+      "expectedCode": "COMPARABILITY_BRIDGE_REQUIRED"
+    }
+  ]
+}
