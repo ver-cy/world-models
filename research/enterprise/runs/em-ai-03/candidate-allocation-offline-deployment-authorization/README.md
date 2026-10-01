@@ -1,3 +1,3 @@
-# EM-AI-03 deployment authorization delta
+# EM-AI-03 Standing Deployment Authorization Instrument offline candidate
 
-Preserves a standing Deployment Authorization Instrument as a conditional identifier-unassigned candidate only when it has a lifecycle beyond one decision occurrence. No identifier is allocated.
+Identifier-unassigned and not independently identified in this increment. canonicalPublishable=false; installable=false.

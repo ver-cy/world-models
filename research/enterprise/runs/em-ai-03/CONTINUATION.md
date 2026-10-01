@@ -1,11 +1,3 @@
 # EM-AI-03 continuation
 
-Checkpoint date: 2026-09-26.
-
-Disposition: reuse WM-AI-003 for one evaluation instance with contained applied plan/run/result, WM-AI-009 for Benchmark Specification and WM-AI-008 for Safety Assessment; profile Deployment Decision across the decision triad. Reusable Evaluation Protocol and standing Deployment Authorization Instrument remain conditional identifier-unassigned candidates. No catalogue/runtime identifier is allocated.
-
-The complete target specifications and reservations plus all complete relevant artifact, dataset, observation and decision specifications and prior Enterprise boundary work were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
-
-Publication is held by protocol/metric and decision boundary overlaps, unapproved dataset relations, missing evaluation-instance and endpoint/deployment mastership, conditional unallocated candidates and non-canonical base drafts.
-
-Next contour: EM-FAC-02. Read the complete WM-ECO-034 specification and registry reservation and adjudicate ImpactBoundary, ActivityData, EmissionFactor, ImpactCalculation and SustainabilityDisclosure boundaries.
+EM-AI-03 is provider-reconciled and frozen-audited. Grok conditionally accepted the reuse/profile boundary. One Claude Opus high no-tools audit found 15 material defects; all were remediated without rerun and the audit fixtures are retained. WM-AI-003 keeps distinct applied-plan/run/result roles, WM-AI-009 owns benchmark contract and snapshot definition, WM-AI-008 owns safety judgement, and deployment decision profiles the decision triad. Both conditional candidates remain identifier-unassigned. No catalogue or runtime identifier was allocated.

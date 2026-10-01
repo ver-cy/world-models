@@ -1,0 +1,418 @@
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "contourId": "EM-AI-03",
+  "cases": [
+    {
+      "id": "changed-dataset-and-context",
+      "kind": "positive",
+      "invariants": [
+        4,
+        9,
+        11
+      ],
+      "pins": {
+        "datasetBefore": "D1@1",
+        "datasetAfter": "D1@2",
+        "contextBefore": "internal-assist",
+        "contextAfter": "external-customer-action"
+      },
+      "input": "Dataset snapshot and deployment context both change.",
+      "expect": "A new WM-AI-003 occurrence, new WM-AI-008 assessment and new explicit decision are required; old approval remains historical.",
+      "expectedCode": "NEW_EVALUATION_ASSESSMENT_AUTHORIZATION"
+    },
+    {
+      "id": "high-score-universal-safety",
+      "kind": "negative",
+      "invariants": [
+        5,
+        6,
+        9
+      ],
+      "pins": {
+        "score": 0.99
+      },
+      "input": "A high benchmark score is used as universal safety proof and deployment permission.",
+      "expect": "Rejected; measurement is neither safety judgement nor authorization.",
+      "expectedCode": "MEASUREMENT_NOT_AUTHORIZATION"
+    },
+    {
+      "id": "missing-uncertainty",
+      "kind": "negative",
+      "invariants": [
+        12,
+        14
+      ],
+      "pins": {
+        "uncertainty": null,
+        "limitations": null
+      },
+      "input": "A result omits uncertainty and limitations.",
+      "expect": "Rejected; the result cannot be accepted.",
+      "expectedCode": "RESULT_EVIDENCE_INCOMPLETE"
+    },
+    {
+      "id": "incident-embeds-evidence",
+      "kind": "negative",
+      "invariants": [
+        10
+      ],
+      "pins": {
+        "incident": "I1",
+        "embeddedObservation": "O1"
+      },
+      "input": "An incident report replaces the observation record with embedded mutable evidence.",
+      "expect": "Rejected; the report must cite externally mastered immutable evidence.",
+      "expectedCode": "INCIDENT_EVIDENCE_MASTERSHIP"
+    },
+    {
+      "id": "role-ordering",
+      "kind": "positive",
+      "invariants": [
+        1,
+        2
+      ],
+      "pins": {
+        "planAt": "2026-01-01T00:00:00+00:00",
+        "runCompletedAt": "2026-01-02T00:00:00+00:00",
+        "resultAt": "2026-01-02T01:00:00+00:00",
+        "planSealedAt": "2026-01-01T00:00:00+00:00",
+        "runState": "completed",
+        "runSequence": 1,
+        "planActor": "A",
+        "runActor": "B",
+        "resultActor": "C"
+      },
+      "input": "Plan is frozen before the run and result follows completion.",
+      "expect": "Accepted as one occurrence with three distinct roles.",
+      "expectedCode": "ROLE_ORDER_VALID"
+    },
+    {
+      "id": "prior-records-remain-valid-in-scope",
+      "kind": "positive",
+      "invariants": [
+        23,
+        11
+      ],
+      "pins": {
+        "datasetBefore": "D1@1",
+        "datasetAfter": "D1@2",
+        "contextBefore": "internal-assist",
+        "contextAfter": "external-customer-action",
+        "priorAuthorizationScope": "internal-assist",
+        "labelScope": "fixture-local synthetic labels; not registry, model, catalogue or runtime identifiers"
+      },
+      "input": "After the dataset snapshot and context change, the prior evaluation, assessment and issued instrument are inspected for their original scope.",
+      "expect": "Accepted; prior records remain immutable and remain in force for internal-assist, and are non-transferable to external-customer-action.",
+      "expectedCode": "PRIOR_RECORD_SCOPE_PRESERVED"
+    },
+    {
+      "id": "context-change-revokes-unchanged-scope",
+      "kind": "negative",
+      "invariants": [
+        11,
+        23
+      ],
+      "pins": {
+        "contextAdded": "external-customer-action",
+        "priorAuthorizationScope": "internal-assist",
+        "priorAuthorizationStatus": "effective"
+      },
+      "input": "The arrival of a new deployment context is used to set the prior authorization for the unchanged context to invalid.",
+      "expect": "Rejected; change removes transferability to the new scope and never revokes the unchanged scope.",
+      "expectedCode": "SCOPE_REVOCATION_OVERREACH"
+    },
+    {
+      "id": "silent-authorization-carry-forward",
+      "kind": "negative",
+      "invariants": [
+        11,
+        6
+      ],
+      "pins": {
+        "instrumentScope": "internal-assist",
+        "requestedContext": "external-customer-action",
+        "scopeProofRef": null
+      },
+      "input": "The issued instrument is applied to the new context with no scope proof and no successor instrument.",
+      "expect": "Rejected; a new rationale, authorized act and issued instrument are required.",
+      "expectedCode": "AUTHORIZATION_SCOPE_NOT_PROVEN"
+    },
+    {
+      "id": "rescore-additive-successor",
+      "kind": "positive",
+      "invariants": [
+        20,
+        2
+      ],
+      "pins": {
+        "occurrenceRef": "E1",
+        "planSealedAt": "2026-01-01T00:00:00+00:00",
+        "runSequence": 1,
+        "runState": "completed",
+        "scorerBefore": "S@1",
+        "scorerAfter": "S@2",
+        "originalResultRetained": true
+      },
+      "input": "The same sealed plan, run and pins are rescored with a later scorer version.",
+      "expect": "Accepted as an additive successor result citing the superseded result, with original value, scorer version, actor, time and reason preserved.",
+      "expectedCode": "RESCORE_ADDITIVE_SUCCESSOR"
+    },
+    {
+      "id": "rescore-overwrites-original",
+      "kind": "negative",
+      "invariants": [
+        20
+      ],
+      "pins": {
+        "occurrenceRef": "E1",
+        "scorerBefore": "S@1",
+        "scorerAfter": "S@2",
+        "originalResultRetained": false
+      },
+      "input": "A rescore replaces the stored original score in place.",
+      "expect": "Rejected; corrections are additive and the original is never overwritten.",
+      "expectedCode": "RESULT_IMMUTABILITY"
+    },
+    {
+      "id": "post-hoc-threshold-change",
+      "kind": "negative",
+      "invariants": [
+        21,
+        4
+      ],
+      "pins": {
+        "planSealedAt": "2026-01-01T00:00:00+00:00",
+        "resultAt": "2026-01-02T01:00:00+00:00",
+        "thresholdChangedAt": "2026-01-03T00:00:00+00:00",
+        "changeRecordRef": null,
+        "priorResultVisibilityDisclosed": false
+      },
+      "input": "A pass threshold is lowered after the result is observed, with no authorized change record.",
+      "expect": "Rejected; thresholds precede results and a later change requires an authorized dated record disclosing prior result visibility.",
+      "expectedCode": "THRESHOLD_PRECEDENCE_VIOLATION"
+    },
+    {
+      "id": "run-retry-within-occurrence",
+      "kind": "positive",
+      "invariants": [
+        1,
+        2
+      ],
+      "pins": {
+        "occurrenceRef": "E1",
+        "runSequence": 2,
+        "runState": "completed",
+        "priorRunState": "failed",
+        "pinDelta": "none",
+        "planMutated": false
+      },
+      "input": "A harness failure is retried with byte-identical pins against the sealed plan.",
+      "expect": "Accepted as a second run sequence inside the same occurrence with the plan unchanged.",
+      "expectedCode": "RUN_RETRY_WITHIN_OCCURRENCE"
+    },
+    {
+      "id": "run-retry-with-pin-delta",
+      "kind": "negative",
+      "invariants": [
+        2,
+        4
+      ],
+      "pins": {
+        "occurrenceRef": "E1",
+        "runSequence": 2,
+        "pinDelta": "inferenceConfiguration",
+        "planMutated": false
+      },
+      "input": "A retry changes the inference configuration inside the existing occurrence.",
+      "expect": "Rejected; a pin delta requires a new occurrence with a newly sealed plan.",
+      "expectedCode": "NEW_OCCURRENCE_REQUIRED"
+    },
+    {
+      "id": "split-label-as-contamination-proof",
+      "kind": "negative",
+      "invariants": [
+        16
+      ],
+      "pins": {
+        "splitLabel": "test",
+        "overlapEvidence": null,
+        "canaryCheck": null,
+        "holdoutExposureCount": null
+      },
+      "input": "A split label is offered as proof of non-contamination.",
+      "expect": "Rejected; non-overlap requires declared contamination evidence.",
+      "expectedCode": "CONTAMINATION_UNPROVEN"
+    },
+    {
+      "id": "absent-metric-as-absent-risk",
+      "kind": "negative",
+      "invariants": [
+        17
+      ],
+      "pins": {
+        "harmCategory": "declared-in-scope",
+        "metricRef": null
+      },
+      "input": "A harm category with no metric is reported as carrying no residual risk.",
+      "expect": "Rejected; absence of a metric is not absence of risk and must be recorded as an unmeasured limitation.",
+      "expectedCode": "METRIC_ABSENCE_NOT_RISK_ABSENCE"
+    },
+    {
+      "id": "stale-evidence-carried",
+      "kind": "negative",
+      "invariants": [
+        18
+      ],
+      "pins": {
+        "resultAsOf": "2026-01-02T01:00:00+00:00",
+        "declaredStalenessInterval": "P90D",
+        "assessmentAt": "2026-06-01T00:00:00+00:00",
+        "staleMarked": false
+      },
+      "input": "An assessment cites a result beyond its declared staleness interval without marking it stale.",
+      "expect": "Rejected; stale evidence is marked stale and is not silently carried.",
+      "expectedCode": "EVIDENCE_STALE"
+    },
+    {
+      "id": "conflated-time-instants",
+      "kind": "negative",
+      "invariants": [
+        19
+      ],
+      "pins": {
+        "observedAt": "2026-01-02T01:00:00+00:00",
+        "ingestedAt": "2026-01-02T01:00:00+00:00",
+        "effectiveAt": null,
+        "offsetDeclared": true,
+        "singleTimestampSubmitted": true
+      },
+      "input": "A result submits one timestamp for observation, ingestion and effect.",
+      "expect": "Rejected; event, observation, ingestion, approval, publication and effective instants are recorded distinctly.",
+      "expectedCode": "TIME_SEMANTICS_UNDERSPECIFIED"
+    },
+    {
+      "id": "hidden-test-item-disclosure",
+      "kind": "negative",
+      "invariants": [
+        22
+      ],
+      "pins": {
+        "itemClass": "hidden-test",
+        "publishedContent": "item-text-and-expected-output"
+      },
+      "input": "Hidden-test item content is embedded in a published profile artifact.",
+      "expect": "Rejected; protected benchmark items stay outside published artifacts and are cited by digest reference only.",
+      "expectedCode": "PROTECTED_ITEM_DISCLOSURE"
+    },
+    {
+      "id": "dataset-rights-undeclared",
+      "kind": "negative",
+      "invariants": [
+        22
+      ],
+      "pins": {
+        "datasetSnapshot": "D1@2",
+        "licenceRef": null,
+        "redistributionTerms": null
+      },
+      "input": "A dataset snapshot is bound to an evaluation with no declared licence or redistribution terms.",
+      "expect": "Rejected; rights are declared before use.",
+      "expectedCode": "DATASET_RIGHTS_UNDECLARED"
+    },
+    {
+      "id": "subgroup-below-declared-minimum",
+      "kind": "negative",
+      "invariants": [
+        22,
+        12
+      ],
+      "pins": {
+        "disaggregationFactor": "declared",
+        "subgroupSampleSize": 3,
+        "declaredMinimumSubgroupSize": 30
+      },
+      "input": "A disaggregated result is reported for a subgroup below the declared minimum size.",
+      "expect": "Rejected; report suppression or aggregation is required and the limitation is recorded.",
+      "expectedCode": "SUBGROUP_MINIMUM_NOT_MET"
+    },
+    {
+      "id": "context-label-as-identifier",
+      "kind": "negative",
+      "invariants": [
+        24
+      ],
+      "pins": {
+        "contextLabel": "external-customer-action",
+        "usedAs": "resolvable-master-identifier"
+      },
+      "input": "A deployment-context label is treated as a resolvable master or catalogue identifier.",
+      "expect": "Rejected; no deployment or endpoint master is frozen and the label is a declared descriptor.",
+      "expectedCode": "UNMASTERED_REFERENT_AS_IDENTIFIER"
+    },
+    {
+      "id": "incident-occurrence-identity-claim",
+      "kind": "negative",
+      "invariants": [
+        24,
+        10
+      ],
+      "pins": {
+        "reportRef": "I1",
+        "usedAs": "incident-occurrence-master-identity"
+      },
+      "input": "A WM-AI-010 report reference is used as the master identity of the incident occurrence.",
+      "expect": "Rejected; WM-AI-010 masters the reporting case only and the occurrence has no frozen master.",
+      "expectedCode": "INCIDENT_OCCURRENCE_UNMASTERED"
+    },
+    {
+      "id": "gate-approval-as-authorization",
+      "kind": "negative",
+      "invariants": [
+        25,
+        6,
+        7
+      ],
+      "pins": {
+        "gateDecision": "WM-AI-003 waiver granted",
+        "knwRef": null,
+        "actRef": null,
+        "recRef": null
+      },
+      "input": "An evaluation gate approval or waiver is presented as deployment authorization.",
+      "expect": "Rejected; authorization requires WM-KNW-010 rationale, WM-ACT-024 act and WM-REC-010 instrument.",
+      "expectedCode": "GATE_NOT_AUTHORIZATION"
+    },
+    {
+      "id": "two-authoritative-assessment-revisions",
+      "kind": "negative",
+      "invariants": [
+        6,
+        8
+      ],
+      "pins": {
+        "assessmentRef": "A1",
+        "authoritativeRevisions": 2
+      },
+      "input": "Two WM-AI-008 revisions are marked authoritative at the same instant.",
+      "expect": "Rejected; exactly one revision is authoritative at any instant and superseded revisions remain resolvable.",
+      "expectedCode": "SINGLE_AUTHORITATIVE_REVISION"
+    },
+    {
+      "id": "unversioned-base-pin-publication",
+      "kind": "negative",
+      "invariants": [
+        14
+      ],
+      "pins": {
+        "basePinVersion": null,
+        "basePinDigest": null,
+        "verification": "unverified-current-draft",
+        "requestedState": "canonicalPublishable=true"
+      },
+      "input": "The profile is proposed for publication with null base versions and digests.",
+      "expect": "Rejected; unversioned base pins block profile publication and canonicalPublishable and installable remain false.",
+      "expectedCode": "BASE_PIN_UNVERSIONED"
+    }
+  ],
+  "labelScope": "fixture-local synthetic labels; not registry, model, catalogue or runtime identifiers"
+}

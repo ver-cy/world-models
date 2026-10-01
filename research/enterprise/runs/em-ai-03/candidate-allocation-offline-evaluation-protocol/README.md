@@ -1,3 +1,3 @@
-# EM-AI-03 evaluation protocol delta
+# EM-AI-03 Reusable Evaluation Protocol offline candidate
 
-Profiles existing evaluation, benchmark, safety and decision masters and preserves Reusable Evaluation Protocol as a conditional unassigned candidate. No identifier is allocated.
+Identifier-unassigned and not independently identified in this increment. canonicalPublishable=false; installable=false.
