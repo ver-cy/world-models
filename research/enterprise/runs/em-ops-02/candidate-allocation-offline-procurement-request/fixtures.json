@@ -1,1 +1,164 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Procurement Request","cases":[{"id":"approved-need","kind":"positive","input":"An internal need with scope, quantity, owner and budget reference is approved.","expect":"The request may initiate sourcing but creates no supplier, contract or order fact."},{"id":"split-fulfilment","kind":"positive","input":"One approved request is fulfilled through two independently issued orders.","expect":"The request retains one identity and references both orders without merging them."},{"id":"withdrawn-request","kind":"positive","input":"A request is withdrawn after review but before sourcing.","expect":"Its revisions and approval history remain resolvable."},{"id":"approval-is-award","kind":"negative","input":"Internal request approval is treated as supplier award.","expect":"The inference is rejected."},{"id":"budget-ref-is-funding","kind":"negative","input":"A budget reference is treated as committed and available funding.","expect":"The inference is rejected."},{"id":"request-is-order","kind":"negative","input":"The approved request is issued to a supplier as a purchase order.","expect":"The identity conversion is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Procurement Request",
+  "cases": [
+    {
+      "id": "approved-need",
+      "kind": "positive",
+      "input": "An internal need with scope, quantity, owner and budget reference is approved.",
+      "expect": "The request may initiate sourcing but creates no supplier, contract or order fact.",
+      "expectedCode": "EMOPS02-REQ-01",
+      "covers": [
+        1
+      ]
+    },
+    {
+      "id": "split-fulfilment",
+      "kind": "positive",
+      "input": "One approved request is fulfilled through two independently issued orders.",
+      "expect": "The request retains one identity and references both orders without merging them.",
+      "expectedCode": "EMOPS02-REQ-02",
+      "covers": [
+        2
+      ]
+    },
+    {
+      "id": "withdrawn-request",
+      "kind": "positive",
+      "input": "A request is withdrawn after review but before sourcing.",
+      "expect": "Its revisions and approval history remain resolvable.",
+      "expectedCode": "EMOPS02-REQ-03",
+      "covers": [
+        3
+      ]
+    },
+    {
+      "id": "approval-is-award",
+      "kind": "negative",
+      "input": "Internal request approval is treated as supplier award.",
+      "expect": "The inference is rejected.",
+      "expectedCode": "EMOPS02-REQ-04",
+      "covers": [
+        4
+      ]
+    },
+    {
+      "id": "budget-ref-is-funding",
+      "kind": "negative",
+      "input": "A budget reference is treated as committed and available funding.",
+      "expect": "The inference is rejected.",
+      "expectedCode": "EMOPS02-REQ-05",
+      "covers": [
+        5
+      ]
+    },
+    {
+      "id": "request-is-order",
+      "kind": "negative",
+      "input": "The approved request is issued to a supplier as a purchase order.",
+      "expect": "The identity conversion is rejected.",
+      "expectedCode": "EMOPS02-REQ-06",
+      "covers": [
+        6
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/ProcurementRequest",
+      "id": "scope-change-creates-pinned-revision",
+      "kind": "positive",
+      "input": "Requested quantity changes after approval; a new revision is created with revisionEffectiveFrom and supersedesRevisionRef.",
+      "expect": "Both revisions remain resolvable and the prior approval stays pinned to the scope revision it authorized.",
+      "expectedCode": "EMOPS02-REQUEST-REVISION-OK",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/ProcurementRequest",
+      "id": "successor-ref-used-for-revision",
+      "kind": "negative",
+      "input": "A scope revision is recorded by setting replacementRequestRef to a new request identifier instead of creating a revision.",
+      "expect": "Rejected: revision succession and distinct-need replacement are separate fields with separate meanings.",
+      "expectedCode": "EMOPS02-SUCCESSION-OVERLOAD",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/ProcurementRequest",
+      "id": "approved-without-authority-record",
+      "kind": "negative",
+      "input": "A request reaches status 'approved' with no approvals entry and no authorityRef.",
+      "expect": "Rejected: approval requires an approver, authority binding, decision instant and the approved scope revision.",
+      "expectedCode": "EMOPS02-APPROVAL-RECORD-MISSING",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/ProcurementRequest",
+      "id": "split-fulfilment-references-both-orders",
+      "kind": "positive",
+      "input": "One approved request is fulfilled by two independently issued purchase orders.",
+      "expect": "orderRefs holds both order references under one request identity; the orders are not merged and no contract is implied.",
+      "expectedCode": "EMOPS02-SPLIT-FULFILMENT-OK",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/boundary",
+      "id": "internal-approval-vs-award-reference",
+      "kind": "negative",
+      "input": "The request's internal approval is recorded as the award decision it references under the single purpose 'Approval or award decision'.",
+      "expect": "Rejected: internal procurement approval is owned by the request; the award decision is a separate referenced record with its own purpose.",
+      "expectedCode": "EMOPS02-APPROVAL-AWARD-CONFLATION",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/validation-policy.json",
+      "id": "fixture-without-expected-code",
+      "kind": "negative",
+      "input": "A fixture is submitted with prose 'expect' and no expectedCode under requiresExpectedCode.",
+      "expect": "Rejected: every fixture carries a machine-checkable expectedCode.",
+      "expectedCode": "EMOPS02-FIXTURE-CODE-MISSING",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    },
+    {
+      "target": "candidate-allocation-offline-procurement-request/allocation-candidate.json",
+      "id": "publishability-field-name-divergence",
+      "kind": "negative",
+      "input": "One artifact uses 'canonicalPublishable' while the reconciled hold text names 'publishableCanonical'.",
+      "expect": "Rejected: a single spelling of the publishability field is used across all EM-OPS-02 artifacts.",
+      "expectedCode": "EMOPS02-FIELD-NAME-DIVERGENCE",
+      "covers": [
+        10,
+        11,
+        12,
+        15
+      ]
+    }
+  ]
+}

@@ -1,3 +1,3 @@
-# EM-OPS-02 Procurement Request
+# EM-OPS-02 — Procurement Request
 
-Validated identifier-unassigned candidate for the internal procurement need and approval lifecycle. No identifier is assigned.
+Reconciled held candidate. Grok review and the single frozen semantic audit are complete; bounded defects are remediated without audit rerun. No registry or runtime identifier is allocated.
