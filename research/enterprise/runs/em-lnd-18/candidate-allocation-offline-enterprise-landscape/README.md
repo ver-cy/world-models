@@ -1,3 +1,3 @@
-# EM-LND-18 offline allocation dossier
+# EM-LND-18 offline dossier
 
-Validated, identifier-unassigned allocation dossier for **Enterprise Landscape**, with **Enterprise View Scope** retained as a WM-KNW-012 profile. No identifier is assigned and no universal graph host is introduced.
+Reviewable Grok-reconciled profile plus identifier-unassigned `EnterpriseLandscape` candidate. No runtime or registry ID is allocated. Canonical publication is held, including because the single frozen audit provider call timed out with no result.

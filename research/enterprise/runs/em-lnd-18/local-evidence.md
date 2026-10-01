@@ -75,3 +75,11 @@ A three-person service firm selects contract/obligation, finance and client-comm
 ## Holds
 
 Enterprise Landscape and several support boundaries are unallocated. WM-KNW-012 lacks record-classification, retention, tailoring and defect functions. WM-XCT-037 has unresolved traversal, identity-strength and composition contradictions. WM-XCT-039 has validation and adapter gaps. Organization relationship parentage remains unsettled. All bases are non-canonical and mostly single-provider; crosswalks, immutable pins and fixtures are absent. No installability or publication-readiness claim is made.
+
+## Grok reconciliation
+
+Grok accepted both candidates with gaps and confirmed the no-ID, domain-mastership, non-reimport and non-universal-host boundary. The reconciled dossier adds explicit perimeter, withheld markers, semantic-axis readings, three distinct clocks and per-release rights evaluation.
+
+## Frozen audit outcome
+
+The single Claude Opus high/no-tools audit call received the frozen dossier but timed out after nearly ten hours and returned zero bytes. The call is spent and will not be rerun. This failure is a publication hold, not evidence against the boundary.
