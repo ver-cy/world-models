@@ -57,3 +57,7 @@ Change C is authorized against revision R1 and binds EU and US windows with dist
 ## Holds
 
 Change Execution and Duty Roster lack registry allocation. WM-SFT-010 has no complete specification. Reused bases remain non-canonical drafts with source and provider holds. Relation rows for request→execution, execution→window, roster→assignment and escalation evaluation are absent. Workforce conflict-of-interest, timezone, access-grant and verification fixtures are incomplete. No installability or publication-readiness claim is made.
+
+## Grok reconciliation and frozen audit
+
+Grok conditionally accepted both independent roots and strengthened the request/decision/execution, freeze, rollback, handover and IAM boundaries. The single frozen audit accepted the fixed identity decision, found 21 artifact defects and supplied exact fixtures. All bounded fixes are encoded without allocating identifiers.

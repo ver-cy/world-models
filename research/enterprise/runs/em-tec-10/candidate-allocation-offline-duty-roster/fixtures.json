@@ -1,1 +1,83 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Duty Roster","cases":[{"id":"cross-zone-shifts","kind":"positive","input":"EU and US shifts use named timezones and a pinned tzdb release.","expect":"Each occurrence resolves deterministically with offset and revision."},{"id":"acknowledged-handover","kind":"positive","input":"Duty passes from A to B with open incidents, in-flight changes and B's acknowledgment.","expect":"The handover is attributable and preserves unresolved work."},{"id":"authorized-substitution","kind":"positive","input":"C substitutes for B under an authorized override.","expect":"A linked substitution record changes the effective shift without rewriting the roster."},{"id":"roster-grants-admin","kind":"negative","input":"On-call roster membership automatically grants administrator access.","expect":"The permission inference is rejected."},{"id":"silence-is-ack","kind":"negative","input":"No response from the incoming party is treated as handover acknowledgment.","expect":"The acceptance inference is rejected."},{"id":"assignment-is-shift","kind":"negative","input":"A standing work assignment is used as the roster occurrence.","expect":"The identity merge is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Duty Roster",
+  "cases": [
+    {
+      "id": "dr-acknowledged-handover",
+      "kind": "positive",
+      "input": "A shift handover records open work and incoming acknowledgment before the incoming party acts.",
+      "expect": "Accepted and attributable without creating any IAM right.",
+      "expectedCode": "OK_HANDOVER"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d13-shift-override-handover-objects-defined",
+      "kind": "positive",
+      "input": "RosterShift, ShiftOverride and DutyHandover objects are defined with their own identities and required fields, each shift citing a standingAssignmentRef.",
+      "expect": "Accepted; the owned facts have carriers and the eligibility, substitution and handover invariants become testable."
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d13b-handover-without-acknowledgment",
+      "kind": "negative",
+      "input": "A DutyHandover from A to B is recorded with atInstant and open work but no acknowledgment and no gapRecorded.",
+      "expect": "Rejected; silence is neither acceptance nor an implicit gap and must be recorded explicitly.",
+      "expectedCode": "E-DR-ACK-MISSING"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d13c-substitution-outside-revision-digest",
+      "kind": "positive",
+      "input": "C substitutes for B via a ShiftOverride with authorizerRef and effectiveAt while the roster revision digest is unchanged.",
+      "expect": "Accepted; the effective shift changes through an overlay and the immutable revision is not rewritten."
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d14-overlapping-effective-revisions",
+      "kind": "negative",
+      "input": "Revisions 3 and 4 of one roster both cover the instant used to resolve an escalation target.",
+      "expect": "Rejected; effective revision intervals must not overlap for as-of resolution.",
+      "expectedCode": "E-DR-REVISION-OVERLAP"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d14b-dst-overlap-without-policy",
+      "kind": "negative",
+      "input": "A shift boundary falls in a repeated local hour and the revision declares no dstPolicy.",
+      "expect": "Rejected; DST gaps and overlaps require a declared per-schedule resolution policy.",
+      "expectedCode": "E-DR-DST-POLICY-MISSING"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d16-root-level-supersession",
+      "kind": "negative",
+      "input": "The roster root is set to superseded with successorRef to a second roster identity while its revisions are unchanged.",
+      "expect": "Rejected; supersession is revision-level and the root identity remains stable.",
+      "expectedCode": "E-DR-ROOT-SUPERSESSION"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d16b-retired-with-uncovered-open-work",
+      "kind": "negative",
+      "input": "The roster is set to retired with no retiredAt and with in-flight executions and open incidents unenumerated.",
+      "expect": "Rejected; retirement requires its instant and an explicit statement of uncovered open work.",
+      "expectedCode": "E-DR-RETIREMENT-STRANDS-WORK"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d17-incoming-acts-before-acknowledgment",
+      "kind": "negative",
+      "input": "B records an action under in-flight execution E2 before the handover acknowledgment instant.",
+      "expect": "Rejected; the incoming party may not act under an in-flight change before acknowledgment.",
+      "expectedCode": "E-DR-ACT-BEFORE-ACK"
+    },
+    {
+      "target": "DutyRoster",
+      "id": "d19-roster-references-escalation-rule",
+      "kind": "negative",
+      "input": "DutyRoster.references retains WM-KNW-012 and WM-KNW-013 while excluding escalation identity.",
+      "expect": "Rejected; the dependency is one-way from rule to roster.",
+      "expectedCode": "E-DR-DIRECTION-INVERTED"
+    }
+  ]
+}
