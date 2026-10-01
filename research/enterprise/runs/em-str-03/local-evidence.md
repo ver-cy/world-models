@@ -61,3 +61,7 @@ Process P realizes capability C and moves from unit U1 to unit U2. C keeps its i
 ## Holds
 
 WM-ACT-001 and WM-ACT-003 remain legacy-only migration boundaries. Business Capability and Capability Realization lack registry allocation. Current assessment, objective, observation and organization bases are non-canonical reviewable drafts. The repository has no approved capability relation contracts, scale registry, semantic crosswalk, source-master confirmation or fixtures. No canonical completeness, installability or publication readiness is claimed.
+
+## Grok reconciliation and frozen audit
+
+Grok accepted the identity split with conditions and confirmed that Capability Realization requires independent identity. The single frozen audit accepted that fixed identity decision, identified 21 artifact defects and supplied 55 fixtures. All bounded fixes are encoded in the two allocation candidates and the WM-ACT-034 profile without allocating identifiers.

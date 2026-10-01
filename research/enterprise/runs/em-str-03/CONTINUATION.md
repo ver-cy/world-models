@@ -1,11 +1,9 @@
 # EM-STR-03 continuation
 
-Checkpoint date: 2026-09-26.
+Checkpoint date: 2026-10-01.
 
-Disposition: narrow legacy WM-ACT-001 to agent Function / Competence / Proficiency / Capacity. Propose identifier-unassigned Business Capability and Capability Realization roots. Profile WM-ACT-034 as Capability Assessment. Capability Level remains a scale or assertion rather than a model root. No catalogue/runtime identifier is allocated.
+Disposition: frozen provider reconciliation confirms two identifier-unassigned independent roots: Business Capability and Capability Realization. Legacy WM-ACT-001 is narrowed to agent Function / Competence / Proficiency / Capacity through an explicit held migration boundary. Capability Assessment profiles WM-ACT-034; Capability Level stays a scale or assertion. No catalogue or runtime identifier is allocated.
 
-The complete available WM-ACT-001 and WM-ACT-003 legacy specifications and registry reservations, current assessment, organization, objective and observation specifications, relation ledger and relevant Enterprise research were read and frozen into a compact dossier. One Claude Opus high no-tools study, local synthesis and exact unsent Grok prompt are preserved.
+Grok accepted the split with conditions and confirmed the transfer test. One Claude Opus high no-tools frozen audit executed once, found 21 material artifact defects and is closed. All 21 were remediated without rerun; 55 exact audit fixtures were added. The two allocation dossiers and the profile remain held by registry allocation, legacy migration, relation, scale, evidence-sufficiency and base-publication approvals.
 
-Publication is held by legacy-only source boundaries, missing allocation for Business Capability and Capability Realization, non-canonical adjacent drafts, absent relationship contracts, scale registry, semantic crosswalk, source-master confirmation and fixtures.
-
-Next contour: EM-STR-04. Read the complete WM-ACT-030 specification and registry reservation and adjudicate Initiative, Business Case, Hypothesis and Mandate boundaries.
+Next Grok contour: EM-TEC-10.

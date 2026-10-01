@@ -1,1 +1,188 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Capability Realization","cases":[{"id":"unit-transfer","kind":"positive","input":"Process P and capability C transfer accountability from U1 to U2.","expect":"R1 closes and successor R2 opens while C and P retain identity."},{"id":"partial-realization","kind":"positive","input":"Two teams realize different shares of one capability.","expect":"Separate bindings record share, basis, interval and accountability."},{"id":"system-support","kind":"positive","input":"A system supports a capability alongside an accountable operations team.","expect":"System and team bindings remain distinct and coverage is evidence-based."},{"id":"transfer-overwrites-history","kind":"negative","input":"Changing accountable unit rewrites the existing realization.","expect":"The mutation is rejected."},{"id":"system-alone-full","kind":"negative","input":"A system-only binding is labelled full realization.","expect":"The conclusion is rejected."},{"id":"missing-means-zero","kind":"negative","input":"No realization row is treated as zero coverage.","expect":"The collapse is rejected without completeness evidence."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Capability Realization",
+  "cases": [
+    {
+      "id": "cr-transfer-successor",
+      "kind": "positive",
+      "input": "R1 binds process P and accountable U1 until t; R2 binds the same capability and P with accountable U2 from t.",
+      "expect": "R1 is transferred with validTo and successorRef; R2 opens without changing capability identity.",
+      "expectedCode": "OK_TRANSFER_SUCCESSOR"
+    },
+    {
+      "id": "cr-system-alone-rejected",
+      "kind": "negative",
+      "input": "A system-only binding claims full realization.",
+      "expect": "Rejected; system-only binding cannot establish full realization.",
+      "expectedCode": "ERR_NONSYSTEM_REALIZER_REQUIRED"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-agent-competence-referent",
+      "kind": "positive",
+      "input": "A realization names a WM-ORG-004 position realizer whose required competence and period capacity are held in WM-ACT-001.",
+      "expect": "Accepted; WM-ACT-001 is a declared CapabilityRealization referent for agent competence and capacity.",
+      "expectedCode": "OK_COMPETENCE_ON_REALIZATION"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-nonagent-capacity-referent-mismatch",
+      "kind": "negative",
+      "input": "capacityRef on a system-kind realizer points at a WM-ACT-001 capacityStatement.",
+      "expect": "Rejected; agent capacity cannot carry non-agent realizer capacity and no non-agent capacity referent is declared.",
+      "expectedCode": "ERR_CAPACITY_REFERENT_MISMATCH"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-accountability-does-not-satisfy-fullness",
+      "kind": "negative",
+      "input": "A system-kind realizer binding supplies the required accountablePartyRef naming unit U1 and the binding is labelled full realization.",
+      "expect": "Rejected; accountablePartyRef is not a realizer and cannot satisfy the non-system realizer test.",
+      "expectedCode": "ERR_FULLNESS_VACUOUS_ACCOUNTABILITY"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-realizer-and-accountable-disjoint",
+      "kind": "positive",
+      "input": "R1 binds process P as the single realizer with unit U1 as accountable party.",
+      "expect": "Accepted; the one-realizer rule holds because accountablePartyRef is declared not to be a realizer.",
+      "expectedCode": "OK_PARTICIPANT_ROLE_DISJOINT"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-multi-participant-binding",
+      "kind": "negative",
+      "input": "One realization record enumerates a process, a team and a system as co-realizers.",
+      "expect": "Rejected under the declared one-realizer granularity; separate bindings are required.",
+      "expectedCode": "ERR_GRANULARITY_VIOLATION"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-fullness-claim-without-bearer",
+      "kind": "negative",
+      "input": "Full realization is asserted with no coverage-claim record naming capability, scope and as-of date.",
+      "expect": "Rejected; fullness is a claim over the binding set and requires its own bearer record.",
+      "expectedCode": "ERR_FULLNESS_NO_BEARER"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-system-only-stronger-evidence-escape",
+      "kind": "negative",
+      "input": "A system-only binding claims full realization by invoking 'stronger governed evidence'.",
+      "expect": "Rejected; the escape clause is removed and no evidence grade promotes a system-only binding.",
+      "expectedCode": "ERR_NONSYSTEM_REALIZER_REQUIRED"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-evidence-without-digest",
+      "kind": "negative",
+      "input": "evidenceRefs are supplied as bare references with no digest and no criterion linkage.",
+      "expect": "Rejected; evidence requires digest, digest algorithm and criterion linkage.",
+      "expectedCode": "ERR_EVIDENCE_UNPINNED"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-coverage-share-without-denominator",
+      "kind": "negative",
+      "input": "coverageShare 0.4 is recorded with a basis string but no denominatorRef and no measurement period.",
+      "expect": "Rejected; a share requires value, basis, denominator and effective period.",
+      "expectedCode": "ERR_COVERAGE_DENOMINATOR_MISSING"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-concurrent-shares-unreconciled",
+      "kind": "negative",
+      "input": "Three concurrent bindings for one capability declare shares of 0.7, 0.6 and 0.3 against the same denominator.",
+      "expect": "Rejected; concurrent shares on one denominator must reconcile or carry a declared overlap justification.",
+      "expectedCode": "ERR_COVERAGE_SUM_UNRECONCILED"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-missing-binding-read-as-zero",
+      "kind": "negative",
+      "input": "A capability with no realization rows is reported as zero coverage.",
+      "expect": "Rejected; the state is unknown absent a scoped completeness assertion.",
+      "expectedCode": "ERR_UNKNOWN_READ_AS_ZERO"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-completeness-assertion-licenses-unrealized",
+      "kind": "positive",
+      "input": "A completeness assertion naming population, scope, as-of date, asserter and method covers the capability's realizer population.",
+      "expect": "Accepted; within that scope and as-of date absence of bindings reads as unrealized rather than unknown.",
+      "expectedCode": "OK_COMPLETENESS_SCOPED"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-scenario-binding-unmarked",
+      "kind": "negative",
+      "input": "A target-state binding is recorded with status proposed and no assertionMode.",
+      "expect": "Rejected; assertionMode actual or scenario is required and proposed is a record-draft state only.",
+      "expectedCode": "ERR_SCENARIO_MODE_MISSING"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-scenario-feeds-authoritative-coverage",
+      "kind": "negative",
+      "input": "A binding with assertionMode scenario is included in an authoritative as-of coverage projection.",
+      "expect": "Rejected; scenario bindings never feed authoritative actuals.",
+      "expectedCode": "ERR_SCENARIO_IN_ACTUALS"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-in-place-correction",
+      "kind": "negative",
+      "input": "An accountability recording error is fixed by editing accountablePartyRef on the existing R1 record.",
+      "expect": "Rejected; corrections are new knowledge-time records so that correction stays distinguishable from real-world change.",
+      "expectedCode": "ERR_IN_PLACE_MUTATION"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-succession-chain-broken",
+      "kind": "negative",
+      "input": "R1.validTo is t1, R2.validFrom is t2 later than t1, successorRef is unset and R1.status remains active.",
+      "expect": "Rejected; transfer requires successorRef, a terminal R1 status and either contiguity or a declared gap reason.",
+      "expectedCode": "ERR_SUCCESSION_CHAIN_BROKEN"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-ended-without-valid-to",
+      "kind": "negative",
+      "input": "status is ended while validTo is absent.",
+      "expect": "Rejected; terminal states require validTo.",
+      "expectedCode": "ERR_END_WITHOUT_VALIDTO"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-transferred-superseded-overlap",
+      "kind": "negative",
+      "input": "A realizer transfer is recorded with status superseded while a record correction is recorded with status transferred.",
+      "expect": "Rejected; transferred and superseded are disjoint states with declared triggers.",
+      "expectedCode": "ERR_LIFECYCLE_STATE_OVERLAP"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-concurrent-realizations-coexist",
+      "kind": "positive",
+      "input": "Two realizations of one capability are concurrently active with distinct realizers and declared shares on a common denominator.",
+      "expect": "Accepted; multiple concurrent realizations of one capability are valid.",
+      "expectedCode": "OK_CONCURRENT_REALIZATIONS"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-fixture-filed-against-wrong-target",
+      "kind": "negative",
+      "input": "A system-alone-full-realization case is filed in the BusinessCapability fixture set.",
+      "expect": "Rejected; realization-side rules are exercised against CapabilityRealization.",
+      "expectedCode": "ERR_FIXTURE_TARGET_MISMATCH"
+    },
+    {
+      "target": "CapabilityRealization",
+      "id": "cr-fixture-expectation-unobservable",
+      "kind": "negative",
+      "input": "A fixture expectation reads only 'coverage is evidence-based'.",
+      "expect": "Rejected; expectations must name observable field-level outcomes.",
+      "expectedCode": "ERR_EXPECTATION_UNOBSERVABLE"
+    }
+  ]
+}

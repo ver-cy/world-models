@@ -1,1 +1,172 @@
-{"format":"vercy-enterprise-allocation-fixtures/v1","candidateName":"Business Capability","cases":[{"id":"reorganization-survival","kind":"positive","input":"A capability moves from unit U1 to U2 while its outcome definition remains unchanged.","expect":"Capability identity remains stable and realization bindings change."},{"id":"process-redesign","kind":"positive","input":"The process realizing a capability is replaced by a successor process.","expect":"The capability persists and the realization references the new process version."},{"id":"new-outcome-class","kind":"positive","input":"A governed ability changes to a materially different outcome class.","expect":"A successor or distinct capability is created with lineage."},{"id":"department-is-capability","kind":"negative","input":"A department name is used as capability identity.","expect":"The identity definition is rejected."},{"id":"system-is-full-capability","kind":"negative","input":"A software system alone is asserted to fully realize a business capability.","expect":"The claim is rejected without accountable non-system realization."},{"id":"tier-is-identity","kind":"negative","input":"Moving from L2 to L3 creates a new capability solely from the tier label.","expect":"The identity change is rejected."}]}
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Business Capability",
+  "cases": [
+    {
+      "id": "bc-stable-through-transfer",
+      "kind": "positive",
+      "input": "Process P transfers from U1 to U2 while outcome class and acted-upon object remain unchanged.",
+      "expect": "The businessCapabilityId remains stable; only realization successors change.",
+      "expectedCode": "OK_CAPABILITY_STABLE"
+    },
+    {
+      "id": "bc-department-name-rejected",
+      "kind": "negative",
+      "input": "A department name is proposed as outcomeClassRef.",
+      "expect": "Rejected because organization names cannot define capability identity.",
+      "expectedCode": "ERR_ORG_NAME_AS_CAPABILITY"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-duplicate-outcome-class",
+      "kind": "negative",
+      "input": "Two capability records carry identical outcomeClass and actedUponObject with different businessCapabilityId values.",
+      "expect": "Rejected as a duplicate identity; distinct surrogates do not create distinct capabilities.",
+      "expectedCode": "ERR_OUTCOME_CLASS_DUPLICATE"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-outcome-class-ungoverned",
+      "kind": "negative",
+      "input": "outcomeClass is supplied as free text with no schemeRef and no governed term.",
+      "expect": "Rejected; outcomeClass requires schemeRef plus code or a governed term.",
+      "expectedCode": "ERR_OUTCOME_CLASS_UNGOVERNED"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-surrogate-unmarked",
+      "kind": "negative",
+      "input": "A minted UUID is used as businessCapabilityId with no identityBasis value and no master-key resolution.",
+      "expect": "Rejected; surrogate identifiers must be marked and resolvable to the register master key.",
+      "expectedCode": "ERR_SURROGATE_UNMARKED"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-outcome-refinement-creates-version",
+      "kind": "positive",
+      "input": "Definition and applicability are refined while the outcome class and acted-upon object are unchanged.",
+      "expect": "A new immutable versionId is created under the unchanged businessCapabilityId; no successor capability is minted.",
+      "expectedCode": "OK_VERSION_NOT_SUCCESSION"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-outcome-class-replacement-mints-successor",
+      "kind": "positive",
+      "input": "The outcome class itself is replaced by a materially different outcome class.",
+      "expect": "A successor capability with a new businessCapabilityId is created; predecessorRef and successorRef are both set and the predecessor status becomes superseded.",
+      "expectedCode": "OK_SUCCESSION_NOT_VERSION"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-change-disposition-disjunctive",
+      "kind": "negative",
+      "input": "A change is recorded with the disposition 'a successor or distinct capability is created with lineage'.",
+      "expect": "Rejected; the change mechanism must resolve to exactly one of version or succession.",
+      "expectedCode": "ERR_CHANGE_DISPOSITION_AMBIGUOUS"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-tier-without-edge-object",
+      "kind": "negative",
+      "input": "A parent-child relation with tier label L2 is asserted with no decomposition-edge record carrying validity and supersession.",
+      "expect": "Rejected; parentage and tier are expressible only as versioned edge records.",
+      "expectedCode": "ERR_EDGE_OBJECT_MISSING"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-sibling-outcome-overlap",
+      "kind": "negative",
+      "input": "Two sibling children under one parent at the same tier cover overlapping outcome classes with no declared justification.",
+      "expect": "Rejected; siblings are mutually exclusive at a tier unless the overlap is declared and justified.",
+      "expectedCode": "ERR_SIBLING_NOT_EXCLUSIVE"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-redecomposition-supersedes-edges",
+      "kind": "positive",
+      "input": "Re-decomposition moves capability C from L2 under P1 to L3 under P2.",
+      "expect": "The prior edge is superseded with validTo set and a new edge opens; businessCapabilityId and versionId are unchanged.",
+      "expectedCode": "OK_EDGE_SUPERSESSION"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-realization-reference-stored-on-capability",
+      "kind": "negative",
+      "input": "A realization binding reference is written onto the BusinessCapability record.",
+      "expect": "Rejected; CapabilityRealization.capabilityRef is the single authoritative direction.",
+      "expectedCode": "ERR_REALIZATION_DIRECTION"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-org-reference-purpose-realizer",
+      "kind": "negative",
+      "input": "WM-ORG-002 is referenced from BusinessCapability with purpose 'organizational-unit realizer'.",
+      "expect": "Rejected; BusinessCapability may reference WM-ORG-002 only for register stewardship.",
+      "expectedCode": "ERR_REFERENCE_PURPOSE_OUT_OF_BOUNDARY"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-stored-coverage-value",
+      "kind": "negative",
+      "input": "A computed coverage percentage is persisted on the BusinessCapability record.",
+      "expect": "Rejected; coverage is a derived as-of projection and is never stored on the capability.",
+      "expectedCode": "ERR_DERIVED_VALUE_STORED"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-references-agent-competence",
+      "kind": "negative",
+      "input": "BusinessCapability declares a reference to WM-ACT-001.",
+      "expect": "Rejected; agent competence and capacity attach to CapabilityRealization, not to the capability.",
+      "expectedCode": "ERR_AGENT_COMPETENCE_COUPLING"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-no-temporal-or-provenance-fields",
+      "kind": "negative",
+      "input": "A capability record is created with no effective interval, no assertedAt and no asserterRef.",
+      "expect": "Rejected; register effective interval, knowledge time and asserter are required.",
+      "expectedCode": "ERR_TEMPORAL_FIELDS_MISSING"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-superseded-without-successor",
+      "kind": "negative",
+      "input": "status is set to superseded while successorRef is absent.",
+      "expect": "Rejected; supersession requires a resolvable successor.",
+      "expectedCode": "ERR_SUPERSEDED_WITHOUT_SUCCESSOR"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-constrained-state-undefined",
+      "kind": "negative",
+      "input": "status is set to constrained with no entry condition, exit condition or declared effect on coverage projection.",
+      "expect": "Rejected; lifecycle states without defined semantics are not assignable.",
+      "expectedCode": "ERR_LIFECYCLE_STATE_UNDEFINED"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-retired-hard-deleted",
+      "kind": "negative",
+      "input": "A retired capability is hard-deleted while historical realizations and assessments reference it.",
+      "expect": "Rejected; a tombstone is retained and historical references remain resolvable.",
+      "expectedCode": "ERR_TOMBSTONE_REQUIRED"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-retirement-cascade-from-realization",
+      "kind": "negative",
+      "input": "The last active realization ends and the capability is automatically set to retired.",
+      "expect": "Rejected; ending a realization does not change capability status.",
+      "expectedCode": "ERR_RETIREMENT_CASCADE"
+    },
+    {
+      "target": "BusinessCapability",
+      "id": "bc-fixture-says-capability-moves",
+      "kind": "negative",
+      "input": "A fixture input states that a capability moves from unit U1 to unit U2.",
+      "expect": "Rejected; capabilities do not move between units and the case must be restated as a realization transfer.",
+      "expectedCode": "ERR_FIXTURE_ENCODES_REJECTED_SEMANTICS"
+    }
+  ]
+}
