@@ -1,3 +1,3 @@
-# EM-LND-04 offline publication delta
+# EM-LND-04 offline profile
 
-Defines Strategy Landscape and Strategic Alignment as governed profiles and reproducible projections over existing and explicitly unassigned strategy masters. No runtime or model identifier is allocated.
+Held read-only Strategy Landscape and Strategic Alignment profile. It allocates no business or runtime identifier. The dossier includes one reconciled Grok review, one spent frozen Claude audit, 18 constraints and 23 fixtures.
