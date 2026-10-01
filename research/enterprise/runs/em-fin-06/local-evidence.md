@@ -74,3 +74,8 @@ Convertible note N v1 is held by investor I in investee X as Investment INV-1 an
 ## Holds
 
 Financial Instrument overlaps reserved WM-ECO-037 Debt Instrument and the unassigned Share Class candidate from EM-ORG-03; registry adjudication is required before allocation. Investment, trade/settlement event, corporate action, portfolio/mandate and consolidation masters are unallocated. WM-ECO-038's registry extension claim conflicts with its spec's reference-only treatment, while WM-ECO-002 has no approved outgoing relations. WM-ECO-038's conversion-right grouping needs a contingency constraint. Crosswalks, release pins, licences and fixtures remain unverified. Base drafts are non-canonical, so no installability or publication-readiness claim is made.
+
+
+## Provider reconciliation and frozen audit
+
+Grok independently upheld two identifier-unassigned roots: Financial Instrument and Investment. WM-ECO-038 remains the position master, WM-ECO-002 is profiled with a closed subject-kind discriminator, WM-ECO-016 remains the posting master, and the transaction event leg stays explicitly unbound. Share Class is subordinate to instrument-version equity terms. The sole frozen Claude audit upheld this decision and identified 22 mechanical artifact defects; all 22 are remediated without rerun. Its exact 57-case fixture array is retained alongside the original cases. No catalogue, model, registry or runtime identifier is allocated, and no canonical publishability or standards-conformance claim is made.
