@@ -1,0 +1,3 @@
+# Migration and correction
+
+Same-version roundtrip is implemented. Package/definition revision, source revision, host identity and fact identity remain separate. Unknown package versions and fields fail closed. New definition/source revision requires host evidence and fresh admission. A correction is a new native fact on the same host/path; validate the supplied pair and preserve original bytes. Native duplicate append is refused, not silently idempotent. Upgrade/downgrade, cross-version algorithm fixes, host revisions, current-head selection and tombstone/retention migration require separately reviewed mappings. See the authoritative contract in model-spec.md.

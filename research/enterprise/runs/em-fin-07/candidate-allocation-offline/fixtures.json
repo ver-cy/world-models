@@ -1,0 +1,744 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v2",
+  "candidateName": "TaxRegistrationAccount",
+  "fixedClock": "2026-03-31T00:00:00Z",
+  "cases": [
+    {
+      "id": "separate-legal-and-tax-registration",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-02",
+        "EMFIN07-INV-14"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "legalRegistrationRef": "FX-LEGAL-1",
+        "taxRegistrationAccountId": "FX-ACC-1",
+        "authorityRef": "FX-AUTH-1",
+        "jurisdictionRef": "FX-J1",
+        "taxTypeRef": "FX-TT-A"
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "legal registration and tax account remain distinct"
+      ]
+    },
+    {
+      "id": "basis-subject-mismatch",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-04"
+      ],
+      "target": "JurisdictionalBasisAssertion",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "basisKind": "residence",
+        "subjectKind": "Supply"
+      },
+      "expectKind": "reject",
+      "rejectCode": "BASIS_SUBJECT_KIND_MISMATCH",
+      "assertions": [
+        "residence requires Taxpayer"
+      ]
+    },
+    {
+      "id": "phantom-account",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-17"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "authorityHandle": null,
+        "openingEvent": null
+      },
+      "expectKind": "reject",
+      "rejectCode": "PHANTOM_ACCOUNT_INSTANTIATION",
+      "assertions": [
+        "no account created"
+      ]
+    },
+    {
+      "id": "unpinned-rate",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-18"
+      ],
+      "target": "Calculation",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "rateValue": "0.20"
+      },
+      "expectKind": "reject",
+      "rejectCode": "LOCAL_RATE_COPY",
+      "assertions": [
+        "only opaque external pins permitted"
+      ]
+    },
+    {
+      "id": "archive-preserves-history",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-19"
+      ],
+      "target": "RegistrationRevision",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "transition": "deregistered -> archived",
+        "tombstone": true,
+        "priorRefs": [
+          "FX-R1",
+          "FX-O1",
+          "FX-S1"
+        ]
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "prior references remain resolvable"
+      ]
+    },
+    {
+      "id": "retention-floor",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-20"
+      ],
+      "target": "retention",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "statutoryMinimumPin": "FX-RET-1",
+        "activeLegalHold": "FX-HOLD-1"
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "retention floor is max of the two constraints"
+      ]
+    },
+    {
+      "id": "declared-return-class-and-nonstoring-view",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-21",
+        "EMFIN07-INV-22"
+      ],
+      "target": "profile binding",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "returnClass": "FX-RETURN-CLASS-1",
+        "taxProfile": {
+          "persists": false,
+          "masters": []
+        },
+        "obligationScope": {
+          "taxTypeRef": "FX-TT-A",
+          "obligationClass": "FX-OBL-CLASS-1"
+        }
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "return class is declared",
+        "TaxProfile persists nothing"
+      ]
+    },
+    {
+      "id": "withholding-only-no-account",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-16"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "taxableEvent": {
+          "id": "FX-EVT-1",
+          "jurisdictionRef": "FX-J2",
+          "occurredAt": "2026-01-15T00:00:00Z"
+        },
+        "obligation": {
+          "id": "FX-O3",
+          "master": "WM-POL-011",
+          "jurisdictionRef": "FX-J2",
+          "ruleVersionRef": "FX-RULE-7",
+          "basisAssertionRefs": [
+            "FX-BASIS-3"
+          ]
+        },
+        "payment": {
+          "id": "FX-PAY-1",
+          "master": "WM-ECO-009",
+          "allocatedTo": "FX-O3",
+          "amount": {
+            "value": "100.00",
+            "currency": "XTS"
+          }
+        },
+        "taxRegistrationAccounts": [],
+        "returnRevisions": []
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "accountCount == 0",
+        "returnRevisionCount == 0",
+        "FX-O3 resolves with FX-BASIS-3 and FX-RULE-7",
+        "FX-PAY-1 resolves to FX-O3 with no account traversal"
+      ]
+    },
+    {
+      "id": "account-as-mandatory-bridge",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-16"
+      ],
+      "target": "resolver",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "query": {
+          "from": "FX-PAY-1",
+          "to": "FX-O3",
+          "path": [
+            "payment",
+            "taxRegistrationAccount",
+            "obligation"
+          ]
+        }
+      },
+      "expectKind": "reject",
+      "rejectCode": "ACCOUNT_AS_MANDATORY_BRIDGE",
+      "assertions": [
+        "no path requires a TaxRegistrationAccount node"
+      ]
+    },
+    {
+      "id": "basis-resolves-without-account",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-03"
+      ],
+      "target": "JurisdictionalBasisAssertion",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "basisAssertionId": "FX-BASIS-3",
+        "basisKind": "source",
+        "subjectKind": "Supply",
+        "subjectRef": "FX-SUP-1",
+        "taxTypeRef": "FX-TT-WHT",
+        "jurisdictionRef": "FX-J2",
+        "authorityRef": "FX-AUTH-2",
+        "ruleVersionRef": "FX-RULE-7",
+        "evidenceRefs": [
+          "FX-EVD-9"
+        ],
+        "effectiveFrom": "2026-01-01T00:00:00Z",
+        "knowledgeTime": "2026-01-20T00:00:00Z",
+        "assertedBy": "FX-ACTOR-1",
+        "accountRef": null
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "accountRef absent is valid",
+        "basis resolves standalone"
+      ]
+    },
+    {
+      "id": "basis-implies-registration",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-02",
+        "EMFIN07-INV-14"
+      ],
+      "target": "inference",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "inference": "FX-BASIS-3 exists therefore an account must be created for FX-TAXPAYER-1 in FX-J2"
+      },
+      "expectKind": "reject",
+      "rejectCode": "BASIS_IMPLIES_REGISTRATION",
+      "assertions": [
+        "no account is created"
+      ]
+    },
+    {
+      "id": "registration-implies-obligation",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-14"
+      ],
+      "target": "inference",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "inference": "account FX-ACC-1 is active therefore obligation exists for every period"
+      },
+      "expectKind": "reject",
+      "rejectCode": "REGISTRATION_IMPLIES_OBLIGATION",
+      "assertions": [
+        "obligationCount unchanged"
+      ]
+    },
+    {
+      "id": "identifier-assigned-after-opening",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-06"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "account": {
+          "taxRegistrationAccountId": "FX-ACC-1",
+          "authorityRef": "FX-AUTH-1",
+          "jurisdictionRef": "FX-J1",
+          "taxTypeRef": "FX-TT-A",
+          "authorityIdentifier": null
+        },
+        "revisions": [
+          {
+            "revision": 1,
+            "accountState": "applied",
+            "effectiveFrom": "2026-01-05T00:00:00Z",
+            "knowledgeTime": "2026-01-05T00:00:00Z"
+          },
+          {
+            "revision": 2,
+            "accountState": "active",
+            "authorityIdentifier": "FX-HANDLE-1",
+            "effectiveFrom": "2026-01-05T00:00:00Z",
+            "knowledgeTime": "2026-02-10T00:00:00Z",
+            "supersedesRef": 1
+          }
+        ]
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "as_of(2026-01-31,2026-01-31).authorityIdentifier == null",
+        "as_of(2026-01-31,2026-03-01).authorityIdentifier == 'FX-HANDLE-1'",
+        "revision 1 unchanged"
+      ]
+    },
+    {
+      "id": "handle-reassigned-requires-interval",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-09"
+      ],
+      "target": "resolver",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "accounts": [
+          {
+            "taxRegistrationAccountId": "FX-ACC-1",
+            "authorityIdentifier": "FX-HANDLE-1",
+            "effectiveFrom": "2026-01-05T00:00:00Z",
+            "effectiveTo": "2026-02-28T00:00:00Z"
+          },
+          {
+            "taxRegistrationAccountId": "FX-ACC-4",
+            "authorityIdentifier": "FX-HANDLE-1",
+            "effectiveFrom": "2026-03-01T00:00:00Z",
+            "priorHandleHolderRef": "FX-ACC-1"
+          }
+        ],
+        "query": {
+          "authorityIdentifier": "FX-HANDLE-1",
+          "interval": null
+        }
+      },
+      "expectKind": "reject",
+      "rejectCode": "IDENTIFIER_LOOKUP_WITHOUT_INTERVAL",
+      "assertions": [
+        "query with interval 2026-01-10 resolves exactly FX-ACC-1",
+        "the two accounts never merge"
+      ]
+    },
+    {
+      "id": "one-handle-two-tax-types",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-09"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "accounts": [
+          {
+            "taxRegistrationAccountId": "FX-ACC-2",
+            "taxTypeRef": "FX-TT-A",
+            "authorityIdentifier": "FX-HANDLE-2"
+          },
+          {
+            "taxRegistrationAccountId": "FX-ACC-3",
+            "taxTypeRef": "FX-TT-B",
+            "authorityIdentifier": "FX-HANDLE-2"
+          }
+        ]
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "accountCount == 2",
+        "shared handle is not a merge"
+      ]
+    },
+    {
+      "id": "calculation-two-owners",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-12"
+      ],
+      "target": "Calculation",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "calculationId": "FX-CALC-1",
+        "calculationOwnerKind": "ReturnRevision",
+        "calculationOwnerRef": "FX-R1",
+        "obligationRef": "FX-O2"
+      },
+      "expectKind": "reject",
+      "rejectCode": "CALCULATION_MULTIPLE_OWNERS",
+      "assertions": [
+        "exactly one owner ref permitted"
+      ]
+    },
+    {
+      "id": "authority-calculation-home",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-12"
+      ],
+      "target": "Calculation",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "calculationId": "FX-CALC-ASSD-1",
+        "calculationOwnerKind": "Obligation",
+        "calculationOwnerRef": "FX-O2",
+        "origin": "authority-assessed",
+        "assessmentRef": "FX-S1",
+        "ruleVersionRef": "FX-RULE-4",
+        "ratePinRef": "FX-PIN-3",
+        "rounding": "half-up-2",
+        "amount": {
+          "value": "1234.56",
+          "currency": "XTS"
+        },
+        "knowledgeTime": "2026-03-10T00:00:00Z"
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "no Assessment-owned calculation root is created",
+        "assessmentRef is correlation, not ownership"
+      ]
+    },
+    {
+      "id": "equal-totals-no-merge",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-13"
+      ],
+      "target": "Calculation",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "declared": {
+          "calculationId": "FX-CALC-DECL-1",
+          "calculationOwnerKind": "ReturnRevision",
+          "calculationOwnerRef": "FX-R2",
+          "amount": {
+            "value": "1234.56",
+            "currency": "XTS"
+          }
+        },
+        "assessed": {
+          "calculationId": "FX-CALC-ASSD-1",
+          "calculationOwnerKind": "Obligation",
+          "calculationOwnerRef": "FX-O2",
+          "amount": {
+            "value": "1234.56",
+            "currency": "XTS"
+          }
+        },
+        "operation": "merge-on-equal-total"
+      },
+      "expectKind": "reject",
+      "rejectCode": "CROSS_HOME_CALCULATION_MERGE",
+      "assertions": [
+        "both calculations remain separately resolvable",
+        "correlation link permitted, equality not"
+      ]
+    },
+    {
+      "id": "balance-not-account-owned",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-01",
+        "EMFIN07-INV-10"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "taxRegistrationAccountId": "FX-ACC-1",
+        "balancePosition": {
+          "value": "500.00",
+          "currency": "XTS",
+          "asOfKnowledgeTime": "2026-03-31T00:00:00Z"
+        }
+      },
+      "expectKind": "reject",
+      "rejectCode": "BALANCE_NOT_ACCOUNT_OWNED",
+      "assertions": [
+        "same balance position attached to FX-O2 under WM-POL-011 is accepted",
+        "balance is neither a second master of assessment or payment nor erased into them"
+      ]
+    },
+    {
+      "id": "case-owns-economic-fact",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-11"
+      ],
+      "target": "WM-ACT-052 case profile",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "caseId": "FX-PC-2",
+        "correlates": [
+          "FX-A2",
+          "FX-S1",
+          "FX-N1"
+        ],
+        "assessedAmount": {
+          "value": "1234.56",
+          "currency": "XTS"
+        }
+      },
+      "expectKind": "reject",
+      "rejectCode": "CASE_OWNS_ECONOMIC_FACT",
+      "assertions": [
+        "case without assessedAmount is accepted",
+        "case owns only identifier, scope tuple, orchestration state, deadlines and typed links"
+      ]
+    },
+    {
+      "id": "multiple-authority-responses-per-attempt",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-09",
+        "EMFIN07-INV-11"
+      ],
+      "target": "AuthorityResponse",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "attempts": [
+          {
+            "id": "FX-A1",
+            "revisionRef": "FX-R1",
+            "responses": [
+              {
+                "id": "FX-RESP-1",
+                "responseClass": "receipt",
+                "authorityRecordedAt": "2026-02-01T09:00:00Z",
+                "knowledgeTime": "2026-02-01T09:05:00Z"
+              },
+              {
+                "id": "FX-RESP-2",
+                "responseClass": "schema-rejection",
+                "authorityRecordedAt": "2026-02-01T09:02:00Z",
+                "knowledgeTime": "2026-02-01T09:05:00Z"
+              }
+            ]
+          },
+          {
+            "id": "FX-A2",
+            "revisionRef": "FX-R1",
+            "responses": [
+              {
+                "id": "FX-RESP-3",
+                "responseClass": "receipt",
+                "authorityRecordedAt": "2026-02-03T09:00:00Z",
+                "knowledgeTime": "2026-02-03T09:01:00Z"
+              },
+              {
+                "id": "FX-RESP-4",
+                "responseClass": "acceptance-for-processing",
+                "authorityRecordedAt": "2026-02-03T09:10:00Z",
+                "knowledgeTime": "2026-02-03T09:11:00Z"
+              },
+              {
+                "id": "FX-RESP-5",
+                "responseClass": "acknowledgement",
+                "authorityRecordedAt": "2026-02-03T09:20:00Z",
+                "knowledgeTime": "2026-02-03T09:21:00Z"
+              }
+            ]
+          }
+        ]
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "FX-R1 has 2 attempts",
+        "FX-A2 has 3 responses of distinct classes",
+        "ordering is (authorityRecordedAt, knowledgeTime, responseId) ascending",
+        "a second receipt on FX-A2 is rejected as DUPLICATE_RESPONSE_CLASS"
+      ]
+    },
+    {
+      "id": "acknowledgement-as-assessment",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-11"
+      ],
+      "target": "inference",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "inference": "FX-RESP-5 acknowledgement establishes assessed liability for FX-O2"
+      },
+      "expectKind": "reject",
+      "rejectCode": "ACK_TREATED_AS_ASSESSMENT",
+      "assertions": [
+        "receipt, validity, acceptance, assessment, payment and finality imply none of each other"
+      ]
+    },
+    {
+      "id": "knowledge-time-replay",
+      "kind": "positive",
+      "invariantIds": [
+        "EMFIN07-INV-06"
+      ],
+      "target": "Calculation",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "calculationId": "FX-CALC-DECL-1",
+        "pins": [
+          {
+            "pinKind": "legal-rule",
+            "versionId": "FX-RULE-4",
+            "effectiveFrom": "2026-01-01T00:00:00Z",
+            "knowledgeTime": "2026-01-02T00:00:00Z",
+            "sourcePin": "FX-SRC-1"
+          },
+          {
+            "pinKind": "rate-schedule",
+            "versionId": "FX-PIN-3",
+            "effectiveFrom": "2026-01-01T00:00:00Z",
+            "knowledgeTime": "2026-01-02T00:00:00Z",
+            "sourcePin": "FX-SRC-2"
+          }
+        ],
+        "replay": {
+          "effectiveInstant": "2026-02-15T00:00:00Z",
+          "knowledgeInstant": "2026-02-20T00:00:00Z"
+        }
+      },
+      "expectKind": "accept",
+      "assertions": [
+        "replay output is byte-identical across runs",
+        "replay with knowledgeInstant omitted is rejected as MISSING_KNOWLEDGE_TIME_PIN",
+        "no rate value is stored locally"
+      ]
+    },
+    {
+      "id": "in-place-state-mutation",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-07",
+        "EMFIN07-INV-08"
+      ],
+      "target": "TaxRegistrationAccount",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "operation": "set",
+        "target": "FX-ACC-1.currentState",
+        "value": "suspended"
+      },
+      "expectKind": "reject",
+      "rejectCode": "IN_PLACE_STATE_MUTATION",
+      "assertions": [
+        "a new RegistrationRevision with accountState 'suspended', effectiveFrom and knowledgeTime is accepted",
+        "currentState is derived and non-writable",
+        "transition active -> suspended is in the published table"
+      ]
+    },
+    {
+      "id": "lineage-cycle-and-digest-identity",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-08"
+      ],
+      "target": "RegistrationRevision",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "revisions": [
+          {
+            "revision": 3,
+            "supersedesRef": 4,
+            "contentDigest": "FX-DIGEST-1",
+            "knowledgeTime": "2026-03-01T00:00:00Z"
+          },
+          {
+            "revision": 4,
+            "supersedesRef": 3,
+            "contentDigest": "FX-DIGEST-1",
+            "knowledgeTime": "2026-03-02T00:00:00Z"
+          }
+        ],
+        "operation": "dedupe-on-digest"
+      },
+      "expectKind": "reject",
+      "rejectCode": "LINEAGE_CYCLE",
+      "assertions": [
+        "dedupe-on-digest is separately rejected as DIGEST_USED_AS_IDENTITY",
+        "digest algorithm sha-256 with canonical form jcs over the declared field scope"
+      ]
+    },
+    {
+      "id": "implicit-basis-netting",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-05"
+      ],
+      "target": "JurisdictionalBasisAssertion",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "bases": [
+          {
+            "basisAssertionId": "FX-BASIS-1",
+            "basisKind": "residence",
+            "jurisdictionRef": "FX-J1"
+          },
+          {
+            "basisAssertionId": "FX-BASIS-2",
+            "basisKind": "nexus",
+            "jurisdictionRef": "FX-J2"
+          }
+        ],
+        "operation": "suppress FX-BASIS-2 because FX-BASIS-1 exists"
+      },
+      "expectKind": "reject",
+      "rejectCode": "IMPLICIT_BASIS_NETTING",
+      "assertions": [
+        "both bases remain active and unranked",
+        "any relief or allocation must be a separate assertion with its own basis, authority and rule version"
+      ]
+    },
+    {
+      "id": "access-without-purpose-binding",
+      "kind": "negative",
+      "invariantIds": [
+        "EMFIN07-INV-15"
+      ],
+      "target": "access control",
+      "fixedClock": "2026-03-31T00:00:00Z",
+      "input": {
+        "read": {
+          "field": "FX-ACC-1.authorityIdentifier",
+          "actorRef": null,
+          "purpose": null
+        }
+      },
+      "expectKind": "reject",
+      "rejectCode": "ACCESS_WITHOUT_PURPOSE_BINDING",
+      "assertions": [
+        "default classification is restricted",
+        "authorityIdentifier is restricted-identifier",
+        "a read with actorRef and an enumerated purpose is accepted and logged with knowledgeTime"
+      ]
+    }
+  ]
+}

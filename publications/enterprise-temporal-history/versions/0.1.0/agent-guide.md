@@ -1,0 +1,7 @@
+# Agent instructions
+
+Read model-spec.md, temporal.schema.json and temporal.py. Read spec.json for the Bundle → Layer → Finding → Question → Artifact → Action tree. Query explicit valid/recorded cutoffs; pin sequence for reproducibility within a second. Unknown is not false. Schema version, artifact revision, timeline revision and state are separate.
+
+This is a trusted-host reference, not a security boundary. Host supplies authenticated actor, current config, latest complete root, clock and durable serialization. Enforce raw input size limits and duplicate-key rejection before parsing. Invoke admit on every new request, preserve first receipt on replay, record restricted host conflict artifacts for rejected writes, and persist atomically. Return only receipt/generic error to a writer without full history read authority. Config and diagnostic details stay inside the host.
+
+Never backdate local receipt using source time, merge competing masters, infer truth or transition legality, silently truncate timestamps, invoke external adapters, or dispose of history. Archive freezes new commits while retaining reads. Retention/erasure and existing-Dimension migration require a separate integration. Validate native envelope and nested snapshot separately against the trusted latest predecessor. Current read rights apply to old history too. Static import validation proves only internal consistency. Do not contact people, access external payloads or execute domain transitions on the basis of this package.

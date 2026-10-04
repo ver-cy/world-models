@@ -1,0 +1,8 @@
+
+
+Request admission, policy selection, definition availability, cancellation, key binding, resource revision, effect and receipt share `BEGIN IMMEDIATE` serialization in one SQLite database. Resource updates are append-only revisions. Expected revision is checked before a first effect; a replay checks the retained intent/key first and cannot reapply after intervening work. Injected failures before effect and between effect and receipt roll back the whole transaction. A simulated response loss occurs after commit and is resolved using the same key. No test simulates storage hardware failure.
+
+Cancellation and execution contend for the same lock and can produce only one terminal outcome. Cancel does not undo a committed effect. Compensation is a new intent/key/request referencing a retained receipt. It requires the same actor, principal, purpose, audience, Dimension, definition and resource; the original before-labels; and the current revision equal to the original after-revision. An intervening update rejects compensation, even when labels happen to look equal. Retired definitions block same-pin compensation. The narrow same-actor compensation rule can be widened only by an explicitly versioned and reviewed host contract.
+
+An observation correction references one earlier observation by the same observer on the same request. A predecessor can have only one direct correction, producing a linear correction chain. Another independent observation can coexist. Corrections never replace receipts, delete predecessors, cancel requests or modify labels. Claims `caller-unknown`, `caller-observed-success` and `caller-observed-failure` describe observer knowledge, not executor states.
+

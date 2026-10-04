@@ -1,0 +1,367 @@
+{
+  "format": "vercy-world-model-candidate/v1",
+  "contourId": "EM-OPS-01",
+  "modelId": "WM-ACT-009",
+  "registryId": "vr.wm-act-009",
+  "name": "Method / Procedure",
+  "version": "0.3.0-candidate.3",
+  "entryKind": "standalone-mm",
+  "status": "research-candidate",
+  "purpose": "Represent reusable authored methods and procedures, immutable editions, applicability and adopter-owned adoption records without treating publication or adoption as execution.",
+  "boundary": {
+    "owns": [
+      "method family identity and rationale",
+      "procedure identity and ordered instruction content",
+      "immutable released editions and errata lineage",
+      "standard and competence references",
+      "scope and limits of applicability",
+      "adopter-owned adoption records and effective dates"
+    ],
+    "delegates": [
+      "operational process definitions and execution to WM-ACT-003",
+      "organization identity to external masters",
+      "competence and credential identity to their external masters",
+      "standard identity and legal effect to external authorities"
+    ],
+    "excludes": [
+      "process instances work items or execution outcomes",
+      "in-place mutation of released instructions",
+      "automatic adoption on publication",
+      "claims of execution conformity",
+      "wildcard standards conformance"
+    ]
+  },
+  "objects": {
+    "Method": {
+      "identity": [
+        "methodId"
+      ],
+      "required": [
+        "name",
+        "purpose",
+        "principles",
+        "authorRef",
+        "domain",
+        "status"
+      ]
+    },
+    "Procedure": {
+      "identity": [
+        "procedureId"
+      ],
+      "required": [
+        "name",
+        "preconditions",
+        "expectedResult",
+        "status"
+      ],
+      "optional": [
+        "methodRefs"
+      ],
+      "constraints": [
+        "a procedure may serve multiple methods without duplicating instruction identity",
+        "normative content is published only through an Edition manifest"
+      ]
+    },
+    "ProcedureStep": {
+      "identity": [
+        "editionId",
+        "procedureId",
+        "stepKey"
+      ],
+      "required": [
+        "order",
+        "instruction"
+      ],
+      "optional": [
+        "inputs",
+        "checks",
+        "safetyNotes",
+        "entryCondition",
+        "exitCondition",
+        "expectedDuration"
+      ]
+    },
+    "Edition": {
+      "identity": [
+        "editionId"
+      ],
+      "required": [
+        "subjectRef",
+        "subjectKind",
+        "version",
+        "releasedAt",
+        "contentDigest",
+        "manifestDigest",
+        "changeSummary",
+        "status"
+      ],
+      "optional": [
+        "supersedesEditionId",
+        "erratumOfEditionId"
+      ],
+      "lifecycle": [
+        "draft",
+        "released",
+        "superseded",
+        "withdrawn"
+      ],
+      "subjectKinds": [
+        "method",
+        "procedure"
+      ],
+      "constraints": [
+        "unique on subjectRef+version",
+        "unique on subjectRef+contentDigest",
+        "contentDigest covers the complete published manifest including procedure steps",
+        "method-edition manifest transitively pins incorporated procedure edition ids and digests"
+      ]
+    },
+    "AdoptionRecord": {
+      "identity": [
+        "adoptionId"
+      ],
+      "required": [
+        "adopterRef",
+        "editionId",
+        "editionDigest",
+        "effectiveFrom",
+        "recordedAt",
+        "status"
+      ],
+      "optional": [
+        "effectiveTo",
+        "localConstraintDigest",
+        "attestationRef",
+        "authorityRef",
+        "backdatingAuthorizationRef"
+      ],
+      "lifecycle": [
+        "proposed",
+        "effective",
+        "superseded",
+        "withdrawn"
+      ],
+      "constraints": [
+        "effective status requires in-scope authorityRef and attestationRef",
+        "effectiveFrom before recordedAt requires separately authorized backdating",
+        "at most one effective adoption per adopter, subject and instant unless a deterministic precedence record exists",
+        "local constraints are digested narrowing only and cannot alter edition content"
+      ]
+    },
+    "CompetenceRequirement": {
+      "identity": [
+        "editionId",
+        "requirementKey"
+      ],
+      "required": [
+        "competenceRef",
+        "requiredLevel",
+        "scopeOfUse"
+      ],
+      "optional": [
+        "evidenceRuleRef",
+        "validFrom",
+        "validTo"
+      ]
+    },
+    "EditionManifest": {
+      "identity": [
+        "editionId"
+      ],
+      "required": [
+        "subjectKind",
+        "contentRefs",
+        "contentDigests",
+        "canonicalManifestDigest"
+      ],
+      "constraints": [
+        "method manifests pin incorporated procedure edition ids and digests",
+        "procedure manifests pin all ProcedureStep keys and digests"
+      ]
+    },
+    "ClaimRetractionNote": {
+      "identity": [
+        "legacyAssemblyId",
+        "noteVersion"
+      ],
+      "required": [
+        "claims",
+        "status",
+        "recordedAt"
+      ],
+      "constraints": [
+        "external to immutable legacy bytes"
+      ]
+    }
+  },
+  "relations": [
+    {
+      "target": "vr.wm-act-003",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Navigate to operational definitions while the authoritative definition-to-edition binding remains process-owned."
+    },
+    {
+      "target": "vr.wm-org-016",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Reference adopting or authoring organization identity without remastering it."
+    }
+  ],
+  "operations": [
+    {
+      "id": "release-edition",
+      "effect": "Issue an immutable edition or erratum with digest and lineage.",
+      "authority": "authoring organization"
+    },
+    {
+      "id": "supersede-edition",
+      "effect": "Issue a successor while preserving the predecessor.",
+      "authority": "authoring organization"
+    },
+    {
+      "id": "adopt-edition",
+      "effect": "Create an adopter-owned record with an effective date and authority.",
+      "authority": "adopting organization"
+    },
+    {
+      "id": "withdraw-adoption",
+      "effect": "End local applicability without altering the published edition.",
+      "authority": "adopting organization"
+    }
+  ],
+  "invariants": [
+    "A released edition is immutable and content-addressed.",
+    "A normative correction creates an erratum or successor edition and never edits released text in place.",
+    "Edition supersession lineage is acyclic.",
+    "Publication does not imply adoption.",
+    "Adoption takes effect on the adopter-recorded effective interval rather than publication date.",
+    "An AdoptionRecord pins exactly one edition id and digest.",
+    "The author owns released editions; the adopter owns its AdoptionRecord.",
+    "Every effective adoption has an authority and attestation reference.",
+    "Competence requirements and scope-of-use are edition-qualified.",
+    "A procedure is instruction knowledge and never records work performance.",
+    "A method states approach and rationale while a procedure states ordered instructions.",
+    "Process definitions reference adopted editions without copying their text.",
+    "Publishing a new edition never silently re-points an active or completed process.",
+    "Standard and competence references do not transfer external mastership.",
+    "Wildcard imports do not constitute standards conformance.",
+    "Publication is refused while fixturesExecuted is false, publishableCanonical is false or any release hold is open.",
+    "No two editions share one subject and version or one subject and content digest.",
+    "Every edition declares subjectKind method or procedure.",
+    "Procedure instructions and steps are edition-scoped and covered by the edition digest.",
+    "A method edition transitively pins every incorporated procedure edition id and digest.",
+    "Withdrawn editions remain permanently digest-resolvable for historical traces.",
+    "At most one adoption is effective for one adopter, subject and instant unless explicit deterministic precedence exists.",
+    "Backdated adoption requires scoped authority and never overrides immutable trace pins.",
+    "Local constraints are content-addressed narrowing only.",
+    "Legacy assembly identifiers can never label a successor candidate version."
+  ],
+  "holds": [
+    "The single frozen semantic audit and its one-pass remediation are pending.",
+    "Legacy 0.2.0-legacy remains immutable and non-installable.",
+    "CRUD, roles, artifacts and executable package conversion are absent.",
+    "Relations are candidate-only until ledger approval.",
+    "External notation and standards crosswalks are alignments rather than conformance claims.",
+    "Live HTTP/runtime/search/resolve/package verification is pending.",
+    "Registry composition_role, default_link_type and relations_ref require explicit reconciliation before release."
+  ],
+  "publishableCanonical": false,
+  "legacyVersion": "0.2.0-legacy",
+  "fixturesExecuted": false,
+  "candidateRevision": 3,
+  "digestPolicy": {
+    "algorithm": "sha256",
+    "canonicalization": "RFC8785 JSON Canonicalization Scheme for candidate records",
+    "mismatch": "hard-reject",
+    "digestDomain": "normative object content excluding local display labels and record identifiers explicitly named outside each digest"
+  },
+  "alignments": [],
+  "alignmentPolicy": "Only a source with an exact version or digest may appear; every entry must state claim=alignment-only. No current pinned alignment is claimed.",
+  "legacyPreservation": {
+    "version": "0.2.0-legacy",
+    "immutable": true,
+    "installable": false,
+    "legacyAssemblyIds": [
+      "vercy:world:k6"
+    ],
+    "claimRetractionNote": {
+      "version": "1",
+      "claims": [
+        "MUC 2.0 conformance",
+        "MMAS A1",
+        "wildcard imports as conformance"
+      ],
+      "status": "unverified-and-retracted-for-successor",
+      "externalToLegacyBytes": true
+    },
+    "registryActions": [
+      "Bind legacy assembly id permanently to 0.2.0-legacy",
+      "Record K3/K6 spec-path rename without editing legacy bytes"
+    ]
+  },
+  "referencePolicy": "Every *Ref field resolves through referenceTypes; external-unmastered references must carry namespace, source and resolution rule.",
+  "publicationGate": {
+    "publishableCanonical": false,
+    "fixturesExecuted": false,
+    "legacyInstallable": false,
+    "openHolds": 6
+  },
+  "referenceTypes": {
+    "authorRef": "external organization master",
+    "adopterRef": "external organization master",
+    "authorityRef": "adopting organization or scoped delegation record",
+    "attestationRef": "external evidence master",
+    "competenceRef": "external competence master",
+    "evidenceRuleRef": "external rule master",
+    "subjectRef": "local Method or Procedure identity",
+    "contentRefs": "local edition-scoped content",
+    "backdatingAuthorizationRef": "external delegation record"
+  },
+  "contracts": [
+    {
+      "id": "methodAccess",
+      "scope": "licensed access to immutable editions"
+    },
+    {
+      "id": "adoptionAttestation",
+      "scope": "authorized adopter evidence"
+    },
+    {
+      "id": "revisionSubscription",
+      "scope": "successor notifications without automatic adoption"
+    }
+  ],
+  "projections": [
+    {
+      "id": "effectiveAdoption",
+      "authority": "derived for adopter+subject+instant with explicit precedence"
+    },
+    {
+      "id": "editionLineage",
+      "authority": "derived from immutable supersession relations"
+    }
+  ],
+  "stewardship": {
+    "author": [
+      "method",
+      "procedure",
+      "edition"
+    ],
+    "adopter": [
+      "adoption record"
+    ],
+    "licensingSteward": [
+      "method access rights"
+    ],
+    "privacySteward": [
+      "attestation disclosure and retention"
+    ]
+  },
+  "tombstonePolicy": "Retraction or protected referent erasure preserves edition/adoption identity and digest-resolvable historical references.",
+  "authorityRules": {
+    "adoption": "authority belongs to the adopting organization or its explicit delegation",
+    "backdating": "separate delegation required and trace pins remain authoritative"
+  }
+}

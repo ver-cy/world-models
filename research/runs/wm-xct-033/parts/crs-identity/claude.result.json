@@ -1,0 +1,2217 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-033",
+    "model_id": "WM-XCT-033",
+    "name": "Geometry / Coordinate Reference",
+    "entry_kind": "mixin",
+    "purpose": "Provide the reusable referencing mixin that lets any record carrying positions state, without inference and without defaulting, which coordinate reference system its coordinates are expressed in, which authority governs that definition, and what the coordinate system's axes mean.",
+    "scope_statement": "WM-XCT-033 covers the binding between a coordinate-bearing value and its coordinate reference system: authoritative CRS identity and registry binding; the static definition content (datum or datum ensemble, ellipsoid, prime meridian, coordinate system and axes); CRS subtype and composition; declared scope and domain of validity; and the carriage of geometry values against that CRS including coordinate ordering, dimensionality and coordinate epoch. The external CRS registry stays authoritative; anything held locally is a pinned snapshot with provenance, never a local re-registration. The model is independent of storage format and access interface - WKT, GML, GeoJSON, WKB, database geometry types, Git, MCP and MongoDB are projections of these semantics, not the semantics.",
+    "in_scope": [
+      "Authoritative CRS identity: authority name, authority-issued code, resolvable definition URI form, and the registry release the definition was read from.",
+      "Static definition content: datum, datum ensemble, dynamic reference frame and frame reference epoch, ellipsoid parameters and prime meridian.",
+      "Coordinate system semantics: coordinate system type, axis count, and per-axis name, abbreviation, direction, explicit order, unit of measure and permitted range.",
+      "CRS subtypes in use - geodetic and geographic, projected, vertical, engineering, compound and derived - with base CRS, defining-conversion reference and ordered compound components.",
+      "Declared applicability: authority scope text and domain of validity as area description, bounding box, vertical and temporal extent.",
+      "Registry record status carried by reference: valid or deprecated flags, official names, aliases and supersession pointers.",
+      "The binding of a geometry-bearing value to its CRS: coordinate ordering as read from the authority, tuple dimensionality, and the coordinate epoch of the coordinates themselves.",
+      "Geometry carriage at the reference level: which CRS a geometry value is expressed in, and what makes two geometry values comparable."
+    ],
+    "out_of_scope": [
+      "Execution of coordinate operations: datum transformations, map-projection conversions, grid-shift application, operation selection and transformation accuracy budgets.",
+      "Geometry primitive algebra, topology, validity rules, spatial predicates and spatial indexing or tiling.",
+      "Serialization and encoding syntax (WKT, GML, GeoJSON, WKB, GeoPackage, database geometry types) and their parsing rules.",
+      "Maintenance of the external CRS registry itself: issuing codes, revising records, deprecating entries or publishing dataset releases.",
+      "Positioning and observation quality: GNSS accuracy, survey adjustment, sensor error models and geoid model computation.",
+      "Cartographic rendering, styling, generalization and map scale.",
+      "Runtime policy evaluation, enforcement of CRS rules, and retention or tamper-evidence of audit trails."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Coordinate operation and transformation model",
+        "distinction": "ISO 19111 separates a coordinate reference system from the coordinate operations between systems. This model carries the reference to a projected or derived CRS's defining conversion as part of the definition, but never owns operation methods, parameter application, execution or accuracy.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "External CRS registry (EPSG Geodetic Parameter Dataset, OGC Definitions Server)",
+        "distinction": "The registry custodian owns code issuance, record revision, deprecation and dataset releases; codes are stable and are never removed. This model carries references and pinned snapshots with provenance and does not re-register, renumber or amend authority definitions.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Geometry encoding and serialization model",
+        "distinction": "OGC WKT-CRS states that a WKT string is unsuitable for storing definitions because it omits source and applicability metadata. Encodings, including GeoJSON's fixed axis order, are interface facts recorded here but governed there.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Units of measure register",
+        "distinction": "Axis units, ellipsoid length units and prime meridian angle units are referenced from a unit-of-measure authority using the same definition URI template; unit definitions and conversion factors are not restated in this model.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Temporal reference model",
+        "distinction": "Frame reference epoch and coordinate epoch are geodetic quantities expressed in decimal years and belong here; record timestamps, calendars, time zones and duration semantics belong to the temporal model.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "neighbor": "WM-XCT-010 parent spatial context model",
+        "distinction": "The parent supplies the broader spatial subject context. This mixin supplies only referencing semantics attachable to any coordinate-bearing subject and does not import that subject's lifecycle or its spatial content model.",
+        "source_refs": [
+          "SRC-001"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "OGC Abstract Specification Topic 2: Referencing by Coordinates Corrigendum",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/as/18-005r5/18-005r5.html",
+      "version_or_date": "OGC 18-005r5, version 5.0.1, 2021-07-02 (identical text to ISO 19111:2019, third edition)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:12:00Z",
+      "relevance": "Normative definition of coordinate reference system as a coordinate system related to an object by a datum; geodetic, vertical and dynamic reference frames; frame reference epoch; datum ensemble; coordinate system axis name, abbreviation, direction, unit and order; ellipsoid and prime meridian; CRS subtypes; scope and domain of validity."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Geographic information - Well-known text representation of coordinate reference systems",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/18-010r7/18-010r7.html",
+      "version_or_date": "OGC 18-010r7, version 2.0.6, 2019-08-13",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:14:00Z",
+      "relevance": "CRS type keywords (GEOGCRS, GEODCRS, PROJCRS, VERTCRS, ENGCRS, COMPOUNDCRS, BOUNDCRS); ID element with authority name, code, version, citation and URI; CS element with type and dimension; axis name, abbreviation, direction, explicit order and unit keywords; ELLIPSOID, PRIMEM, DATUM, VDATUM, EDATUM, ENSEMBLE; USAGE, SCOPE, AREA, BBOX and extent elements; and the explicit statement that WKT is not suitable for storing CRS definitions because it omits source and applicability metadata."
+    },
+    {
+      "id": "SRC-003",
+      "title": "WKT Coordinate Reference Systems - OGC Standard Representation",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://www.ogc.org/standards/wkt-crs/",
+      "version_or_date": "Standards listing page, current version 2.1.11 (OGC 18-010r11); version 1.0 (OGC 12-063r5) marked deprecated; accessed 2026-09-04",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:16:00Z",
+      "relevance": "Establishes which WKT-CRS version is currently in force and that version 1.0 is a deprecated International Standard, which fixes the exchange form a carried definition should declare and bounds the currency of clause-level citations."
+    },
+    {
+      "id": "SRC-004",
+      "title": "OGC API - Features - Part 2: Coordinate Reference Systems by Reference corrigendum",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/is/18-058r1/18-058r1.html",
+      "version_or_date": "OGC 18-058r1, version 1.0.1, 2022-05-11",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:18:00Z",
+      "relevance": "CRS identified by URI of the form http://www.opengis.net/def/crs/{authority}/{version}/{code}; the crs list and storageCrs advertised per collection; storageCrsCoordinateEpoch for dynamic CRS; default OGC:CRS84 and CRS84h; and the requirement to assert the CRS actually used rather than leaving it implicit."
+    },
+    {
+      "id": "SRC-005",
+      "title": "OGC Name Type Specification - definitions - part 1 - basic name",
+      "organization": "Open Geospatial Consortium",
+      "url": "https://docs.ogc.org/pol/09-048r7.html",
+      "version_or_date": "OGC 09-048r7, version 1.4, 2024-07-24",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:20:00Z",
+      "relevance": "Normative http URI template for OGC definitions, the controlled registers for definition-type and authority tokens, the rule that unversioned definitions use version 0, and the persistence expectation plus the illustration that an incorrect record is deprecated and replaced rather than removed."
+    },
+    {
+      "id": "SRC-006",
+      "title": "EPSG and OGC URIs",
+      "organization": "International Association of Oil and Gas Producers (IOGP) - EPSG Geodetic Parameter Dataset registry",
+      "url": "https://iogp.georepository.com/ogc_uri.html",
+      "version_or_date": "EPSG registry guidance page, accessed 2026-09-04",
+      "source_type": "registry",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:22:00Z",
+      "relevance": "States that EPSG codes are stable, unique and permanent, that codes are never removed from the dataset, that version 0 in an EPSG URI means the latest dataset version, that codes are unique only within a table (with CRS and coordinate operations sharing one range), and that deprecated items remain in the dataset."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 7946: The GeoJSON Format",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc7946.html",
+      "version_or_date": "RFC 7946, Standards Track, August 2016",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:24:00Z",
+      "relevance": "Fixes WGS 84 as the CRS for all GeoJSON coordinates with longitude before latitude, removes the crs member because alternative CRS proved to have interoperability problems, and permits other CRS only where all involved parties have a prior arrangement - the canonical example of a serialization convention that must never be read back as an authority axis order."
+    },
+    {
+      "id": "SRC-008",
+      "title": "New Datums - Modernized National Spatial Reference System",
+      "organization": "NOAA National Geodetic Survey",
+      "url": "https://geodesy.noaa.gov/datums/newdatums/index.shtml",
+      "version_or_date": "NGS modernized NSRS programme pages, accessed 2026-09-04",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:26:00Z",
+      "relevance": "Authoritative statement that NAD 83 is misaligned from the geocentre by about 2.2 m and NAVD 88 is biased and tilted, that NATRF2022, PATRF2022, CATRF2022 and MATRF2022 plus a geopotential datum will replace them, and that every existing latitude, longitude, ellipsoid height and orthometric height in the United States will change by as much as four metres - concrete evidence for supersession and non-interchangeability."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Geocentric Datum of Australia 2020 (GDA2020)",
+      "organization": "Geoscience Australia",
+      "url": "https://www.ga.gov.au/scientific-topics/positioning-navigation/geodesy/datums-projections/gda2020",
+      "version_or_date": "Geoscience Australia geodesy pages, accessed 2026-09-04",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:28:00Z",
+      "relevance": "GDA2020 is a realisation of ITRF2014 at epoch 2020.0; plate motion of about 7 cm per year produced roughly 1.8 m of divergence from GDA94, and GDA2020 ellipsoidal heights differ from GDA94 by about 9 cm - evidence that a datum name plus a reference epoch is required, not optional."
+    },
+    {
+      "id": "SRC-010",
+      "title": "PROJ Frequently Asked Questions",
+      "organization": "PROJ / OSGeo",
+      "url": "https://proj.org/en/stable/faq.html",
+      "version_or_date": "PROJ 9.8.1 stable documentation, accessed 2026-09-04",
+      "source_type": "first-party-doc",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-04T09:30:00Z",
+      "relevance": "First-party evidence of the implementation reality: EPSG geodetic CRS are defined latitude-first, PROJ respects the authority axis order only from version 6 onward, PROJ internally expects longitude/latitude for all projections, and most GIS software does not follow the standard - the counterexample that makes axis-order inference indefensible."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "geo-crsid-bundle-identity",
+        "name": "CRS Identity, Authority and Registry Binding",
+        "description": "How a coordinate reference system is named, cited, resolved against its custodian, snapshotted with provenance, and status-checked - so that a CRS reference is verifiable and reproducible rather than a label.",
+        "rationale": "ISO 19111 makes identifier, authority and version part of the CRS definition; the OGC naming policy fixes the resolvable URI form and its version token; the EPSG registry states that codes are permanent, unique only within a table, and never removed, with incorrect records deprecated and replaced. Without this bundle a CRS reference cannot be resolved, pinned or trusted.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-005",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "geo-crsid-layer-authority-binding",
+            "name": "Authoritative identification, carriage and provenance",
+            "description": "Which authority governs the definition, what code it issued, in what form the reference travels, whether a full definition is carried alongside it, and against which registry release it was resolved and pinned.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-004",
+              "SRC-005",
+              "SRC-006"
+            ],
+            "findings": [
+              {
+                "id": "geo-crsid-finding-authority-identifier",
+                "name": "Authoritative CRS identifier and authority binding",
+                "description": "The identifier of record for a CRS: the governing authority's registered token plus the code it issued, carried as an authority/code pair or as an OGC definition URI - never as a bare number or a label.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-authid-issuer",
+                    "text": "Which authority issued the identifier of record for this CRS, and what exact code did it issue?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "authority token as registered in the OGC-controlled authority register",
+                      "authority-issued code string exactly as published",
+                      "the identifier form actually carried on the record"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-authid-custodian",
+                    "text": "Is the cited authority the custodian that governs this definition, or a downstream mirror or vendor catalogue?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "custodian organization name",
+                      "registry endpoint or dataset the code was read from",
+                      "mirror-or-vendor flag with the reason it was used"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-authid-uri",
+                    "text": "In what resolvable URI form is the identifier expressed for exchange, and does that URI carry a real registry version or the wildcard token?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "OGC definition URI string",
+                      "value of the version path segment",
+                      "flag indicating the version 0 wildcard was used and pinning is therefore absent"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-authid-bare",
+                    "text": "What rule forbids treating a bare code, a projection nickname or a vendor string as sufficient identification here?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "stated rejection rule for unqualified codes",
+                      "list of accepted identifier forms",
+                      "note that a code is unique only within its authority table"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-authid-secondary",
+                    "text": "Which secondary identifiers describe the same CRS, and which one prevails when they disagree?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "secondary identifier list with its issuing authority",
+                      "designated normative identifier",
+                      "recorded disagreement and its cause"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-authority-name",
+                    "name": "Authority name",
+                    "description": "Registered token of the organization that governs the CRS definition, for example EPSG or OGC.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-authority-code",
+                    "name": "Authority code",
+                    "description": "Code issued by that authority for the CRS, meaningful only together with the authority name.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-definition-uri",
+                    "name": "Definition URI",
+                    "description": "Resolvable OGC definition URI rendering of the authority/code pair, with its version segment.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-identifier-form",
+                    "name": "Identifier form",
+                    "description": "Which accepted form the reference is carried in: authority/code pair, definition URI, or both.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-secondary-identifier",
+                    "name": "Secondary identifier",
+                    "description": "Additional identifier for the same CRS issued by another authority, recorded as non-normative.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The identifier of record is pure reference data - an authority token plus a code, optionally rendered as a URI - carried directly on the record that bears coordinates. It resolves to a document held and governed by the external registry. Minting a local artifact for it would amount to re-registering a definition this model does not own, and would create a second identity that could drift from the custodian's."
+              },
+              {
+                "id": "geo-crsid-finding-registry-snapshot",
+                "name": "Registry version, pinned snapshot and provenance",
+                "description": "The registry release a definition was read from and, where a copy is retained, its status as a provenance-bearing pinned snapshot with integrity evidence rather than a local registration.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-snap-release",
+                    "text": "Which registry release and which retrieval event produced the definition currently held for this CRS?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "registry or dataset version string",
+                      "retrieval URL",
+                      "retrieval timestamp in RFC 3339 with an explicit offset",
+                      "identity of the retrieving agent or service"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-snap-eventtime",
+                    "text": "How is the observation time of the snapshot kept separate from the authority's own publication and revision dates?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "registry release publication date as published",
+                      "authority's last-revision date for the record",
+                      "local ingestion timestamp",
+                      "note where one of the two is unknown rather than copied"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-snap-integrity",
+                    "text": "What integrity evidence proves the held snapshot has not drifted from the authority record?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "content digest over the declared canonical serialization",
+                      "digest algorithm",
+                      "timestamp and outcome of the last re-verification",
+                      "unverified flag where the digest cannot be recomputed"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-snap-repin",
+                    "text": "Who may re-pin the snapshot, how long is the superseded pin kept, and what remains after it is reduced?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "role permitted to re-pin",
+                      "supersession pointer to the prior snapshot",
+                      "minimum retention tied to citing data",
+                      "content of the residual provenance stub"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-snap-degraded",
+                    "text": "What is recorded when the registry is unreachable and only a cached definition is available?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "degraded-resolution flag",
+                      "age of the cache at time of use",
+                      "stated risk note and the role that accepted it"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-registry-version",
+                    "name": "Registry version",
+                    "description": "Release identifier of the CRS registry dataset the definition was resolved against.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-snapshot-retrieved-at",
+                    "name": "Snapshot retrieval time",
+                    "description": "Observation time at which the definition was retrieved from the authority, in RFC 3339 with seconds and offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-authority-record-revision-date",
+                    "name": "Authority record revision date",
+                    "description": "Event date on which the authority itself last revised the record, as published by the authority.",
+                    "value_kind": "date",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-snapshot-digest",
+                    "name": "Snapshot content digest",
+                    "description": "Digest over the snapshot's declared canonical serialization, with its algorithm named.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-snapshot-source-url",
+                    "name": "Snapshot source reference",
+                    "description": "Resolvable location the snapshot was retrieved from, retained for reproducibility.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "geo-crsid-artifact-pinned-definition",
+                    "name": "Pinned CRS definition snapshot",
+                    "description": "An immutable, provenance-bearing copy of one authority CRS record as retrieved at a stated registry version, retained so that a coordinate can be reinterpreted later exactly as it was interpreted at capture. It is a citation of the registry, not a local registration.",
+                    "media_or_form": [
+                      "WKT2 text as defined by OGC WKT-CRS",
+                      "registry record export in structured or tabular form",
+                      "GML CRS dictionary entry",
+                      "structured record in the adopting Dimension's store"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by authority name plus authority code plus the registry version at retrieval. Where that triple is not unique within the adopting Dimension, a Dimension-assigned ULID disambiguates. The snapshot never receives a CRS code of its own and never occupies an authority namespace.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "geo-crsid-finding-definition-carriage",
+                "name": "Reference by URI versus carried definition",
+                "description": "Whether a record carries only a resolvable CRS reference, a full definition, or both, what a carried definition must contain to be usable offline, and what is known to be lost in each carriage mode.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-carry-mode",
+                    "text": "Is the CRS carried by reference only, by full definition, or both, and what drove that choice?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "carriage mode code",
+                      "justification note",
+                      "consuming systems that cannot resolve a reference"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-carry-precedence",
+                    "text": "When both a reference and a full definition are present, which one prevails and how is divergence detected?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "stated precedence rule",
+                      "element-level comparison method",
+                      "divergence findings and their disposition"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-carry-required",
+                    "text": "Which elements must a carried definition contain before it can be used without contacting the registry?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "required element list: datum, coordinate system, axes with units, subtype",
+                      "completeness check result per element",
+                      "blocking gaps"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-carry-exchange",
+                    "text": "Which version of the exchange form is declared, so that a consumer parses the carried definition against the right grammar?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "exchange form name and version in force",
+                      "declared grammar or schema reference",
+                      "consumer capability note"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-carry-loss",
+                    "text": "What metadata is known to be absent when a definition travels as a well-known text string rather than as a registry record?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "omitted source and provenance metadata",
+                      "omitted applicability metadata",
+                      "explicit loss note attached to the carried copy"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-carriage-mode",
+                    "name": "Carriage mode",
+                    "description": "Whether the CRS travels as reference only, definition only, or reference plus definition.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-carried-definition-form",
+                    "name": "Carried definition form and version",
+                    "description": "Named exchange form and version of a carried definition, so it is parsed against the correct grammar.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-precedence-rule",
+                    "name": "Precedence rule",
+                    "description": "Which of reference and carried definition prevails when the two disagree.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-completeness-verdict",
+                    "name": "Completeness verdict",
+                    "description": "Result of checking a carried definition against the elements required for its subtype.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "geo-crsid-artifact-carried-definition",
+                    "name": "Carried CRS definition document",
+                    "description": "The full, self-contained definition of one CRS carried alongside data for consumers that cannot resolve the authority reference, annotated with what its exchange form omits.",
+                    "media_or_form": [
+                      "WKT2 CRS string",
+                      "GML CRS dictionary entry",
+                      "structured definition object",
+                      "registry record export"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the authority name and code of the CRS it expresses plus the registry version of the snapshot it was derived from; it never establishes an identity independent of that authority record.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "geo-crsid-layer-record-status",
+            "name": "Names, aliases and registry record status",
+            "description": "How a CRS's human-facing labels are kept separate from its definition identity, and how validity, deprecation and supersession observed at the authority are represented locally.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-005",
+              "SRC-006",
+              "SRC-008",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "geo-crsid-finding-names-aliases",
+                "name": "Definition identity versus display names and aliases",
+                "description": "Separation of the authoritative definition identity from official names, display labels, aliases, legacy and vendor strings - none of which may be used to identify a CRS.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-name-official",
+                    "text": "What is the authority's official name for this CRS, and how does it differ from the label shown to users?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "authority object name as published",
+                      "display label in use",
+                      "language or locale of the label"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-name-classify",
+                    "text": "Which recorded strings are authority aliases, which are legacy or vendor labels, and which are unclassified?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "alias list with the alias scope the authority assigns",
+                      "legacy or vendor label list with originating system",
+                      "unclassified strings pending review"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-name-nonidentifying",
+                    "text": "What rule prevents any name, alias or label from being resolved back to a definition on its own?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "stated non-identifying rule",
+                      "observed name-collision examples",
+                      "the required resolution path through authority and code"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-name-collision",
+                    "text": "Do two distinct CRS records share a name or alias here, and how is that ambiguity resolved?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "colliding string",
+                      "the distinct authority codes involved",
+                      "disambiguation rule applied"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-official-name",
+                    "name": "Official CRS name",
+                    "description": "Name of the CRS object as published by the governing authority.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-display-label",
+                    "name": "Display label",
+                    "description": "Locale-specific label presented to people; never used to resolve a definition.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-alias",
+                    "name": "Alias",
+                    "description": "Alternative name recorded for the CRS, with the system or authority that uses it.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-alias-scope",
+                    "name": "Alias scope",
+                    "description": "Context in which an alias applies, distinguishing authority aliases from vendor or legacy strings.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Names, aliases and labels are short reference strings that hang directly off the CRS reference and are already fully contained in the pinned and carried definition documents declared elsewhere in this model. Materialising them as a separate local artifact would create a competing name register alongside the authority that already governs those strings, and would invite exactly the name-based resolution this finding forbids."
+              },
+              {
+                "id": "geo-crsid-finding-deprecation-supersession",
+                "name": "Deprecation, supersession and replacement chain",
+                "description": "Validity status observed from the authority - deprecated flags, replacement pointers, superseded realizations - and what a consumer must do when a referenced CRS is no longer valid.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-dep-status",
+                    "text": "What validity status does the authority currently assign to this CRS record?",
+                    "kind": "state",
+                    "answer_data": [
+                      "deprecated flag as published",
+                      "status value as published by the authority",
+                      "timestamp at which the status was observed"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-dep-replacement",
+                    "text": "Which record supersedes this one, and is the supersession a correction, a re-realization or a policy replacement?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "replacement authority code",
+                      "supersession reason as classified",
+                      "authority remark text quoted or referenced"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-dep-effective",
+                    "text": "From when is the deprecation effective, and how does that relate to data already captured in the deprecated CRS?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "authority's effective or publication date for the deprecation",
+                      "local observation timestamp recorded separately",
+                      "window of already-captured data affected"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-dep-continued",
+                    "text": "Under what conditions may a deprecated CRS still be referenced, and who approves that?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "permitted-use condition",
+                      "named approving role",
+                      "expiry of the approval"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-dep-programme",
+                    "text": "Which national or regional modernization programme drives this supersession, and what coordinate change does it imply?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "programme and responsible national authority",
+                      "successor frame or datum names",
+                      "stated magnitude of coordinate change"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-record-status",
+                    "name": "Observed record status",
+                    "description": "Validity status as published by the authority at the time of observation.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-deprecated-flag",
+                    "name": "Deprecated flag",
+                    "description": "Whether the authority marks the record deprecated; deprecated records remain present in the dataset.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-status-observed-at",
+                    "name": "Status observation time",
+                    "description": "When this model observed the status, kept distinct from the authority's own effective date.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-replacement-code",
+                    "name": "Replacement authority code",
+                    "description": "Authority code of a record that replaces this one, where the authority publishes one.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-supersession-reason",
+                    "name": "Supersession reason",
+                    "description": "Why the record was superseded: correction, re-realization, or national programme replacement.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Deprecation and supersession are states published, dated and maintained by the external CRS authority, which also keeps deprecated records in the dataset rather than removing them. This model records the observed status and the replacement pointer as inline reference data; issuing a local supersession notice would duplicate a registry change record whose authorship, effective dating and retention the custodian owns."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "geo-crsid-bundle-definition",
+        "name": "CRS Definition Content and Coordinate-System Semantics",
+        "description": "The substantive content of a static CRS definition: the reference frame it is tied to, the geodetic constants it uses, the coordinate system and axes that give a tuple meaning, its subtype and composition, and the extent over which its use is valid.",
+        "rationale": "ISO 19111 defines a CRS as a coordinate system related to an object by a datum, and requires axis name, abbreviation, direction and unit; WKT-CRS gives the concrete elements for datum, ellipsoid, prime meridian, coordinate system, axis order and usage extent. Every element here is normatively part of the definition, and omitting any one of them leaves coordinates uninterpretable.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-004",
+          "SRC-007",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "geo-crsid-layer-datum-and-cs",
+            "name": "Datum, geodetic constants and coordinate system",
+            "description": "The two required components of a CRS definition - the datum that ties it to the object and the coordinate system that gives its tuples meaning - together with the ellipsoid and prime meridian constants the datum depends on.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007",
+              "SRC-008",
+              "SRC-009",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "geo-crsid-finding-datum-ensemble",
+                "name": "Datum, datum ensemble and dynamic reference frame",
+                "description": "Which reference frame the CRS is tied to, whether it is a single realization, an ensemble of realizations, or a dynamic frame with a reference epoch, and what each choice implies for coordinate comparability.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-datum-which",
+                    "text": "Which datum or reference frame does this CRS use, and by what authority code is that frame identified?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "datum name as published",
+                      "datum authority code",
+                      "datum type: geodetic, vertical or engineering"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-datum-kind",
+                    "text": "Is the referenced frame a single named realization, a datum ensemble, or a dynamic reference frame?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "frame kind code",
+                      "ensemble member realizations where applicable",
+                      "ensemble positional accuracy as declared"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-datum-epoch",
+                    "text": "If the frame is dynamic, what is its frame reference epoch and what coordinate epoch applies to the coordinates themselves?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "frame reference epoch as a decimal year",
+                      "coordinate epoch of the data as a decimal year",
+                      "explicit note where the two differ"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-datum-comparability",
+                    "text": "What comparability limit follows from citing an ensemble instead of a named realization?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "stated accuracy of the ensemble",
+                      "use cases the ensemble accuracy rules out",
+                      "cases that require a specific realization to be named"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-datum-alignment",
+                    "text": "Which global or plate-fixed frame is this datum aligned to, and at what epoch was that alignment made?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "aligned global frame name",
+                      "alignment epoch",
+                      "plate-motion note and the resulting divergence over time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-datum-name",
+                    "name": "Datum or reference frame name",
+                    "description": "Name of the datum, datum ensemble or dynamic reference frame the CRS is tied to.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-datum-code",
+                    "name": "Datum authority code",
+                    "description": "Authority code of the datum where the authority registers it separately.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-frame-kind",
+                    "name": "Frame kind",
+                    "description": "Whether the frame is a single realization, a datum ensemble, or a dynamic reference frame.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-frame-reference-epoch",
+                    "name": "Frame reference epoch",
+                    "description": "Epoch of the coordinates that define a dynamic reference frame, as a decimal year with its unit.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-coordinate-epoch",
+                    "name": "Coordinate epoch",
+                    "description": "Epoch of the data's own coordinates, required where the CRS is dynamic; distinct from any record timestamp.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-ensemble-accuracy",
+                    "name": "Ensemble positional accuracy",
+                    "description": "Declared accuracy within which ensemble member realizations are treated as equivalent.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The frame description is a small set of named values, authority references and epochs carried directly on the CRS record. The authoritative frame definition itself is already held by the pinned definition snapshot declared in this model, so a second artifact would restate it and give it a chance to diverge from the record it copies."
+              },
+              {
+                "id": "geo-crsid-finding-ellipsoid-primem",
+                "name": "Ellipsoid and prime meridian",
+                "description": "The geometric reference surface and the meridian from which longitudes are measured - the two constants that silently shift every coordinate value if assumed rather than read.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-ellip-params",
+                    "text": "Which ellipsoid parameters define the reference surface, and in which length unit are they expressed?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "ellipsoid name and authority code",
+                      "semi-major axis value with its length unit reference",
+                      "inverse flattening or semi-minor axis",
+                      "sphere flag where the ellipsoid is a sphere"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-primem-offset",
+                    "text": "Which prime meridian does the CRS use, and what is its longitude offset from Greenwich?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "prime meridian name and authority code",
+                      "longitude offset value",
+                      "angle unit reference for the offset"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-ellip-verify",
+                    "text": "How is it verified that these constants match the authority record rather than an implementation default?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "comparison result against the pinned snapshot",
+                      "numeric tolerance applied",
+                      "mismatch findings and their disposition"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-primem-exception",
+                    "text": "What is recorded when a CRS uses a non-Greenwich prime meridian or a spherical approximation?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "non-Greenwich meridian name and offset",
+                      "downstream impact note",
+                      "explicit acknowledgement by the responsible role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-ellipsoid-name",
+                    "name": "Ellipsoid name",
+                    "description": "Name of the ellipsoid, with its authority code where separately registered.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-semi-major-axis",
+                    "name": "Semi-major axis",
+                    "description": "Semi-major axis value with an explicit length unit reference; a bare number is not a valid value.",
+                    "value_kind": "quantity",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-inverse-flattening",
+                    "name": "Inverse flattening",
+                    "description": "Inverse flattening, or the semi-minor axis where the authority defines the ellipsoid that way.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-prime-meridian-name",
+                    "name": "Prime meridian name",
+                    "description": "Name of the meridian from which longitudes are quantified.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-prime-meridian-offset",
+                    "name": "Prime meridian offset",
+                    "description": "Longitude of the prime meridian relative to Greenwich, with an explicit angle unit reference.",
+                    "value_kind": "quantity",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Ellipsoid and prime meridian are a handful of numeric parameters with unit references, read from the authority definition and carried inline on the CRS record. They have no standalone document of their own, and issuing one locally would compete with the registry entry that already defines them and is already snapshotted here."
+              },
+              {
+                "id": "geo-crsid-finding-cs-axis",
+                "name": "Coordinate system type, dimension and axis definition",
+                "description": "The coordinate system that gives a tuple meaning - its type and axis count - and, per axis, the name, abbreviation, direction, explicit order, unit and range that must be read from the authority definition and never inferred from a code, label or encoding convention.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-cs-type",
+                    "text": "Which coordinate system type does this CRS use, and how many axes does it declare?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "coordinate system type code, for example ellipsoidal, Cartesian, spherical or vertical",
+                      "declared axis count",
+                      "authority coordinate system code where separately registered"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-axis-attributes",
+                    "text": "For each axis, what are its name, abbreviation, direction, unit of measure and declared range?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "axis name",
+                      "axis abbreviation",
+                      "axis direction token",
+                      "unit of measure reference",
+                      "axis minimum and maximum with range meaning where declared"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-axis-order",
+                    "text": "What is the authority-defined position of each axis in the coordinate tuple, and in which element was that order read explicitly?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "axis order integer per axis",
+                      "the definition element the order was read from",
+                      "explicit confirmation that order was not inferred from a code or label"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-axis-interface",
+                    "text": "Where a serialization or interface imposes its own axis order, how is the divergence from the authority order recorded and reconciled?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "order imposed by the interface or encoding",
+                      "authority order for the same CRS",
+                      "documented reconciliation and the party responsible for applying it"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-axis-evidence",
+                    "text": "What evidence shows that a producing system's tuple length and axis order actually match the authority definition?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "comparison test result",
+                      "sample coordinate plausibility check",
+                      "detected transposition or dimension-mismatch findings"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-cs-type",
+                    "name": "Coordinate system type",
+                    "description": "Type of coordinate system used by the CRS, read from the authority definition.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis-count",
+                    "name": "Axis count",
+                    "description": "Number of axes the coordinate system declares; every tuple in scope must carry exactly this many ordinates.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis",
+                    "name": "Ordered axis list",
+                    "description": "The axes in authority order, each with name, abbreviation, direction, unit reference and position.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis-direction",
+                    "name": "Axis direction",
+                    "description": "Direction token for an axis, such as north, east, up or a geocentric axis direction.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis-unit",
+                    "name": "Axis unit of measure",
+                    "description": "Reference to the unit of measure for an axis, resolved from a unit authority rather than restated.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis-order-source",
+                    "name": "Axis order source",
+                    "description": "The definition element from which axis order was read, recorded so the order is never taken on trust.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-axis-range",
+                    "name": "Axis range",
+                    "description": "Minimum and maximum values for an axis with the meaning of the range, where the authority declares them.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Axis facts are structured reference values that belong on the CRS record itself and are already fully carried by the pinned snapshot and the carried definition document declared elsewhere in this model. Minting a separate axis artifact would create a second, independently editable statement of the one thing that must never become ambiguous, and the evidence shows axis order already diverges enough across encodings and toolchains without a further local copy."
+              }
+            ]
+          },
+          {
+            "id": "geo-crsid-layer-subtype-applicability",
+            "name": "CRS subtype, composition and declared applicability",
+            "description": "Which subtype of CRS is in play, how projected, derived and compound CRS are composed from their parts, and the scope and domain of validity that bound legitimate use.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-004",
+              "SRC-008",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "geo-crsid-finding-crs-subtype",
+                "name": "CRS subtype, base CRS and compound composition",
+                "description": "The subtype of the definition - geodetic or geographic, projected, vertical, engineering, compound or derived - with the base CRS and defining-conversion reference for derived and projected CRS, and the ordered component list for compound CRS.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-sub-which",
+                    "text": "Which CRS subtype does this definition instantiate, and which element states it?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "subtype code",
+                      "the authority element the subtype was read from",
+                      "the well-known text keyword where a text form exists"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-sub-base",
+                    "text": "For a projected or derived CRS, which base CRS and which defining conversion does it reference?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "base CRS authority code",
+                      "defining conversion method name and code",
+                      "reference to the conversion's parameter values held by the operations model"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-sub-compound",
+                    "text": "For a compound CRS, which component CRS are combined, in which order, and what does each contribute?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "ordered component CRS codes",
+                      "contribution of each component: horizontal, vertical, temporal or parametric",
+                      "resulting combined axis count"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-sub-vertical",
+                    "text": "For a vertical or engineering CRS, what is the height or local reference and what must not be assumed about it?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "vertical or engineering datum name and code",
+                      "gravity-related versus ellipsoidal height flag",
+                      "explicit statement that heights from different national datums are not interchangeable"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-sub-decision",
+                    "text": "When a subject needs horizontal and vertical position together, is a compound CRS or two separate references used, and why?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "chosen approach",
+                      "justification",
+                      "consumers affected by the choice"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-crs-subtype",
+                    "name": "CRS subtype",
+                    "description": "Subtype of the CRS as defined by ISO 19111: geodetic, geographic, projected, vertical, engineering, compound, derived, parametric or temporal.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-base-crs-reference",
+                    "name": "Base CRS reference",
+                    "description": "Reference to the base CRS from which a projected or derived CRS is obtained.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-defining-conversion-reference",
+                    "name": "Defining conversion reference",
+                    "description": "Reference to the map projection or other conversion that defines a projected or derived CRS; the operation model owns the method and its execution.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-compound-component",
+                    "name": "Compound component reference",
+                    "description": "Ordered reference to a component CRS of a compound CRS, with its contribution.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-height-kind",
+                    "name": "Height kind",
+                    "description": "Whether a height is gravity-related or ellipsoidal, recorded so the two are never silently mixed.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Subtype, base CRS, defining conversion and compound components are typed pointers into definitions that are themselves held by the authority and already snapshotted by this model or owned by the coordinate operation model. The substantive content sits in those referenced records, so this finding is carried purely as inline reference data and deliberately stops at the reference rather than copying a conversion definition it does not own."
+              },
+              {
+                "id": "geo-crsid-finding-scope-extent",
+                "name": "Scope and domain of validity",
+                "description": "The authority-stated purpose of the CRS and the geographic, vertical and temporal extent over which its use is valid, plus the applicability profile the adopting Dimension declares on top of it.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "geo-crsid-q-scope-fit",
+                    "text": "What scope does the authority state for this CRS, and does the intended use fall inside it?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "authority scope text",
+                      "intended use description",
+                      "fit assessment and residual concerns"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-scope-extent",
+                    "text": "What is the declared domain of validity, and in which CRS is the bounding box itself expressed?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "area description text",
+                      "bounding box coordinates",
+                      "CRS in which the bounding box is expressed",
+                      "vertical and temporal extent where declared"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-scope-outside",
+                    "text": "What follows when coordinates fall outside the declared domain of validity?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "out-of-extent handling rule",
+                      "accuracy degradation note",
+                      "named approver required for continued use"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-scope-permitted",
+                    "text": "Which CRS are permitted for a given subject or collection, and who approved that list?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "permitted CRS reference list",
+                      "designated storage CRS",
+                      "approving owner and approval timestamp"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-q-scope-advertise",
+                    "text": "How is the applicability profile expressed so a consumer knows which CRS it may ask for?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "advertised CRS identifiers",
+                      "declared default CRS",
+                      "coordinate epoch declaration where the storage CRS is dynamic"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "geo-crsid-de-authority-scope",
+                    "name": "Authority scope statement",
+                    "description": "The authority's stated purpose or scope for the CRS definition.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-extent-description",
+                    "name": "Extent description",
+                    "description": "Human-readable description of the geographic area over which the CRS is valid.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-bounding-box",
+                    "name": "Domain of validity bounding box",
+                    "description": "Bounding coordinates of the domain of validity, meaningless without the CRS they are expressed in.",
+                    "value_kind": "geometry",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-bounding-box-crs",
+                    "name": "Bounding box CRS",
+                    "description": "Explicit CRS reference for the bounding box values, never assumed from context.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-permitted-crs",
+                    "name": "Permitted CRS reference",
+                    "description": "A CRS reference the adopting Dimension permits for a given subject or collection.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "geo-crsid-de-storage-crs",
+                    "name": "Storage CRS reference",
+                    "description": "The CRS in which coordinates for a subject or collection are held, declared rather than inferred.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "geo-crsid-artifact-applicability-profile",
+                    "name": "CRS applicability profile",
+                    "description": "A format-neutral declaration, owned by the adopting Dimension, of which CRS references are permitted for a given subject or collection, which one is the storage CRS, and which coordinate epoch applies where that CRS is dynamic.",
+                    "media_or_form": [
+                      "structured configuration record",
+                      "governance register entry",
+                      "collection or dataset metadata description"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the subject or collection it governs plus the profile's own sequence value. Where the adopting Dimension has no master-system identifier for the governed subject, a Dimension-assigned ULID is used. The profile never carries or reissues a CRS code.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "geo-crsid-fn-resolve-reference",
+      "name": "Resolve a CRS reference to an authoritative definition",
+      "description": "Take an authority/code pair or definition URI and obtain the governing authority's record, reporting the registry release actually served.",
+      "inputs": [
+        "authority name token",
+        "authority code or definition URI",
+        "requested registry version or wildcard token"
+      ],
+      "outputs": [
+        "resolved authority definition",
+        "registry version actually served",
+        "resolution outcome and diagnostics"
+      ],
+      "preconditions": [
+        "the identifier is expressed in an accepted form with an explicit authority",
+        "the authority is a recognised custodian rather than a mirror or vendor catalogue"
+      ],
+      "effects": [
+        "a resolution event with an RFC 3339 timestamp is recorded against the reference",
+        "an unresolvable or ambiguous reference is flagged, never silently defaulted to a fallback CRS"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-pin-snapshot",
+      "name": "Pin a registry snapshot with provenance",
+      "description": "Capture one resolved authority definition as an immutable snapshot carrying registry version, retrieval URL, retrieval time and a content digest.",
+      "inputs": [
+        "resolved authority definition",
+        "registry version",
+        "retrieval URL",
+        "identity of the retrieving agent"
+      ],
+      "outputs": [
+        "pinned definition snapshot",
+        "content digest and algorithm",
+        "provenance record"
+      ],
+      "preconditions": [
+        "the definition was resolved from the custodian registry",
+        "a canonical serialization has been declared for digest computation"
+      ],
+      "effects": [
+        "the snapshot becomes immutable and is superseded rather than edited",
+        "the prior pin is retained with a supersession pointer for as long as data cites it"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-materialize-axis-order",
+      "name": "Materialize explicit axis order and units",
+      "description": "Read axis name, abbreviation, direction, order, unit and range from the authoritative definition and record them explicitly, refusing to infer any of them from a code, label or encoding convention.",
+      "inputs": [
+        "pinned or resolved CRS definition"
+      ],
+      "outputs": [
+        "explicit ordered axis list with units and declared ranges",
+        "citation of the element each value was read from",
+        "gap findings where the definition is silent"
+      ],
+      "preconditions": [
+        "an authoritative definition is available for the CRS",
+        "the definition's coordinate system element is present"
+      ],
+      "effects": [
+        "axis order is stated as read, with its source element cited",
+        "a definition lacking explicit axis information yields a gap finding rather than a default order"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-check-definition-completeness",
+      "name": "Check definition completeness against required elements",
+      "description": "Compare a CRS definition against the elements ISO 19111 requires for its subtype and report what is missing.",
+      "inputs": [
+        "CRS definition",
+        "CRS subtype as read from the definition",
+        "required-element list for that subtype"
+      ],
+      "outputs": [
+        "completeness finding per required element",
+        "overall completeness verdict"
+      ],
+      "preconditions": [
+        "the subtype was determined from the definition rather than guessed from a code or name"
+      ],
+      "effects": [
+        "missing datum, coordinate system, axis, unit or subtype elements are reported as findings",
+        "findings are handed to the adopting Dimension's validation and enforcement services, which decide and act on them"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-observe-record-status",
+      "name": "Observe registry record status and replacement pointers",
+      "description": "Read the authority's current validity status for a referenced record and record it with a separate observation time.",
+      "inputs": [
+        "CRS reference",
+        "authority record as resolved"
+      ],
+      "outputs": [
+        "observed status value and deprecated flag",
+        "replacement authority code where the authority publishes one",
+        "observation timestamp"
+      ],
+      "preconditions": [
+        "the authority publishes a status for the record, or its absence is recorded as unknown"
+      ],
+      "effects": [
+        "the observed status is stored with its observation time kept distinct from the authority's effective date",
+        "migration to a replacement CRS is proposed for a named approver, never executed by this model"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-assess-applicability",
+      "name": "Assess a use against the declared domain of validity",
+      "description": "Compare an intended use and a subject's extent against the CRS scope and domain of validity, and report fit.",
+      "inputs": [
+        "CRS scope and extent as declared by the authority",
+        "intended use description",
+        "extent of the data or subject"
+      ],
+      "outputs": [
+        "applicability assessment",
+        "out-of-extent findings",
+        "recorded justification where the use is still proposed"
+      ],
+      "preconditions": [
+        "the authority declares a scope and extent, or the absence of one is recorded as a gap"
+      ],
+      "effects": [
+        "out-of-extent use is surfaced for a named approver with an expiry",
+        "no coordinates are altered and no use is blocked by this model"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "geo-crsid-fn-compare-definitions",
+      "name": "Compare two CRS definitions for equivalence",
+      "description": "Compare two definitions element by element - datum, ellipsoid, prime meridian, coordinate system, axis order and units - and report agreement, difference, and difference in axis order alone.",
+      "inputs": [
+        "first CRS definition",
+        "second CRS definition",
+        "numeric tolerance for parameter comparison"
+      ],
+      "outputs": [
+        "element-level agreement report",
+        "axis-order-only difference flag",
+        "material difference findings"
+      ],
+      "preconditions": [
+        "both definitions are available in a comparable canonicalized form"
+      ],
+      "effects": [
+        "definitions describing the same frame but differing in axis order are distinguished from definitions describing different frames",
+        "no coordinate values are converted and no transformation is selected or applied"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-007",
+        "SRC-010"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-010 parent spatial context model",
+      "relation": "CHILD",
+      "purpose": "This mixin sits beneath the parent spatial context model and supplies only referencing semantics; the parent holds the broader spatial subject context and must not have CRS identity, axis semantics or registry binding duplicated into it.",
+      "required": true,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "Coordinate operation and transformation model (datum transformation, map projection conversion, grid shifts, operation accuracy)",
+      "relation": "REFERENCE",
+      "purpose": "Carry the reference to a projected or derived CRS's defining conversion, and to any operation applied downstream, together with subject-specific parameters such as required tolerance. Operation method definitions, parameter application, execution and accuracy budgets stay with that model.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "Units of measure register (authority unit-of-measure definitions)",
+      "relation": "REFERENCE",
+      "purpose": "Axis units, ellipsoid length units and prime meridian angle units are referenced from a unit authority using the same definition URI template; unit definitions and conversion factors are not restated here.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "EPSG Geodetic Parameter Dataset (IOGP) as external CRS authority",
+      "relation": "ALIGN",
+      "purpose": "Align local CRS references to the custodian's codes and URI form and record the registry release; the custodian owns code issuance, revision, deprecation and dataset publication, and codes are never removed there.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "OGC Naming Authority definition registers (OGC Definitions Server)",
+      "relation": "ALIGN",
+      "purpose": "Align identifier expression to the OGC definition URI template and its controlled authority and version tokens; the OGC register owns the authority token list and the persistence guarantee.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Geometry encoding and serialization model (GeoJSON, WKT, GML, WKB, database geometry types)",
+      "relation": "REFERENCE",
+      "purpose": "Record which encoding a coordinate value arrives in and any axis order that encoding imposes, as an interface fact bound to the reference. Encoding grammar, parsing, validity and conversion between encodings belong to that model.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-004",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Temporal reference model",
+      "relation": "REFERENCE",
+      "purpose": "Record timestamps, calendars and duration semantics are referenced from the temporal model; only geodetic epochs expressed as decimal years are held here, explicitly distinguished from record time.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "Any coordinate-bearing subject model in the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "Attach an explicit CRS reference, an explicit axis order statement and, for dynamic frames, a coordinate epoch to every subject that carries coordinates, without importing that subject's own lifecycle, ownership or operational functions.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "National geodetic authority publications (modernized NSRS, GDA2020 and equivalents)",
+      "relation": "ALIGN",
+      "purpose": "Align regional frame identity, reference epochs and supersession expectations to the responsible national authority. Frame realization, publication, rollout scheduling and the associated transformation products remain with those authorities.",
+      "required": false,
+      "source_refs": [
+        "SRC-008",
+        "SRC-009"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Name a single accountable owner for this model's CRS reference records, distinct from the external registry custodian, and explicitly without authority to alter, renumber or amend authority definitions.",
+        "Declare which CRS authorities are recognised, distinguishing custodians from mirrors and vendor catalogues, and record the recognition decision with its approver.",
+        "Declare, for every subject or collection that carries coordinates, the permitted CRS list, the storage CRS, and the coordinate epoch where the storage CRS is dynamic.",
+        "Record the registry release the Dimension currently pins to, together with the process, cadence and trigger for re-pinning.",
+        "Confirm and record any redistribution or licensing constraint attached to cached registry content before that content is cached or shared."
+      ],
+      "namespace_guidance": "Use the authority's own namespace for definitions - OGC definition URIs of the form http://www.opengis.net/def/crs/{authority}/{version}/{code} - and never mint a local code inside an authority namespace. Locally assigned identifiers, for pinned snapshots, applicability profiles and engineering CRS peculiar to the Dimension, live in a Dimension-scoped namespace that is visibly distinct from every authority namespace so that no local record can be mistaken for a registered definition.",
+      "registry_links": [
+        "EPSG Geodetic Parameter Dataset maintained by IOGP, addressed through its OGC URI form with an explicit dataset version wherever pinning is required.",
+        "OGC Naming Authority definition registers on the OGC Definitions Server for CRS, axis and unit-of-measure definitions and for the controlled authority token list.",
+        "National geodetic authority publications for regional frames, including the NOAA National Geodetic Survey modernized NSRS programme and Geoscience Australia's GDA2020."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "The canonical form of a CRS reference is the authority name plus the authority code; the definition URI is a derived rendering of that pair and is never a second identity.",
+        "The canonical form of a held definition is the pinned snapshot's declared serialization, fixed at pin time so digests stay stable; re-serializing into another form produces a derived copy, not a new canonical record.",
+        "Axis order is canonical only as the explicit ordered list read from the authority definition. Encoding-specific orders, such as the fixed longitude-latitude order of GeoJSON, are recorded as interface facts and are never written back over the authority order.",
+        "Every geodetic numeric parameter is canonicalized with its unit reference attached; a bare number without a unit is not a canonical value.",
+        "Epochs are canonicalized as decimal-year quantities in their own fields, never coerced into a record timestamp field."
+      ],
+      "patch_rules": [
+        "Authority-sourced fields are never patched in place: a change at the authority produces a new snapshot linked by a supersession pointer to the previous one.",
+        "Dimension-owned fields - applicability profiles, approvals, notes, classifications of alias strings - may be patched, with the patch recording the actor, an RFC 3339 timestamp and the prior value.",
+        "A patch that would change axis order, datum, ellipsoid, prime meridian, coordinate system or subtype without a corresponding new authority snapshot is rejected.",
+        "A patch may not convert an observed authority status into a locally decided status; observed values and local decisions occupy separate fields."
+      ],
+      "compatibility_rules": [
+        "Adding an alias, a secondary identifier or a new applicability profile version is backward compatible; changing the authority name or authority code is not, and requires a new reference record.",
+        "Deprecation observed at the authority is a compatibility-affecting event: consumers are notified with the replacement pointer, and the deprecated reference remains resolvable so existing coordinates stay interpretable.",
+        "Supporting an additional registry release must not silently move existing records off the release they were pinned to.",
+        "A change in the declared exchange form or its version is compatibility-affecting for carried definitions and must be announced with the grammar version consumers should parse against."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the code issued by the CRS registry that governs the definition - for example an EPSG Dataset code issued by its IOGP custodian - always recorded together with its authority name, because a code is unique only within its authority's table.",
+        "Governed global identifier or IRI: the OGC definition URI of the form http://www.opengis.net/def/crs/{authority}/{version}/{code}, carrying an explicit registry version wherever the reference must be reproducible; the wildcard version token means latest and therefore does not pin.",
+        "UUID or ULID assigned by the adopting Dimension, used only for locally owned records such as pinned snapshots, applicability profiles and engineering CRS that no external authority governs.",
+        "Names, official titles, display labels, aliases, vendor strings, projection nicknames, file names and coordinate epochs are never identifiers and must never be used to resolve a definition."
+      ],
+      "timestamp_rule": "All record timestamps use RFC 3339 with seconds and an explicit UTC offset or Z. Event time - the authority's publication, revision, effective or deprecation date for a record - is recorded in fields separate from observation or ingestion time, which is when this model resolved, retrieved, digested or re-verified that record; where only one of the two is known, the other is left absent rather than copied across. A geodetic coordinate epoch or frame reference epoch is a decimal-year geodetic quantity, not a record timestamp, and is stored in its own field with its own unit.",
+      "serial_naming_rule": "Serial artifacts - pinned definition snapshots and applicability profiles - are named by the subject they cover plus a monotonically increasing local sequence value. They are never named by date alone and never by re-using an authority code; the authority name, authority code and registry version remain separate fields so that the name carries no identity and cannot be parsed for meaning.",
+      "integrity_rule": "Every pinned snapshot carries a content digest over its declared canonical serialization, the digest algorithm, the retrieval URL and the retrieval timestamp. A snapshot whose digest cannot be recomputed is marked unverified and must not be cited as evidence of an authority definition; a carried definition additionally records what its exchange form omits, since a well-known text string carries neither source nor applicability metadata."
+    },
+    "policies": [
+      "Never default a CRS. A record whose CRS is unknown is recorded as unknown and quarantined; it is never assumed to be WGS 84, the storage CRS, the CRS of neighbouring records, or whatever the encoding usually implies.",
+      "Never infer axis order. Axis order is read from the authoritative definition or the record is marked incomplete; a code, an alias, a file extension, a database column order or an encoding convention is not evidence of axis order.",
+      "The external registry stays authoritative. A cached definition is a pinned snapshot with provenance; the adopting Dimension does not re-register, renumber, amend or fork authority definitions.",
+      "Do not claim conformance to ISO 19111, OGC WKT-CRS or OGC API - Features without evidence. Record alignments and known divergences, and treat every external standard as an alignment rather than a guarantee.",
+      "Deprecated CRS references stay resolvable for data already captured; using a deprecated CRS for new data requires a named approver and an explicit expiry.",
+      "Record every refusal - to default a CRS, to infer an axis order, or to accept an incomplete definition - so that silent assumptions remain detectable afterwards."
+    ],
+    "crud": {
+      "read": [
+        "Resolve a CRS reference to its authority record and return the registry version actually served, not the version requested.",
+        "Read a pinned snapshot together with its provenance, digest and verification state, and surface an unverified snapshot as such.",
+        "Read the explicit axis list, units and ranges without inferring any value the definition does not state.",
+        "Read the declared scope, domain of validity and applicability profile for a subject, including the CRS in which any bounding box is expressed."
+      ],
+      "create": [
+        "Create a CRS reference only from an authority name plus an authority-issued code; a reference created from a label, nickname or bare number alone is rejected.",
+        "Create a pinned snapshot only from a successful resolution, capturing registry version, retrieval URL, retrieval timestamp, retrieving agent and digest.",
+        "Create a Dimension-scoped engineering CRS record only where no external authority governs it, in a namespace visibly distinct from every authority namespace, with its local datum, axes, directions and units stated explicitly.",
+        "Create an applicability profile only with a named approving owner and an approval timestamp."
+      ],
+      "update": [
+        "Update Dimension-owned fields in place - approvals, notes, alias classifications, applicability profile content - recording actor, RFC 3339 timestamp and prior value.",
+        "Never update authority-sourced fields in place; re-pin instead and link the new snapshot to the superseded one.",
+        "Update the observed authority status on re-verification, storing the observation time separately from the authority's own effective date.",
+        "Update the verification state of a snapshot when its digest is recomputed, including recording a failure as a failure."
+      ],
+      "delete": [
+        "CRS references cited by retained coordinate data are not deleted. Retiring one writes a tombstone that keeps the authority name, authority code, registry version, supersession pointer and an RFC 3339 retirement timestamp, so the coordinates that cite it stay interpretable.",
+        "Superseded pinned snapshots are retained for at least as long as any record cites them. Once no citation remains they may be reduced to identifier, digest and provenance stub - a deletion of content, not of identity - and the tombstone must outlive the data referencing it.",
+        "This model never deletes anything in the external CRS registry. The registry custodian owns record deprecation and any removal, and codes are in any case never removed there; deprecation is observed here, never executed here.",
+        "Physical destruction of storage, retention periods, legal-hold handling and disposition certificates are executed under the adopting Dimension's retention policy and its records-management service. This model contributes only the minimum-retention constraint that a CRS tombstone and its supersession chain must outlive every coordinate that cites them."
+      ]
+    },
+    "roles": [
+      {
+        "name": "CRS reference owner",
+        "responsibilities": [
+          "Own the correctness of the authority name and code carried by records in scope.",
+          "Approve the permitted CRS list and the storage CRS for each subject or collection.",
+          "Approve, with a stated expiry, any use of a deprecated or out-of-extent CRS."
+        ]
+      },
+      {
+        "name": "Geodetic authority liaison",
+        "responsibilities": [
+          "Track releases, deprecations and replacements published by recognised CRS authorities and national geodetic agencies.",
+          "Decide when the Dimension re-pins to a newer registry release and record the decision.",
+          "Record regional datum differences and modernization programmes that affect subjects in scope, including the magnitude of expected coordinate change."
+        ]
+      },
+      {
+        "name": "Snapshot custodian",
+        "responsibilities": [
+          "Perform resolution and pinning, capturing provenance, digests and the registry version actually served.",
+          "Re-verify pinned snapshots on a declared cadence and mark those that fail verification as unverified.",
+          "Retain superseded snapshots and their supersession pointers for as long as citing data exists."
+        ]
+      },
+      {
+        "name": "Definition reviewer",
+        "responsibilities": [
+          "Check definition completeness and axis-order explicitness before a CRS reference is accepted into use.",
+          "Compare candidate definitions for equivalence and flag differences that are axis-order-only.",
+          "Record conflicts between standards, registries and implementations rather than resolving them silently."
+        ]
+      },
+      {
+        "name": "Adopting-Dimension data steward",
+        "responsibilities": [
+          "Apply the Dimension's retention, access and audit policies to this model's records and artifacts.",
+          "Escalate unknown-CRS quarantines and unresolved references for decision.",
+          "Own the AGENTS.md bootstrap entry for the model's deployment and keep its URLs resolvable."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "CRS definitions and references are public reference data: they are readable by any agent that may read the record carrying them. Write access to authority-sourced fields is closed to every role, since those fields change only by re-pinning; write access to Dimension-owned fields is limited to the named roles above.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "An engineering CRS whose local datum discloses a site origin, plant layout or other sensitive location may be restricted at artifact scope; the restriction covers the datum origin, not the axis, unit or subtype semantics, which stay open so coordinates remain interpretable.",
+        "Cached registry content may carry redistribution or licensing constraints from its custodian. Where those constraints are unverified, the snapshot is restricted to internal use until they are confirmed and recorded.",
+        "An applicability profile that reveals a subject's operating extent may be restricted at artifact scope while the axis and unit facts it references remain readable.",
+        "A domain-of-validity bounding box that discloses a restricted operating area may be generalized for external consumers, with the generalization recorded as such."
+      ],
+      "audit_requirements": [
+        "Record who resolved, pinned, re-pinned, approved, retired or generalized a CRS reference, with an RFC 3339 timestamp, and hand those entries to the adopting Dimension's audit service, which owns audit-trail retention, tamper-evidence and inspection.",
+        "Record every refusal to default a CRS or to infer an axis order, so silent assumptions can be detected after the fact.",
+        "Record every approved exception with its approver, justification and expiry, and record the expiry passing.",
+        "Record each digest re-verification with its outcome, including failures."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Recognised CRS Authorities URL",
+        "Pinned Registry Version"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and confirm that Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL are all present and resolvable; stop if any is missing.",
+        "Read the Specification URL to learn this model's CRS semantics and, before touching any coordinate, the two standing rules: never default a CRS and never infer an axis order.",
+        "Read the Recognised CRS Authorities URL and the Pinned Registry Version before resolving, creating or comparing any CRS reference.",
+        "Read the Storage type URL and Interface URL only to learn which projection is in use; never treat a storage layout or interface convention as evidence of axis order, CRS identity or coordinate epoch.",
+        "Read the Processes URL for the resolution, pinning, re-verification, status-observation and approval procedures, and for who to escalate an unknown-CRS quarantine to."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "The structure covers the identity, authoritative definition and coordinate-system semantics that make a coordinate interpretable: authority and code, registry version and pinned provenance, names and aliases separated from identity, deprecation and supersession, datum and datum ensemble and dynamic frame epoch, ellipsoid and prime meridian, coordinate system type and explicit axis order with units and ranges, CRS subtype and composition, and declared scope and domain of validity. It is grounded in ISO 19111:2019 as published openly by OGC as Abstract Specification Topic 2, the OGC WKT-CRS representation, the OGC naming policy, the EPSG registry's own URI rules, RFC 7946 and two national geodetic authorities. It claims alignment, not conformance, and makes no claim of completeness for coordinate operations, geometry algebra or encodings.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Authority name plus authority-issued code is the identifier of record, with the OGC definition URI as a derived rendering and a Dimension ULID only for locally owned records. Names, aliases and epochs are explicitly excluded as identifiers, and the rule that a code is unique only within its authority's table is carried from the registry's own guidance."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Observed authority status, deprecated flag, replacement pointer and supersession reason are modelled, with supersession of pinned snapshots handled by re-pinning rather than editing. Execution of any migration to a replacement CRS is deliberately left to the adopting Dimension."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Base CRS and defining-conversion references, ordered compound components, secondary identifiers, replacement chains and datum-to-global-frame alignment are all modelled as typed references rather than copies."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Three time concepts are kept distinct: authority event dates, local observation and ingestion timestamps in RFC 3339 with seconds and offset, and decimal-year geodetic epochs (frame reference epoch and coordinate epoch) which are explicitly not record timestamps."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Registry version, retrieval URL, retrieval timestamp, retrieving agent, content digest, digest algorithm and re-verification outcome are all required on a pinned snapshot, which is defined as a citation of the registry rather than a local registration."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five roles separate reference ownership, authority liaison, snapshot custody, definition review and Dimension stewardship. No role may alter an authority definition; the applicability profile is the one artifact the Dimension genuinely owns."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Completeness checking against subtype-required elements, axis-order and tuple-length evidence, digest re-verification and definition comparison are all present. Every function emits findings; decision and enforcement are handed to the adopting Dimension."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "CRS definitions are public reference data, so the default is open read with authority-sourced fields closed to writes. Exceptions cover sensitive engineering datum origins, unverified redistribution licensing and disclosing extents. Redistribution licensing itself is a recorded gap below."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstones retain authority name, code, registry version and supersession pointer so cited coordinates stay interpretable; superseded snapshots are retained while cited and may be reduced to a provenance stub. Physical destruction, retention periods and legal holds are executed by the adopting Dimension's records-management service, not here, and nothing in the external registry is ever deleted by this model."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Definition URI template and version token, exchange form and grammar version, advertised CRS lists and storage CRS, and the recording of interface-imposed axis order as an interface fact rather than an authority fact."
+      },
+      {
+        "dimension": "axis order and units",
+        "status": "covered",
+        "notes": "Axis order must be read from an explicit definition element with that element cited; inference from code, label, encoding or column order is refused and the refusal is recorded. Units are always references to a unit authority, never bare numbers."
+      },
+      {
+        "dimension": "datum and reference frame",
+        "status": "covered",
+        "notes": "Single realization, datum ensemble with declared accuracy, and dynamic frame with reference epoch are distinguished, and the comparability limit of citing an ensemble is asked explicitly."
+      },
+      {
+        "dimension": "domain of validity and scope",
+        "status": "covered",
+        "notes": "Authority scope text, area description, bounding box with its own CRS, vertical and temporal extent, plus the Dimension's permitted-CRS profile. Out-of-extent use is surfaced for approval, never blocked here."
+      },
+      {
+        "dimension": "registry versioning and pinning",
+        "status": "covered",
+        "notes": "Registry version is a required field, the wildcard version token is flagged as non-pinning, and re-pinning is the only route by which authority-sourced content changes."
+      },
+      {
+        "dimension": "registry licensing and redistribution",
+        "status": "gap",
+        "notes": "The EPSG Dataset terms of use and any attribution or redistribution obligation could not be retrieved from the custodian's own site during this research. Caching is therefore conditioned on confirming those terms first, and the constraint is asserted rather than evidenced."
+      },
+      {
+        "dimension": "coordinate operations and transformations",
+        "status": "not-applicable",
+        "notes": "ISO 19111 separates coordinate operations from coordinate reference systems. Only the reference to a projected or derived CRS's defining conversion is carried; method definitions, parameter application, execution, operation selection and accuracy are owned by the coordinate operation model."
+      },
+      {
+        "dimension": "geometry encoding and serialization",
+        "status": "not-applicable",
+        "notes": "WKT, GML, GeoJSON, WKB and database geometry types are projections. Their grammars and parsing rules belong to the encoding model; this model only records which encoding a value arrived in and what axis order that encoding imposed."
+      },
+      {
+        "dimension": "non-Earth and planetary CRS",
+        "status": "gap",
+        "notes": "The OGC definition registers include planetary CRS families, which were not examined. Nothing here forbids them, but no evidence was gathered on their identifier conventions or datum semantics."
+      },
+      {
+        "dimension": "parametric and temporal CRS subtypes",
+        "status": "gap",
+        "notes": "ISO 19111:2019 admits parametric and temporal CRS subtypes and they are named in the subtype element, but their specific definition content was not researched and is not elaborated."
+      },
+      {
+        "dimension": "security and privacy",
+        "status": "covered",
+        "notes": "Handled through access exceptions only: an engineering datum origin or a domain-of-validity extent can be location-sensitive. Nothing else in a CRS definition is personal or confidential data."
+      }
+    ],
+    "known_omissions": [
+      "Coordinate operation definitions, transformation accuracy, grid-shift files and late-binding operation selection are not modelled; only the reference to a projected CRS's defining conversion is carried.",
+      "Parametric and temporal CRS subtypes are named but their definition content is not elaborated.",
+      "Planetary and non-Earth CRS families served by the OGC definition registers were not examined.",
+      "The full ISO 19111:2019 text is paywalled and iso.org refused automated access; the openly published OGC Abstract Specification Topic 2 corrigendum was used as the equivalent text, so no clause-level citation of the ISO document itself is claimed.",
+      "The EPSG Dataset terms of use, redistribution licensing and current released dataset version could not be retrieved from epsg.org, which refused automated access; only the registry's published URI guidance was verified.",
+      "The IOGP Guidance Note 373-07 series, which carries the dataset's deprecation rules and entity structure, was not machine-readable and is therefore not cited at clause level; deprecation behaviour here rests on the registry's URI guidance and the OGC naming policy instead.",
+      "Vertical datum modelling beyond identity and non-interchangeability - geoid models, height system realization, orthometric height computation - is left to geodetic authorities.",
+      "Height and depth sign conventions and their interaction with axis direction are only partially covered.",
+      "Coordinate precision, resolution and rounding as data quality concerns are not modelled here."
+    ],
+    "conflicts": [
+      "Axis order: the EPSG definition for geographic WGS 84 orders axes latitude then longitude, while OGC:CRS84 and GeoJSON fix longitude then latitude. The identifiers are not interchangeable, and the difference must be recorded rather than normalized away.",
+      "RFC 7946 removed the crs member and fixes WGS 84 longitude-latitude, permitting other CRS only by prior arrangement, whereas OGC API - Features Part 2 lets a client request another CRS by URI and asserts it in a response header. A GeoJSON payload can therefore carry coordinates whose CRS is knowable only from the transport, which is precisely the case this model refuses to resolve by defaulting.",
+      "OGC WKT-CRS states that a well-known text string is not suitable for storing CRS definitions because it omits source metadata and may omit applicability metadata - yet WKT is widely used as the definition of record in files, databases and projection sidecars.",
+      "PROJ documents that it respects authority axis order only from version 6 onward, that it internally expects longitude/latitude for all projections, and that most GIS software does not follow the standard. The same identifier therefore yields different tuple orders across a toolchain, which is why axis order is treated as evidence to be read rather than a property to be assumed.",
+      "The EPSG form of the OGC definition URI treats version 0 as the latest dataset version. That is convenient for resolution but defeats the reproducible pinning this model requires, so the wildcard is recorded as an explicit non-pinning flag.",
+      "The normative WKT-CRS text verified here is version 2.0.6 (OGC 18-010r7); OGC lists version 2.1.11 (OGC 18-010r11) as current, so element-level details may have changed and clause-level claims are bounded accordingly.",
+      "EPSG codes are unique only within a table, while coordinate reference systems and coordinate operations share one code range - so a code alone is ambiguous even within a single authority."
+    ],
+    "regional_assumptions": [
+      "United States coordinates are assumed to be in NAD 83 or NAVD 88 only until the modernized NSRS frames NATRF2022, PATRF2022, CATRF2022 and MATRF2022 and the new geopotential datum replace them. NGS states NAD 83 is off-centre by about 2.2 m, NAVD 88 is biased and tilted, and every existing horizontal and vertical value will change by as much as four metres; no rollout date was confirmed in the material reviewed.",
+      "Australian data is assumed to follow GDA2020, a realisation of ITRF2014 at epoch 2020.0. Plate motion of roughly 7 cm per year produced about 1.8 m of divergence from GDA94 and about 9 cm of ellipsoidal height difference; datasets mixing the two without transformation are wrong by those amounts.",
+      "European realizations of ETRS89 and the European Vertical Reference System were not verified from EUREF sources during this research and are treated as an open regional gap rather than assumed.",
+      "Vertical datums are national and gravity-related. No assumption is made that heights from different national datums are comparable, and gravity-related and ellipsoidal heights are flagged separately.",
+      "Dynamic reference frames require a coordinate epoch to travel with the data. In plate-fixed regional frames local practice often leaves the epoch implicit; it is still recorded explicitly here."
+    ],
+    "adversarial_checks": [
+      "Tested whether a CRS can be identified by a bare code such as 4326: rejected. The registry's own guidance states codes are unique only within a table and that CRS and coordinate operations share one code range, and no axis order can be derived from a code.",
+      "Tested whether holding a well-known text string constitutes holding the definition: rejected. OGC WKT-CRS itself states that WKT omits source metadata and may omit applicability metadata, so a snapshot must carry provenance, digest and registry version separately.",
+      "Tested whether a locally cached definition may be treated as a local registration: rejected. The snapshot is a citation with a digest and a supersession chain, no local code is minted in an authority namespace, and the custodian retains sole authority over issuance and deprecation.",
+      "Tested whether this model should own transformation between CRS: rejected. ISO 19111 separates coordinate operations from coordinate reference systems, so only a projected CRS's defining-conversion reference is carried and no conversion is executed, selected or scored for accuracy here.",
+      "Tested whether validation and status observation imply enforcement: rejected. Functions emit findings and observations; decision, migration, blocking and audit-trail retention are executed by the adopting Dimension's services, and the access layer says so explicitly.",
+      "Tested whether a serialization default - GeoJSON's fixed longitude-latitude order - can stand in for a CRS declaration: rejected. RFC 7946 permits other CRS only by prior arrangement, so the order is recorded as an interface fact and never written back over the authority axis order.",
+      "Tested whether naming WGS 84 is a sufficient frame statement: rejected. ISO 19111 admits datum ensembles whose members are distinct realizations agreeing only within a declared accuracy, so an ensemble reference must be distinguished from a named realization and its stated ensemble accuracy recorded.",
+      "Tested whether a resolvable definition URI is enough for reproducibility: rejected. The EPSG form treats version 0 as latest, so a URI without an explicit registry version is flagged as non-pinning and cannot support reinterpreting a historic coordinate.",
+      "Tested whether the applicability profile artifact smuggles interface ownership into this model: rejected on inspection. It declares permitted CRS, storage CRS and coordinate epoch in a format-neutral way; how those are advertised over any particular API remains with the interface projection."
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+# Exact unsent Grok prompt — EM-LEG-04
+
+Independent enterprise metamodel review. Do not browse, invent identifiers or claim standards conformance.
+
+EM-LEG-04 covers Permit, Licence, PermitCondition and LicenceScope. WM-POL-004 explicitly owns an authorization application-to-decision case and excludes the permission-bearing grant. WM-XCT-017 owns credentials that may evidence but do not replace the grant. WM-ECO-022 owns commercial subscription/entitlement. Reserved WM-POL-014 has no specification and legacy ownership/stewardship semantics.
+
+Assess this proposal: keep WM-POL-004 unchanged; create an identifier-unassigned independent Regulatory Authorization / Granted Permission candidate; make Permit and Licence jurisdiction-qualified classes and conditions/scope dependent components; use WM-XCT-017 only for evidence. Separate regulatory permission, commercial entitlement and IP licence. The grant has authority-qualified identity, holder, legal basis, enumerated activity/product/site/asset/territory/limits/exclusions, conditions, validity and an append-only lifecycle covering variation, suspension, revocation, surrender, expiry, annulment and reinstatement. When no activity classifier exists, preserve authoritative verbatim scope plus structured decomposition and non-normative mappings. Never extend permission to affiliates, successors, new sites or activities by inference.
+
+Test a one-site licence, temporary suspension and a new activity outside scope despite a matching registration code. Return <=900 words with: Verdict; strongest evidence; strongest counterexample; identity/mastership; case versus grant; regulatory versus commercial/IP rights; activity/scope; conditions; lifecycle; party extension; scenario; at least 10 invariants; minimum completion shape; blockers. Explicitly decide whether WM-POL-014 can own the grant or a separate candidate is required.

@@ -1,0 +1,177 @@
+B lifecycle-model-definition | Lifecycle Model Definition | The lifecycle state machine treated as a first-class, identified, versioned and owned object: its state space, its transition system, and the governance that keeps it stable and auditable.
+L state-space | State Space and Status Axes | What states exist, how they are identified, how many independent status axes the subject carries, and which states are terminal or reversible.
+F state-vocabulary | Governed state vocabulary | The finite set of states a subject may occupy is a governed code list whose members are identified concepts with definitions, not display labels. ISO 19135-1 fixes notValid/valid/superseded/retired for register items; ISO/IEC 11179-6 assigns registration status against exactly one registration authority; FHIR PublicationStatus fixes draft/active/retired/unknown.
+Q q-sv-codelist | Which governed code list defines the permitted states for this subject, and where and at what version is it published?
+Q q-sv-identity | What is the authoritative identifier and definition of each state, and is a state identified by an IRI or registry key rather than by its display label?
+Q q-sv-initial | Which state is entered on creation, and may a subject legitimately exist with no state assigned on this axis?
+Q q-sv-unknown | How is an indeterminate status represented, and is it distinguishable from an absent assertion?
+F status-axes | Concurrent status axes and precedence | Most subjects carry more than one simultaneous status: a governance/publication status, an operational status, a legal-validity status and sometimes a quality status. ISO/IEC 11179-6 already splits registration status into lifecycle and documentation categories, and VC 2.0 keeps validity period separate from credentialStatus. Collapsing these into one enumeration is the most common modelling defect this mixin must prevent.
+Q q-sa-count | How many independent status axes does this subject carry, and what is the name, purpose and code list of each?
+Q q-sa-precedence | When two axes disagree — for example publication status 'active' while operational status is 'suspended' — which axis governs a consumer's decision to rely on the subject?
+Q q-sa-constraints | Does a value on one axis constrain the permitted values on another axis?
+Q q-sa-default | Which single axis, if any, is exposed as the default 'status' in downstream projections and mappings?
+F terminality-and-reversibility | Terminal states and reversibility | Which states are absorbing and which can be left again. Bitstring Status List is explicit that revocation is not reversible while suspension is; RFC 5280 permits a certificateHold to be reversed via removeFromCRL; ISO 19135-1 keeps retired and superseded items resolvable rather than deleting them.
+Q q-tr-terminal | Which states have no outgoing transitions, and is that terminality enforced by the definition or merely by convention?
+Q q-tr-reversible | Which states may be left again, and what procedure, authority and evidence are required to re-enter a prior state?
+Q q-tr-interval | On reinstatement, is the previously closed validity interval reopened or is a new interval started?
+Q q-tr-resolvable | Do subjects in terminal states remain retrievable and dereferenceable so that historical data can still be interpreted?
+F lifecycle-pattern-family | Lifecycle pattern family | FHIR documents four families: clinical workflow process (planned, in-progress, on-hold, stopped, completed, cancelled); request/order (proposed, draft, requested, rejected, accepted, in-progress, completed, cancelled); entity availability (draft, active, suspended, amended, retired); and clinical status (active, inactive, unknown) which is explicitly not a workflow lifecycle. ISO 15489 adds a records-management process family of create, capture and manage over time. The mixin must declare which family a binding uses.
+Q lifecycle-pattern-family-q01 | Which lifecycle pattern family does this binding use, and is more than one family attached to the same host via distinct aspects?
+Q lifecycle-pattern-family-q02 | Which status codes are meaningless in this family and must be rejected (for example retired on a clinical-interpretation binding)?
+Q lifecycle-pattern-family-q03 | If the family is clinical interpretation, has it been kept distinct from workflow or request status so that inactive does not mean completed?
+L transition-system | Transition System | The permitted movements between states, what triggers them, what conditions guard them, what they must cause, and how concurrency and resumption are handled.
+F transition-topology-and-guards | Transition topology, triggers, guards and effects | The allow-list of (source state, target state) pairs together with the trigger, guard condition, mandated effects and deterministic conflict resolution for each transition. SCXML supplies the normative shape (event, cond, target, type) and the rule that where several transitions match, the first in document order is taken.
+Q q-tt-pairs | What is the complete set of permitted source-state to target-state pairs for this lifecycle version?
+Q q-tt-closure | Is the transition set an explicit allow-list, or is any transition permitted unless expressly forbidden?
+Q q-tt-trigger | What triggers each transition — a domain event, an elapsed timer, or an explicit operator command — and which transitions fire automatically without human action?
+Q q-tt-guard | What guard condition must hold for each transition, against which data is it evaluated, and at which instant?
+Q q-tt-conflict | If more than one transition matches the same trigger, how is the winner chosen deterministically?
+F concurrency-and-history | Concurrent regions and history semantics | Whether the subject may occupy several states at once in parallel regions, whether composite states nest, and whether a prior sub-state is remembered on re-entry. SCXML defines parallel regions, shallow and deep history and done.state completion events; UML 2.5.1 provides the equivalent behavioural formalism.
+Q q-ch-parallel | Does this lifecycle contain concurrent regions such that the subject is legitimately in more than one state simultaneously?
+Q q-ch-nesting | Are composite or nested states used, and does exiting an outer state force exit of all inner states?
+Q q-ch-history | Is the previously active sub-state remembered when a composite state is re-entered, and is that memory shallow or deep?
+Q q-ch-completion | How is completion of a concurrent region signalled, and what joins the regions back together?
+L machine-governance | Lifecycle Definition Governance | Identity, versioning, ownership, change procedure and conformance rules for the lifecycle definition itself.
+F machine-identity-and-version | Identity, version and effective period of the lifecycle definition | A subject's history is only interpretable against the version of the lifecycle definition that was in force when each transition occurred. The definition therefore needs its own identifier, version, effective period and — recursively — its own status.
+Q q-mi-id | What is the authoritative identifier and version of the lifecycle definition governing this subject?
+Q q-mi-binding | How is a subject bound to a lifecycle version, and does that binding move automatically when the definition is revised?
+Q q-mi-effective | Over what period is each lifecycle-definition version effective, and may two versions be effective at once for different subjects?
+Q q-mi-selfapply | Is the lifecycle definition itself governed by this same mixin, so that it can be draft, active, deprecated or retired?
+F machine-authority-and-conformance | Registration authority, change procedure and conformance | ISO/IEC 11179-6 requires each administered item to be administered by exactly one registration authority; ISO 19135-1 structures change as proposals with dispositions of accepted, notAccepted or withdrawn. Conformance rules make instance histories falsifiable against the definition.
+Q q-ma-authority | Which single registration authority or steward owns this lifecycle definition and may approve changes to it?
+Q q-ma-procedure | What proposal, review and decision procedure governs a change, and which dispositions are possible?
+Q q-ma-midflight | What happens to subjects that are mid-lifecycle when a state is removed or renamed, and who is accountable for their migration?
+Q q-ma-conformance | What makes a recorded state history conformant to the definition, and are non-conformant histories rejected, quarantined or tolerated?
+Q q-ma-claim | Is conformance to any external standard claimed for this lifecycle, and what evidence supports the claim?
+B state-assertion-and-history | State Assertion and Transition History | What the subject's state currently is, how that value is obtained, and the append-only record of how it got there.
+L current-state-assertion | Current State Assertion | The authoritative current value on each axis and whether it is asserted, derived, or both.
+F state-assertion-record | Current-state assertion | The assertion that a subject is in a given state on a given axis from a given instant, attributed to an agent. It is the value consumers read; its trustworthiness depends entirely on the transition record behind it.
+Q q-sar-current | What is the subject's current state on each axis, and which record is authoritative if several systems hold a copy?
+Q q-sar-since | Since which instant has the subject been in this state, and is that instant a real-world instant or the instant the system recorded it?
+Q q-sar-agent | Which agent asserted the current state, and on whose authority did they act?
+Q q-sar-storage | Is the current state stored as a materialised value or always recomputed from the transition log, and how is divergence detected?
+F derived-vs-asserted-status | Derived status versus asserted status | Effective status may be asserted explicitly, derived from validity dates, or both. VC 2.0 keeps validFrom/validUntil (automatic, time-bound) distinct from credentialStatus (issuer-controlled, event-driven); RFC 5280 does the same with the validity period and the CRL. The precedence rule between them must be explicit, because 'active but outside its validity period' is otherwise undefined.
+Q q-dva-mode | Is effective status asserted, derived from validity dates, or a hybrid, and which source wins when they disagree?
+Q q-dva-algorithm | What is the deterministic algorithm for deriving effective status, including its inputs and the instant at which it is evaluated?
+Q q-dva-anomaly | Can a subject legitimately be 'active' on its status axis while outside its validity interval, or is that always a defect?
+Q q-dva-cache | How is a derived status cached and invalidated so that consumers never act on a stale computation?
+F lifecycle-binding-identity | Lifecycle binding identifier | Each attached lifecycle record has its own identifier, distinct from the host identifier and from any timestamp. SCXML 3.14 requires IDs on machine vertices; FHIR resource identity is separate from status; a date is not an identifier.
+Q lifecycle-binding-identity-q01 | What authoritative master-system identifier uniquely names this lifecycle binding, and which system is the master?
+Q lifecycle-binding-identity-q02 | If no master-system identifier exists, what governed global IRI, or which Dimension-assigned UUID or ULID, identifies the binding?
+Q lifecycle-binding-identity-q03 | Has any date, validity start, or observation time been incorrectly treated as the binding identifier?
+F host-subject-and-aspect-binding | Host subject binding | The mixin is meaningless without a host. FHIR status is a property of a resource; OWL-Time hasTime associates a temporal entity with anything; PROV generation times bound an Entity. The host is referenced, not copied.
+Q host-subject-and-aspect-binding-q01 | Which host subject does this lifecycle record describe, and by which identity priority is that host referenced?
+Q host-subject-and-aspect-binding-q02 | Does the status apply to the whole host, to a stated aspect, role, or version of the host, or to a process the host represents?
+Q host-subject-and-aspect-binding-q03 | May the same host carry multiple concurrent lifecycle bindings (for example workflow status plus clinical status plus publication status)?
+F active-configuration-and-lossy-projection | Active configuration set | SCXML configuration is the set of active states. Parallel regions make a single status code insufficient. The mixin records the full set and optionally a projected code for interchange.
+Q active-configuration-and-lossy-projection-q01 | Which states are currently active, and is that set a legal configuration?
+Q active-configuration-and-lossy-projection-q02 | What single status code is projected from the configuration for systems that cannot represent a set, and is that projection lossy?
+Q active-configuration-and-lossy-projection-q03 | Are any child machines invoked from the current configuration, and what is their session identity and status?
+L transition-record | Transition Record | The append-only record of each state change, with its reason, its evidence and the authority under which it was made.
+F transition-event-record | Transition event record | Each state change is recorded as an immutable event carrying prior state, new state, the governing definition version, an event time and a record time. FHIR separates Provenance.occurred from Provenance.recorded; system-versioned tables maintain row_start/row_end automatically. Both patterns are required here because event time and record time routinely differ.
+Q q-ter-id | What is the identifier of each transition event, and is the log strictly append-only?
+Q q-ter-times | Which event time and which record time are captured for each transition, and by what rule may they differ?
+Q q-ter-states | Which state was left, which was entered, and which lifecycle-definition version was in force at that moment?
+Q q-ter-ordering | How are concurrent or out-of-order transition submissions ordered, de-duplicated and made replay-safe?
+F reason-evidence-and-authority | Reason codes, evidence and transition authority | Why a transition happened, what proves it, and who was entitled to make it. RFC 5280's CRLReason shows that reason codes carry consequences, not just commentary; ISO 19135-1 distinguishes clarification, amendment and supersession information; PROV-O and FHIR record acting agents and delegation.
+Q q-rea-code | Which governed reason code justifies this transition, and from which code list is it drawn?
+Q q-rea-evidence | What supporting evidence is referenced for the transition, and is that evidence still retrievable for as long as the transition is relied upon?
+Q q-rea-consequence | Does the reason code change the consequences of the transition, for example by making invalidation retroactive rather than prospective?
+Q q-rea-authority | Which role or agent was authorised to execute this transition, was dual control required, and was it exercised on behalf of another party?
+Q q-rea-repudiation | How is an unauthorised or repudiated transition detected, recorded and remediated?
+B effective-validity | Effective Validity and Bitemporal Semantics | When a state or assertion is effective in the world, when the system came to believe it, and how the two time lines are reconciled, corrected and queried.
+L validity-interval | Validity Interval | The real-world interval over which an assertion is effective, its boundary conventions, and the constraints relating successive intervals.
+F valid-time-interval | Valid-time interval | The interval, on the real-world time line, over which the assertion or state is effective. VC 2.0 expresses this as validFrom/validUntil, RFC 5280 as notBefore/notAfter, DCMI as dcterms:valid and FHIR as a Period; all treat it as independent of when the record was written.
+Q q-vti-from | From which real-world instant is this state or assertion effective, and until which instant?
+Q q-vti-missing-end | When the end boundary is absent, does that mean open-ended, unknown, or not yet decided?
+Q q-vti-scope | Is the validity interval a property of the subject, of a particular assertion about it, or of one status axis?
+Q q-vti-future | May validity begin in the future, and what state does the subject hold in the interval before that instant?
+F boundary-precision-and-clock | Boundary inclusivity, precision, clock and time zone | Boundary conventions differ between ecosystems and silently corrupt comparisons if left implicit: FHIR states Period boundaries are inclusive, while SQL:2011-style period tables use closed-open intervals. RFC 3339 requires an explicit offset or Z and defines -00:00 for unknown local offset; RFC 9557 adds IANA time-zone annotations and redefines Z as 'UTC known, offset unknown'. RFC 5280 supplies the 99991231235959Z no-expiry convention.
+Q q-bpc-inclusive | Are interval boundaries closed-closed or closed-open, and is that rule stated normatively rather than assumed from the storage engine?
+Q q-bpc-precision | To what precision are boundaries recorded, and how is a date-only boundary widened to an instant?
+Q q-bpc-noexpiry | What convention marks 'no well-defined expiry', and is a sentinel value used rather than a null?
+Q q-bpc-zone | For a future-dated boundary, is the authoritative local context a fixed UTC offset or a named IANA time zone, and how are zone-rule changes handled?
+Q q-bpc-clock | Which clock stamps record time, is it monotonic, and what inter-system skew is tolerated before a timestamp is rejected?
+F interval-relations-and-continuity | Interval relations and continuity constraints | Whether successive status intervals must abut, may leave gaps or may overlap, and which interval relations are used in constraints and queries. OWL-Time supplies the Allen relations (meets, overlaps, during, starts, finishes, equals) and period predicates in SQL:2011-style engines supply the executable equivalents.
+Q q-irc-gap | Must consecutive intervals on the same axis be contiguous, or are gaps permitted and what does a gap mean?
+Q q-irc-overlap | May two intervals on the same axis overlap, and if so how is the effective value chosen?
+Q q-irc-relations | Which interval relations are used in constraints and queries, and are they named from a governed vocabulary?
+Q q-irc-degenerate | How are zero-length and inverted intervals detected and handled?
+L record-time-and-correction | Record Time and Correction | The system time line, and how mistaken or superseded beliefs about the past are corrected without destroying the audit record.
+F record-time-and-observation-time | Record, observation and event time | Three distinct instants must be separable: when the change happened, when it was observed or asserted, and when the system of record stored it. FHIR separates Provenance.occurred from Provenance.recorded; system-versioned tables maintain row_start/row_end without user control; PROV-O timestamps generation and invalidation separately.
+Q q-rt-three | For this transition, what are the event time, the observation or assertion time, and the record time, and are all three retained?
+Q q-rt-authority | Which system and clock stamp the record time, and is it system-maintained and immutable by users?
+Q q-rt-inversion | May record time precede event time, and what does such an inversion indicate?
+Q q-rt-latency | What ingestion latency between event time and record time is expected, and at what point does latency itself become a defect?
+F retroactive-correction-and-restatement | Retroactive correction, amendment and restatement | Distinguishing a correction (the record was wrong) from an amendment (the world changed) is essential, because only the first invalidates prior reliance. ISO 19135-1 separates clarification, amendment and supersession; PROV-O provides wasRevisionOf; system-versioned tables preserve superseded beliefs for as-of reconstruction.
+Q q-rcr-mechanism | How is a wrong past state corrected without destroying the record of what the system previously believed?
+Q q-rcr-kind | What distinguishes a correction from an amendment and from a retraction in this model, and does the distinction change downstream obligations?
+Q q-rcr-notify | Which downstream consumers must be told about a retroactive change, through what channel and within what period?
+Q q-rcr-reconstruct | Can an as-at reconstruction of any earlier belief be produced on demand, and is that capability routinely tested?
+B succession-invalidation-disposition | Succession, Invalidation and Disposition | How a subject is replaced, discouraged, invalidated or finally disposed of, and the retroactive and retention consequences of each.
+L succession-and-deprecation | Succession and Deprecation | Replacement chains, current-version resolution, and the discouragement of continued use ahead of withdrawal.
+F supersession-and-replacement-links | Supersession and replacement links | The bidirectional links that let a consumer holding an outdated item find its successor. DCMI provides replaces/isReplacedBy, DCAT 3 provides previousVersion/hasCurrentVersion, ADMS provides prev/next/last, ISO 19135-1 changes an item's status from valid to superseded when it is replaced, and RFC 5280 records 'superseded' as a revocation reason.
+Q q-srl-link | Which item supersedes this one, is the link recorded in both directions, and is it dereferenceable?
+Q q-srl-kind | Is this a version relation (same thing, new version) or a replacement relation (a different thing taking over the role)?
+Q q-srl-effective | From which instant does supersession take effect, and does the superseded item remain resolvable afterwards?
+Q q-srl-chain | How is a chain of successive supersessions traversed to reach the current item, and what terminates the traversal?
+F deprecation-and-sunset | Deprecation and sunset | Deprecation signals that continued use is discouraged without necessarily invalidating existing use. OWL 2 treats owl:deprecated as a non-logical annotation that does not change formal semantics, and pairs it with backwardCompatibleWith and incompatibleWith; the UKGovLD registry places deprecated under accepted, with superseded and retired as its specialisations.
+Q q-ds-meaning | What does deprecated mean operationally here — still valid but discouraged, or invalid for new use while valid for existing use?
+Q q-ds-sunset | What sunset date has been announced, and what minimum notice period does the governing policy require?
+Q q-ds-migration | What migration target and guidance are published with the deprecation, and is backward compatibility asserted or denied?
+Q q-ds-grandfather | Are existing uses grandfathered, and until when?
+F replacement-and-entered-in-error | Replacement and entered-in-error | FHIR replaced means information was replaced by another resource; DCMI replaces / isReplacedBy model supersession. entered-in-error is usually not a clinical workflow state but applies to request and entity-availability cycles; handling is business-specific and there are no generic rules for redaction. Replacement is a relationship plus a status, not a silent overwrite.
+Q replacement-and-entered-in-error-q01 | If this status or host is replaced, which resource or binding supersedes it, and is the inverse isReplacedBy asserted?
+Q replacement-and-entered-in-error-q02 | Is the host entered-in-error, replaced, retired, or inactive, and why is that distinction required for consumers?
+Q replacement-and-entered-in-error-q03 | Must the erroneous or replaced record be retained for integrity or digital signatures even though it must be ignored?
+L invalidation | Invalidation | Revocation and suspension, their reversibility, their dating and their retroactive effect on acts already performed.
+F revocation-and-suspension | Revocation versus suspension | Bitstring Status List states that revocation cancels validity and is not reversible while suspension temporarily prevents acceptance and is reversible; RFC 5280 makes the same distinction operationally through certificateHold and removeFromCRL. Treating them as one 'inactive' state destroys the reversibility contract relying parties depend on.
+Q q-rs-kind | Is this invalidation reversible (suspension) or irreversible (revocation), and where is that reversibility contract stated?
+Q q-rs-communicate | How is invalidation communicated to relying parties who already hold a copy of the subject, and how fresh must that information be before reliance is permitted?
+Q q-rs-message | What reason code and human-readable status message accompany the invalidation, and can several statuses apply at once?
+Q q-rs-artifacts | What happens to obligations, permissions and artifacts issued while the subject was valid?
+F invalidity-dating-and-retroactive-effect | Invalidity dating and retroactive effect | RFC 5280's invalidityDate records the instant on which it is known or suspected that the subject became invalid, which may precede the decision and the publication. PROV-O's invalidatedAtTime records the same idea generically. The gap between those instants is where risk is allocated.
+Q q-ide-instant | From which instant is the subject considered invalid — the decision instant, the publication instant, or an earlier known-or-suspected instant?
+Q q-ide-retro | Does invalidation apply retroactively to acts performed before the decision was published, and on what legal or policy basis?
+Q q-ide-suspicion | How is known invalidity distinguished from suspected invalidity, and does the distinction change the recorded instant?
+Q q-ide-risk | Who bears the risk for reliance occurring between the invalidity instant and the publication instant?
+L end-of-life | End of Life | Lifecycle end as the trigger for retention, disposition, logical deletion and erasure.
+F retention-trigger-and-disposition | Retention trigger and disposition authority | ISO 15489-1 requires disposition authorities to be authorised, dated, implemented and regularly reviewed, with retention decided by recurrent appraisal rather than case by case; NARA's GRS shows disposition authority issued and versioned externally. This mixin supplies only the trigger, the clock and the resulting state.
+Q q-rtd-trigger | Which lifecycle state or transition starts the retention clock, and how long does retention then run?
+Q q-rtd-authority | Which authority approved the disposition rule, when was it approved, and when is it next due for review?
+Q q-rtd-action | What action follows expiry — destroy, transfer, retain permanently, or re-appraise — and who executes it?
+Q q-rtd-hold | How is disposition suspended by a legal hold, who may impose and release it, and how is the suspension recorded?
+F logical-deletion-and-erasure | Logical deletion, tombstones and erasure | ISO 19135-1 keeps retired, superseded and invalid items in the register so earlier data stays interpretable, while GDPR Article 17 can require erasure of personal data and Article 5(1)(e) limits storage. The reconciliation is a tombstone: a minimal, non-personal residue that keeps references resolvable.
+Q q-lde-mode | Is deletion logical (retired status plus tombstone) or physical, and which mode applies to which class of content?
+Q q-lde-erasure | How is an erasure obligation reconciled with an append-only lifecycle history, and what is removed versus what is retained?
+Q q-lde-tombstone | What minimum tombstone remains after deletion so that inbound references still resolve rather than dangle?
+Q q-lde-evidence | Who authorises and witnesses destruction, and what evidence of destruction is retained and for how long?
+B operations-and-interoperability | Operations, Exposure and Interoperability | The executable surface: how transitions are requested and rejected, how state is queried across both time lines, how exceptions are handled, and how status is mapped, published and access-controlled.
+L lifecycle-operations | Lifecycle Operations | Requesting and applying transitions, resolving state across both time lines, and handling exceptions.
+F transition-execution-contract | Transition execution contract | The operational guarantees around applying a transition: idempotency, optimistic concurrency against an expected current state, atomicity with mandated effects, and the recording of rejections. SCXML's serialised microstep processing is the reference for determinism despite concurrency.
+Q q-tec-idempotency | What is the idempotency key for a transition request, and what exactly happens when the same request is replayed?
+Q q-tec-concurrency | How is a lost update prevented when two agents attempt to transition the same subject at the same time?
+Q q-tec-atomicity | Is the state change atomic with its mandated effects, or eventually consistent, and what compensates a partial failure?
+Q q-tec-rejection | What is returned when a transition is rejected, and is the rejection itself recorded as evidence?
+F temporal-state-resolution-queries | Bitemporal state resolution and reproducibility | Answering 'what was the state?' requires two parameters, not one: the real-world instant of interest and the record instant at which belief is taken. System-versioned tables expose exactly this through AS OF and BETWEEN queries; without both, audit answers are not reproducible.
+Q q-tsr-two | What was the state as of a given real-world instant, as known at a given record instant?
+Q q-tsr-default | Which defaults apply when the caller supplies neither instant, and are those defaults stated rather than implied?
+Q q-tsr-repro | Is the same query guaranteed to return the same answer later, and how is that reproducibility demonstrated to an auditor?
+Q q-tsr-listing | How are subjects listed or filtered by status without disclosing states the caller is not permitted to see?
+F exception-and-illegal-transition-handling | Exceptions, indeterminate status and staleness | Real registries contain states that no longer exist in the current definition, subjects whose status is genuinely unknown, and subjects stuck in a state far longer than expected. FHIR provides an explicit 'unknown' code precisely so that indeterminacy is not encoded as a null or as a real state.
+Q q-eih-orphan | What happens when a recorded state is not in the state set of the governing lifecycle version?
+Q q-eih-unknown | How is indeterminate status represented so that it is not mistaken for a real state or for an absent record?
+Q q-eih-stale | How is a stale status detected — no transition for longer than the expected dwell time — and to whom is it escalated?
+Q q-eih-override | Is an emergency override of the transition rules permitted, who may authorise it, and what compensating controls and review apply?
+L status-interoperability | Status Interoperability and Exposure | Mapping local states to external vocabularies, publishing status to relying parties, and controlling who may see which states.
+F external-status-vocabulary-mapping | External status vocabulary mapping | Local states must be mapped, with declared strength and declared loss, to external vocabularies such as FHIR PublicationStatus, ISO 19135-1 item status, ADMS status and schema.org EventStatusType. The UKGovLD registry demonstrates the practice of stating explicit correspondences to ISO 19135 statuses rather than assuming them.
+Q q-esm-targets | To which external status vocabularies is each local state mapped, at which version of each target, and with what mapping strength?
+Q q-esm-loss | Which mappings are lossy, and precisely what information is lost in each direction?
+Q q-esm-conflict | Where external vocabularies conflict, is the conflict recorded rather than silently reconciled?
+Q q-esm-maintenance | Who maintains each mapping, and when was it last revalidated against the current version of the target vocabulary?
+F status-publication-and-visibility | Status publication, distribution and visibility | How status reaches relying parties and who is entitled to see which states. Bitstring Status List addresses distribution and herd-privacy sizing; RFC 5280 addresses CRL distribution and freshness; ISO 15489-1 requires access and security controls over records. Draft and pre-publication states routinely carry stricter visibility than published ones.
+Q q-spv-channel | In what form is status published — pull, push, or embedded in the subject — and what is the authoritative source if several channels exist?
+Q q-spv-freshness | How stale may published status be before a relying party must refuse to rely on it, and what should it do when status is unobtainable?
+Q q-spv-integrity | How is published status protected against tampering, replay and rollback to an earlier state?
+Q q-spv-visibility | Who may see subjects in pre-publication states, and are transition reasons restricted more tightly than the state value itself?
+Q q-spv-privacy | Does publishing status disclose information about individual subjects, and what minimum group size or padding protects them?

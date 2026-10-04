@@ -1,0 +1,3 @@
+# Frozen semantic audit — EM-LEG-04
+
+Audit the reconciled EM-LEG-04 allocation candidate using only its local synthesis, provider comparison, allocation candidate and fixtures. No tools or browsing. Check independent identity, authority-qualified key, case-to-grant write semantics, closed-world scope, verbatim/structured mapping, dependent conditions, lifecycle event distinctions, party non-extension, and separation from credentials/commercial/IP/stewardship. Find only concrete defects or missing fixtures. Do not invent identifiers. Return <=700 words: verdict, defects, minimal remediation, required fixtures, publication disposition.

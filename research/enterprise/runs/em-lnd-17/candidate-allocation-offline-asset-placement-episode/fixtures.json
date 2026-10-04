@@ -1,0 +1,480 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Asset Placement Episode",
+  "cases": [
+    {
+      "id": "leased-asset-move",
+      "kind": "positive",
+      "input": "A leased asset moves from Site A to Site B while title remains with the lessor.",
+      "expect": "The Site A episode closes, planned and observed Site B episodes remain distinguishable, and title is unchanged."
+    },
+    {
+      "id": "plan-observation-divergence",
+      "kind": "positive",
+      "input": "A plan places an asset in Facility B but telemetry still observes it in Facility A.",
+      "expect": "Both assertions remain traceable and the divergence is explicit."
+    },
+    {
+      "id": "unknown-whereabouts",
+      "kind": "positive",
+      "input": "Current whereabouts are unknown but the last verified locus is retained.",
+      "expect": "Unknown current placement and qualified last-known placement remain separate."
+    },
+    {
+      "id": "address-implies-placement",
+      "kind": "negative",
+      "input": "A registered company address is used to place every company asset there.",
+      "expect": "The inference is rejected."
+    },
+    {
+      "id": "placement-implies-rights",
+      "kind": "negative",
+      "input": "Observed placement is used to infer custody, title, access and operational responsibility.",
+      "expect": "All four inferences are rejected."
+    },
+    {
+      "id": "overwrite-move-history",
+      "kind": "negative",
+      "input": "A Site B observation overwrites the prior Site A placement.",
+      "expect": "The update is rejected; the prior episode must be closed or superseded."
+    },
+    {
+      "id": "privacy-reconstruction",
+      "kind": "negative",
+      "input": "A public occupancy view reconstructs a precise home location from generalized inputs.",
+      "expect": "The disclosure is rejected."
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "observed-missing-provenance",
+      "kind": "negative",
+      "input": {
+        "placementMode": "observed",
+        "assetRef": "asset/A1",
+        "locusKind": "facility",
+        "locusRef": "facility/F1",
+        "validFrom": "2026-03-01T00:00:00Z",
+        "assertingPartyRef": "party/P1",
+        "status": "effective",
+        "observationTime": null,
+        "sourceRef": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "OBSERVED_PLACEMENT_MISSING_PROVENANCE"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "planned-missing-anchor",
+      "kind": "negative",
+      "input": {
+        "placementMode": "planned",
+        "assetRef": "asset/A1",
+        "locusKind": "site",
+        "locusRef": "site/S2",
+        "validFrom": "2026-04-01T00:00:00Z",
+        "scenarioRef": null,
+        "basisRef": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PLANNED_PLACEMENT_MISSING_SCENARIO_OR_BASIS"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "mode-status-conflict",
+      "kind": "negative",
+      "input": {
+        "placementMode": "observed",
+        "status": "planned"
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PLACEMENT_MODE_STATUS_CONFLICT"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "divergence-explicit",
+      "kind": "positive",
+      "input": {
+        "planned": {
+          "placementMode": "planned",
+          "locusRef": "facility/FB",
+          "scenarioRef": "plan/MOVE1"
+        },
+        "observed": {
+          "placementMode": "observed",
+          "locusRef": "facility/FA",
+          "observationTime": "2026-04-02T09:00:00Z"
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "bothRetained": true,
+        "divergence": {
+          "state": "diverged",
+          "plannedRef": "ep/1",
+          "observedRef": "ep/2"
+        }
+      }
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "overlapping-observed-loci",
+      "kind": "negative",
+      "input": {
+        "existing": {
+          "placementMode": "observed",
+          "status": "effective",
+          "locusKind": "site",
+          "locusRef": "site/S1",
+          "validFrom": "2026-01-01T00:00:00Z",
+          "validTo": null
+        },
+        "incoming": {
+          "placementMode": "observed",
+          "locusKind": "site",
+          "locusRef": "site/S2",
+          "validFrom": "2026-02-01T00:00:00Z"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "CONFLICTING_OVERLAPPING_OBSERVED_PLACEMENT"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "unknown-whereabouts-representable",
+      "kind": "positive",
+      "input": {
+        "whereaboutsState": "unknown",
+        "locusRef": null,
+        "lastKnownLocusRef": "facility/F1",
+        "lastKnownAsOf": "2026-02-10T00:00:00Z",
+        "assertingPartyRef": "party/P1"
+      },
+      "expect": {
+        "accepted": true,
+        "currentPlacement": null,
+        "lastKnownQualifiedSeparately": true,
+        "distinctFrom": [
+          "absent",
+          "disposed",
+          "withheld",
+          "never-observed"
+        ]
+      }
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "sentinel-unknown-locus",
+      "kind": "negative",
+      "input": {
+        "whereaboutsState": "unknown",
+        "locusKind": "facility",
+        "locusRef": "facility/UNKNOWN"
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "SENTINEL_LOCUS_FORBIDDEN"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "withheld-distinct-from-unknown",
+      "kind": "positive",
+      "input": {
+        "whereaboutsState": "withheld",
+        "disclosureClass": "restricted",
+        "basisRef": "policy/DISC1"
+      },
+      "expect": {
+        "accepted": true,
+        "storedLocusRetainedUnderPolicy": true,
+        "outputMarker": "withheld"
+      }
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "correction-versions",
+      "kind": "positive",
+      "input": {
+        "operation": "correct",
+        "episodeId": "ep/1",
+        "set": {
+          "locusRef": "building/B2"
+        },
+        "assertedAt": "2026-03-05T00:00:00Z"
+      },
+      "expect": {
+        "accepted": true,
+        "versionCount": 2,
+        "priorVersionImmutable": true,
+        "asOfRecordQuery": {
+          "before": "building/B1",
+          "after": "building/B2"
+        }
+      }
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "inplace-overwrite",
+      "kind": "negative",
+      "input": {
+        "operation": "update",
+        "episodeId": "ep/1",
+        "set": {
+          "locusRef": "site/S2"
+        },
+        "assertedAt": null,
+        "supersedesRef": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PLACEMENT_HISTORY_OVERWRITE_FORBIDDEN"
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "gap-is-not-absence",
+      "kind": "positive",
+      "input": {
+        "query": {
+          "assetRef": "asset/A1",
+          "asOf": "2026-03-15T12:00:00Z"
+        },
+        "episodes": [
+          {
+            "status": "closed",
+            "locusRef": "site/S1",
+            "validTo": "2026-03-14T00:00:00Z"
+          },
+          {
+            "placementMode": "planned",
+            "locusRef": "site/S2",
+            "validFrom": "2026-03-20T00:00:00Z"
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "effectivePlacement": null,
+        "interpretation": "no-asserted-placement",
+        "impliesAbsentOrDisposed": false
+      }
+    },
+    {
+      "target": "AssetPlacementEpisode",
+      "id": "granularity-refinement",
+      "kind": "negative",
+      "input": {
+        "derivedFrom": {
+          "locusKind": "place",
+          "granularity": "jurisdiction"
+        },
+        "asserted": {
+          "locusKind": "building",
+          "locusRef": "building/B7"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "GRANULARITY_REFINEMENT_FORBIDDEN"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "reproducible-asof",
+      "kind": "positive",
+      "input": {
+        "asOf": "2026-03-31T23:59:59Z",
+        "pinnedInputs": [
+          {
+            "candidate": "AssetPlacementEpisode",
+            "recordAsOf": "2026-04-01T00:00:00Z"
+          },
+          {
+            "candidate": "OperationalResponsibilityAssignment",
+            "recordAsOf": "2026-04-01T00:00:00Z"
+          }
+        ],
+        "disclosurePolicyRef": "policy/DISC1",
+        "digest": "sha256:…"
+      },
+      "expect": {
+        "accepted": true,
+        "independentIdentity": false,
+        "rerunDigestStable": true
+      }
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "unpinned-inputs",
+      "kind": "negative",
+      "input": {
+        "asOf": "2026-03-31T23:59:59Z",
+        "pinnedInputs": [],
+        "digest": null
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_INPUTS_UNPINNED"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "refine-withheld-locus",
+      "kind": "negative",
+      "input": {
+        "sourceRendition": {
+          "locusKind": "place",
+          "granularity": "jurisdiction",
+          "whereaboutsState": "withheld"
+        },
+        "output": {
+          "locusKind": "building",
+          "locusRef": "building/B7"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_LOCATION_REFINEMENT"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "small-cell-occupancy",
+      "kind": "negative",
+      "input": {
+        "aggregation": "count",
+        "cell": {
+          "locusKind": "building",
+          "locusRef": "building/B7"
+        },
+        "count": 1,
+        "minimumCell": 5
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "SUPPRESSION_THRESHOLD_BREACH"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "cross-rendition-differencing",
+      "kind": "negative",
+      "input": {
+        "operation": "join",
+        "asOf": "2026-03-31T23:59:59Z",
+        "renditions": [
+          {
+            "disclosureClass": "public",
+            "granularity": "jurisdiction"
+          },
+          {
+            "disclosureClass": "public",
+            "granularity": "facility",
+            "aggregate": {
+              "count": 1
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "DIFFERENCING_DISCLOSURE"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "withheld-marked-not-absent",
+      "kind": "positive",
+      "input": {
+        "source": {
+          "whereaboutsState": "withheld"
+        },
+        "disclosurePolicyRef": "policy/DISC1"
+      },
+      "expect": {
+        "accepted": true,
+        "output": {
+          "locus": null,
+          "marker": "withheld",
+          "distinctFrom": [
+            "absent",
+            "unknown",
+            "disposed",
+            "never-observed"
+          ]
+        }
+      }
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "availability-stored-timeless",
+      "kind": "negative",
+      "input": {
+        "store": {
+          "assetRef": "asset/A1",
+          "available": true,
+          "purpose": null,
+          "asOf": null
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "AVAILABILITY_NOT_PURPOSE_BOUND"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "view-identity-allocation",
+      "kind": "negative",
+      "input": {
+        "occupancyView": {
+          "requestIndependentIdentifier": true
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "PROJECTION_IDENTITY_FORBIDDEN"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "responsibility-from-placement",
+      "kind": "negative",
+      "input": {
+        "derive": {
+          "responsiblePartyRef": "operatorOf(effectivePlacement.locus)"
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "RESPONSIBILITY_INFERRED_FROM_PLACEMENT"
+    },
+    {
+      "target": "LandscapeProjection",
+      "id": "completion-from-order",
+      "kind": "negative",
+      "input": {
+        "derive": {
+          "maintenanceStatus": "completed",
+          "from": [
+            "workOrderRef",
+            "activeResponsibilityAssignment"
+          ]
+        }
+      },
+      "expect": {
+        "accepted": false
+      },
+      "expectedCode": "COMPLETION_INFERRED_FROM_ORDER"
+    }
+  ]
+}

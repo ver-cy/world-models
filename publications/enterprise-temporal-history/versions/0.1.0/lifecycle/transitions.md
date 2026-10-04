@@ -1,0 +1,3 @@
+# Reference operations
+
+Empty → open: record with expectedHead null and host-assigned receipt. Open → open: correct with exact current head, accepted bindings and a complete new snapshot. Open → archived: archive with identical segments. Archived → archived: only identical authorized replay; all new writes reject. Each action requires current writer authorization and retains the full prefix. Domain transitions and their guards/effects remain external. A changed snapshot is not proof an event executed. Rejections require a separately persisted restricted host conflict artifact; the pure library never writes an audit store.

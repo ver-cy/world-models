@@ -1,0 +1,7 @@
+# Provider comparison — EM-WRK-01
+
+Claude and Grok agree on the core Task profile: reuse WM-ACT-006 identity, keep WorkItemType as a versioned vocabulary, preserve native status/canonical state/evidence outcome as separate layers, keep transition history append-only, treat Estimate as a revisioned assertion and require idempotent source-key/event-key import. Both prohibit treating tracker containers as Project/Program authority and keep Requirement, Project and Program/Portfolio mastership external.
+
+Grok narrows two earlier proposals. WM-ACT-003 is not a ready WorkflowDefinition master; tracker state-machine semantics should bind to WM-XCT-021, while WM-ACT-003 remains a later process-shaped alignment subject to EM-OPS-01. Backlog and Iteration remain identifier-unassigned research candidates, but neither has yet passed the independent-identity test: current semantics can be represented as ordered selection and timeboxed Plan views with source correlation aliases. Kanban must not require Iteration.
+
+The reconciled disposition therefore completes no new identity: WM-ACT-006 receives a restrictive WorkItem profile; WorkItemType and Estimate remain contained semantics; WM-XCT-021 is the lifecycle-definition authority; Backlog and Iteration are deferred non-normative candidates pending irreducible-mastership evidence. Publication remains held for base specifications, approved relations, crosswalks, executable migration fixtures and retention/access rules.

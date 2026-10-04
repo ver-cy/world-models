@@ -1,0 +1,3316 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-sft-009",
+    "model_id": "WM-SFT-009",
+    "name": "Deployment",
+    "entry_kind": "aggregate",
+    "purpose": "Context an agent needs to record, inspect and reason about a deployment: the identified act and standing fact of a release installed into a runtime environment target, with declared intent, execution state, history and evidence references.",
+    "scope_statement": "A Deployment reifies the binding between a release (WM-SFT-008) and a runtime environment target (WM-SFT-010). It is not a plain edge: the same release may be deployed to the same target repeatedly, and each occurrence carries its own identity, desired state, state history and outcome. The model owns the deployment record, its identity, classification, binding keys, subject-specific deploy-time parameters, rollout intent, the deployment state machine, revision history, current-deployment resolution, rollback linkage, deployment time semantics, and references to authorization, gate and verification evidence produced elsewhere. It describes and records deployments; it does not orchestrate, execute, evaluate or enforce them, and it is not the system of record for release content, environment definition, policy decisions, telemetry or organizational audit trails.",
+    "in_scope": [
+      "Deployment identity, classification and the release-to-target binding keys",
+      "Declared desired state, deploy-time parameter binding and rollout strategy intent",
+      "Deployment state machine, completion criteria, revision history, supersession and current-deployment resolution per target",
+      "Rollback and recovery linkage between deployment records",
+      "Deployment time semantics separating requested, started and completed times from observation and ingestion times",
+      "References to authorization, gate decisions and verification evidence produced by other systems",
+      "Delivery measurement over deployment records, plus record provenance, access, retention and interoperability projections"
+    ],
+    "out_of_scope": [
+      "Release identity, versioning, artifact content, SBOM and build provenance (owned by WM-SFT-008)",
+      "Runtime environment definition, topology, capacity, infrastructure inventory and environment lifecycle (owned by WM-SFT-010)",
+      "Execution of rollouts: orchestrators, reconciliation agents and traffic shifting mechanics",
+      "Policy evaluation, gate decision logic, enforcement engines and their runtime decisions",
+      "Runtime observability, alerting, incident and problem management, and service level objectives",
+      "Organizational audit-trail systems and evidentiary record keeping beyond this model's own records",
+      "CI/CD pipeline definition and pipeline run orchestration semantics",
+      "ITSM change record lifecycle, approval workflow engines and human identity management",
+      "Secret values, credentials and key material (only opaque references are carried)"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-SFT-008 Release",
+        "distinction": "The release owns what is being installed: version, artifact digests, SBOM, build provenance and release approval. This model carries only a pinned release reference plus the digest used for binding integrity, and never reproduces release lifecycle or release-level functions.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "WM-SFT-010 Runtime environment",
+        "distinction": "The environment owns where software runs: environment identity, tier, topology, capacity and its own lifecycle. This model carries a pinned environment reference plus the deployment-specific target selector (cell, region, tenant slice) and never models environment creation, modification or deletion.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "WM-SFT-002 parent software product or service model",
+        "distinction": "Product and service identity, ownership and commercial context are inherited from the parent. This model adds only the installed-into-environment occurrence.",
+        "source_refs": [
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Deployment orchestrator or reconciliation agent",
+        "distinction": "Kubernetes Deployment objects, GitOps reconcilers and progressive-delivery controllers execute and observe rollouts. This model records declared intent and reported outcome as data; it grants no ownership of execution, reconciliation or traffic-shifting semantics.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "Policy verifier and gate evaluator",
+        "distinction": "SLSA verification summary attestations and equivalent gate verdicts are produced by external verifiers against external policies. This model records only the verdict reference, issuing verifier and verification time; it does not define evaluation, re-evaluate, or enforce.",
+        "source_refs": [
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Change management and configuration control process",
+        "distinction": "Change authorization, impact analysis and access restrictions for change are governed by the adopting Dimension's configuration change control regime. This model carries the authorization reference and its verdict, not the change workflow.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Software asset inventory and installed-software tagging",
+        "distinction": "Endpoint software identification tagging asserts what is installed on an asset. This model may reference such install evidence to corroborate a deployment, but tag production and asset inventory remain external.",
+        "source_refs": [
+          "SRC-008"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "CDEvents Continuous Deployment Events",
+      "organization": "Continuous Delivery Foundation (CDF)",
+      "url": "https://github.com/cdevents/spec/blob/main/continuous-deployment.md",
+      "version_or_date": "spec main branch; continuous deployment subjects at 0.3.0; CDEvents release line v0.5.0",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T08:41:00Z",
+      "relevance": "Defines the environment and service subjects and the deployed, upgraded, rolledback, removed and published predicates, with required id, environment and purl artifactId fields; anchors deployment classification, binding and event vocabulary."
+    },
+    {
+      "id": "SRC-002",
+      "title": "OpenTelemetry Semantic Conventions - Deployment attribute registry",
+      "organization": "OpenTelemetry (CNCF)",
+      "url": "https://opentelemetry.io/docs/specs/semconv/registry/attributes/deployment/",
+      "version_or_date": "accessed 2026-09-03; deployment.environment.name Stable, deployment.id/name/status Development",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T08:44:00Z",
+      "relevance": "Provides the stable deployment.environment.name attribute and the still-unstable deployment.id, deployment.name and deployment.status attributes, plus the note that environment name does not affect service uniqueness constraints."
+    },
+    {
+      "id": "SRC-003",
+      "title": "Kubernetes Documentation - Deployments",
+      "organization": "The Kubernetes Authors (CNCF)",
+      "url": "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/",
+      "version_or_date": "accessed 2026-09-03",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T08:46:00Z",
+      "relevance": "Normative first-party model of desired state versus observed status, RollingUpdate and Recreate strategies, revisionHistoryLimit, progressDeadlineSeconds, minReadySeconds, pause/resume and the Progressing, Complete and Failed status conditions."
+    },
+    {
+      "id": "SRC-004",
+      "title": "OpenGitOps Principles v1.0.0",
+      "organization": "OpenGitOps (CNCF App Delivery TAG)",
+      "url": "https://opengitops.dev/",
+      "version_or_date": "v1.0.0",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T08:52:00Z",
+      "relevance": "States that desired state must be declarative, versioned and immutable with complete version history, pulled automatically and continuously reconciled; grounds the declared-intent and history findings and the boundary against reconciliation execution."
+    },
+    {
+      "id": "SRC-005",
+      "title": "SLSA Verification Summary Attestation (VSA)",
+      "organization": "OpenSSF / SLSA project (Linux Foundation)",
+      "url": "https://slsa.dev/spec/v1.0/verification_summary",
+      "version_or_date": "SLSA v1.0 (page notes v1.2 is the latest release line)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T08:53:00Z",
+      "relevance": "Defines a verifier-produced verdict with subject digest, verifier URI, timeVerified, resourceUri, policy, verificationResult and verifiedLevels; supports carrying gate verdicts by reference without owning evaluation."
+    },
+    {
+      "id": "SRC-006",
+      "title": "NIST SP 800-218, Secure Software Development Framework (SSDF) Version 1.1",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "version_or_date": "Version 1.1, February 2022",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T08:56:00Z",
+      "relevance": "Requires archiving and protecting each software release, configuring software with secure settings by default, and verifying software integrity before use; grounds pre-deployment integrity evidence and secure default parameter binding."
+    },
+    {
+      "id": "SRC-007",
+      "title": "NIST SP 800-53 Rev. 5, Security and Privacy Controls for Information Systems and Organizations",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final",
+      "version_or_date": "Revision 5, September 2020 with updates through 10 December 2020; control release 5.2.0, 27 August 2025",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T08:57:00Z",
+      "relevance": "Configuration Management family provides baseline configuration, configuration change control and access restrictions for change; Audit and Accountability and System and Information Integrity families ground access logging and software integrity verification."
+    },
+    {
+      "id": "SRC-008",
+      "title": "NISTIR 8060, Guidelines for the Creation of Interoperable Software Identification (SWID) Tags",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://csrc.nist.gov/pubs/ir/8060/final",
+      "version_or_date": "April 2016",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:01:00Z",
+      "relevance": "Implements ISO/IEC 19770-2 software identification tags as endpoint-level evidence that a software product is installed; supports corroborating a deployment against observed installed-software facts."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Deployment and Configuration of Component-based Distributed Applications (DEPL), Version 4.0",
+      "organization": "Object Management Group (OMG)",
+      "url": "https://www.omg.org/spec/DEPL/",
+      "version_or_date": "Version 4.0, April 2006",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:02:00Z",
+      "relevance": "Standardizes metadata and interfaces for deploying and configuring component-based applications into heterogeneous distributed target systems; the oldest normative anchor for a deployment plan bound to a target domain."
+    },
+    {
+      "id": "SRC-010",
+      "title": "ISO/IEC/IEEE 12207:2026, Systems and software engineering - Software life cycle processes",
+      "organization": "International Organization for Standardization (ISO)",
+      "url": "https://www.iso.org/standard/90219.html",
+      "version_or_date": "2026 edition; technically revised, cancels and replaces ISO/IEC/IEEE 12207:2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-03T09:05:00Z",
+      "relevance": "Defines the software life cycle process framework covering supply, operation, maintenance and disposal, including transition of software into an operational environment; frames deployment as a life cycle process rather than a tool artifact."
+    },
+    {
+      "id": "SRC-011",
+      "title": "SPDX Specification 3.0.1 - Core LifecycleScopeType vocabulary",
+      "organization": "SPDX project (Linux Foundation)",
+      "url": "https://spdx.github.io/spdx-spec/v3.0.1/model/Core/Vocabularies/LifecycleScopeType/",
+      "version_or_date": "3.0.1",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:07:00Z",
+      "relevance": "Provides build, design, development, runtime, test and other lifecycle scopes for relationships; shows that runtime scoping exists for relationships but no deployment entity is defined, marking an interoperability boundary."
+    },
+    {
+      "id": "SRC-012",
+      "title": "DORA software delivery metrics: the four keys",
+      "organization": "DORA (Google Cloud)",
+      "url": "https://dora.dev/guides/dora-metrics-four-keys/",
+      "version_or_date": "last updated 5 January 2026; CC BY 4.0",
+      "source_type": "scientific",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-03T09:09:00Z",
+      "relevance": "Defines change lead time, deployment frequency, failed deployment recovery time, change fail rate and deployment rework rate; these are computed over deployment records and constrain the required timestamp and outcome fields."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Argo Rollouts - Canary Deployment Strategy",
+      "organization": "Argo Project (CNCF)",
+      "url": "https://argo-rollouts.readthedocs.io/en/stable/features/canary/",
+      "version_or_date": "stable documentation, accessed 2026-09-03",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-03T09:11:00Z",
+      "relevance": "Documents progressive delivery mechanics: setWeight and pause steps, analysis, manual promotion and abort with scale-down delay; grounds the rollout strategy vocabulary while remaining an execution concern outside this model."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "bnd-identity-and-binding",
+        "name": "Deployment identity and subject binding",
+        "description": "What counts as one deployment, how it is identified and classified, and how it binds a referenced release to a referenced environment target and to the resulting running instances.",
+        "rationale": "CDEvents models a deployed service as a subject that must carry an id, an environment reference and a purl artifactId, and OpenTelemetry keeps environment name separate from service instance identity; a deployment therefore needs its own identity distinct from both referenced subjects.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "lyr-deployment-definition",
+            "name": "Deployment definition, identity and classification",
+            "description": "The definitional core: the unit of deployment, its identifier rules and the kind of deployment being recorded.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "fnd-deployment-unit-definition",
+                "name": "Unit of deployment and record granularity",
+                "description": "Defines what is counted as one deployment (one release, one target scope, one intent) and distinguishes a deployment occurrence from the deployable object, the pipeline run and the running service instance.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-unit-definition",
+                    "text": "What exactly constitutes one deployment record, and what is the smallest change that starts a new one rather than updating an existing one?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Deployment unit definition statement",
+                      "Trigger conditions that mint a new deployment",
+                      "Conditions that update an existing deployment in place"
+                    ]
+                  },
+                  {
+                    "id": "q-unit-multi-target",
+                    "text": "When a single release is rolled out to many targets or many components at once, is that one deployment or many, and how is the grouping represented?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Fan-out policy (single record versus one per target)",
+                      "Deployment group or campaign identifier",
+                      "Member deployment references"
+                    ]
+                  },
+                  {
+                    "id": "q-unit-vs-neighbours",
+                    "text": "How is a deployment record distinguished from the pipeline run that produced it and from the service instance that results from it?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Pipeline run reference",
+                      "Resulting deployed-instance references",
+                      "Distinction rule statement"
+                    ]
+                  },
+                  {
+                    "id": "q-unit-config-only",
+                    "text": "Does a configuration-only or parameter-only change with no release change produce a deployment record?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Configuration-only recording policy",
+                      "Prior release reference carried unchanged",
+                      "Changed parameter key list"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-deployment-unit-scope",
+                    "name": "deployment_unit_scope",
+                    "description": "Declared granularity of the record: single target, target group or fleet campaign.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-deployment-group-ref",
+                    "name": "deployment_group_reference",
+                    "description": "Reference to a parent deployment group or campaign when a release is fanned out across many targets.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-pipeline-run-ref",
+                    "name": "originating_pipeline_run_reference",
+                    "description": "Opaque reference to the pipeline run or automation execution that requested the deployment; the run's own semantics stay external.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-deployment-record",
+                    "name": "Deployment record",
+                    "description": "The canonical record of one deployment occurrence, holding identity, binding references, declared intent, terminal state and evidence references.",
+                    "media_or_form": [
+                      "structured record",
+                      "graph node with typed edges"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Keyed by the authoritative master-system deployment identifier from the system of record, carried with its issuing system reference; falls back to a governed IRI, then to a Dimension-minted UUID or ULID.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "fnd-deployment-identity",
+                "name": "Deployment identifier and correlation keys",
+                "description": "How a deployment is identified across systems, including the priority of authoritative identifiers over minted ones and the natural keys used to reconcile duplicate reports of the same deployment.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-identity-authoritative",
+                    "text": "Which system is the authoritative master system for this deployment identifier, and what identifier does it assign?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Issuing system reference",
+                      "Master-system deployment identifier",
+                      "Identifier scheme name"
+                    ]
+                  },
+                  {
+                    "id": "q-identity-fallback",
+                    "text": "When no authoritative identifier exists, what governed identifier or minted surrogate is used and who minted it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Governed IRI",
+                      "Minted UUID or ULID",
+                      "Minting authority reference"
+                    ]
+                  },
+                  {
+                    "id": "q-identity-dedup",
+                    "text": "What natural key set is used to detect that two reports describe the same deployment occurrence?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Natural key tuple (release digest, target selector, requested time window)",
+                      "Deduplication rule",
+                      "Merge or reject outcome"
+                    ]
+                  },
+                  {
+                    "id": "q-identity-stability",
+                    "text": "Is the deployment identifier stable across retries, resumed rollouts and orchestrator restarts?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Identifier stability rule",
+                      "Retry or attempt sequence number",
+                      "Superseding identifier reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-deployment-id",
+                    "name": "deployment_identifier",
+                    "description": "Primary identifier of the deployment, recorded together with the issuing system so that priority can be evaluated.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-identifier-issuer",
+                    "name": "identifier_issuing_system",
+                    "description": "Reference to the system that assigned the deployment identifier and the identifier tier used.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-attempt-sequence",
+                    "name": "attempt_sequence_number",
+                    "description": "Monotonic attempt counter distinguishing retries of the same declared intent.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Identity is a rule set plus a small set of key fields carried on the deployment record defined in the sibling finding; minting a separate identity artifact would duplicate that record and create a second, competing identifier surface."
+              },
+              {
+                "id": "fnd-deployment-classification",
+                "name": "Deployment kind and intent classification",
+                "description": "The controlled vocabulary distinguishing initial install, upgrade, rollback, configuration-only change, redeploy and removal, aligned to the CDEvents service predicates.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-class-kind",
+                    "text": "Which deployment kind applies, and which controlled vocabulary term is used for it?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Deployment kind code",
+                      "Vocabulary namespace and version",
+                      "Mapping to the CDEvents predicate"
+                    ]
+                  },
+                  {
+                    "id": "q-class-urgency",
+                    "text": "Is this a planned deployment, an emergency or hotfix deployment, or unplanned rework triggered by an incident?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Urgency class",
+                      "Unplanned or rework flag",
+                      "Triggering reason text"
+                    ]
+                  },
+                  {
+                    "id": "q-class-reversibility",
+                    "text": "Is the deployment declared reversible, and what is the declared reversal path?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Reversibility declaration",
+                      "Declared reversal method",
+                      "Irreversible-step reasons such as data migration"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-deployment-kind",
+                    "name": "deployment_kind",
+                    "description": "Controlled term for the deployment kind: initial-install, upgrade, rollback, configuration-change, redeploy or removal.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-unplanned-flag",
+                    "name": "unplanned_rework_flag",
+                    "description": "Whether the deployment is unplanned work resulting from a production incident, as required to compute deployment rework rate.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-reversibility",
+                    "name": "declared_reversibility",
+                    "description": "Whether the deployment is declared reversible and by which declared method.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Classification is a small set of coded values on the deployment record plus a mapping table into external vocabularies; the mapping table is already carried by the interoperability alignment finding, so no separate artifact is warranted here."
+              }
+            ]
+          },
+          {
+            "id": "lyr-subject-bindings",
+            "name": "Referenced subject bindings",
+            "description": "The pinned references to the release and to the environment target, and the correlation to the instances that result from the deployment.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "fnd-release-binding",
+                "name": "Release reference and binding integrity",
+                "description": "How the deployed release is referenced and pinned, carrying the reference, the artifact coordinate and the digest used to prove the binding, without reproducing release lifecycle.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-release-ref",
+                    "text": "Which release is bound to this deployment, and by what pinned reference and artifact coordinate?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Release model reference (WM-SFT-008)",
+                      "Package URL or equivalent artifact coordinate",
+                      "Reference pinning mode"
+                    ]
+                  },
+                  {
+                    "id": "q-release-digest",
+                    "text": "Which content digest and algorithm were recorded at binding time to prove that the intended release was the one deployed?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Digest algorithm name",
+                      "Digest value",
+                      "Digest capture time"
+                    ]
+                  },
+                  {
+                    "id": "q-release-drift",
+                    "text": "What happens to this deployment record if the referenced release is later revised, withdrawn or re-tagged upstream?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Immutability rule for the pinned reference",
+                      "Withdrawal notification handling",
+                      "Flag for superseded or withdrawn release"
+                    ]
+                  },
+                  {
+                    "id": "q-release-multi",
+                    "text": "Can one deployment bind more than one release or component, and how is the set bounded?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Multiplicity rule",
+                      "Component release reference set",
+                      "Ordering or dependency among components"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-release-ref",
+                    "name": "release_reference",
+                    "description": "Pinned reference to the release record in WM-SFT-008; release attributes are not copied.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-artifact-coordinate",
+                    "name": "artifact_coordinate",
+                    "description": "Package URL or equivalent coordinate identifying the deployed artifact, as required by the CDEvents service subject.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-binding-digest",
+                    "name": "binding_content_digest",
+                    "description": "Algorithm-qualified digest of the artifact recorded at binding time for integrity checking.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The relation to WM-SFT-008 is REFERENCE, so this finding may carry only the reference, binding keys and digests. Producing a local artifact describing the release would restate target-owned content and risk drifting from the release system of record."
+              },
+              {
+                "id": "fnd-environment-target-binding",
+                "name": "Environment reference and target placement",
+                "description": "The pinned environment reference plus the deployment-specific target selector describing which cells, regions, tenants or device groups received the release.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-env-ref",
+                    "text": "Which runtime environment is targeted, and by what pinned reference and environment tier name?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Environment model reference (WM-SFT-010)",
+                      "Deployment environment name value",
+                      "Reference pinning mode"
+                    ]
+                  },
+                  {
+                    "id": "q-env-selector",
+                    "text": "Within that environment, which subset of targets was selected for this deployment?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Target selector expression",
+                      "Enumerated target node or cluster references",
+                      "Selector evaluation time"
+                    ]
+                  },
+                  {
+                    "id": "q-env-geography",
+                    "text": "In which geographic or jurisdictional locations did the deployed instances actually run as a result of this deployment?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "Region or availability zone codes",
+                      "Country or jurisdiction codes",
+                      "Data residency constraint reference"
+                    ]
+                  },
+                  {
+                    "id": "q-env-tenancy",
+                    "text": "Which tenants, customers or device cohorts were in scope, and were any explicitly excluded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Tenant or cohort scope list",
+                      "Exclusion list with reasons",
+                      "Scope percentage where cohorts are sampled"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-environment-ref",
+                    "name": "environment_reference",
+                    "description": "Pinned reference to the runtime environment record in WM-SFT-010.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-target-selector",
+                    "name": "target_selector",
+                    "description": "Deployment-specific selector or enumeration naming the subset of the environment that received the release.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-placement-regions",
+                    "name": "resulting_placement_regions",
+                    "description": "Region, zone or jurisdiction codes where the deployed instances ran, as reported at completion.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Environment structure is owned by WM-SFT-010 under a REFERENCE relation; only the reference and the deployment-specific selector and reported placement facts belong here, and those are field-level data rather than a standalone artifact."
+              },
+              {
+                "id": "fnd-deployed-instance-correlation",
+                "name": "Deployed instance and installed-software correlation",
+                "description": "How the deployment record correlates to the concrete running or installed instances it produced, so that observed installed software can be reconciled to a deployment.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-008",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-instance-ids",
+                    "text": "Which service instance identifiers, container identities or device identifiers are attributable to this deployment?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Service instance identifier set",
+                      "Service namespace and name",
+                      "Instance capture time"
+                    ]
+                  },
+                  {
+                    "id": "q-instance-install-evidence",
+                    "text": "What installed-software evidence on the target corroborates that this release is present?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Software identification tag reference",
+                      "Installed product identifier",
+                      "Evidence collection time and collector reference"
+                    ]
+                  },
+                  {
+                    "id": "q-instance-attribution",
+                    "text": "How is an observed running instance attributed to exactly one deployment when several deployments overlap in time?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Attribution rule",
+                      "Overlap tie-break criterion",
+                      "Unattributed instance handling"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-instance-refs",
+                    "name": "deployed_instance_references",
+                    "description": "Identifiers of the instances attributed to this deployment, using the runtime system's own instance identity scheme.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-install-evidence-ref",
+                    "name": "installed_software_evidence_reference",
+                    "description": "Reference to endpoint software identification tag evidence corroborating the installation.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are correlation keys and evidence pointers only. The tags and telemetry themselves are produced and owned by asset inventory and observability systems, so materialising them locally would duplicate externally owned records."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bnd-intent-and-configuration",
+        "name": "Declared intent and deployment configuration",
+        "description": "The declarative desired state for the deployment, the deploy-time parameters bound to it, and the planned rollout strategy and window.",
+        "rationale": "GitOps principles require desired state to be declarative, versioned and immutable, OMG DEPL standardises a deployment plan bound to a target domain, and SSDF requires software to be configured with secure settings by default.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-009",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "lyr-declared-desired-state",
+            "name": "Declared desired state and parameters",
+            "description": "What was declared to be true after the deployment, and which subject-specific parameter values were bound at deploy time.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-006",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "fnd-desired-state-declaration",
+                "name": "Desired state declaration and its version",
+                "description": "The declarative statement of the intended post-deployment state, its immutable version reference and its source of truth, kept distinct from the reconciliation that applies it.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-desired-source",
+                    "text": "Where is the declarative desired state held, and which immutable version of it does this deployment assert?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Desired state source reference",
+                      "Immutable revision identifier",
+                      "Content digest of the declaration"
+                    ]
+                  },
+                  {
+                    "id": "q-desired-content",
+                    "text": "What does the declaration assert about the target after deployment, in format-neutral terms?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Declared component set and replica or instance counts",
+                      "Declared release references",
+                      "Declared resource and placement constraints"
+                    ]
+                  },
+                  {
+                    "id": "q-desired-drift",
+                    "text": "How is divergence between the declared desired state and the reported actual state recorded on the deployment?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Drift status code",
+                      "Drift observation reference and observation time",
+                      "Divergent element list"
+                    ]
+                  },
+                  {
+                    "id": "q-desired-authority",
+                    "text": "Who is authorised to change the desired state declaration for this target, and is the change recorded as a new deployment?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Declaration change authority role",
+                      "Required approval reference",
+                      "New deployment minting rule"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-desired-state-ref",
+                    "name": "desired_state_declaration_reference",
+                    "description": "Immutable, versioned reference to the declarative desired state asserted by this deployment.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-desired-state-digest",
+                    "name": "desired_state_digest",
+                    "description": "Algorithm-qualified digest of the canonical desired state declaration at the moment it was bound.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-drift-status",
+                    "name": "drift_status",
+                    "description": "Recorded status of divergence between declared desired state and the last reported actual state.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-desired-state-declaration",
+                    "name": "Deployment desired-state declaration",
+                    "description": "The versioned, immutable declaration of intended post-deployment state bound to this deployment, held as a content-addressed reference set rather than a live configuration store.",
+                    "media_or_form": [
+                      "declarative manifest set",
+                      "structured record",
+                      "content-addressed document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the source-of-truth revision identifier from the authoritative declaration store plus a content digest; where no such store exists, by a governed IRI minted by the adopting Dimension.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "fnd-deploy-time-parameter-binding",
+                "name": "Deploy-time parameter and secret-reference binding",
+                "description": "The subject-specific configuration values, feature toggles and opaque secret references bound at deployment time, together with the secure-default baseline they deviate from.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-param-values",
+                    "text": "Which parameter keys and values were bound for this deployment, and which deviate from the documented secure default configuration?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Parameter key and value pairs",
+                      "Deviation-from-default flags",
+                      "Baseline configuration reference"
+                    ]
+                  },
+                  {
+                    "id": "q-param-secrets",
+                    "text": "How are credentials and key material referenced without being carried in the deployment record?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Opaque secret reference identifiers",
+                      "Secret store reference",
+                      "Prohibition statement on inline values"
+                    ]
+                  },
+                  {
+                    "id": "q-param-sensitivity",
+                    "text": "Which bound parameters are sensitive or personal-data-relevant and therefore require redaction on read?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Sensitivity classification per parameter",
+                      "Redaction rule",
+                      "Roles exempt from redaction"
+                    ]
+                  },
+                  {
+                    "id": "q-param-effective",
+                    "text": "Which parameter values were actually effective at completion, as opposed to merely requested?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Effective parameter set as reported",
+                      "Reporting source reference",
+                      "Requested-versus-effective discrepancy list"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-parameter-binding",
+                    "name": "parameter_binding_set",
+                    "description": "Set of deploy-time parameter keys with values or opaque references, each carrying a sensitivity classification.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-secret-refs",
+                    "name": "secret_reference_set",
+                    "description": "Opaque references to secrets required by the deployment; values are never stored in this model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-baseline-config-ref",
+                    "name": "baseline_configuration_reference",
+                    "description": "Reference to the secure default or baseline configuration against which deviations are recorded.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Parameter bindings are field-level data on the deployment record and frequently contain sensitive values, so they are held inline with per-field sensitivity classification and redaction rather than materialised as a separate distributable artifact."
+              }
+            ]
+          },
+          {
+            "id": "lyr-rollout-plan",
+            "name": "Rollout strategy and deployment plan",
+            "description": "The declared rollout method and the planned timing, sequencing and constraints for carrying it out.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-009",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "fnd-rollout-strategy",
+                "name": "Declared rollout strategy",
+                "description": "The strategy declared for this deployment, such as recreate, rolling update, blue-green or canary with staged weights and pauses, recorded as intent rather than as executable mechanics.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-strategy-type",
+                    "text": "Which rollout strategy was declared, and which strategy-specific limits such as surge, unavailability or step weights were set?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Strategy type code",
+                      "Surge and unavailability limits",
+                      "Ordered step definitions with weights and pause durations"
+                    ]
+                  },
+                  {
+                    "id": "q-strategy-gates",
+                    "text": "Which pauses in the declared strategy require an explicit promotion decision rather than elapsing automatically?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Indefinite pause step positions",
+                      "Promotion decision requirement",
+                      "Decision maker role"
+                    ]
+                  },
+                  {
+                    "id": "q-strategy-abort",
+                    "text": "Under what declared conditions is the rollout to be aborted, and what does abort mean for the recorded state?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Abort trigger conditions as declared",
+                      "Abort target state",
+                      "Scale-down or drain delay values"
+                    ]
+                  },
+                  {
+                    "id": "q-strategy-downtime",
+                    "text": "Does the declared strategy accept service interruption, and was that interruption expected and communicated?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Expected downtime declaration",
+                      "Downtime window duration",
+                      "Notification reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-strategy-type",
+                    "name": "rollout_strategy_type",
+                    "description": "Declared strategy code: recreate, rolling-update, blue-green, canary or other.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-strategy-steps",
+                    "name": "rollout_step_definitions",
+                    "description": "Ordered declared steps with traffic weight, pause duration and promotion requirement.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "de-strategy-limits",
+                    "name": "availability_limits",
+                    "description": "Declared maximum surge, maximum unavailable and minimum ready duration values.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The strategy is declared intent captured as coded fields and an ordered step list on the deployment record; the executable controller configuration that realises it is owned by the orchestrator and must not be mirrored here."
+              },
+              {
+                "id": "fnd-deployment-plan-and-window",
+                "name": "Deployment plan, sequencing and permitted window",
+                "description": "The planned schedule, ordering dependencies among deployments, and the freeze or maintenance windows constraining when the deployment may proceed.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-plan-window",
+                    "text": "Within which permitted window was this deployment scheduled, and in which local offset is that window expressed?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Planned window start and end with explicit offset",
+                      "Window type such as maintenance or freeze exemption",
+                      "Window authority reference"
+                    ]
+                  },
+                  {
+                    "id": "q-plan-sequencing",
+                    "text": "Which other deployments must complete before or after this one, and what happens if a predecessor fails?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Predecessor and successor deployment references",
+                      "Ordering constraint type",
+                      "Failure propagation rule"
+                    ]
+                  },
+                  {
+                    "id": "q-plan-target-domain",
+                    "text": "What plan-level mapping of components to target nodes was declared before execution began?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Component-to-target assignment list",
+                      "Target domain reference",
+                      "Assignment method such as manual or solver-generated"
+                    ]
+                  },
+                  {
+                    "id": "q-plan-deviation",
+                    "text": "Did execution deviate from the plan, and what deviation was recorded?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Deviation flag and category",
+                      "Deviation description",
+                      "Authorising reference for the deviation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-planned-window",
+                    "name": "planned_window",
+                    "description": "Planned start and end instants for the deployment, each with explicit offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-plan-dependencies",
+                    "name": "plan_dependency_references",
+                    "description": "References to predecessor or successor deployments with the ordering constraint type.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-plan-assignment",
+                    "name": "component_target_assignment",
+                    "description": "Declared mapping of deployable components to target nodes within the target domain.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-deployment-plan",
+                    "name": "Deployment plan",
+                    "description": "The pre-execution plan binding components to targets with sequencing, permitted window and declared constraints, in the sense of a standardised deployment plan for a target domain.",
+                    "media_or_form": [
+                      "structured plan record",
+                      "document",
+                      "tabular assignment set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the planning system's own plan identifier where one exists, carried with the issuing system reference; otherwise by a governed IRI, with the covering deployment identifier as a mandatory back-reference.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bnd-execution-state-and-history",
+        "name": "Execution state, history and time",
+        "description": "The recorded state of the deployment over its life, the revision history that determines which deployment is current for a target, rollback linkage, and the time semantics that make all of it comparable.",
+        "rationale": "Kubernetes distinguishes desired spec from observed status with Progressing, Complete and Failed conditions and a bounded revision history; GitOps requires complete version history; DORA metrics depend on precise deployment timestamps and outcomes.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "lyr-state-model",
+            "name": "Deployment state model",
+            "description": "The state vocabulary, permitted transitions and the criteria by which a deployment is judged complete or failed.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-001",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "fnd-deployment-state-machine",
+                "name": "Deployment state vocabulary and transitions",
+                "description": "The controlled set of deployment states, which are terminal, and which transitions are permitted, recorded as an append-only transition history.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-001",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-state-vocabulary",
+                    "text": "Which states can a deployment occupy, and which of them are terminal?",
+                    "kind": "state",
+                    "answer_data": [
+                      "State code list",
+                      "Terminal state flags",
+                      "Vocabulary version"
+                    ]
+                  },
+                  {
+                    "id": "q-state-transitions",
+                    "text": "Which state transitions are permitted, and which actor or source may assert each of them?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Permitted transition pairs",
+                      "Asserting actor or system per transition",
+                      "Rejected transition handling"
+                    ]
+                  },
+                  {
+                    "id": "q-state-paused",
+                    "text": "How is a paused or awaiting-promotion deployment represented, and does pause time count toward deployment duration?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Paused state representation",
+                      "Pause start and resume instants",
+                      "Duration accounting rule"
+                    ]
+                  },
+                  {
+                    "id": "q-state-reported",
+                    "text": "When the state is reported by an external orchestrator, how is the reported value mapped into this model's vocabulary?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Source status value as received",
+                      "Mapping rule to local state code",
+                      "Unmappable value handling"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-current-state",
+                    "name": "current_state",
+                    "description": "Current deployment state code from the controlled vocabulary.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-state-transition",
+                    "name": "state_transition_entry",
+                    "description": "Append-only transition entry with prior state, new state, asserting source, reason and transition instant.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-source-status-raw",
+                    "name": "source_reported_status",
+                    "description": "Status string exactly as reported by the external orchestrator, retained unmapped for traceability.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The state model is a vocabulary and transition rule set expressed as coded fields plus append-only entries; the durable serial record of those entries is carried by the deployment history ledger artifact, so declaring a second artifact here would duplicate it."
+              },
+              {
+                "id": "fnd-progress-and-completion",
+                "name": "Progress reporting and completion criteria",
+                "description": "The declared criteria by which a deployment is judged to have progressed, completed or failed, and how externally observed progress reports are recorded against them.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-013",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-progress-criteria",
+                    "text": "What criteria must be satisfied for this deployment to be declared complete, and who declared them?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Completion criteria statement",
+                      "Readiness threshold values",
+                      "Criteria author reference"
+                    ]
+                  },
+                  {
+                    "id": "q-progress-deadline",
+                    "text": "What deadline applies before a non-progressing deployment is treated as failed, and what happened when it elapsed?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Progress deadline duration",
+                      "Deadline exceeded flag",
+                      "Resulting state and reason code"
+                    ]
+                  },
+                  {
+                    "id": "q-progress-observation",
+                    "text": "Which observed counts or signals were reported against the declared criteria, and by which reporting system?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Observed ready, updated and available counts",
+                      "Reporting system reference",
+                      "Observation instant"
+                    ]
+                  },
+                  {
+                    "id": "q-progress-failure-reason",
+                    "text": "When a deployment failed, what reason code was recorded and was that reason produced locally or received from the orchestrator?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Failure reason code",
+                      "Reason origin (local or reported)",
+                      "Free-text failure detail"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-completion-criteria",
+                    "name": "completion_criteria",
+                    "description": "Declared criteria and thresholds that define successful completion of the deployment.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-progress-deadline",
+                    "name": "progress_deadline_duration",
+                    "description": "Maximum permitted duration without progress before the deployment is treated as failed.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-progress-observation",
+                    "name": "progress_observation_entry",
+                    "description": "Recorded observation of progress counts or signals with the reporting system and observation instant.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Progress signals are produced by the orchestrator and observability stack under a REFERENCE boundary; this model records only the declared criteria and the received observation entries as inline data, and must not become a store of runtime telemetry."
+              }
+            ]
+          },
+          {
+            "id": "lyr-history-and-supersession",
+            "name": "History, supersession and rollback linkage",
+            "description": "How deployment records accumulate into a history per target, which one is current, and how rollbacks and recoveries are linked.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-003",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "fnd-revision-history-and-current",
+                "name": "Revision history and current-deployment resolution",
+                "description": "The ordered history of deployments for a target, the rule that resolves which deployment is currently in effect, and the bounded retention of superseded revisions.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-history-current",
+                    "text": "Which deployment is currently in effect for a given environment target, and by what deterministic rule is that resolved?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Current deployment reference",
+                      "Resolution rule statement",
+                      "Resolution evaluation instant"
+                    ]
+                  },
+                  {
+                    "id": "q-history-ordering",
+                    "text": "How are deployments to the same target ordered when their reported timestamps are equal, missing or out of order?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Revision sequence number",
+                      "Tie-break rule",
+                      "Out-of-order arrival handling"
+                    ]
+                  },
+                  {
+                    "id": "q-history-depth",
+                    "text": "How many superseded revisions are retained in usable form, and what is retained once a revision falls outside that bound?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retained revision count",
+                      "Reduced record content after the bound",
+                      "Bound-setting authority"
+                    ]
+                  },
+                  {
+                    "id": "q-history-completeness",
+                    "text": "How is a gap in the history detected when deployments occurred without being recorded?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Gap detection rule",
+                      "Reconciliation against observed installed state",
+                      "Gap marker entry"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-revision-sequence",
+                    "name": "revision_sequence_number",
+                    "description": "Monotonic sequence number of this deployment within the history of its target.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-superseded-by",
+                    "name": "superseded_by_reference",
+                    "description": "Reference to the deployment that superseded this one for the same target.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-current-flag",
+                    "name": "is_current_for_target",
+                    "description": "Derived flag indicating that this deployment is the one currently in effect for its target, valid as of a stated instant.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-deployment-history-ledger",
+                    "name": "Deployment history ledger",
+                    "description": "Append-only ordered ledger of deployment occurrences and state transitions for one environment target, supporting current-deployment resolution and complete version history.",
+                    "media_or_form": [
+                      "append-only ledger",
+                      "ordered record series",
+                      "tabular dataset"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the target reference plus a zero-padded monotonic sequence per target; the sequence rather than a timestamp establishes order, and each entry back-references its deployment identifier.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "fnd-rollback-and-recovery-linkage",
+                "name": "Rollback, roll-forward and recovery linkage",
+                "description": "The typed links between a remediating deployment and the deployment it reverts or repairs, together with the recovery outcome as reported.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-012",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-rollback-target",
+                    "text": "Which prior deployment does this rollback revert, and which release state is restored as a result?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Reverted deployment reference",
+                      "Restored release reference",
+                      "Rollback link type"
+                    ]
+                  },
+                  {
+                    "id": "q-rollback-trigger",
+                    "text": "What triggered the remediation, and was it an automated abort or a human decision?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Trigger category",
+                      "Triggering signal or incident reference",
+                      "Deciding actor reference"
+                    ]
+                  },
+                  {
+                    "id": "q-rollback-recovery",
+                    "text": "How long did recovery take from the failed deployment to a restored serving state, and against which two recorded instants is that measured?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Failure onset instant",
+                      "Recovery completion instant",
+                      "Derived recovery duration"
+                    ]
+                  },
+                  {
+                    "id": "q-rollback-partial",
+                    "text": "Was the rollback complete, partial or unsuccessful, and what residual state was left behind?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Rollback outcome code",
+                      "Residual state description",
+                      "Follow-up deployment reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-rollback-of",
+                    "name": "rollback_of_reference",
+                    "description": "Typed reference from a remediating deployment to the deployment it reverts.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-recovery-instants",
+                    "name": "recovery_interval",
+                    "description": "Recorded failure onset and recovery completion instants used to derive failed deployment recovery time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-rollback-outcome",
+                    "name": "rollback_outcome",
+                    "description": "Coded outcome of the remediation: complete, partial or unsuccessful.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Rollback linkage is a set of typed edges and instants between existing deployment records; representing it as its own artifact would create a parallel structure competing with the deployment history ledger."
+              }
+            ]
+          },
+          {
+            "id": "lyr-temporal-record",
+            "name": "Deployment time semantics",
+            "description": "The distinct instants that a deployment record carries and the rules that keep them comparable across systems and jurisdictions.",
+            "source_refs": [
+              "SRC-012",
+              "SRC-002",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "fnd-deployment-time-semantics",
+                "name": "Event time versus observation and ingestion time",
+                "description": "Separates when the deployment was requested, started, completed or superseded from when those facts were observed and ingested, and fixes the representation rules for all of them.",
+                "source_refs": [
+                  "SRC-012",
+                  "SRC-002",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-time-instants",
+                    "text": "Which distinct instants are recorded for this deployment, and which of them are mandatory?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Requested, started, completed and superseded instants",
+                      "Mandatory instant list",
+                      "Null handling rule for unknown instants"
+                    ]
+                  },
+                  {
+                    "id": "q-time-observation",
+                    "text": "When was each reported fact observed by the reporting system and ingested into this model, and how is that kept separate from the event instant?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Observation instant",
+                      "Ingestion instant",
+                      "Separation rule and prohibition on back-filling"
+                    ]
+                  },
+                  {
+                    "id": "q-time-offset",
+                    "text": "In which offset was each instant originally expressed, and is that original offset preserved alongside any derived normalised value?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Original offset per instant",
+                      "Derived normalised instant",
+                      "Offset preservation rule"
+                    ]
+                  },
+                  {
+                    "id": "q-time-lead",
+                    "text": "Which upstream instant anchors change lead time for this deployment, and is that anchor owned by this model or referenced?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Upstream change commit instant reference",
+                      "Anchor ownership statement",
+                      "Derived lead time value"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-event-instants",
+                    "name": "deployment_event_instants",
+                    "description": "Requested, started, completed and superseded instants, each with explicit seconds and offset.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-observation-instant",
+                    "name": "observation_instant",
+                    "description": "Instant at which the reporting system observed the fact, distinct from the event instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-ingestion-instant",
+                    "name": "ingestion_instant",
+                    "description": "Instant at which the fact was ingested into this model's records.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Time semantics are representation rules and timestamp fields attached to records defined elsewhere in this model; they have no independent artifact and are enforced through the service-layer timestamp rule instead."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bnd-authority-and-assurance",
+        "name": "Authorisation and assurance evidence",
+        "description": "Who authorised the deployment, which gate verdicts were relied upon, and which integrity and post-deployment verification evidence is referenced.",
+        "rationale": "Configuration change control and access restrictions for change require recorded authorisation; SSDF requires release integrity verification before use; SLSA verification summary attestations supply verifier-issued verdicts that may be referenced but not re-owned.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-006",
+          "SRC-005"
+        ],
+        "layers": [
+          {
+            "id": "lyr-authorization",
+            "name": "Authorisation to deploy",
+            "description": "The recorded authority for the deployment and the references to gate decisions relied upon at the deployment boundary.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-005",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "fnd-deployment-authorization",
+                "name": "Deployment authorisation and accountable actors",
+                "description": "The recorded authorisation for this deployment, the change or approval reference relied upon, the actors involved, and the separation-of-duties assertion, all carried as references to externally governed decisions.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-auth-reference",
+                    "text": "Which change or approval record authorised this deployment, and what was its recorded verdict at the time of binding?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Change or approval record reference",
+                      "Verdict as received",
+                      "Verdict capture instant"
+                    ]
+                  },
+                  {
+                    "id": "q-auth-actors",
+                    "text": "Which human or automated actors requested, approved and initiated the deployment, and in which roles?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "Requesting actor reference and role",
+                      "Approving actor reference and role",
+                      "Initiating actor or automation reference"
+                    ]
+                  },
+                  {
+                    "id": "q-auth-separation",
+                    "text": "Was separation of duties satisfied between the actor who approved and the actor who initiated, and how is a violation recorded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Separation of duties satisfied flag",
+                      "Violation reason code",
+                      "Compensating control reference"
+                    ]
+                  },
+                  {
+                    "id": "q-auth-emergency",
+                    "text": "If normal authorisation was bypassed under an emergency procedure, what retrospective authorisation is required and by when?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Emergency bypass flag and procedure reference",
+                      "Retrospective approval reference",
+                      "Retrospective approval due instant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-authorization-ref",
+                    "name": "authorization_reference",
+                    "description": "Reference to the externally owned change or approval record that authorised the deployment, with its verdict as received.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-actor-roles",
+                    "name": "actor_role_assignments",
+                    "description": "Actor references with their role in this deployment: requester, approver or initiator.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-emergency-flag",
+                    "name": "emergency_bypass_flag",
+                    "description": "Whether normal authorisation was bypassed under an emergency procedure.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Authorisation records, approval workflows and actor identities are owned by the adopting Dimension's change control and identity systems; this model carries only references, roles and received verdicts, so materialising a local authorisation artifact would clone an externally owned record."
+              },
+              {
+                "id": "fnd-gate-decision-references",
+                "name": "Deployment gate decision references",
+                "description": "References to verdicts issued by external verifiers or policy engines that were relied upon at the deployment boundary, recorded without any local evaluation, re-evaluation or enforcement.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-gate-verdicts",
+                    "text": "Which gate verdicts were relied upon for this deployment, and which verifier issued each one?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Verdict reference identifier",
+                      "Issuing verifier identifier",
+                      "Verdict value as received"
+                    ]
+                  },
+                  {
+                    "id": "q-gate-policy",
+                    "text": "Against which policy identifier and version was each relied-upon verdict issued, and where does that policy live?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Policy identifier and version",
+                      "Policy owner reference",
+                      "Statement that policy content is not held locally"
+                    ]
+                  },
+                  {
+                    "id": "q-gate-freshness",
+                    "text": "How recent must a gate verdict be to remain valid for this deployment, and what happens when it is stale?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Verdict issuance instant",
+                      "Maximum permitted age",
+                      "Stale verdict handling rule"
+                    ]
+                  },
+                  {
+                    "id": "q-gate-override",
+                    "text": "Was any failing or missing gate verdict overridden, and what override record justifies proceeding?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Override flag",
+                      "Override justification reference",
+                      "Overriding authority role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-gate-verdict-ref",
+                    "name": "gate_verdict_reference",
+                    "description": "Reference to an externally issued verdict, carrying issuer, subject digest, policy identifier and verification instant.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-gate-verdict-value",
+                    "name": "gate_verdict_value",
+                    "description": "Verdict value exactly as received from the issuing verifier, never recomputed locally.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-gate-override",
+                    "name": "gate_override_record_reference",
+                    "description": "Reference to the externally owned override justification when a gate was bypassed.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Gate verdicts are attestations produced and owned by external verifiers. Reproducing them locally would imply ownership of evaluation and enforcement semantics that this model explicitly disclaims, so only references, issuers and received values are held."
+              }
+            ]
+          },
+          {
+            "id": "lyr-verification-evidence",
+            "name": "Integrity and verification evidence",
+            "description": "Evidence referenced before deployment to prove the intended release was deployed, and the outcome recorded after deployment.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-005",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "fnd-integrity-verification-evidence",
+                "name": "Pre-deployment integrity evidence",
+                "description": "The evidence relied upon before installation that the artifact bound to the deployment is authentic and unmodified, referenced from the archived release and signature or attestation sources.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-integrity-check",
+                    "text": "What integrity check was performed before installation, and was its result recorded as passed, failed or not performed?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Integrity check type",
+                      "Check result code",
+                      "Check instant and performing system reference"
+                    ]
+                  },
+                  {
+                    "id": "q-integrity-signature",
+                    "text": "Which signature, attestation or archived-release reference supports the authenticity of the deployed artifact?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Signature or attestation reference",
+                      "Signer or issuer identifier",
+                      "Archived release location reference"
+                    ]
+                  },
+                  {
+                    "id": "q-integrity-mismatch",
+                    "text": "What is recorded when the digest presented at install time differs from the digest bound at planning time?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Mismatch flag and both digest values",
+                      "Quarantine or abort action taken",
+                      "Escalation reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-integrity-result",
+                    "name": "integrity_check_result",
+                    "description": "Coded result of the pre-deployment integrity check, with the checking system reference.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-attestation-refs",
+                    "name": "integrity_attestation_references",
+                    "description": "References to signatures, attestations or archived release locations supporting authenticity.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-verification-evidence-index",
+                    "name": "Deployment verification evidence index",
+                    "description": "An index of pointers assembled by this model that lists every integrity and gate evidence item relied upon for one deployment, with issuer, subject digest and verification instant; it contains references and never copies of the evidence.",
+                    "media_or_form": [
+                      "reference index record",
+                      "tabular pointer set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the covering deployment identifier from the authoritative master system; the index carries no identity independent of the deployment it serves.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "fnd-post-deployment-outcome",
+                "name": "Post-deployment verification outcome and acceptance",
+                "description": "The recorded outcome of post-deployment checks and the acceptance decision closing the deployment, captured as received verdicts rather than as executed tests or live health monitoring.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-003",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-post-outcome",
+                    "text": "What post-deployment verification verdict was received, from which checking system, and at what instant?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Verification verdict code",
+                      "Checking system reference",
+                      "Verdict instant"
+                    ]
+                  },
+                  {
+                    "id": "q-post-acceptance",
+                    "text": "Who accepted the deployment as successful, and on what basis was that acceptance recorded?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Accepting actor or role reference",
+                      "Acceptance basis statement",
+                      "Acceptance instant"
+                    ]
+                  },
+                  {
+                    "id": "q-post-defects",
+                    "text": "Which defects, degradations or incidents were attributed to this deployment after completion, and how are they referenced?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Incident or defect reference set",
+                      "Attribution basis",
+                      "Change failure classification"
+                    ]
+                  },
+                  {
+                    "id": "q-post-soak",
+                    "text": "Is there a declared observation period after completion before the deployment is considered stable, and when does it end?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Soak or bake period duration",
+                      "Period end instant",
+                      "Stability outcome code"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-post-verdict",
+                    "name": "post_deployment_verdict",
+                    "description": "Verdict received from post-deployment checks, with the checking system reference and instant.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-attributed-incidents",
+                    "name": "attributed_incident_references",
+                    "description": "References to externally owned incident or defect records attributed to this deployment.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-change-failure-flag",
+                    "name": "change_failure_flag",
+                    "description": "Whether the deployment required immediate intervention such as rollback or hotfix, as needed for change fail rate.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-deployment-completion-report",
+                    "name": "Deployment completion report",
+                    "description": "The closing summary of one deployment: terminal state, effective placement, received verification verdicts, acceptance decision and attributed follow-up references.",
+                    "media_or_form": [
+                      "structured report record",
+                      "document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the covering deployment identifier from the authoritative master system, with a content digest over its canonical form; it is issued once per terminal deployment and superseded rather than edited.",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bnd-measurement-and-governance",
+        "name": "Delivery measurement and record governance",
+        "description": "Metrics derived from deployment records, and the provenance, access, sensitivity and retention rules governing those records.",
+        "rationale": "DORA delivery metrics are computed over deployment records and constrain which fields must exist; audit, access restriction and record-keeping controls govern how those records are read and retained.",
+        "source_refs": [
+          "SRC-012",
+          "SRC-007",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "lyr-delivery-measurement",
+            "name": "Delivery performance measurement",
+            "description": "Metrics computed over this model's own deployment records, with their windows, denominators and validity conditions.",
+            "source_refs": [
+              "SRC-012",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "fnd-delivery-performance-metrics",
+                "name": "Delivery metrics and measurement validity",
+                "description": "The metric definitions computed from deployment records, the population and window they apply to, and the record-completeness conditions under which the results are valid.",
+                "source_refs": [
+                  "SRC-012",
+                  "SRC-004",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-metrics-definitions",
+                    "text": "Which delivery metrics are computed from these records, and by which exact definition and denominator?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Metric name and definition",
+                      "Numerator and denominator population",
+                      "Definition source reference and version"
+                    ]
+                  },
+                  {
+                    "id": "q-metrics-window",
+                    "text": "Over which time window and target population is each metric computed, and in which offset is the window expressed?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Window start and end with explicit offset",
+                      "Target population filter",
+                      "Aggregation grain"
+                    ]
+                  },
+                  {
+                    "id": "q-metrics-validity",
+                    "text": "Which record-completeness conditions must hold before a computed metric may be published, and what is reported when they fail?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Required non-null field list",
+                      "Minimum record coverage threshold",
+                      "Suppression or caveat statement"
+                    ]
+                  },
+                  {
+                    "id": "q-metrics-exclusions",
+                    "text": "Which deployments are excluded from metric populations, and on what documented basis?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Exclusion rule list",
+                      "Excluded deployment references",
+                      "Exclusion authority"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-metric-definition",
+                    "name": "metric_definition_reference",
+                    "description": "Reference to the exact metric definition and version used, so that recomputation is reproducible.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-metric-value",
+                    "name": "metric_value",
+                    "description": "Computed metric value with its unit, window and population size.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-record-coverage",
+                    "name": "record_coverage_ratio",
+                    "description": "Share of in-scope deployments with all fields required by the metric present, used to qualify the result.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-delivery-metrics-report",
+                    "name": "Delivery metrics report",
+                    "description": "A periodic report of delivery metrics computed over this model's deployment records, carrying window bounds, population filters, coverage ratio and documented exclusions.",
+                    "media_or_form": [
+                      "tabular dataset",
+                      "structured report record"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identified by the reporting scope reference plus a zero-padded monotonic sequence per scope; the covering window is carried as explicit start and end fields rather than encoded into the name.",
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "lyr-record-governance",
+            "name": "Record provenance, access and retention",
+            "description": "How deployment records came to exist, who may read them and at what sensitivity, and how they are disposed of.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-006",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "fnd-record-provenance",
+                "name": "Deployment record provenance and reconciliation",
+                "description": "The origin, capture path and trust level of each deployment record, including whether it was asserted by a pipeline, reconciled from observed state, or entered manually.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-008",
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "q-prov-origin",
+                    "text": "Which system asserted this deployment record, and through which capture path did it reach the model?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Asserting system reference",
+                      "Capture path code such as event feed, reconciliation or manual entry",
+                      "Ingestion instant"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-confidence",
+                    "text": "What confidence level is attached to the record, and which fields are inferred rather than asserted?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Confidence level code",
+                      "Inferred field list with inference basis",
+                      "Confidence review instant"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-reconciliation",
+                    "text": "When observed installed state contradicts the recorded deployment, which source wins and what correction entry is written?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Precedence rule",
+                      "Contradiction description",
+                      "Correction entry reference"
+                    ]
+                  },
+                  {
+                    "id": "q-prov-immutability",
+                    "text": "Which parts of a terminal deployment record are immutable, and how are later corrections expressed?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Immutable field list",
+                      "Correction mechanism as superseding entry",
+                      "Correcting actor reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-asserting-system",
+                    "name": "asserting_system_reference",
+                    "description": "Reference to the system that asserted the record, with the capture path used.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-record-confidence",
+                    "name": "record_confidence_level",
+                    "description": "Confidence classification for the record, distinguishing asserted from inferred content.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "de-correction-ref",
+                    "name": "correction_entry_reference",
+                    "description": "Reference to a superseding entry that corrects a previously recorded fact without mutating it.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Provenance is metadata carried on records defined elsewhere in this model. It is deliberately not made an artifact, because a separate provenance document would invite confusion with the adopting Dimension's audit-trail system, whose semantics this model does not own."
+              },
+              {
+                "id": "fnd-record-access-and-sensitivity",
+                "name": "Record access, sensitivity and redaction",
+                "description": "The sensitivity classification of deployment record content and the rules governing who may read which parts, including production target detail and parameter bindings.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "q-access-classification",
+                    "text": "What sensitivity classification applies to each part of the deployment record, and who set it?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Sensitivity class per field group",
+                      "Classification authority reference",
+                      "Classification review instant"
+                    ]
+                  },
+                  {
+                    "id": "q-access-roles",
+                    "text": "Which roles may read production target placement, parameter bindings and evidence references, and at what scope?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Role to scope grant list",
+                      "Scope level (bundle, layer, finding or artifact)",
+                      "Grant expiry where time-bound"
+                    ]
+                  },
+                  {
+                    "id": "q-access-breakglass",
+                    "text": "Under what emergency conditions may normal read restrictions be bypassed, and what must be recorded when they are?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Break-glass condition statement",
+                      "Required justification fields",
+                      "Post-hoc review requirement and due instant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-sensitivity-class",
+                    "name": "sensitivity_classification",
+                    "description": "Sensitivity class assigned to a field group of the deployment record.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-access-grant",
+                    "name": "access_grant_entry",
+                    "description": "Role, scope and validity of a read grant over part of this model's records.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Access control decisions are expressed as classification labels and grant entries evaluated by the adopting Dimension's access system. This model records the classification and the grant declarations only, and does not own enforcement, so no distributable artifact is appropriate."
+              },
+              {
+                "id": "fnd-retention-and-disposition",
+                "name": "Retention, disposition and tombstones",
+                "description": "How long deployment records are kept, what reduced form survives disposition, and which external policy owns the execution of deletion.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-retention-period",
+                    "text": "What retention period applies to a deployment record, and from which instant is it measured?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retention period duration",
+                      "Retention clock start instant",
+                      "Policy reference setting the period"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-tombstone",
+                    "text": "What minimal tombstone survives disposition, and which fields are purged?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retained tombstone field list",
+                      "Purged field list",
+                      "Disposition instant"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-hold",
+                    "text": "What suspends disposition, such as legal hold or an open investigation, and who may set and release it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Hold flag and reason",
+                      "Setting and releasing role references",
+                      "Hold review instant"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-cascade",
+                    "text": "When a referenced release or environment record is deleted upstream, what happens to this deployment record?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "No-cascade rule statement",
+                      "Dangling reference marker",
+                      "Owner of the upstream deletion decision"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-retention-period",
+                    "name": "retention_period",
+                    "description": "Duration for which the full deployment record is retained, with the policy reference that sets it.",
+                    "value_kind": "duration",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-tombstone-marker",
+                    "name": "disposition_tombstone",
+                    "description": "Reduced surviving record marking that a deployment existed and was disposed of, with the disposition instant.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-legal-hold",
+                    "name": "legal_hold_flag",
+                    "description": "Whether disposition is suspended by a hold, with the reason and the setting authority.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Retention is a rule set plus a small tombstone structure attached to existing records. Physical destruction is executed by the adopting Dimension's records-management and storage policy, so producing a local disposition artifact would misattribute ownership of the deletion act."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bnd-interoperability",
+        "name": "Interoperability and external alignment",
+        "description": "How deployment records are projected onto, and reconciled with, external deployment vocabularies without asserting conformance.",
+        "rationale": "CDEvents, OpenTelemetry, SPDX and software identification tagging each describe part of the deployment surface with incompatible identifier schemes and stability levels, so alignments must be recorded explicitly with mapping evidence.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-011",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "lyr-standards-alignment",
+            "name": "Standards alignment and identifier exchange",
+            "description": "The recorded mappings to external standards, the identifier schemes exchanged, and the known points where mappings are lossy.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "fnd-external-standard-alignment",
+                "name": "External standard alignments and identifier exchange",
+                "description": "The declared alignments to external deployment vocabularies, the identifier and digest schemes used to exchange deployment facts, and the explicit statement that alignment is not conformance.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-011",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-align-mappings",
+                    "text": "Which external vocabulary terms does each local element map to, and at which version of that vocabulary?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Local element to external term mapping",
+                      "External vocabulary name and version",
+                      "Mapping direction and cardinality"
+                    ]
+                  },
+                  {
+                    "id": "q-align-lossy",
+                    "text": "Where is a mapping lossy, approximate or unavailable, and what is recorded in place of a value?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Lossy mapping list with loss description",
+                      "Unmapped element list",
+                      "Placeholder or omission rule"
+                    ]
+                  },
+                  {
+                    "id": "q-align-identifiers",
+                    "text": "Which identifier and digest schemes are exchanged with external systems, and how are they normalised on ingest?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Identifier scheme list such as package coordinates, instance identifiers and content digests",
+                      "Normalisation rule per scheme",
+                      "Collision handling rule"
+                    ]
+                  },
+                  {
+                    "id": "q-align-conformance",
+                    "text": "Is conformance to any external specification asserted, and if so on what cited evidence?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Conformance assertion or explicit non-assertion",
+                      "Cited conformance evidence reference",
+                      "Stability level of the external terms relied upon"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-alignment-entry",
+                    "name": "alignment_mapping_entry",
+                    "description": "One mapping from a local element to an external vocabulary term, with the external version and loss notes.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-external-term-stability",
+                    "name": "external_term_stability",
+                    "description": "Stability level of each external term relied upon, so that unstable terms are not treated as normative.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-identifier-scheme",
+                    "name": "exchanged_identifier_scheme",
+                    "description": "Named identifier or digest scheme exchanged with an external system, with its normalisation rule.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-interoperability-mapping-set",
+                    "name": "Deployment interoperability mapping set",
+                    "description": "The maintained set of alignments between this model's elements and external deployment vocabularies, recording external versions, stability levels, mapping direction and known losses.",
+                    "media_or_form": [
+                      "tabular mapping set",
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by a governed IRI minted under the adopting Dimension's namespace for this model, versioned independently of the deployment records it maps.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "fn-register-deployment",
+      "name": "Register deployment record",
+      "description": "Create a deployment record binding a pinned release reference to an environment target with a declared intent, without initiating any execution.",
+      "inputs": [
+        "Release reference and artifact coordinate",
+        "Environment reference and target selector",
+        "Deployment kind and desired state declaration reference",
+        "Authorisation reference"
+      ],
+      "outputs": [
+        "Deployment identifier",
+        "Initial state transition entry",
+        "Validation report"
+      ],
+      "preconditions": [
+        "Release and environment references resolve",
+        "Identifier priority rules can be satisfied",
+        "Deployment kind is in the controlled vocabulary"
+      ],
+      "effects": [
+        "A new deployment record exists in a non-terminal state",
+        "The record is appended to the target's history ledger"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-record-state-transition",
+      "name": "Record deployment state transition",
+      "description": "Append a state transition asserted by an external orchestrator or actor, mapping the reported status into the local vocabulary and retaining the raw value.",
+      "inputs": [
+        "Deployment identifier",
+        "Reported status value and asserting source",
+        "Event instant and observation instant"
+      ],
+      "outputs": [
+        "Appended transition entry",
+        "Updated current state",
+        "Unmappable status exception where applicable"
+      ],
+      "preconditions": [
+        "Deployment record exists",
+        "Transition is permitted from the current state",
+        "Event and observation instants carry explicit offsets"
+      ],
+      "effects": [
+        "Transition history grows append-only",
+        "Terminal transitions freeze immutable fields"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "fn-resolve-current-deployment",
+      "name": "Resolve current deployment for a target",
+      "description": "Determine deterministically which deployment record is currently in effect for a given environment target as of a stated instant.",
+      "inputs": [
+        "Environment target reference",
+        "Evaluation instant"
+      ],
+      "outputs": [
+        "Current deployment reference",
+        "Resolution basis statement",
+        "Ambiguity report where unresolved"
+      ],
+      "preconditions": [
+        "A history ledger exists for the target",
+        "Revision ordering rules are defined"
+      ],
+      "effects": [
+        "Current-deployment flags are recomputed",
+        "Ambiguities are flagged for stewardship review"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "fn-ingest-observed-state-report",
+      "name": "Ingest observed state report",
+      "description": "Ingest an externally produced report of observed installed or running state and record its agreement or divergence with the declared desired state.",
+      "inputs": [
+        "Observed state report and reporting system reference",
+        "Observation instant",
+        "Deployment or target reference"
+      ],
+      "outputs": [
+        "Drift status",
+        "Divergent element list",
+        "Gap marker when no deployment record explains the observation"
+      ],
+      "preconditions": [
+        "Reporting system is a recognised source",
+        "Report carries an observation instant with explicit offset"
+      ],
+      "effects": [
+        "Drift status is updated on the affected deployment",
+        "Unexplained observations create a history gap marker"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-008",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "fn-link-rollback",
+      "name": "Link rollback or recovery deployment",
+      "description": "Establish the typed link between a remediating deployment and the deployment it reverts or repairs, and record the recovery interval.",
+      "inputs": [
+        "Remediating deployment identifier",
+        "Reverted deployment identifier",
+        "Failure onset and recovery completion instants"
+      ],
+      "outputs": [
+        "Rollback link entry",
+        "Derived recovery duration",
+        "Rollback outcome code"
+      ],
+      "preconditions": [
+        "Both deployment records exist and share a target",
+        "The reverted deployment has a recorded failure or defect attribution"
+      ],
+      "effects": [
+        "Rollback linkage is available for metric computation",
+        "Change failure classification is set on the reverted deployment"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-012",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "fn-attach-evidence-reference",
+      "name": "Attach verification evidence reference",
+      "description": "Attach a reference to an externally issued integrity, gate or post-deployment verdict, recording issuer, policy identifier and verification instant without evaluating or recomputing it.",
+      "inputs": [
+        "Deployment identifier",
+        "Evidence reference with issuer and subject digest",
+        "Verdict value as received and verification instant"
+      ],
+      "outputs": [
+        "Updated verification evidence index",
+        "Freshness assessment against the declared maximum age"
+      ],
+      "preconditions": [
+        "Evidence reference resolves to an external issuer",
+        "Subject digest matches the bound release digest or a mismatch is recorded"
+      ],
+      "effects": [
+        "Evidence index grows for the deployment",
+        "Stale or mismatched evidence is flagged, not overridden"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "fn-compute-delivery-metrics",
+      "name": "Compute delivery metrics",
+      "description": "Compute delivery metrics over this model's deployment records for a stated window and population, qualified by record coverage.",
+      "inputs": [
+        "Window start and end with explicit offsets",
+        "Population filter",
+        "Metric definition references"
+      ],
+      "outputs": [
+        "Metric values with units and population sizes",
+        "Record coverage ratio",
+        "Exclusion list"
+      ],
+      "preconditions": [
+        "Required instants and outcome flags are present or explicitly counted as missing",
+        "Metric definitions are versioned"
+      ],
+      "effects": [
+        "A serial delivery metrics report is issued",
+        "Results below the coverage threshold are suppressed or caveated"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "fn-project-to-external-vocabulary",
+      "name": "Project deployment to an external vocabulary",
+      "description": "Produce a projection of a deployment record into an external deployment vocabulary using the maintained mapping set, marking lossy and unmapped elements.",
+      "inputs": [
+        "Deployment identifier",
+        "Target vocabulary name and version"
+      ],
+      "outputs": [
+        "Projected representation",
+        "Loss report",
+        "Non-conformance statement where terms are unstable"
+      ],
+      "preconditions": [
+        "A mapping entry exists for the requested vocabulary version",
+        "Stability levels of external terms are recorded"
+      ],
+      "effects": [
+        "A projection is emitted without altering the source record",
+        "Unmapped elements are reported rather than silently dropped"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "fn-apply-disposition",
+      "name": "Apply retention disposition marker",
+      "description": "Evaluate a deployment record against the adopting Dimension's retention policy and, where eligible, reduce it to a tombstone and emit a disposition marker for the storage owner to execute.",
+      "inputs": [
+        "Deployment identifier",
+        "Retention policy reference",
+        "Hold status"
+      ],
+      "outputs": [
+        "Disposition eligibility decision",
+        "Tombstone record",
+        "Disposition marker for the storage owner"
+      ],
+      "preconditions": [
+        "Retention clock start instant is recorded",
+        "No legal hold is active",
+        "The deployment is not current for any target"
+      ],
+      "effects": [
+        "Purged fields are removed and the tombstone retained",
+        "Execution of physical deletion is delegated to the adopting Dimension's storage policy"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-007"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-SFT-008 Release",
+      "relation": "REFERENCE",
+      "purpose": "A deployment installs a release. This model carries the pinned release reference, artifact coordinate and binding digest only; release identity, versioning, artifact content, SBOM, build provenance and release lifecycle remain owned by the target model.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "WM-SFT-010 Runtime environment",
+      "relation": "REFERENCE",
+      "purpose": "A deployment targets a runtime environment. This model carries the pinned environment reference, the deployment-specific target selector and reported placement; environment definition, topology, capacity and environment lifecycle remain owned by the target model.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "WM-SFT-002 software product or service",
+      "relation": "CHILD",
+      "purpose": "This model is a child of the parent software product or service model, which owns product identity, ownership and commercial context; this model adds only the installed-into-environment occurrence.",
+      "required": true,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Pipeline or automation run model (not yet registered)",
+      "relation": "REFERENCE",
+      "purpose": "Carry an opaque reference to the run that requested the deployment so that change lead time can be anchored upstream; pipeline definition, orchestration and run lifecycle are not modelled here. No sibling model is registered, so this link is a declared structural gap.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Change authorisation or configuration change control record (adopting-Dimension owned)",
+      "relation": "REFERENCE",
+      "purpose": "Carry the authorisation reference and its received verdict at the deployment boundary; change workflow, impact analysis and approval lifecycle remain with the configuration change control regime.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Verifier-issued verification summary attestation",
+      "relation": "REFERENCE",
+      "purpose": "Carry gate verdict references with issuer, policy identifier and verification instant; evaluation, policy authorship and enforcement are owned by the verifier and are explicitly not acquired by referencing them.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "CDEvents continuous deployment event vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Align deployment kinds and the service and environment subject bindings to the CDEvents predicates and required subject fields, recorded as an alignment with mapping evidence, not as a conformance claim.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "OpenTelemetry deployment and service resource attributes",
+      "relation": "ALIGN",
+      "purpose": "Align environment tier naming and deployed-instance correlation to the stable deployment environment attribute and service instance identity, while flagging that deployment identifier, name and status attributes are not yet stable.",
+      "required": false,
+      "source_refs": [
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "SPDX 3.0.1 Core LifecycleScopeType",
+      "relation": "ALIGN",
+      "purpose": "Align this model's runtime-phase assertions with the runtime lifecycle scope used for SPDX relationships, noting that SPDX defines a relationship scope rather than a deployment entity.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "ISO/IEC 19770-2 software identification tags via NISTIR 8060",
+      "relation": "ALIGN",
+      "purpose": "Align deployed-instance correlation with endpoint installed-software evidence so that observed installations can be reconciled to deployment records; tag production and asset inventory remain external.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Fleet, device and over-the-air update deployment specialisation",
+      "relation": "EXTEND",
+      "purpose": "Permit a specialisation that adds device-cohort staging, update slot and offline-target semantics for embedded and device fleets, specialising only the deployment subject; generic identity, authority, lifecycle and conflict handling stay in this model.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-009"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must name a single system of record for deployment identifiers per environment class and register it as the authoritative master system.",
+        "The adopting Dimension must publish its retention period, hold authority and disposition executor for deployment records before the model is used in production.",
+        "The adopting Dimension must declare its state vocabulary version, its mapping from orchestrator-reported statuses, and the role permitted to extend that vocabulary.",
+        "The adopting Dimension must declare which environment classes are treated as production for access, sensitivity and metric purposes."
+      ],
+      "namespace_guidance": "Deployment records are namespaced under the adopting Dimension's software domain path for this model (NAV.INF.SFT.DEP). Local element identifiers use lower-kebab-case with no date-like component; external identifiers are stored in their own scheme with an explicit scheme name and are never rewritten into the local namespace.",
+      "registry_links": [
+        "Registry entry vr.wm-sft-009 in the world-model record plane, model WM-SFT-009",
+        "Relation ledger planning/VERCY-MODEL-RELATIONS.csv, covering the REFERENCE links to WM-SFT-008 and WM-SFT-010",
+        "Parent registry entry WM-SFT-002 for product and service context"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonical form orders keys deterministically, distinguishes an absent element from an empty one, and omits derived fields such as current-deployment flags from digest computation.",
+        "Identifiers are canonicalised to the highest available priority form and always carried with their issuing system reference; external coordinates and digests are normalised per scheme with the algorithm name retained.",
+        "Timestamps are canonicalised to RFC 3339 with explicit seconds and the original offset preserved; a derived normalised UTC value may be added alongside but never replaces the original offset."
+      ],
+      "patch_rules": [
+        "State history is append-only: a patch may add a transition entry but may never rewrite or delete an existing one.",
+        "Once a deployment reaches a terminal state, its identity, binding references, binding digests and terminal instants are immutable; corrections are expressed as superseding entries carrying actor, reason and source reference.",
+        "Every patch records the asserting system, the reason and the ingestion instant; patches lacking provenance are rejected rather than applied with defaults."
+      ],
+      "compatibility_rules": [
+        "Adding optional data elements, alignment entries or new non-terminal states is a minor change; consumers must ignore unknown optional elements.",
+        "Changing the state vocabulary semantics, the identity priority order, the current-deployment resolution rule or a field's cardinality from optional to required is a breaking change requiring a new major version.",
+        "Deprecated elements are retained for at least one major version with a documented mapping to their replacement before removal."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the deployment identifier assigned by the registered system of record for deployments in the adopting Dimension, stored together with a reference to that issuing system.",
+        "Governed global identifier or IRI: a resolvable identifier minted under a governed namespace when no master-system identifier exists.",
+        "UUID or ULID assigned by the adopting Dimension, recorded as locally minted with its minting authority, used only when neither higher-priority identifier is available.",
+        "A date, a version string, a release tag, an environment name, a commit hash or an artifact digest is never used as the identifier of a deployment; digests are binding evidence, not identity."
+      ],
+      "timestamp_rule": "All time values use RFC 3339 date-time with explicit seconds and an explicit numeric UTC offset or Z; date-only values, local wall-clock strings and values without an offset are rejected. Event time (requested, started, completed, superseded, failure onset, recovery completion) is recorded separately from observation time (when the reporting system saw the fact) and ingestion time (when this model received it); when only ingestion time is known, event time is left null rather than back-filled, and the original offset is preserved even where a normalised UTC value is also stored.",
+      "serial_naming_rule": "Serial artifacts, namely history ledger entries and periodic delivery metrics reports, are named as artifact kind, then subject reference, then a zero-padded monotonic sequence unique per subject. Ordering derives from the sequence, not from any timestamp, and the covering interval is carried as explicit start and end fields rather than encoded into the name.",
+      "integrity_rule": "Every artifact carries a content digest with a named algorithm over its canonical serialisation, plus the binding digest of the release it asserts. An artifact whose recomputed digest differs from the recorded digest, or whose binding digest disagrees with the referenced release, is quarantined as unverified and excluded from current-deployment resolution and from metric populations until re-verified by the record custodian."
+    },
+    "policies": [
+      "Reference, do not restate: facts owned by WM-SFT-008 and WM-SFT-010 are carried only as pinned references, binding keys and subject-specific parameters; local copies of target-owned attributes are prohibited.",
+      "Describe, do not orchestrate: the model records declared intent, received state and reported outcome; it never defines rollout mechanics, evaluates gates, enforces policy, or acts as an organizational audit trail.",
+      "Alignment, not conformance: external standards are recorded as versioned alignments with mapping evidence and stability levels; a conformance claim requires cited conformance evidence.",
+      "History is append-only and provenance-bearing: every recorded fact names its asserting system and capture path, and corrections supersede rather than mutate."
+    ],
+    "crud": {
+      "read": [
+        "Reads resolve a deployment by its identifier or by target plus evaluation instant, returning the record with sensitivity-based redaction applied to parameter bindings and production target detail.",
+        "Reads of referenced release and environment content are resolved by dereferencing the target models; this model returns references and never a cached copy of target-owned attributes.",
+        "Every returned record states its confidence level, its ingestion instant, and whether any element is inferred rather than asserted."
+      ],
+      "create": [
+        "A deployment record is created only with a resolvable release reference, a resolvable environment reference, a deployment kind from the controlled vocabulary and an identifier satisfying the identity priority order.",
+        "Creation appends an initial state transition entry and registers the record in the target's history ledger with a monotonic revision sequence.",
+        "Duplicate submissions matching the natural key tuple are merged or rejected under the declared deduplication rule rather than creating a second record."
+      ],
+      "update": [
+        "Updates append state transitions, progress observations, evidence references and drift status; they never rewrite prior entries.",
+        "Terminal-state records accept only superseding correction entries carrying actor, reason and source reference.",
+        "Binding references and binding digests are immutable after the first transition out of the initial state."
+      ],
+      "delete": [
+        "Deployment records are never hard-deleted while the record is current for any environment target; closure is by terminal state transition, not deletion.",
+        "After the adopting Dimension's retention period elapses and no legal hold is active, the record is reduced to a tombstone retaining the deployment identifier, issuing system reference, release and environment reference identifiers, terminal state and terminal instants; parameter values, actor identifiers, target host detail and free-text notes are purged.",
+        "This model declares disposition eligibility and emits a disposition marker; physical destruction of stored records is executed by the adopting Dimension's records-management and storage policy, which owns the deletion act.",
+        "Deletion of a referenced release or runtime environment is owned by WM-SFT-008 and WM-SFT-010 respectively and must never cascade into deployment records; the surviving deployment record marks the reference as dangling.",
+        "A legal hold or open investigation suspends disposition eligibility; only the retention and disposition role may set or release the hold."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Model steward",
+        "responsibilities": [
+          "Own the scope statement, boundary notes and state vocabulary",
+          "Approve breaking changes and version transitions",
+          "Adjudicate ambiguous current-deployment resolutions"
+        ]
+      },
+      {
+        "name": "Deployment record custodian",
+        "responsibilities": [
+          "Register and maintain deployment records and their history ledgers",
+          "Apply deduplication, quarantine unverified artifacts and write correction entries",
+          "Maintain confidence levels and gap markers"
+        ]
+      },
+      {
+        "name": "Boundary liaison for referenced models",
+        "responsibilities": [
+          "Maintain the pinned reference contracts to WM-SFT-008 and WM-SFT-010",
+          "Detect and escalate restatement of target-owned content",
+          "Handle upstream withdrawal and dangling-reference notifications"
+        ]
+      },
+      {
+        "name": "Interoperability maintainer",
+        "responsibilities": [
+          "Maintain the alignment mapping set and external version and stability tracking",
+          "Publish loss reports for lossy projections",
+          "Prevent unstable external terms being treated as normative"
+        ]
+      },
+      {
+        "name": "Retention and disposition officer",
+        "responsibilities": [
+          "Set retention periods and hold status",
+          "Authorise tombstone reduction and emit disposition markers",
+          "Confirm that execution of deletion is performed by the storage policy owner"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. Read access is granted per declared scope to named roles by the adopting Dimension; records whose environment reference resolves to a production-class environment are readable only by roles with a stated operational, assurance or regulatory need.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Break-glass read of parameter bindings and target placement during active recovery, requiring a justification reference and a post-hoc review within the declared period.",
+        "Assurance and regulatory read of the authorisation, gate reference and verification evidence findings without access to parameter values.",
+        "Aggregate delivery metrics may be published more widely than the underlying records, provided population sizes and exclusions are disclosed and no individual target or actor is identifiable.",
+        "Automated agents receive scope-limited, time-bound grants and may not read secret references at any scope."
+      ],
+      "audit_requirements": [
+        "Log every read of the parameter binding, target placement and actor findings with actor reference, granted scope, purpose and an RFC 3339 instant with explicit offset.",
+        "Log every break-glass invocation and every override of a failing gate reference, and route both to the model steward for review.",
+        "These logs record access to this model's own records only; they are not an organizational audit trail, and this model does not own audit-record retention or evidentiary semantics."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Name and Type to confirm this is the WM-SFT-009 Deployment model.",
+        "Read the Specification URL for scope, boundaries and the state vocabulary before writing anything.",
+        "Read the Storage type URL to learn the projection in use, treating any concrete format as a projection rather than semantics.",
+        "Read the Interface URL for the read, create, update and disposition operations and their preconditions.",
+        "Read the Processes URL for registration, transition recording, reconciliation and disposition procedures.",
+        "Read the known-relation ledger last to confirm that release and environment content is dereferenced, never restated."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This structure covers the decision and operating surface of a deployment as an identified, stateful binding of a release to a runtime environment target, grounded in continuous delivery event vocabularies, declarative rollout and GitOps sources, configuration change control and secure development controls, delivery measurement research, and a standardised deployment plan concept. Coverage is asserted for the recording and reasoning surface only; execution, evaluation, enforcement, telemetry and audit-trail semantics are deliberately excluded and delegated.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority order names the authoritative master-system deployment identifier first, with governed IRI and Dimension-minted surrogate fallbacks, plus natural-key deduplication and explicit exclusion of dates, tags and digests as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "State vocabulary, permitted transitions, terminal states, pause and promotion, progress deadline, supersession and disposition are modelled; execution of the rollout is excluded and delegated to the orchestrator."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Pinned REFERENCE bindings to release and environment, CHILD link to the parent product model, rollback and supersession edges, and dependency edges between deployments, with target-owned content excluded."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Event, observation and ingestion instants are separated, offsets preserved, windows and durations carried explicitly, and out-of-order arrival handled by revision sequence rather than timestamps."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Asserting system, capture path, confidence level, inferred-field marking and superseding corrections are modelled for this model's own records only."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Requester, approver, initiator and accountable roles are carried as references; identity management and role definition remain with the adopting Dimension."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Deduplication, digest binding checks, artifact quarantine, completion criteria, drift reconciliation and metric coverage thresholds are specified; evaluation of external policy is excluded."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny-by-default with scoped grants at bundle, layer, finding and artifact level, redaction of sensitive parameters, break-glass exceptions and scoped access logging."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention clock, tombstone content, purge list, legal hold, no-cascade rule, and explicit delegation of the physical deletion act to the adopting Dimension's storage and records-management policy."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Versioned alignments with stability levels and loss reporting to CDEvents, OpenTelemetry, SPDX lifecycle scope and software identification tagging, with conformance explicitly not asserted."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Deployment kind, urgency, unplanned-rework flag and reversibility are coded and mapped to the CDEvents predicates."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Delivery metrics are computed over this model's own records with declared definitions, windows, exclusions and coverage qualification."
+      },
+      {
+        "dimension": "spatial and residency",
+        "status": "covered",
+        "notes": "Resulting placement regions and jurisdiction codes are recorded per deployment; jurisdictional rules themselves are not encoded here."
+      },
+      {
+        "dimension": "authority and approval",
+        "status": "covered",
+        "notes": "Authorisation references, separation of duties, emergency bypass and retrospective approval are carried as references to externally governed decisions."
+      },
+      {
+        "dimension": "security of configuration and secrets",
+        "status": "covered",
+        "notes": "Only opaque secret references are held, with deviation-from-secure-default flags against a referenced baseline configuration."
+      },
+      {
+        "dimension": "data migration coupling",
+        "status": "gap",
+        "notes": "Irreversibility caused by schema migration or data backfill is only flagged through the reversibility field; no primary source was found that models migration-coupled deployment structurally, so this is marked a gap rather than presented as canonical."
+      }
+    ],
+    "known_omissions": [
+      "ISO/IEC 20000-1:2018 clause 8.5 release and deployment management and the ITIL 4 deployment management practice were not consulted in full text because both are paywalled; they may impose additional plan, record or reporting attributes.",
+      "ISO/IEC/IEEE 12207:2026 and ISO/IEC 19770-2 full texts are paywalled; the catalogue abstract and NISTIR 8060 respectively were used instead, so clause-level alignment is not asserted.",
+      "No sibling model is registered for pipeline or automation runs, or for ITSM change records; those composition links are declared not-required structural gaps rather than canonical structure.",
+      "Firmware and over-the-air fleet updates (staged cohorts, A/B update slots, offline targets) are only accommodated through a permitted EXTEND link and are not modelled in depth.",
+      "Database schema migration and data backfill coupled to a deployment, and their effect on reversibility, are acknowledged but not structurally modelled.",
+      "Per-tenant entitlement, licensing and commercial gating of what may be deployed to whom are excluded.",
+      "Cost, capacity and resource-consumption consequences of a deployment are excluded as environment-owned."
+    ],
+    "conflicts": [
+      "Kubernetes uses the word Deployment for a declarative workload controller object, whereas CDEvents models the deployment act through service.deployed and related predicates. The referents differ and the name collision must be resolved by explicit mapping, not by assumed equivalence.",
+      "OpenTelemetry deployment.id, deployment.name and deployment.status are at Development stability with no defined status value set, while deployment.environment.name is Stable. The unstable attributes cannot be treated as a normative status vocabulary.",
+      "CDEvents requires the deployed artifact to be identified by a package URL, whereas OpenTelemetry and Kubernetes identify the running thing by service instance identity or object UID. No single cross-standard identifier exists, so both schemes must be carried side by side.",
+      "SPDX 3.0.1 provides a runtime lifecycle scope for relationships but defines no deployment entity, so SPDX cannot be used as the structural home for deployment records.",
+      "ISO/IEC/IEEE 12207:2017 has been superseded by the 2026 edition; existing alignments citing 2017 clause numbers may not map cleanly and should be re-verified.",
+      "DORA now publishes five delivery metrics rather than four, and its change fail rate definition (deployments requiring immediate intervention) differs from ITSM change-failure counting, so metric definitions must be version-pinned."
+    ],
+    "regional_assumptions": [
+      "Data residency and sovereignty constraints on where a release may lawfully run vary by jurisdiction; the model records resulting placement regions as facts but does not encode jurisdictional rules.",
+      "Regulated sectors such as life sciences, financial services and public safety may mandate additional pre-deployment approval and validation artifacts that this model can only reference.",
+      "Retention periods, legal hold authority and permissible purge scope for deployment records are set by the adopting Dimension and differ by jurisdiction.",
+      "Maintenance and freeze windows are locally defined, so explicit offsets are mandatory; assuming UTC would silently misplace windows across daylight-saving boundaries.",
+      "Personal-data exposure through actor identifiers in deployment records is treated as jurisdiction-dependent and handled by sensitivity classification rather than a fixed rule."
+    ],
+    "adversarial_checks": [
+      "Checked every bundle, layer, finding and function against the REFERENCE rationale for WM-SFT-008: no local element reproduces release identity, versioning, artifact content, SBOM or build provenance; only pinned references, artifact coordinates and binding digests are held.",
+      "Checked every element against the REFERENCE rationale for WM-SFT-010: environment definition, topology, capacity and environment creation, modification and deletion events were removed and moved to boundary notes and out_of_scope.",
+      "Rejected an attractive but unsupported rollout-execution layer. Argo Rollouts and Kubernetes document execution mechanics, but referencing them grants no ownership of execution, so strategy is modelled as declared intent only and no execute-deployment function exists.",
+      "Rejected ownership of gate evaluation. Referencing a verification summary attestation grants no evaluation, enforcement or policy-authorship semantics, so only issuer, policy identifier, received verdict and freshness are carried.",
+      "Rejected an audit-trail finding. Access logging was confined to the service-layer access controls with an explicit statement that this model is not an organizational audit trail and does not own audit-record retention.",
+      "Tested the entity-versus-relationship framing with a counterexample: redeploying the same release to the same target repeatedly must produce distinct records, which a pure relationship keyed on the pair cannot represent; the aggregate framing with its own identity survives this test.",
+      "Tested identity rules against the temptation to key deployments by release tag, environment name or timestamp; all three fail under redeploys, renames and clock skew, so they are explicitly excluded from the identity priority order.",
+      "Checked that no finding both declares artifacts and a rationale, that artifacts exist only where a genuinely distinct record is produced by this model, and that reference-only content such as gate verdicts and installed-software tags remained inline."
+    ]
+  }
+}

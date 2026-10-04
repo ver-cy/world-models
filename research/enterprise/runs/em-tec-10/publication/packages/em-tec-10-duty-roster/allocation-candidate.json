@@ -1,0 +1,232 @@
+{
+  "format": "vercy-model-allocation-candidate/v1",
+  "contourId": "EM-TEC-10",
+  "proposedName": "Duty Roster",
+  "modelId": null,
+  "registryId": null,
+  "allocationState": "unassigned",
+  "decision": "NEW MODEL",
+  "canonicalPublishable": false,
+  "identityTest": {
+    "stableIdentity": "A governed duty roster remains identifiable across immutable schedule revisions, shift occurrences, overrides and handovers.",
+    "versionIdentity": "Schedule changes create non-overlapping immutable revisions under one roster identity; overrides and handovers append independent records.",
+    "independentLifecycle": [
+      "draft",
+      "published",
+      "effective",
+      "suspended",
+      "retired"
+    ],
+    "mastership": "operations workforce-scheduling authority"
+  },
+  "boundary": {
+    "owns": [
+      "persistent duty-roster identity",
+      "immutable non-overlapping roster revisions",
+      "shift occurrences",
+      "attributable overrides and substitutions",
+      "handover acknowledgment and gaps",
+      "retirement open-work inventory"
+    ],
+    "references": [
+      {
+        "target": "WM-ORG-016",
+        "purpose": "Standing work assignment and eligibility"
+      },
+      {
+        "target": "WM-ACT-008",
+        "purpose": "Declared roster-schedule profile"
+      },
+      {
+        "target": "WM-ACT-006",
+        "purpose": "On-call work task"
+      }
+    ],
+    "excludes": [
+      "person, role or standing-assignment identity",
+      "IAM grant or administrative permission",
+      "incident, escalation, notification or change-execution identity",
+      "employment, attendance, payroll or timesheet authority"
+    ]
+  },
+  "objects": {
+    "DutyRoster": {
+      "identity": [
+        "dutyRosterId"
+      ],
+      "required": [
+        "serviceScope",
+        "ownerRef",
+        "assertedAt",
+        "status"
+      ],
+      "conditionalRequired": {
+        "retired": [
+          "retiredAt",
+          "uncoveredOpenWork"
+        ]
+      },
+      "lifecycle": [
+        "draft",
+        "published",
+        "effective",
+        "suspended",
+        "retired"
+      ]
+    },
+    "RosterRevision": {
+      "identity": [
+        "dutyRosterId",
+        "revision"
+      ],
+      "required": [
+        "validFrom",
+        "timezoneId",
+        "tzdbRelease",
+        "dstPolicy",
+        "contentDigest",
+        "digestAlg",
+        "canonicalization",
+        "assertedAt"
+      ],
+      "optional": [
+        "validTo",
+        "supersedesRevision"
+      ],
+      "rules": [
+        "effective intervals do not overlap",
+        "supersession is revision-level"
+      ]
+    },
+    "RosterShift": {
+      "identity": [
+        "rosterShiftId"
+      ],
+      "required": [
+        "rosterRevisionRef",
+        "standingAssignmentRef",
+        "serviceScope",
+        "startAt",
+        "endAt",
+        "timezoneId",
+        "assertedAt"
+      ]
+    },
+    "ShiftOverride": {
+      "identity": [
+        "overrideId"
+      ],
+      "required": [
+        "supersededShiftRef",
+        "substituteRef",
+        "substitutedForRef",
+        "authorizerRef",
+        "effectiveAt",
+        "kind",
+        "assertedAt"
+      ],
+      "rule": "overlay outside roster revision digest"
+    },
+    "DutyHandover": {
+      "identity": [
+        "handoverId"
+      ],
+      "required": [
+        "outgoingShiftRef",
+        "incomingShiftRef",
+        "atInstant",
+        "openIncidentRefs",
+        "inFlightExecutionRefs",
+        "assertedAt"
+      ],
+      "oneOf": [
+        "acknowledgment",
+        "gapRecorded"
+      ]
+    }
+  },
+  "invariants": [
+    "Person, role, standing assignment, roster shift and IAM grant have distinct identities.",
+    "Every shift references an eligible standing assignment and a pinned roster revision.",
+    "Roster membership, substitution and handover never create or imply access rights.",
+    "Roster revision intervals do not overlap for one roster and as-of resolution is deterministic.",
+    "Every revision pins timezone, tzdb release, DST policy and a verifiable digest algorithm and canonicalization.",
+    "Shift overrides are attributable overlays and never rewrite the immutable roster revision digest.",
+    "Handover records outgoing and incoming shifts, instant, open work and incoming acknowledgment or an explicit gap.",
+    "Incoming duty may not act on an in-flight change before handover acknowledgment.",
+    "Escalation resolves a role or service through the roster as of event time and never pins a shift occurrence.",
+    "Dependency direction is rule to roster; the roster never owns or references the escalation rule.",
+    "The roster root remains stable across revisions; supersession is revision-level only.",
+    "Retirement requires retiredAt and an explicit inventory of uncovered open work.",
+    "Every instant is RFC 3339 with seconds and explicit offset; assertedAt orders correction successors.",
+    "Roster retirement never closes employment, assignments, incidents or executions."
+  ],
+  "holds": [
+    "Registry allocation is pending.",
+    "Roster schedule relation, timezone and conflict-of-interest contracts require canonical approval.",
+    "IAM grants remain external and cannot be derived from roster data."
+  ],
+  "timePolicy": {
+    "instantFormat": "RFC3339 with seconds and explicit offset",
+    "revisionInterval": "[validFrom, validTo)",
+    "nonOverlappingPerRoster": true
+  },
+  "invariantRules": [
+    {
+      "id": "DR-01",
+      "rule": "Person, role, standing assignment, roster shift and IAM grant have distinct identities."
+    },
+    {
+      "id": "DR-02",
+      "rule": "Every shift references an eligible standing assignment and a pinned roster revision."
+    },
+    {
+      "id": "DR-03",
+      "rule": "Roster membership, substitution and handover never create or imply access rights."
+    },
+    {
+      "id": "DR-04",
+      "rule": "Roster revision intervals do not overlap for one roster and as-of resolution is deterministic."
+    },
+    {
+      "id": "DR-05",
+      "rule": "Every revision pins timezone, tzdb release, DST policy and a verifiable digest algorithm and canonicalization."
+    },
+    {
+      "id": "DR-06",
+      "rule": "Shift overrides are attributable overlays and never rewrite the immutable roster revision digest."
+    },
+    {
+      "id": "DR-07",
+      "rule": "Handover records outgoing and incoming shifts, instant, open work and incoming acknowledgment or an explicit gap."
+    },
+    {
+      "id": "DR-08",
+      "rule": "Incoming duty may not act on an in-flight change before handover acknowledgment."
+    },
+    {
+      "id": "DR-09",
+      "rule": "Escalation resolves a role or service through the roster as of event time and never pins a shift occurrence."
+    },
+    {
+      "id": "DR-10",
+      "rule": "Dependency direction is rule to roster; the roster never owns or references the escalation rule."
+    },
+    {
+      "id": "DR-11",
+      "rule": "The roster root remains stable across revisions; supersession is revision-level only."
+    },
+    {
+      "id": "DR-12",
+      "rule": "Retirement requires retiredAt and an explicit inventory of uncovered open work."
+    },
+    {
+      "id": "DR-13",
+      "rule": "Every instant is RFC 3339 with seconds and explicit offset; assertedAt orders correction successors."
+    },
+    {
+      "id": "DR-14",
+      "rule": "Roster retirement never closes employment, assignments, incidents or executions."
+    }
+  ]
+}

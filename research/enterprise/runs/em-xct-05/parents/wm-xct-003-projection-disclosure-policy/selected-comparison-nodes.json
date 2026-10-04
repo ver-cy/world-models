@@ -1,0 +1,865 @@
+[
+  {
+    "bundle": "shape-semantics",
+    "layer": "element-selection",
+    "finding": {
+      "id": "selection-scope-and-defaults",
+      "name": "Selection Sets and Default Treatment",
+      "description": "Include and exclude sets over source elements, the default treatment applied to everything the sets do not name, and whether the shape is closed against elements it has never seen.",
+      "source_refs": [
+        "SRC-012",
+        "SRC-005",
+        "SRC-001"
+      ],
+      "questions": [
+        {
+          "id": "q-sel-default",
+          "text": "What treatment applies to a source element that neither the include nor the exclude set names?",
+          "kind": "constraint",
+          "answer_data": [
+            "default treatment code (omit, deny, mask, pass-through)",
+            "justification for a default other than omit"
+          ]
+        },
+        {
+          "id": "q-sel-overlap",
+          "text": "When an include path and an exclude path both match one element, which prevails and on what rule?",
+          "kind": "decision",
+          "answer_data": [
+            "resolution rule code (exclude-wins, most-specific-wins)",
+            "worked example path pair"
+          ]
+        },
+        {
+          "id": "q-sel-mandatory",
+          "text": "Which elements must survive selection for the output to remain usable, and what happens when the policy would remove them?",
+          "kind": "requirement",
+          "answer_data": [
+            "mandatory element path list",
+            "failure mode code (refuse, serve degraded, empty result)"
+          ]
+        },
+        {
+          "id": "q-sel-unseen",
+          "text": "How is an element treated that was added to the source after this shape was authored?",
+          "kind": "exception",
+          "answer_data": [
+            "closure mode code (closed, open)",
+            "unmatched-element outcome code",
+            "notification target reference"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-sel-include-set",
+          "name": "Include path set",
+          "description": "Ordered set of path expressions naming elements permitted to leave.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-006"
+          ]
+        },
+        {
+          "id": "de-sel-exclude-set",
+          "name": "Exclude path set",
+          "description": "Ordered set of path expressions naming elements that must not leave.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-006",
+            "SRC-005"
+          ]
+        },
+        {
+          "id": "de-sel-default-treatment",
+          "name": "Default treatment",
+          "description": "Code applied to any element not matched by either set; default-deny is the expected value.",
+          "value_kind": "code",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-012"
+          ]
+        },
+        {
+          "id": "de-sel-closure-mode",
+          "name": "Closure mode",
+          "description": "Whether the shape is closed (unknown elements never leave) or open (unknown elements follow the default).",
+          "value_kind": "code",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-012",
+            "SRC-003"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Selection sets and their default are the policy record's own declarative content: structured values held with the policy, not a separate deliverable. Any file, table or document form is a projection of those values, so declaring an artifact here would confuse the shape with one of its encodings."
+    }
+  },
+  {
+    "bundle": "shape-semantics",
+    "layer": "element-selection",
+    "finding": {
+      "id": "graph-extent-and-nested-shape",
+      "name": "Expansion, include, and hierarchical node selection",
+      "description": "Output shape is a graph, not only a column list. OData $expand includes related resources inline and may nest $select; context URLs describe projected+expanded entities. GraphQL selection sets are hierarchical down to scalars. FHIR _include/_revinclude add referenced resources; they cannot mix with _summary=text. JSON:API compound documents require full linkage except where sparse fieldsets exclude relationship fields. XACML Multiple Decision Profile interprets a multiple:content-selector XPath as one decision per node. This model records maximum expand depth, allowed navigation paths, and whether related resources inherit the parent policy or a nested policy.",
+      "source_refs": [
+        "SRC-018",
+        "SRC-019",
+        "SRC-020",
+        "SRC-021",
+        "SRC-022"
+      ],
+      "questions": [
+        {
+          "id": "graph-extent-and-nested-shape-q01",
+          "text": "Which navigation/relationship paths may be expanded, and to what maximum depth?",
+          "kind": "constraint",
+          "answer_data": [
+            "expansion_extent — array<{path, max_depth}>, cardinality 0..n"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-q02",
+          "text": "Does each expanded type use this policy, a nested projection-policy reference, or inherit parent treatments?",
+          "kind": "relationship",
+          "answer_data": [
+            "nested_policy_binding — array<{type_or_path, policy_ref, inherit}>, cardinality 0..n"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-q03",
+          "text": "For hierarchical XML/JSON resources, is a content-selector (XPath/JSONPath) used to name the nodes whose shape is governed, analogous to XACML multiple:content-selector?",
+          "kind": "identity",
+          "answer_data": [
+            "hierarchical_selector — object{language, expression}, cardinality 0..1"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "graph-extent-and-nested-shape-data01",
+          "name": "allowed_navigation_paths",
+          "description": "Navigation or relationship paths that may be expanded inline.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-019",
+            "SRC-020"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-data02",
+          "name": "max_expand_depth",
+          "description": "Maximum depth to which related resources may be expanded.",
+          "value_kind": "number",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-019",
+            "SRC-020"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-data03",
+          "name": "nested_policy_ref",
+          "description": "Projection policy reference governing an expanded type or path.",
+          "value_kind": "reference",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-019",
+            "SRC-021"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-data04",
+          "name": "related_inherits_parent",
+          "description": "Whether expanded related resources inherit the parent policy's treatments.",
+          "value_kind": "boolean",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-019",
+            "SRC-022"
+          ]
+        },
+        {
+          "id": "graph-extent-and-nested-shape-data05",
+          "name": "hierarchical_selector",
+          "description": "Content-selector language and expression naming the nodes whose shape is governed, analogous to the XACML multiple:content-selector.",
+          "value_kind": "object",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-018"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "graph-extent-and-nested-shape-artifact01",
+          "name": "Field scope document",
+          "description": "Include/exclude path lists, default treatment, expansion extent, hierarchical selector, nested policy refs — compiled against one source schema version.",
+          "media_or_form": [
+            "document"
+          ],
+          "serial": false,
+          "identity_strategy": "Governed IRI when published, otherwise a Dimension-assigned UUID/ULID; scoped to one policy version and one source-schema version.",
+          "source_refs": [
+            "SRC-019",
+            "SRC-020",
+            "SRC-022"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  },
+  {
+    "bundle": "output-template",
+    "layer": "template-derivation",
+    "finding": {
+      "id": "source-schema-binding-and-drift",
+      "name": "Source Schema Binding and Drift",
+      "description": "The dependency of a shape on a governed source schema version, how unresolved paths and newly appearing elements are detected, and who remediates.",
+      "source_refs": [
+        "SRC-014",
+        "SRC-006",
+        "SRC-003"
+      ],
+      "questions": [
+        {
+          "id": "q-drift-binding",
+          "text": "To which source schema or data contract version is this shape bound, and how strictly?",
+          "kind": "relationship",
+          "answer_data": [
+            "schema reference in WM-DAT-004",
+            "bound version",
+            "binding strictness (pinned, range, floating)"
+          ]
+        },
+        {
+          "id": "q-drift-unresolved",
+          "text": "Which selection paths currently fail to resolve against the bound schema version?",
+          "kind": "validation",
+          "answer_data": [
+            "unresolved path list",
+            "failure reason code",
+            "remediation owner reference"
+          ]
+        },
+        {
+          "id": "q-drift-newelement",
+          "text": "What happens when the source adds an element this shape has never classified?",
+          "kind": "exception",
+          "answer_data": [
+            "new-element outcome code",
+            "classification request target in WM-XCT-020",
+            "notification target"
+          ]
+        },
+        {
+          "id": "q-drift-cadence",
+          "text": "How is drift detected, how often is the check run, and when was it last run?",
+          "kind": "process",
+          "answer_data": [
+            "drift check procedure reference",
+            "check cadence",
+            "last observation timestamp"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-drift-schema-ref",
+          "name": "Bound source schema reference",
+          "description": "Reference to the governed source schema or data contract in WM-DAT-004.",
+          "value_kind": "reference",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-014"
+          ]
+        },
+        {
+          "id": "de-drift-strictness",
+          "name": "Binding strictness",
+          "description": "Whether the shape is pinned to one schema version, accepts a range, or floats.",
+          "value_kind": "code",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-014"
+          ]
+        },
+        {
+          "id": "de-drift-unresolved-path",
+          "name": "Unresolved path",
+          "description": "A declared path that no longer resolves against the bound schema version.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-006"
+          ]
+        },
+        {
+          "id": "de-drift-observed-at",
+          "name": "Drift observation timestamp",
+          "description": "RFC 3339 instant at which the drift check was performed, recorded separately from the schema change time.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-013"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Only the binding and its current resolution state are local; the schema itself and its validation contract are owned by WM-DAT-004. A local artifact would either copy that schema or become a second, competing source of truth about it."
+    }
+  },
+  {
+    "bundle": "output-template",
+    "layer": "disclosure-surface",
+    "finding": {
+      "id": "residual-disclosure-and-side-channels",
+      "name": "Residual Disclosure and Side Channels",
+      "description": "What a recipient can still infer from a served output beyond its values: existence of a response, record counts, ordering, structural shape and the difference between error, refusal and empty result.",
+      "source_refs": [
+        "SRC-004",
+        "SRC-007",
+        "SRC-009",
+        "SRC-003"
+      ],
+      "questions": [
+        {
+          "id": "q-res-existence",
+          "text": "Which facts does a non-empty response reveal even when every value in it is masked?",
+          "kind": "privacy",
+          "answer_data": [
+            "revealed fact list",
+            "affected subject class",
+            "mitigation code"
+          ]
+        },
+        {
+          "id": "q-res-cardinality",
+          "text": "Does the count, ordering or structural padding of a response leak an attribute?",
+          "kind": "quality",
+          "answer_data": [
+            "cardinality leakage assessment",
+            "ordering rule (stable, randomised)",
+            "padding or decoy rule"
+          ]
+        },
+        {
+          "id": "q-res-errors",
+          "text": "Do error, refusal and empty-result responses differ in a way that discloses the withheld value?",
+          "kind": "exception",
+          "answer_data": [
+            "response uniformity rule",
+            "indistinguishability requirement",
+            "tested failure cases"
+          ]
+        },
+        {
+          "id": "q-res-accepted",
+          "text": "Which of these residual channels are accepted as tolerable, and on whose authority?",
+          "kind": "decision",
+          "answer_data": [
+            "accepted residual channel list",
+            "acceptance rationale",
+            "accepting authority reference in WM-XCT-001"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-res-channel",
+          "name": "Residual disclosure channel",
+          "description": "An inference path that survives the declared shape, such as existence, count, order or timing.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-004",
+            "SRC-007"
+          ]
+        },
+        {
+          "id": "de-res-uniformity-rule",
+          "name": "Response uniformity rule",
+          "description": "Rule making refusals, errors and empty results indistinguishable to a recipient.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-res-padding-rule",
+          "name": "Padding or decoy rule",
+          "description": "Rule obscuring the true number of withheld elements or records, such as decoy digests.",
+          "value_kind": "text",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-007"
+          ]
+        },
+        {
+          "id": "de-res-accepted-risk",
+          "name": "Accepted residual risk statement",
+          "description": "Recorded acceptance of a named residual channel, with the reference to the accepting authority.",
+          "value_kind": "text",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-003"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "This is analytical content attached to the policy record. The runtime behaviour that realises uniform responses and padding is executed by WM-XCT-038, so declaring an artifact here would imply this model produces or holds the responses themselves."
+    }
+  },
+  {
+    "bundle": "binding-and-applicability",
+    "layer": "binding-attachment",
+    "finding": {
+      "id": "binding-target-and-audience",
+      "name": "Binding Target, Audience and Effective Window",
+      "description": "The attachment of one shape to a contract or grant, object type or audience class, with the window in which it is effective and the authority the binding presupposes.",
+      "source_refs": [
+        "SRC-001",
+        "SRC-011",
+        "SRC-013"
+      ],
+      "questions": [
+        {
+          "id": "q-bind-target",
+          "text": "What is the target of this binding, and which model owns that target?",
+          "kind": "relationship",
+          "answer_data": [
+            "target reference",
+            "target kind code (contract, grant, object type, audience)",
+            "owning model identifier"
+          ]
+        },
+        {
+          "id": "q-bind-audience",
+          "text": "Which recipient class does the binding serve, and how is that class defined without copying party records?",
+          "kind": "classification",
+          "answer_data": [
+            "audience class code",
+            "class definition reference in WM-XCT-002",
+            "party reference in WM-XCT-001"
+          ]
+        },
+        {
+          "id": "q-bind-window",
+          "text": "From when until when is the binding effective, and what governs an output already served under it?",
+          "kind": "temporal",
+          "answer_data": [
+            "effective-from timestamp",
+            "effective-until timestamp",
+            "already-served output rule"
+          ]
+        },
+        {
+          "id": "q-bind-authority",
+          "text": "Which authority must exist for this binding to be publishable at all, and what happens if it is absent?",
+          "kind": "authority",
+          "answer_data": [
+            "required authority reference",
+            "evidence-of-authority reference",
+            "refusal outcome when absent"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-bind-id",
+          "name": "Binding identifier",
+          "description": "Identifier of the attachment record linking one shape to one target.",
+          "value_kind": "identifier",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-001"
+          ]
+        },
+        {
+          "id": "de-bind-target-ref",
+          "name": "Binding target reference",
+          "description": "Reference to the contract, grant, object type or audience the shape is attached to.",
+          "value_kind": "reference",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-001",
+            "SRC-011"
+          ]
+        },
+        {
+          "id": "de-bind-effective-from",
+          "name": "Effective from",
+          "description": "RFC 3339 instant from which the binding applies.",
+          "value_kind": "timestamp",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-013"
+          ]
+        },
+        {
+          "id": "de-bind-effective-until",
+          "name": "Effective until",
+          "description": "RFC 3339 instant after which the binding no longer applies; absent means open-ended.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-013"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "A binding is a link record composed almost entirely of references. Materialising it would duplicate contract and party content owned by WM-XCT-002 and WM-XCT-001 and create a second place where an authorization appears to be recorded."
+    }
+  },
+  {
+    "bundle": "binding-and-applicability",
+    "layer": "class-and-regime-constraints",
+    "finding": {
+      "id": "class-to-treatment-matrix",
+      "name": "Class-to-Treatment Minimum Matrix",
+      "description": "The governed table mapping an externally assigned sensitivity class to the weakest treatment a shape may apply, so that shapes can be checked mechanically rather than by reviewer opinion.",
+      "source_refs": [
+        "SRC-005",
+        "SRC-008",
+        "SRC-012",
+        "SRC-010"
+      ],
+      "questions": [
+        {
+          "id": "q-mtx-minimum",
+          "text": "For each referenced sensitivity class, what is the weakest treatment a shape may apply?",
+          "kind": "requirement",
+          "answer_data": [
+            "class identifier",
+            "minimum treatment code",
+            "pass-through permitted flag"
+          ]
+        },
+        {
+          "id": "q-mtx-scheme",
+          "text": "Which classification scheme and version does the matrix key on, and how are keys resolved?",
+          "kind": "provenance",
+          "answer_data": [
+            "scheme reference in WM-XCT-020",
+            "scheme version",
+            "key resolution rule"
+          ]
+        },
+        {
+          "id": "q-mtx-check",
+          "text": "How is a shape checked against the matrix, and what constitutes a violation?",
+          "kind": "validation",
+          "answer_data": [
+            "check procedure reference",
+            "violation record structure",
+            "violation severity code"
+          ]
+        },
+        {
+          "id": "q-mtx-reclassify",
+          "text": "What happens to existing shapes when an element is reclassified upward?",
+          "kind": "event",
+          "answer_data": [
+            "affected shape list",
+            "required outcome code (recompile, withdraw, withhold element)",
+            "execution owner reference"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-mtx-class-key",
+          "name": "Sensitivity class key",
+          "description": "Externally assigned class identifier that the matrix row is keyed on.",
+          "value_kind": "code",
+          "cardinality": "1..n",
+          "required": true,
+          "source_refs": [
+            "SRC-008"
+          ]
+        },
+        {
+          "id": "de-mtx-minimum-treatment",
+          "name": "Minimum treatment",
+          "description": "Weakest treatment code permitted for elements carrying the class.",
+          "value_kind": "code",
+          "cardinality": "1..n",
+          "required": true,
+          "source_refs": [
+            "SRC-012",
+            "SRC-005"
+          ]
+        },
+        {
+          "id": "de-mtx-scheme-version",
+          "name": "Classification scheme version",
+          "description": "Version of the external scheme the matrix is valid against.",
+          "value_kind": "text",
+          "cardinality": "1",
+          "required": true,
+          "source_refs": [
+            "SRC-010"
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "sensitivity-class-treatment-matrix",
+          "name": "Sensitivity Class Treatment Matrix",
+          "description": "A reusable governed decision table binding each externally assigned sensitivity class to the minimum treatment any shape must apply, maintained independently of any single policy and cited by every shape it constrains.",
+          "media_or_form": [
+            "governed decision table",
+            "policy annex table",
+            "machine-readable rule set"
+          ],
+          "serial": false,
+          "identity_strategy": "Authoritative master-system identifier of the matrix in the adopting Dimension's policy register, qualified by the referenced classification scheme identifier and version; a governed IRI where the register issues one, otherwise a Dimension-assigned ULID. A content digest verifies integrity only; no date forms part of the identity.",
+          "source_refs": [
+            "SRC-008",
+            "SRC-012",
+            "SRC-010"
+          ]
+        }
+      ],
+      "inline_only_rationale": null
+    }
+  },
+  {
+    "bundle": "assurance-and-evidence",
+    "layer": "cross-release-effects",
+    "finding": {
+      "id": "release-set-linkability",
+      "name": "Release-Set Linkability",
+      "description": "The widening of disclosure when several shapes are served over the same population to the same or colluding recipients, through shared join keys, repeated queries or overlapping grains.",
+      "source_refs": [
+        "SRC-004",
+        "SRC-003",
+        "SRC-009",
+        "SRC-008"
+      ],
+      "questions": [
+        {
+          "id": "q-lnk-companions",
+          "text": "Which other shapes may be served over the same subjects to the same recipient class?",
+          "kind": "relationship",
+          "answer_data": [
+            "companion shape list",
+            "recipient class reference",
+            "overlap assessment"
+          ]
+        },
+        {
+          "id": "q-lnk-joinkeys",
+          "text": "Which elements act as join keys across shapes, and how is that overlap controlled?",
+          "kind": "constraint",
+          "answer_data": [
+            "join key element list",
+            "namespace separation rule",
+            "overlap acceptance decision"
+          ]
+        },
+        {
+          "id": "q-lnk-budget",
+          "text": "How many times may this shape be served over one population before the combined disclosure exceeds the claim?",
+          "kind": "measurement",
+          "answer_data": [
+            "release limit or budget reference",
+            "accounting owner reference in WM-XCT-005",
+            "behaviour at the limit"
+          ]
+        },
+        {
+          "id": "q-lnk-detect",
+          "text": "How is a change in the surrounding release set detected after this shape was approved?",
+          "kind": "event",
+          "answer_data": [
+            "detection signal list",
+            "notification target",
+            "re-review trigger"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-lnk-companion-ref",
+          "name": "Companion shape reference",
+          "description": "Another shape servable over the same population to the same recipient class.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-lnk-join-key",
+          "name": "Join key element",
+          "description": "Element whose values allow records from two shapes to be linked.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-008",
+            "SRC-003"
+          ]
+        },
+        {
+          "id": "de-lnk-budget-ref",
+          "name": "Release budget reference",
+          "description": "Reference to the composition budget or release counter owned by WM-XCT-005.",
+          "value_kind": "reference",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-004"
+          ]
+        },
+        {
+          "id": "de-lnk-release-limit",
+          "name": "Declared release limit",
+          "description": "Maximum number of releases of this shape over one population before re-review.",
+          "value_kind": "number",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-004"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Linkability is a declared property of a set of shapes. Counting actual releases, maintaining a budget and enforcing a limit are runtime activities owned by WM-XCT-005 and WM-XCT-038, so no local artifact may hold a running total."
+    }
+  },
+  {
+    "bundle": "change-and-fitness",
+    "layer": "fitness-signals",
+    "finding": {
+      "id": "shape-invalidation-signals",
+      "name": "Shape Invalidation Signals",
+      "description": "The observable conditions that make a shape unfit - upward reclassification, schema drift, changed adversary context, expired assurance, regime change - recorded as signals with safe interim behaviour and an explicit hand-off, not as a state machine.",
+      "source_refs": [
+        "SRC-009",
+        "SRC-003",
+        "SRC-012",
+        "SRC-014"
+      ],
+      "questions": [
+        {
+          "id": "q-fit-signals",
+          "text": "Which observable signals indicate that this shape may now under-protect?",
+          "kind": "event",
+          "answer_data": [
+            "signal list with originating model",
+            "detection method",
+            "observation timestamp"
+          ]
+        },
+        {
+          "id": "q-fit-interim",
+          "text": "What is the safe interim behaviour between detecting a signal and resolving it?",
+          "kind": "state",
+          "answer_data": [
+            "interim behaviour code (withhold element, serve narrower shape, refuse)",
+            "authorising basis",
+            "duration limit"
+          ]
+        },
+        {
+          "id": "q-fit-handoff",
+          "text": "Which model executes the resulting withdrawal or supersession, and what is handed to it?",
+          "kind": "lifecycle",
+          "answer_data": [
+            "execution owner reference WM-KNW-012",
+            "hand-off payload",
+            "confirmation expected"
+          ]
+        },
+        {
+          "id": "q-fit-monitoring",
+          "text": "How is a long absence of signals distinguished from a shape nobody is monitoring?",
+          "kind": "quality",
+          "answer_data": [
+            "last-checked timestamp",
+            "monitoring coverage statement",
+            "outcome when monitoring is stale"
+          ]
+        }
+      ],
+      "data_elements": [
+        {
+          "id": "de-fit-signal",
+          "name": "Invalidation signal",
+          "description": "A detected condition suggesting the shape no longer protects adequately, with its originating model.",
+          "value_kind": "collection",
+          "cardinality": "0..n",
+          "required": false,
+          "source_refs": [
+            "SRC-009"
+          ]
+        },
+        {
+          "id": "de-fit-interim-behaviour",
+          "name": "Interim behaviour",
+          "description": "The conservative behaviour declared for the period between detection and resolution.",
+          "value_kind": "code",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-012"
+          ]
+        },
+        {
+          "id": "de-fit-observed-at",
+          "name": "Signal observation timestamp",
+          "description": "RFC 3339 instant at which the signal was observed here, recorded separately from the instant the underlying change occurred.",
+          "value_kind": "timestamp",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-013"
+          ]
+        },
+        {
+          "id": "de-fit-monitoring-coverage",
+          "name": "Monitoring coverage statement",
+          "description": "Which signals are actively monitored for this shape and which are not.",
+          "value_kind": "text",
+          "cardinality": "0..1",
+          "required": false,
+          "source_refs": [
+            "SRC-003"
+          ]
+        }
+      ],
+      "artifacts": [],
+      "inline_only_rationale": "Signals and interim behaviour are declarative annotations on the shape. State transitions, approval and supersession are executed by WM-KNW-012 and any runtime response by WM-XCT-038, so an artifact here would be mistaken for a lifecycle record this model does not own."
+    }
+  }
+]

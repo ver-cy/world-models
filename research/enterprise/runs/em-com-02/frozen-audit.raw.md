@@ -1,0 +1,5 @@
+# Frozen semantic audit — EM-COM-02
+
+Verdict: CONDITIONAL ACCEPT of the reconciled profile direction; HOLD for publication. The audit rejected the frozen package structure because it still declared Attribution Claim as NEW MODEL, omitted profile-local record definitions, left subject level and OutcomeBinding uniqueness ambiguous, collapsed unknown and withheld Party states, retained stale review holds and scoped fixtures to the rejected allocation.
+
+Applied once without rerun: Attribution Claim is demoted to an OPEN-QUESTION registry gap with no allocation; all five profile-local records receive observer-dimension-scoped local identities and explicit shapes; the canonical claim subject is pursuit P; OutcomeBinding uniqueness includes observer, pursuit, scope and outcome kind; scope and method remain externally derived; unknown and withheld states are distinct; clocks, credit bounds, forecast and finance boundaries are explicit; fixtures now cover deduplication, temporal containment, Party safety, legal formation, method resolution and no-remastering. Publication remains held on upstream drafts, relation gaps and missing neutral methods.

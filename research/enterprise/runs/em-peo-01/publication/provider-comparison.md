@@ -1,0 +1,5 @@
+# EM-PEO-01 provider comparison
+
+Claude and Grok converge on a restricted **PROFILE** over `WM-PER-001`, with no new identifier. Both preserve one durable Person anchor across local HRIS, ATS, directory and LMS records; forbid automatic merge from display name, email or similarity; require scheme, issuer, scope and non-reuse guarantees for deterministic linking; preserve effective-dated name history; and keep AccountBinding outside the Person model as an identifier-unassigned sibling candidate.
+
+Claude sharpened the conflict between enterprise adoption and civil-registration-required fields, the missing link-state and authorising-role carriers, and the finding-level exclusion needed to avoid inheriting unsuitable required elements. Grok sharpened the exact qualified-key tuple, explicit absence of confidence, purpose-bound disclosure and separation of local source bindings from person mastership. Grok's version and neighboring-model references are treated as explanatory only unless they are present in the frozen dossier.

@@ -1,0 +1,5 @@
+# EM-PEO-02 provider comparison
+
+Claude and Grok converge on reuse of `WM-PER-001` Person, an Enterprise profile over `WM-ORG-005` Employment, reuse of `WM-ORG-016` Work Assignment, and an identifier-unassigned `EmployeeProfile` candidate. Both distinguish employer, work customer/host and staffing supplier; make worker classification evidence-bearing; preserve one Person across employers; reuse an employer-scoped profile across rehire while creating a new Employment; and forbid treating offboarding or case closure as proof of access revocation.
+
+Claude sharpened the independent identity test for EmployeeProfile, the distinction between amendments and record corrections, relationship succession, employee-number reuse policy and effective clocks. Grok sharpened neighbor ownership (`WM-ACT-040`, `EM-RSK-03`, `EM-OPS-01`, `EM-XCT-01`), rejected extra Engagement/LifecycleEvent/JML masters, and required access-authority evidence for completion. References not present in the frozen dossier are explanatory only and remain held.

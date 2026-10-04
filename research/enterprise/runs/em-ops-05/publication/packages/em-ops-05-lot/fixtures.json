@@ -1,0 +1,200 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v2",
+  "candidateName": "Lot",
+  "cases": [
+    {
+      "id": "split-lot",
+      "kind": "positive",
+      "input": "One raw lot is split into two successor lots.",
+      "expect": "Successors L-a and L-b carry distinct issuer-qualified identities, lineage.kind = split, lineage.predecessorRefs = [L], proportionBasis stated with unit; L retains its identity and its residual quantity.",
+      "target": "Lot",
+      "violates": null,
+      "closesDefect": "preserved-prior"
+    },
+    {
+      "id": "serialized-membership",
+      "kind": "positive",
+      "input": "Ten serialized assemblies are produced from one lot.",
+      "expect": "S1..S10 each retain WM-OBJ-001 identity and carry lot-of-origin provenance referencing L; no item identity is derived from L and L does not decompose into ten instances.",
+      "target": "Lot",
+      "violates": null,
+      "closesDefect": "preserved-prior"
+    },
+    {
+      "id": "targeted-recall",
+      "kind": "positive",
+      "input": "One lot is affected while same-SKU units from other lots have no event-backed link.",
+      "expect": "Exposure set = {proven: S1..S10 via event-backed output edges of T}, {potential: blended co-product lot, reasonCode: mass-balance-commingled}, {notEvidenced: all same-SKU units of other lots}; recallDecisionRef is absent and no SKU-level scope is emitted.",
+      "target": "Lot",
+      "violates": null,
+      "closesDefect": "preserved-prior"
+    },
+    {
+      "id": "sku-is-lot",
+      "kind": "negative",
+      "input": "All units with one SKU are treated as the same lot.",
+      "expect": "The identity merge is rejected.",
+      "target": "Lot",
+      "violates": "The identity merge is rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCode": "LOT-SKU-AS-LOT-IDENTITY"
+    },
+    {
+      "id": "stock-position-is-lot",
+      "kind": "negative",
+      "input": "A warehouse stock position is used as lot identity.",
+      "expect": "The inference is rejected.",
+      "target": "Lot",
+      "violates": "The inference is rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCode": "LOT-POSITION-AS-LOT-IDENTITY"
+    },
+    {
+      "id": "bom-proves-genealogy",
+      "kind": "negative",
+      "input": "BOM membership alone proves actual lot composition.",
+      "expect": "The claim is rejected.",
+      "target": "Lot",
+      "violates": "The claim is rejected.",
+      "closesDefect": "preserved-prior",
+      "expectedCode": "LOT-BOM-NOT-GENEALOGY"
+    },
+    {
+      "id": "F-LOT-01",
+      "target": "Lot",
+      "kind": "positive",
+      "input": "Lot L holds 1000 kg net. Transformation T consumes 400 kg. No other event touches L.",
+      "expect": "L retains identity, consumption state partially-consumed, residual.quantity 600, residual.unit kg, residual.basis net, residual.asOfRecordTime set, derivation declared; L is not closed or exhausted.",
+      "violates": null,
+      "closesDefect": "D2"
+    },
+    {
+      "id": "F-LOT-02",
+      "target": "Lot",
+      "kind": "positive",
+      "input": "Lots L1 (300 kg) and L2 (200 kg) are merged into a single lot L3.",
+      "expect": "L3 carries a new issuer-qualified identity, lineage.kind merge, lineage.predecessorRefs [L1,L2], proportionBasis 300 kg and 200 kg with unit, proportionMethod measured, edgeAssertionClass asserted; L1 and L2 retain identity with residual 0 and consumption state exhausted.",
+      "violates": null,
+      "closesDefect": "D5"
+    },
+    {
+      "id": "F-LOT-03",
+      "target": "Lot",
+      "kind": "positive",
+      "input": "Lot L and lot M are blended in a silo; the resulting co-product lot C cannot be apportioned by measurement.",
+      "expect": "C carries lineage.kind blend, predecessorRefs [L,M], proportionMethod mass-balance-inferred and edgeAssertionClass inferred; the inferred lineage is never emitted as asserted and never establishes one-to-one continuity.",
+      "violates": null,
+      "closesDefect": "D5"
+    },
+    {
+      "id": "F-LOT-04",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A lot is created with quantityBasis and unit but no quantityScope.",
+      "expect": "Creation is refused for a missing quantity scope; no default grain is substituted.",
+      "violates": "Lot.invariants[4]",
+      "closesDefect": "D1",
+      "expectedCode": "LOT-QTY-SCOPE-MISSING"
+    },
+    {
+      "id": "F-LOT-05",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A closed lot identifier is reassigned to a newly produced lot by the same issuer.",
+      "expect": "Reassignment is refused; the identifier remains permanently bound to the retired lot.",
+      "violates": "Lot.invariants[12]",
+      "closesDefect": "D13",
+      "expectedCode": "LOT-ID-REUSE-FORBIDDEN"
+    },
+    {
+      "id": "F-LOT-06",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "No stock row exists for lot L at site W; a balance report states L holds 0 at W.",
+      "expect": "The zero assertion is refused; the absent row resolves to unobserved and unknown, zero, not-applicable, withheld and suppressed remain distinct.",
+      "violates": "Lot.invariants[8]",
+      "closesDefect": "D13",
+      "expectedCode": "LOT-ABSENT-ROW-NOT-ZERO"
+    },
+    {
+      "id": "F-LOT-07",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "Lot L is set to disposition recall-marked with no recallDecisionRef, on the strength of an exposure analysis.",
+      "expect": "The disposition change is refused for absent external recall authority; the exposure result is retained as analysis only.",
+      "violates": "Lot.invariants[10]",
+      "closesDefect": "D4",
+      "expectedCode": "LOT-RECALL-AUTHORITY-ABSENT"
+    },
+    {
+      "id": "F-LOT-08",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A lot is recorded with the single state released, and partially-consumed is rejected as inconsistent with it.",
+      "expect": "The single-axis encoding is refused; consumption and disposition must be valued independently and concurrently.",
+      "violates": "Lot.invariants[9]",
+      "closesDefect": "D3",
+      "expectedCode": "LOT-STATE-AXIS-COLLAPSE"
+    },
+    {
+      "id": "F-LOT-09",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A lot's expiry date is corrected by updating the existing version in place.",
+      "expect": "The in-place update is refused; a new versionId citing supersedesVersionRef is required and the prior version remains readable.",
+      "violates": "Lot.invariants[12]",
+      "closesDefect": "D6",
+      "expectedCode": "LOT-CORRECTION-NOT-APPENDED"
+    },
+    {
+      "id": "F-LOT-10",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A lot version is written with producedAt only and no recordTime.",
+      "expect": "The write is refused; record time is required and is never defaulted from effective or production time.",
+      "violates": "Lot.invariants[12]",
+      "closesDefect": "D6",
+      "expectedCode": "LOT-RECORD-TIME-MISSING"
+    },
+    {
+      "id": "F-LOT-11",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A lot status change is asserted with no sourceSystem, assertingAgentRef, method or evidenceDigest.",
+      "expect": "The assertion is refused for absent provenance; an unprovenanced status change is not recorded as observed.",
+      "violates": "Lot.invariants[1]",
+      "closesDefect": "D7",
+      "expectedCode": "LOT-PROVENANCE-MISSING"
+    },
+    {
+      "id": "F-LOT-12",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "A production-origin lot cites originRef as a free-text routing step identifier.",
+      "expect": "The origin is refused; a production origin must cite the identifier-unassigned Transformation Event candidate and must not cite BOM or routing.",
+      "violates": "Lot.invariants[6]",
+      "closesDefect": "D8",
+      "expectedCode": "LOT-ORIGIN-REF-UNTYPED"
+    },
+    {
+      "id": "F-LOT-13",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "Serialized item S7 is addressed by its lot membership alone as its item identity.",
+      "expect": "The substitution is refused; lot membership is provenance on the WM-OBJ-001 item and never resolves item identity.",
+      "violates": "Lot.invariants[3]",
+      "closesDefect": "D13",
+      "expectedCode": "LOT-MEMBERSHIP-AS-ITEM-IDENTITY"
+    },
+    {
+      "id": "F-LOT-14",
+      "target": "Lot",
+      "kind": "negative",
+      "input": "Lot L is read at a carrier hub, and the carrier is recorded as owner of L.",
+      "expect": "The ownership assertion is refused; location does not imply custody and custody does not imply title.",
+      "violates": "Lot.invariants[7]",
+      "closesDefect": "D13",
+      "expectedCode": "LOT-CUSTODY-NOT-TITLE"
+    }
+  ]
+}

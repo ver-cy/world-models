@@ -1,0 +1,9 @@
+# EM-LND-15 provider comparison
+
+Claude and Grok agree that Risk Landscape is a governed view definition with immutable snapshots and Assurance Coverage View is an explicit-denominator projection. Neither receives independent subject-model identity or a runtime/model identifier. Both preserve mastership of risks, requirements, obligations, assessments, audits, findings and observations, keep control facets independent, treat applicability as an assessment, retain expired conclusions as readable but non-current, and reject completed cards or documents as proof of conformity or effectiveness.
+
+The reconciled shape adopts Grok's sharper distinction between subject identity and citation identity. View definitions, snapshots and projection runs may have registry/citation identifiers, but they cannot bear obligations, own residual risk, become control targets or mint subject facts. A snapshot binds the exact view-definition version, as-of time and scenario; its body is immutable and its current status is derived at read time.
+
+Each projection declares exactly one measure type, explicit denominator and numerator rule. Numerator items must belong to the denominator and have a current, in-scope determination for that criterion. Missing applicability is first-class undetermined and stays outside both binding obligation and denominator; it is never coerced to N/A, compliant, effective or zero. Cross-criterion or cross-scenario aggregation requires an explicit comparability verdict, and caveats survive every UI and export.
+
+Control remains identifier-unassigned after the WM-XCT-027 split. This blocks implementable control-facet ownership but does not justify making either view a subject. Until Control is allocated or facets are re-homed on assigned masters, the profile records pending-master markers and forbids views from presenting Control as resolved.

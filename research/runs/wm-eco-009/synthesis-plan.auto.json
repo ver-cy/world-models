@@ -1,0 +1,189 @@
+{
+  "base_provider": "claude",
+  "confidence": "medium",
+  "coverage_claim": "Base is the claude structure for Payment as an aggregate, extended with eight evidence-backed grok findings: travel-rule payload and screening, mandate and request-to-pay, exchange-of-value linkage on the payment leg, proxy/alias account addressing, verification of payee, instrument class including cash and cheque plus initiation direction, payment-order grain, and instant-transfer execution clocks. Coverage is bounded by the two consulted evidence sets and the regimes they cite (UK PSRs 2017, PSD2 and SEPA instruments, UCC Article 4A, Regulation E, FATF R.16 and the EU transfer-of-funds rules, PFMI and CPMI, ISO 20022, EPC SCT). Card-network chargeback rulebooks, cheque presentment law, national instant rails outside the EU, IBAN/BIC structural rules and CBDC or tokenised-deposit transfers are not covered and no universal completeness is claimed.",
+  "boundary_decision": {
+    "entry_kind": "aggregate",
+    "status": "accepted",
+    "rationale": "Both providers agree on the same outer boundary (money-as-instrument to WM-ECO-004, invoice to WM-ECO-008, postings to WM-ECO-016, parties by reference only), so the disagreement is only about entry kind. The base treats Payment as an aggregate with an internal ordered event history, mutable status per leg, and dependent records (order, authorisation evidence, settlement confirmation, returns, dispute case, statements) that are addressed and retained separately; grok's 'event' framing cannot carry those dependent records or the per-leg status divergence it itself models. Aggregate is therefore adopted and grok's evented view is preserved as the lifecycle-event-history projection inside the base, not as the entry kind. The account/holding neighbour remains an unresolved registry boundary and is carried forward as declared by the base rather than silently absorbed."
+  },
+  "add_findings": [
+    {
+      "provider": "grok",
+      "source_finding_id": "travel-rule-and-screening",
+      "target_finding_id": "travel-rule-payload-and-screening",
+      "target_layer_id": "compliance-access-and-retention",
+      "rationale": "The base explicitly records that travel-rule detail could not be retrieved and that transferred originator/beneficiary data is modelled as a bare requirement without element lists or thresholds. Grok supplies FATF Recommendation 16 (June 2025 update) and the EU transfer-of-funds rules with concrete accompanying-information fields, pre-execution verification duty, missing-data handling and the chain-responsibility rule. It fills a declared evidence gap in the base compliance layer without restating the applicable-regime finding."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "mandate-and-request-to-pay",
+      "target_finding_id": "mandate-and-request-to-pay",
+      "target_layer_id": "consent-and-authorisation",
+      "rationale": "The base lists direct-debit mandate registration and amendment, and request-to-pay, as known omissions because no primary lifecycle source was retrieved. Grok evidences both from ISO 20022 mandate initiation and amendment messages, direct-debit initiation and creditor payment activation, giving the reusable pull-authority object and the RTP trigger that the base consent layer has no structure for."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "exchange-of-value-linkage",
+      "target_finding_id": "exchange-of-value-linkage",
+      "target_layer_id": "settlement-and-finality",
+      "rationale": "The base names payment-versus-payment and delivery-versus-payment as an undecomposed omission caused by a failed text extraction of the principles document. Grok supports the linkage condition from PFMI Principle 12 and the CPMI glossary, scoped to the payment leg and its conditionality only, so the securities or second-currency leg stays out of scope exactly as the base boundary requires."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "account-and-proxy-references",
+      "target_finding_id": "account-alias-and-proxy-resolution",
+      "target_layer_id": "accounts-and-instruments",
+      "rationale": "Alias and proxy addressing is entirely absent from the base, which models only the provider-designated unique identifier and records that no IBAN/BIC structural source was retrieved. Grok evidences alias and proxy definitions and their resolution to an account identifier from the EPC 2025 SCT rulebook. It sits beside the base unique-identifier rule as the resolution step, not as a restatement of the misdescription liability rule."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "verification-of-payee",
+      "target_finding_id": "verification-of-payee",
+      "target_layer_id": "accounts-and-instruments",
+      "rationale": "The base compresses payee verification into a single validation-depth question. Grok models it as a distinct pre-execution control with match, close-match and mismatch outcomes, a recorded payer override treated as a straight-through-processing exception, and cross-scheme reuse limits, evidenced by the EU instant-transfer amendments, EPC implementation rules and the FATF beneficiary-alignment duty. It is the control that makes the accepted proxy-addressing finding safe."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "payment-instrument-class",
+      "target_finding_id": "instrument-class-and-initiation-direction",
+      "target_layer_id": "identification-and-typing",
+      "rationale": "The base marks cash and physical instruments as a coverage gap and has no explicit initiation-direction axis. Grok's CPMI statistics taxonomy carries credit transfer, direct debit, card, e-money and cheque as instrument classes and adds push versus pull versus third-party-initiated versus request-to-pay-triggered direction, plus the domestic/cross-border test. It complements rather than replaces the base scheme and service-level classification finding."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "payment-order-instruction",
+      "target_finding_id": "payment-order-as-instruction",
+      "target_layer_id": "order-receipt-and-revocability",
+      "rationale": "The base covers time of receipt and cut-off but never fixes the grain of the aggregate. Grok supplies the UCC 4A-103 payment-order definition and issuance moment, the PSD2 payment-order and payment-instrument definitions, and the rule that each transfer inside a bulk file is a separate payment with an order identifier distinct from the later interbank transaction. The accepted aggregate entry kind depends on that grain being stated."
+    },
+    {
+      "provider": "grok",
+      "source_finding_id": "value-execution-and-instant-sla",
+      "target_finding_id": "instant-execution-clocks-and-settlement-lag",
+      "target_layer_id": "settlement-and-finality",
+      "rationale": "The base temporal model assumes business days and cut-offs. Grok evidences instant credit transfer where time of receipt is calendar- and hour-independent and payee availability plus originator confirmation are due within ten seconds, and adds settlement lag from system acceptance to final settlement as a measurable. This materially qualifies the base execution-deadline finding instead of repeating it, and it is the case the base deemed-receipt rule would otherwise mis-state."
+    }
+  ],
+  "add_functions": [
+    {
+      "provider": "grok",
+      "source_function_id": "fn-verify-payee",
+      "target_function_id": "verify-payee",
+      "rationale": "Pairs with the accepted verification-of-payee finding. The base has no payee-verification operation, only generic instruction validation against scheme profile and identifier rules, so the match result and payer override have no function to produce them."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "fn-screen-and-enrich-travel-rule",
+      "target_function_id": "enrich-and-verify-travel-rule-data",
+      "rationale": "The base screening function decides accept, hold or refuse but does not carry the separate obligation to complete and verify originator and beneficiary information before execution, nor the receiving-side missing-data detection. Kept as its own function so the compliance duty is not conflated with the acceptance decision."
+    },
+    {
+      "provider": "grok",
+      "source_function_id": "fn-initiate-direct-debit",
+      "target_function_id": "initiate-mandate-based-debit",
+      "rationale": "The base registers payment orders generically. Payee-initiated debit against a mandate is a distinct operation with its own authority check and per-occurrence order creation, and it is required by the accepted mandate and request-to-pay finding."
+    }
+  ],
+  "merge_service_layers": true,
+  "decisions": [
+    {
+      "concept": "Base provider selection",
+      "disposition": "claude adopted as base",
+      "rationale": "Its neighbour notes name relation types (COMPOSE for postings, EXTEND for card and token transfers), flag the missing account/holding sibling as an unresolved boundary instead of absorbing it, and its omissions are declared rather than filled from memory. Grok's boundaries are sound but its value/rail bundle cuts across the lifecycle bundle the base keeps whole."
+    },
+    {
+      "concept": "Entry kind, aggregate versus event",
+      "disposition": "aggregate retained; grok's event view mapped to lifecycle-event-history",
+      "rationale": "Dependent records with independent retention and addressing (authorisation evidence, settlement confirmation, dispute case, statements) and per-leg status divergence cannot hang off a single event record, and grok models both of those itself."
+    },
+    {
+      "concept": "Payment with no recorded underlying obligation",
+      "disposition": "accepted as a scope clarification on the base purpose statement",
+      "rationale": "Grok correctly notes PSD2 defines a payment transaction irrespective of any underlying obligation. The base already models discharge as conditional and allocation as many-to-many, so obligation linkage is marked optional rather than constitutive; gifts, cash-out and error payments remain in scope."
+    },
+    {
+      "concept": "Travel-rule payload and screening",
+      "disposition": "accepted into compliance-access-and-retention",
+      "rationale": "Closes a gap the base itself declared, with tier-1 FATF and EU transfer-of-funds evidence carrying specific accompanying fields, verification duty and missing-data handling."
+    },
+    {
+      "concept": "Mandate and request-to-pay",
+      "disposition": "accepted into consent-and-authorisation",
+      "rationale": "Both were base known omissions; grok supplies the ISO 20022 mandate and creditor-payment-activation message evidence that gives pull authority a home distinct from per-payment consent."
+    },
+    {
+      "concept": "Exchange-of-value linkage (PvP and DvP)",
+      "disposition": "accepted into settlement-and-finality, payment leg only",
+      "rationale": "Fills a declared base omission from PFMI Principle 12 while preserving the base exclusion of securities and asset legs; only the conditionality on this leg's finality is taken."
+    },
+    {
+      "concept": "Proxy and alias account addressing",
+      "disposition": "accepted into accounts-and-instruments",
+      "rationale": "Wholly absent from the base, which models only the provider-designated unique identifier, and materially real for modern retail rails; evidenced by the EPC 2025 SCT rulebook alias and proxy definitions."
+    },
+    {
+      "concept": "Verification of payee",
+      "disposition": "accepted into accounts-and-instruments",
+      "rationale": "A separately regulated pre-execution control with its own match outcomes, payer-override exception and reuse limits, reduced in the base to one validation-depth question; also the safeguard for the accepted proxy-addressing structure."
+    },
+    {
+      "concept": "Instrument class including cash and cheque, and initiation direction",
+      "disposition": "accepted into identification-and-typing",
+      "rationale": "Addresses the base's declared cash and physical-instrument gap and adds the push/pull/third-party/request-to-pay axis the base classification finding does not carry, without displacing scheme and service-level classification."
+    },
+    {
+      "concept": "Payment order grain (order versus bulk file versus interbank transaction)",
+      "disposition": "accepted into order-receipt-and-revocability",
+      "rationale": "The aggregate entry kind is unusable without a stated grain; grok supplies the UCC and PSD2 order definitions and the rule that each transfer in a bulk is a separate payment."
+    },
+    {
+      "concept": "Instant execution clocks and settlement lag",
+      "disposition": "accepted into settlement-and-finality",
+      "rationale": "The base deemed-receipt and business-day model mis-states instant transfers, where receipt is calendar-independent and availability is due in seconds; grok's evidence qualifies the base deadline finding rather than duplicating it."
+    },
+    {
+      "concept": "Grok payer/payee roles and agent-and-intermediary-chain findings",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base payer-payee-and-agent-roles finding already carries functional role definitions, ultimate parties, the ordered agent chain and per-hop sender/receiving bank; the only unique element, the cover-versus-serial question, is already covered by the base settlement-method question."
+    },
+    {
+      "concept": "Grok rail-and-clearing-method finding",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base splits the same content across rail-selection-and-routing-chain and clearing-cycle-netting-and-settlement-arrangement, including settlement asset, gross versus net and settlement method per hop."
+    },
+    {
+      "concept": "Grok unauthorized-refund-and-chargeback finding",
+      "disposition": "rejected; card chargeback and third-party-provider liability deferred",
+      "rationale": "The base disputes finding is stronger on clocks, provisional credit and liability allocation, and grok itself records that no card-scheme rulebook was retrieved, so the addition would import an acknowledged evidence gap as structure."
+    },
+    {
+      "concept": "Grok status-inquiry-and-advice and provenance-stewardship-and-retention findings",
+      "disposition": "rejected as duplicative",
+      "rationale": "The base already models status reporting with code-set identity and reporting participant, confirmations and statements with issuer attestation, and element-level retention with steward assignment and legal holds."
+    },
+    {
+      "concept": "Layer merge strategy",
+      "disposition": "merge accepted grok findings into existing base layers; no parallel service bundle",
+      "rationale": "Every accepted addition maps onto an existing base layer, so keeping grok's bundle skeleton alongside would create competing homes for the same concepts and break the base's single lifecycle bundle."
+    }
+  ],
+  "critical_conflicts": [],
+  "publication_holds": [
+    "Source verification hold: every accepted URL must be fetched live and version-pinned before publication, in particular grok SRC-006 (EPC 2025 SCT rulebook v1.1), SRC-009 (consolidated Regulation 260/2012 of 8 April 2024) and SRC-007 (FATF R.16 update of 18 June 2025), and base SRC-012 and SRC-010 whose operator pages change without notice.",
+    "Source deduplication hold: the two providers cite several of the same underlying documents at different URLs (CPMI glossary d00b versus glossary.pdf, PFMI d101 versus the principle index, UCC 4A-103/4A-406 versus 4A-104, ISO 20022 business areas versus message definitions). These must be collapsed into single canonical source entries with one version pin before the draft is published, otherwise the citation count overstates independent support.",
+    "Authority-tier hold: grok SRC-010 is a EUR-Lex summary page, not the legal text. Any element list, threshold or verification duty taken from it must be re-grounded on the regulation itself before the travel-rule finding is published.",
+    "Retrieval-failure hold: the base declares that the PFMI and CPMI glossary PDFs, PSD2 and the settlement finality directive could not be extracted, and used a UK transposing instrument as proxy. Grok's sources partially cover these; each previously unsupported claim must be re-checked against the newly available text rather than assumed to be now sourced.",
+    "Multi-profile validation hold: the merged structure has not been validated across domain profiles. Before publication it must be exercised against at least SEPA including instant, US wire and ACH with Regulation E consumer scope, a card acquiring flow, and one non-Western instant rail, since revocability, finality, verification and refund rules diverge on each.",
+    "Regime-scoping hold: all specific caps, day counts and thresholds (UK PSR execution and liability rules, Regulation E ten/forty-five/sixty-day clocks, the FATF USD/EUR 1,000 enhanced-data threshold, the EU ten-second SLA, the EPC unstructured-address end date of 15 November 2026) must be published as regime-scoped facts with their instrument named, never as universal payment properties."
+  ],
+  "deferred_research": [
+    "Card scheme chargeback reason catalogues, dispute cycles and ISO 8583 authorization and clearing semantics: neither provider retrieved a primary card-network rulebook, so post-settlement card dispute structure stays a declared gap rather than inferred structure.",
+    "Payment initiation service provider and other third-party-provider initiation: consent scope, access-token lifecycle and expiry, and the ASPSP-versus-PISP burden of proof and liability split. Present only in grok and only via the directive; needs the strong-customer-authentication technical standards as primary text.",
+    "Cheque presentment, dishonour and truncation, and cash over-the-counter operations: both providers classify these as instrument classes only, with no operational lifecycle sourced.",
+    "National instant and retail rails outside the EU (FedNow, UPI, PIX, Faster Payments) and non-IBAN account identifier structures, plus IBAN and BIC structural validation rules, which neither provider retrieved.",
+    "Registry decision on the missing Account and Holding sibling model: the base records it as an unresolved boundary, and value date, availability and balance effects cannot be finally allocated until that neighbour exists.",
+    "Tokenised deposit, e-money token and CBDC transfers: the base cites MiCA for the EXTEND specialisation, grok flags CPMI-IOSCO stablecoin-arrangement guidance as unfetched; the specialisation needs its own sourced pass before it is asserted.",
+    "Jurisdictional retention periods for payment and authorisation evidence under anti-money-laundering law, which grok correctly declines to encode as a single number."
+  ]
+}

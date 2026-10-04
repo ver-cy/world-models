@@ -1,0 +1,297 @@
+{
+  "format": "vercy-model-allocation-candidate/v1",
+  "contourId": "EM-PEO-04",
+  "proposedName": "Recruitment Requisition",
+  "modelId": null,
+  "registryId": null,
+  "allocationState": "unassigned",
+  "decision": "NEW MODEL",
+  "canonicalPublishable": false,
+  "identityTest": {
+    "stableIdentity": "A standing, authorized recruitment demand remains identifiable across zero or more openings, campaigns, postings, candidacies and fills while approved scope evolves.",
+    "versionIdentity": "Changes to headcount, reason, position scope, budget, target start or authority create immutable requisition versions; a different hiring need creates a new requisition.",
+    "independentLifecycle": [
+      "draft",
+      "submitted",
+      "approved",
+      "funded",
+      "open",
+      "partially-filled",
+      "filled",
+      "cancelled",
+      "closed"
+    ],
+    "mastership": "employer workforce-demand authority"
+  },
+  "boundary": {
+    "owns": [
+      "persistent recruitment-requisition identity",
+      "requested headcount and hiring reason",
+      "position or role scope",
+      "budget and authority references",
+      "target start and priority",
+      "approval and funding history",
+      "opening and fill trace links",
+      "partial-fill, cancellation and closure status",
+      "effective interval and recorded-at provenance",
+      "authorized-seat cap and attributable cap-change history"
+    ],
+    "references": [
+      {
+        "target": "WM-ORG-004",
+        "purpose": "Position and authorized-capacity master"
+      },
+      {
+        "target": "WM-ORG-008",
+        "purpose": "Asserted Vacancy or Opening",
+        "contractState": "provisional"
+      },
+      {
+        "target": "WM-ACT-039",
+        "purpose": "Recruitment campaign or process",
+        "contractState": "provisional"
+      },
+      {
+        "target": "WM-REC-010",
+        "purpose": "Approval decision record"
+      },
+      {
+        "target": "WM-ORG-005",
+        "purpose": "Employment resulting from this authorization, referenced and never owned."
+      }
+    ],
+    "excludes": [
+      "position, opening, posting or person identity",
+      "candidacy or recruitment-process identity",
+      "interview, assessment or selection decision",
+      "offer, contract, assignment or employment",
+      "budget authority or accounting commitment",
+      "derived vacant-capacity calculation",
+      "approved-need decision identity",
+      "stage definition or occurrence",
+      "posting publication identity"
+    ]
+  },
+  "objects": {
+    "RecruitmentRequisition": {
+      "identity": [
+        "recruitmentRequisitionId",
+        "versionId"
+      ],
+      "required": [
+        "employerRef",
+        "requestedHeadcount",
+        "reason",
+        "ownerRef",
+        "validFrom",
+        "recordedAt",
+        "recordedBy",
+        "status"
+      ],
+      "optional": [
+        "approvalDecisionRefs",
+        "authorityRef",
+        "authorizedSeatCap",
+        "budgetRef",
+        "campaignRefs",
+        "correctionReason",
+        "fillRefs",
+        "fundingAuthorityRef",
+        "fundingCommitmentRef",
+        "openingRefs",
+        "positionRefs",
+        "predecessorRef",
+        "priority",
+        "successorRef",
+        "targetStart",
+        "validTo"
+      ],
+      "lifecycle": [
+        "draft",
+        "submitted",
+        "approved",
+        "funded",
+        "open",
+        "partially-filled",
+        "filled",
+        "cancelled",
+        "closed"
+      ],
+      "conditionalRequirements": {
+        "approvedOrLater": "authorizedSeatCap and at least one approvalDecisionRef are required for approved, funded, open, partially-filled and filled.",
+        "funded": "fundingAuthorityRef is required; budgetRef alone is insufficient.",
+        "backdatedSuccessor": "correctionReason is required when a successor validFrom precedes recordedAt."
+      },
+      "collections": {
+        "capChangeHistory": {
+          "appendOnly": true,
+          "requiredFields": [
+            "previousCap",
+            "newCap",
+            "decisionRef",
+            "actorRef",
+            "validFrom",
+            "recordedAt"
+          ]
+        },
+        "derivedIndexes": {
+          "openingRefs": "derived from child references",
+          "campaignRefs": "derived from child references",
+          "fillRefs": "typed WM-ORG-005 employment references, derived and not authoritative"
+        }
+      },
+      "seatAccounting": {
+        "consumedSeats": "count(non-cancelled WM-ORG-005 fillRefs) + count(accepted offers not cancelled and not converted to a referenced employment)",
+        "remainingHeadcount": "authorizedSeatCap - consumedSeats",
+        "partiallyFilled": "0 < consumedSeats < authorizedSeatCap",
+        "authoritativeDirection": "Candidacy-to-Requisition child reference; parent collections are derived indexes"
+      },
+      "transitionMatrix": {
+        "draft": [
+          "submitted",
+          "cancelled"
+        ],
+        "submitted": [
+          "approved",
+          "cancelled"
+        ],
+        "approved": [
+          "funded",
+          "open",
+          "cancelled"
+        ],
+        "funded": [
+          "open",
+          "cancelled"
+        ],
+        "open": [
+          "partially-filled",
+          "filled",
+          "cancelled",
+          "closed"
+        ],
+        "partially-filled": [
+          "filled",
+          "cancelled",
+          "closed"
+        ],
+        "filled": [
+          "closed"
+        ],
+        "cancelled": [],
+        "closed": []
+      },
+      "derivedVacancyProjection": {
+        "inputs": [
+          "WM-ORG-004 authorized capacity",
+          "active WM-ORG-005 employments",
+          "accepted-not-started offers"
+        ],
+        "asOfRequired": true,
+        "persistedAsEntity": false,
+        "referencableByOpening": false
+      }
+    }
+  },
+  "invariants": [
+    "One requisition may authorize several openings and seats.",
+    "Requisition identity remains separate from position, opening, posting and candidacy identity.",
+    "Approval records an attributable act and never replaces the standing authorization.",
+    "Requested headcount, reason, budget and target start are versioned.",
+    "Derived vacant capacity never creates an asserted opening automatically.",
+    "Opening or posting closure never silently closes the requisition.",
+    "Partial fill preserves remaining authorized headcount explicitly.",
+    "Approval never creates an offer, contract, employment or assignment.",
+    "Budget reference never substitutes for funding authority or commitment.",
+    "Cancellation preserves prior versions, approvals, openings and fills.",
+    "A later rehire uses a new requisition or justified remaining authorization without duplicating Person.",
+    "Historical requisitions remain resolvable after closure.",
+    "Approved need is an attributable decision record and never the requisition identity.",
+    "A standing requisition may exist with zero asserted openings and zero campaigns.",
+    "Asserted opening is not required for internal mobility or appointment paths.",
+    "Non-cancelled fills plus outstanding accepted offers never exceed the authorized seat cap unless an attributable change raises it.",
+    "One opening per distinguishable seat is preferred; quantity greater than one is allowed only for interchangeable seats.",
+    "Valid time and recorded time are preserved separately; correction appends a successor rather than rewriting history."
+  ],
+  "holds": [
+    "Registry allocation is pending and no identifier may be guessed.",
+    "Jurisdictional workforce and fairness review remain pending.",
+    "Opening quantity versus seat-level identity requires canonical governance.",
+    "Frozen audit returned REVISE at revision 2; all 32 semantic remediation groups were applied once without audit rerun, and canonical review remains pending."
+  ],
+  "candidateRevision": 3,
+  "invariantRules": [
+    {
+      "id": "REQ-INV-01",
+      "text": "One requisition may authorize several openings and seats."
+    },
+    {
+      "id": "REQ-INV-02",
+      "text": "Requisition identity remains separate from position, opening, posting and candidacy identity."
+    },
+    {
+      "id": "REQ-INV-03",
+      "text": "Approval records an attributable act and never replaces the standing authorization."
+    },
+    {
+      "id": "REQ-INV-04",
+      "text": "Requested headcount, reason, budget and target start are versioned."
+    },
+    {
+      "id": "REQ-INV-05",
+      "text": "Derived vacant capacity never creates an asserted opening automatically."
+    },
+    {
+      "id": "REQ-INV-06",
+      "text": "Opening or posting closure never silently closes the requisition."
+    },
+    {
+      "id": "REQ-INV-07",
+      "text": "Partial fill preserves remaining authorized headcount explicitly."
+    },
+    {
+      "id": "REQ-INV-08",
+      "text": "Approval never creates an offer, contract, employment or assignment."
+    },
+    {
+      "id": "REQ-INV-09",
+      "text": "Budget reference never substitutes for funding authority or commitment."
+    },
+    {
+      "id": "REQ-INV-10",
+      "text": "Cancellation preserves prior versions, approvals, openings and fills."
+    },
+    {
+      "id": "REQ-INV-11",
+      "text": "A later rehire uses a new requisition or justified remaining authorization without duplicating Person."
+    },
+    {
+      "id": "REQ-INV-12",
+      "text": "Historical requisitions remain resolvable after closure."
+    },
+    {
+      "id": "REQ-INV-13",
+      "text": "Approved need is an attributable decision record and never the requisition identity."
+    },
+    {
+      "id": "REQ-INV-14",
+      "text": "A standing requisition may exist with zero asserted openings and zero campaigns."
+    },
+    {
+      "id": "REQ-INV-15",
+      "text": "Asserted opening is not required for internal mobility or appointment paths."
+    },
+    {
+      "id": "REQ-INV-16",
+      "text": "Non-cancelled fills plus outstanding accepted offers never exceed the authorized seat cap unless an attributable change raises it."
+    },
+    {
+      "id": "REQ-INV-17",
+      "text": "One opening per distinguishable seat is preferred; quantity greater than one is allowed only for interchangeable seats."
+    },
+    {
+      "id": "REQ-INV-18",
+      "text": "Valid time and recorded time are preserved separately; correction appends a successor rather than rewriting history."
+    }
+  ]
+}

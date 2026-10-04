@@ -1,0 +1,2049 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Provide a reusable, format-neutral mixin that attaches signature and proof context to a host record: the proof instance and its binding to a pinned payload version, the signer or attesting party reference, the declared cryptographic method and purpose, recorded verification evidence, the composition of several proofs over one subject, and the append-only lifecycle assertions that change how a proof may be relied upon.",
+    "scope_statement": "WM-XCT-034 describes what must be known and recorded about a digital signature or cryptographic proof so that an agent can understand, create, inspect and operate it without owning any cryptographic execution. It covers proof identity and payload binding, signer and verification-method references, declared method parameters and canonicalization, declared purpose, recorded verification evidence and external proof-of-existence references, the composition of several proofs over the same subject as independent co-signature sets or dependency-ordered countersignature chains, declared participation and threshold requirements with per-member completion reporting, and the append-only mutation surface consisting of co-sign, countersign, invalidate and supersede. Everything the model records is either a declaration made at signing time, a reference to an externally owned system, or an outcome returned by an external evaluator. The model never performs signing or verification, never decides authorization, never manages keys, certificates or status lists, never operates a transparency log or audit store, and never deletes host content.",
+    "in_scope": [
+      "Proof instance identity and its immutable binding to one pinned payload version, canonicalization method and digest",
+      "Signer or attesting party reference, declared verification-method or key reference, and declared proof purpose",
+      "Declared cryptographic method parameters recorded as data: suite or algorithm identifier, canonicalization scheme, digest algorithm",
+      "Recorded verification evidence: outcome returned by an external validator, the validator reference, and the observation time of that outcome",
+      "References to externally issued proof-of-existence evidence such as time-stamp tokens and transparency-service receipts",
+      "Multi-party composition: unordered independent co-signature sets over the same pinned payload version",
+      "Multi-party composition: dependency-ordered countersignature chains bound to the exact bytes or digest of a prior signature",
+      "Declared required participants, slot purposes and a reference to the externally owned threshold rule",
+      "Per-member and per-dependency completion reporting with explicit indeterminate states and no inferred satisfaction",
+      "Append-only mutation preconditions: idempotency key with request fingerprint, and optimistic-concurrency expected-version token",
+      "Immutability of original proof bytes and of every earlier version record, with additive version records only",
+      "Scoped, reasoned invalidation assertions and directed supersession links carrying an effective interval"
+    ],
+    "out_of_scope": [
+      "Execution of cryptographic operations: signing, verification, hashing implementation, key storage or hardware security module operation",
+      "Key and certificate lifecycle: generation, distribution, rotation, revocation, trust-anchor and trust-list management",
+      "Authorization decisions, policy evaluation and policy enforcement, including deciding whether a declared threshold is met",
+      "Operation of transparency logs, evidence stores or audit trails, and issuance of inclusion receipts",
+      "Operation of a time-stamp authority and issuance of time-stamp tokens",
+      "Publication and operation of credential status or revocation lists",
+      "Host record lifecycle, business workflow approval and physical deletion of signed content",
+      "Threshold-cryptography key-sharing internals and secure multi-party computation protocols",
+      "Long-term archival augmentation procedures and evidence-record renewal schedules",
+      "Identity proofing, enrolment and legal qualification of signatories"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Key and certificate lifecycle model",
+        "distinction": "An invalidation assertion here says a named proof, signer binding, payload binding or policy use should no longer be relied upon. It is not a key revocation, subkey revocation or certification revocation signature, and it does not change any certificate status. OpenPGP revocation signature types and their reason-for-revocation subpacket remain owned by the key model; this model may only carry a reference to such a revocation as supporting evidence.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Cryptographic verification and validation engine",
+        "distinction": "The validation process, its constraints and its status indications are owned by the validating component. This model records the returned indication and its sub-indication verbatim, together with the validator reference and observation time, and never derives, upgrades or repairs an indication locally.",
+        "source_refs": [
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Authorization and policy decision model",
+        "distinction": "Whether a set of collected signatures satisfies a threshold, an approval or a signature policy is a policy decision produced elsewhere. This model carries the declared requirement, the collected members and a reference to the external decision result; the absence of such a result is reported as indeterminate rather than resolved.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Transparency log and audit record model",
+        "distinction": "Append-only registration, inclusion proofs, receipts and auditability are owned by the transparency or audit service. This model stores receipt references as evidence of registration and never claims ownership of log operation, receipt issuance or audit-trail retention.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Trusted time-stamp model",
+        "distinction": "A time-stamp authority asserts only that a supplied hash existed at a stated time and does not examine the imprint. This model references the resulting token as proof of existence and never asserts signing time on the authority's behalf.",
+        "source_refs": [
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Host record and payload version model",
+        "distinction": "The payload, its versions and its canonical serialization are owned by the host model. This mixin pins a payload version and its canonical digest and treats any divergence as a detected integrity failure, never as a reason to re-bind. Physical deletion of the payload is executed by the host model.",
+        "source_refs": [
+          "SRC-010",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "Threshold cryptography schemes",
+        "distinction": "A threshold scheme distributes one key so that the produced signature is interchangeable with a conventional single-party signature and is indistinguishable to a verifier. That is not an M-of-N multi-signature set; a threshold-produced signature occupies exactly one member slot here, and per-member attribution must not be claimed for it.",
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Credential status and revocation list model",
+        "distinction": "Revocation and suspension of a credential are expressed through a separately published status list referenced from the credential. Setting or reading such a status is outside this model; a proof invalidation assertion neither implies nor replaces a status-list entry.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-014"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Verifiable Credential Data Integrity 1.0 — Securing the Integrity of Verifiable Credential Data",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-integrity/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:12:00Z",
+      "relevance": "Normative definition of proof sets (unordered, independent) versus proof chains (ordered, dependent), the previousProof property, proof purpose, and the requirement that every referenced prior proof must also verify for the current proof to be considered verified."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 9338: CBOR Object Signing and Encryption (COSE): Countersignatures",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc9338.html",
+      "version_or_date": "Standards Track, December 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:14:00Z",
+      "relevance": "Defines the Countersign_structure whose other_fields carry the covered signature value, distinguishes countersigning a signature from countersigning content, and states that a countersignature may itself be countersigned, giving normative grounding for dependency-ordered chains."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 5652: Cryptographic Message Syntax (CMS)",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc5652",
+      "version_or_date": "STD 70, Internet Standard, September 2009",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:16:00Z",
+      "relevance": "Establishes parallel signing by any number of signers over the same content through multiple SignerInfo values, the countersignature unsigned attribute, and the caution that successful validation of one signer's signature is only usually treated as success for that signer while other environments need their own rules."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "STD 97, Internet Standard, June 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:18:00Z",
+      "relevance": "Defines idempotency of methods, entity-tag validators, conditional preconditions such as If-Match and If-Unmodified-Since for avoiding the lost-update problem, and the precondition-failed outcome; the interface-neutral basis for the model's optimistic-concurrency and retry-safety rules."
+    },
+    {
+      "id": "SRC-005",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation, 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:20:00Z",
+      "relevance": "Supplies invalidation semantics (Invalidation, wasInvalidatedBy, invalidatedAtTime, qualifiedInvalidation) as cessation of usability rather than destruction, and revision semantics (Revision, wasRevisionOf) for supersession as a derivation carrying substantial content forward."
+    },
+    {
+      "id": "SRC-006",
+      "title": "ETSI EN 319 102-1: Electronic Signatures and Trust Infrastructures (ESI); Procedures for Creation and Validation of AdES Digital Signatures; Part 1: Creation and Validation",
+      "organization": "European Telecommunications Standards Institute (ETSI)",
+      "url": "https://www.etsi.org/deliver/etsi_en/319100_319199/31910201/01.04.01_60/en_31910201v010401p.pdf",
+      "version_or_date": "V1.4.1, June 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:22:00Z",
+      "relevance": "Normative validation status indications TOTAL-PASSED, TOTAL-FAILED and INDETERMINATE with sub-indications, and the definition of signature augmentation as adding information to maintain validity; the basis for reporting indeterminate rather than inferring satisfaction, and for treating validation as externally owned."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 9580: OpenPGP",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc9580.html",
+      "version_or_date": "Standards Track, July 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:24:00Z",
+      "relevance": "Defines signature type 0x50 as a signature over another signature packet analogous to a notary seal, and the distinct revocation signature types 0x20, 0x28 and 0x30 with a reason-for-revocation subpacket; the clearest standards evidence that countersignature and key revocation are different mechanisms with different owners."
+    },
+    {
+      "id": "SRC-008",
+      "title": "RFC 3161: Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc3161",
+      "version_or_date": "Proposed Standard, August 2001",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:26:00Z",
+      "relevance": "A time-stamp token binds a requester-supplied message imprint to a time, and the authority does not examine the imprint or identify the requester; establishes that proof-of-existence evidence is a referenced external assertion, not a claim this model may make."
+    },
+    {
+      "id": "SRC-009",
+      "title": "RFC 9943: An Architecture for Trustworthy and Transparent Digital Supply Chains",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc9943.html",
+      "version_or_date": "Standards Track, June 2026",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:28:00Z",
+      "relevance": "Defines Signed Statement, Receipt, Transparent Statement and Registration Policy; states that the statement sequence cannot be modified, deleted or reordered, that correction proceeds by registering a new statement under the same issuer and subject rather than by invalidating the old one, and that multiple issuers may make conflicting statements that relying parties resolve themselves."
+    },
+    {
+      "id": "SRC-010",
+      "title": "RFC 8785: JSON Canonicalization Scheme (JCS)",
+      "organization": "Internet Engineering Task Force (IETF) / RFC Editor",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html",
+      "version_or_date": "Informational, June 2020",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T09:30:00Z",
+      "relevance": "States that cryptographic operations require an invariant serialization for repeatability and warns that re-serializing signed data with a different procedure yields different bytes; grounds the requirement to record the canonicalization method explicitly with the pinned payload version."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Bitstring Status List v1.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:32:00Z",
+      "relevance": "Defines revocation as irreversible cancellation and suspension as reversible, both published in a separate status-list credential referenced from the subject credential; demonstrates that status management is external infrastructure distinct from a proof's own lifecycle assertions."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Multi-Party Threshold Cryptography (NIST IR 8214 series project page)",
+      "organization": "National Institute of Standards and Technology (NIST), Computer Security Division",
+      "url": "https://csrc.nist.gov/projects/threshold-cryptography",
+      "version_or_date": "NIST IR 8214C final, January 2026; project page current",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:34:00Z",
+      "relevance": "States the interchangeability requirement that a threshold-produced signature must verify under the conventional verification algorithm, making it indistinguishable to a verifier from a single-party signature; the authority for separating threshold cryptography from M-of-N multi-signature participation."
+    },
+    {
+      "id": "SRC-013",
+      "title": "The Idempotency-Key HTTP Header Field (draft-ietf-httpapi-idempotency-key-header)",
+      "organization": "Internet Engineering Task Force (IETF), HTTP API Working Group",
+      "url": "https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/",
+      "version_or_date": "Revision 07, 15 October 2025; Internet-Draft, expired",
+      "source_type": "secondary",
+      "primary_source": false,
+      "authority_tier": 3,
+      "accessed_at": "2026-09-04T09:36:00Z",
+      "relevance": "Describes client-generated idempotency keys, server-side storage of the first result, replay of the stored response and rejection on request-fingerprint mismatch. Used only to name a common practice; it is an expired draft, so the normative anchor for retry safety remains RFC 9110."
+    },
+    {
+      "id": "SRC-014",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T09:38:00Z",
+      "relevance": "Defines validFrom and validUntil as the effective interval of a claim set, credentialStatus as the hook to external status infrastructure, refreshService for obtaining an updated credential, and the separation of securing mechanisms from the data model itself."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-life-multiparty-composition",
+        "name": "Multi-Party Proof Composition",
+        "description": "How several proofs over one subject relate to each other: independent co-signature sets that bind separately to the same pinned payload version, dependency-ordered countersignature chains that bind to the exact bytes of a prior signature, the declaration of who must participate and for what purpose, and the reporting of partial completion per member and per dependency.",
+        "rationale": "Authoritative securing mechanisms explicitly separate unordered sets from ordered chains, and separate binding-to-payload from binding-to-prior-signature. Conflating these produces false conclusions about order, dependency and who attested to what, so the topology must be recorded rather than inferred from the presence of several proofs.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-006",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "sig-life-binding-topology",
+            "name": "Binding Topology and Dependency Order",
+            "description": "The two distinct ways an additional proof may be attached to a subject that already carries a proof: independent co-signature over the same pinned payload, and countersignature over a named prior signature. Each has a different binding target, a different failure propagation rule and a different ordering guarantee.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "sig-life-cosign-independent-binding",
+                "name": "Independent co-signature binding to a pinned payload version",
+                "description": "An independent co-signature is a proof appended by an additional party that binds to the same pinned payload version and canonical byte form as its siblings, and to nothing else. Its validity is computed without reference to any sibling proof, membership in the set is unordered, and the failure of one member does not by itself invalidate another. The set is a recorded fact about topology, not a derived count.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-010",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-cosign-payload-binding",
+                    "text": "Which pinned payload version, canonicalization method and digest does this co-signature bind to, and how is that binding recorded at signing time?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Pinned payload version identifier issued by the host record model",
+                      "Canonicalization method identifier, for example a named JSON or deterministic CBOR scheme",
+                      "Digest algorithm identifier and digest value over the canonical bytes",
+                      "Instant at which the binding was fixed, as an RFC 3339 value with offset"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-cosign-set-membership",
+                    "text": "Is this proof a member of an unordered co-signature set rather than a position in a dependency-ordered chain, and what recorded evidence establishes that distinction?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Topology marker with values independent-set or dependency-chain",
+                      "Absence of any covered prior-signature digest or prior-proof pointer",
+                      "Set identifier shared by all members bound to the same pinned payload version",
+                      "Reference to the securing mechanism construct used, such as an unordered proof set or parallel signer entries"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-cosign-failure-isolation",
+                    "text": "Does verification of this co-signature depend on any sibling proof, and what does the set report when one member fails or is indeterminate?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Declared independence flag with the rule that a member outcome is scoped to that member",
+                      "Per-member outcome list rather than a single aggregate verdict",
+                      "Explicit statement that a failed member is reported as failed without changing sibling outcomes",
+                      "Reference to the application rule in force where a stricter all-must-pass convention has been adopted"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-cosign-purpose-and-method",
+                    "text": "Under which declared proof purpose and verification-method or key reference did this participant sign, and where is that reference resolved?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Declared proof purpose code, such as assertion, authentication or attestation of an existing record",
+                      "Verification-method or key reference as an identifier resolvable in the key and certificate model",
+                      "Signer or attesting party reference",
+                      "Named signature suite or algorithm identifier as declared, not as computed"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-cosign-projection",
+                    "text": "How is the independence of this co-signature preserved when the set is projected into a different securing mechanism or serialization?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Mapping table from the model's topology marker to the target construct, such as proof set, parallel signer entries or multiple signature entries",
+                      "Statement of which target constructs cannot express independence and must therefore be rejected or annotated",
+                      "Round-trip rule requiring the original proof bytes to survive the projection unchanged",
+                      "Record of any information loss detected during projection"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-pinned-payload-version",
+                    "name": "Pinned payload version reference",
+                    "description": "Identifier of the exact host payload version whose canonical bytes this proof covers. Assigned by the host record model and never re-pointed after the proof is created.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-canonicalization-method",
+                    "name": "Canonicalization method identifier",
+                    "description": "Named scheme used to derive the invariant byte sequence that was signed, recorded because re-serialization with a different procedure produces different bytes.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-payload-digest",
+                    "name": "Payload digest value and algorithm",
+                    "description": "Digest algorithm identifier and digest value computed over the canonical payload bytes, used to detect divergence between the stored payload and the bytes that were signed.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-topology-marker",
+                    "name": "Composition topology marker",
+                    "description": "Explicit indication of whether the proof is an independent set member or a dependency-chain position. Never inferred from the number of proofs present.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-proof-purpose",
+                    "name": "Declared proof purpose",
+                    "description": "The intent declared by the creator of the proof so that the proof cannot be reused for an unintended purpose.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-cosignature-record",
+                    "name": "Independent co-signature proof record",
+                    "description": "The retained record of one independently bound co-signature: original proof bytes, pinned payload version reference, canonicalization and digest parameters, signer and verification-method references, declared purpose, topology marker and set identifier.",
+                    "media_or_form": [
+                      "Embedded proof object carried inside the host record",
+                      "Detached proof document referencing the host payload version",
+                      "Signature entry within a multi-signature envelope structure",
+                      "Signer information entry within a parallel-signature container",
+                      "Row or document in an adopting-Dimension store, holding the original bytes verbatim"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Use the authoritative master-system proof identifier issued by the system of record that produced or registered the proof, recorded with its issuing naming system. Where none exists, use a governed global identifier or IRI from a namespace the adopting Dimension controls or recognises. Where neither exists, assign a UUID or ULID and mark it as locally assigned. The payload or proof digest is an integrity check and a secondary locator, never a primary identifier, and no date may be used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-life-countersign-dependency-binding",
+                "name": "Dependency-aware countersignature binding to prior signature bytes",
+                "description": "A countersignature binds to the exact byte sequence or digest of one named prior signature rather than to the payload alone, creating an explicit ordered dependency. The covered signature is unchanged by the act. A countersignature may itself be countersigned, so positions form an ordered chain in which an indeterminate or failed earlier position propagates to every later position.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-006"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-countersign-covered-bytes",
+                    "text": "Which exact prior signature bytes or digest does this countersignature cover, and is the covered object a signature value or the payload itself?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "Reference to the covered prior proof record",
+                      "Digest algorithm and digest value over the covered signature bytes",
+                      "Covered-object kind with values signature-value or payload",
+                      "Context label recorded from the securing mechanism, distinguishing countersignature over a signature from a signature over content"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-countersign-order-immutability",
+                    "text": "What ordinal position does this countersignature occupy in its chain, and by what rule is that order prevented from changing afterwards?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Chain root reference identifying the first signature in the dependency order",
+                      "Monotonic ordinal assigned by the system of record, starting at one within the chain",
+                      "Rule that ordinals are never reused, renumbered or reordered once assigned",
+                      "Statement that correcting an order requires a new superseding chain, not an edit"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-countersign-status-propagation",
+                    "text": "If the covered prior signature is reported failed or indeterminate, what status must this position and every later position report?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Propagation rule stating that a later position cannot report a stronger status than the position it covers",
+                      "Recorded status indication and sub-indication for each position as returned by the external validator",
+                      "Explicit indeterminate marker where the covered position has no recorded outcome",
+                      "Reference to the validation policy under which the indications were produced"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-countersign-binding-strength",
+                    "text": "Is the dependency expressed by covering the prior signature bytes or only by pointing at a prior proof identifier, and how is the difference in binding strength recorded?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Dependency binding kind with values covered-bytes or prior-proof-identifier",
+                      "Note that an identifier-only pointer is not cryptographically bound to the prior bytes and depends on the resolver's integrity",
+                      "Digest of the covered bytes where available",
+                      "Named securing mechanism construct used to express the dependency"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-countersign-attestation-scope",
+                    "text": "What exactly does the countersigning party attest to: the existence of the prior signature, or the meaning of the underlying payload?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "Declared attestation scope with values existence-of-prior-signature or endorsement-of-payload",
+                      "Declared purpose for this chain position",
+                      "Note that countersigning an opaque or protected body attests only to the existence of that body",
+                      "Party reference and the role in which the party countersigned, such as witness or notarial role"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-covered-prior-signature",
+                    "name": "Covered prior signature reference and digest",
+                    "description": "Identifier of the prior proof record covered by this countersignature together with the digest of the exact bytes covered.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-chain-ordinal",
+                    "name": "Dependency chain ordinal",
+                    "description": "Monotonically increasing integer position of this countersignature within one chain, assigned by the system of record and never reused.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-chain-root-reference",
+                    "name": "Chain root reference",
+                    "description": "Reference to the first signature of the dependency chain, used to scope ordinals and to detect attempts to graft a position onto a different chain.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-dependency-binding-kind",
+                    "name": "Dependency binding kind",
+                    "description": "Whether the dependency is bound by covering the prior signature bytes or only by referencing the prior proof identifier, recorded because the two carry different assurance.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-position-status-indication",
+                    "name": "Recorded status indication for the position",
+                    "description": "Validation status indication and sub-indication for this chain position exactly as returned by the external validator, together with the validator reference.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-countersignature-record",
+                    "name": "Countersignature chain position record",
+                    "description": "The retained record of one dependency-ordered countersignature: original countersignature bytes, covered prior signature reference and digest, chain root, ordinal, binding kind, attestation scope and party reference.",
+                    "media_or_form": [
+                      "Countersignature structure carried in an unprotected header of the covered signature",
+                      "Countersignature attribute attached to a signer information entry",
+                      "Ordered proof entry carrying a previous-proof pointer inside a host record",
+                      "Chained record in an adopting-Dimension store retaining the covered bytes and the countersignature bytes verbatim"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system identifier issued by the system of record that produced or registered the countersignature. Where none exists, use a governed global identifier or IRI. Where neither exists, assign a UUID or ULID and mark it as locally assigned. The chain ordinal orders the record but is never its identifier, and no date may be used as an identifier.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-life-participation-declaration",
+            "name": "Required Participation, Purpose and Completion Reporting",
+            "description": "The declaration of who must sign, in what role, for what purpose and in what dependency relation, and the disciplined reporting of how far that declaration has been fulfilled without inferring authorization, approval or threshold satisfaction from a subset of collected signatures.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-009",
+              "SRC-001",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "sig-life-participant-requirement-declaration",
+                "name": "Required participant, dependency and threshold declaration",
+                "description": "A declaration bound to a pinned payload version that names each required participation slot, its role and purpose, whether the slot is an independent co-signature or a dependency position, and a reference to the externally owned rule that decides when the requirement is met. The declaration states the requirement; it never states the outcome.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-006",
+                  "SRC-001",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-requirement-slot-definition",
+                    "text": "Which participants, roles or verification-method references are required, and is each required slot independent or part of a dependency order?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "Slot list with slot identifier, required party or role reference, and optional verification-method constraint",
+                      "Per-slot topology marker distinguishing independent set membership from a dependency position",
+                      "Declared dependency edges between slots where order is required",
+                      "Minimum number of satisfied slots as declared, kept separate from any statement that the minimum has been reached"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-requirement-threshold-authority",
+                    "text": "Which external authority owns the threshold or signature policy rule, and which result artefact is the only acceptable evidence that the rule is met?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Reference to the externally owned policy or registration rule",
+                      "Reference to the decision or validation result that may state satisfaction",
+                      "Named authority or service that issues that result",
+                      "Explicit statement that this model records but never evaluates the rule"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-requirement-slot-typing",
+                    "text": "How is each slot classified with respect to purpose, so that a signature collected for one purpose cannot be counted against a slot declared for another?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Per-slot declared purpose code",
+                      "Matching rule requiring the collected proof's declared purpose to equal the slot's declared purpose",
+                      "Handling rule for proofs that arrive unsolicited or with a non-matching purpose",
+                      "Record of any slot whose purpose is unconstrained, with the reason"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-requirement-mutation-limits",
+                    "text": "Once the declaration is bound to a pinned payload version, may slots be added, removed or reordered, and what is required instead?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Rule that a bound declaration is immutable and changes require a new declaration version",
+                      "Supersession link from the new declaration version to the previous one",
+                      "Statement of what happens to signatures already collected under the previous declaration",
+                      "Precondition token required to append a new declaration version"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-requirement-substitution-protection",
+                    "text": "How is the declaration itself protected against substitution, given that it defines who must sign?",
+                    "kind": "security",
+                    "answer_data": [
+                      "Digest of the canonical declaration bytes referenced from each collected proof",
+                      "Optional proof over the declaration itself, recorded as an ordinary proof record",
+                      "Reference to an external registration receipt or time-stamp evidencing the declaration's prior existence",
+                      "Detection rule for a collected proof that references a declaration digest not equal to the current one"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-requirement-slot",
+                    "name": "Required participation slot",
+                    "description": "One declared slot with its identifier, required party or role reference, declared purpose, topology marker and any verification-method constraint.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-declared-minimum-count",
+                    "name": "Declared minimum satisfied-slot count",
+                    "description": "The minimum number of satisfied slots stated in the declaration. It is an input to an external decision and is never itself a statement that the minimum has been reached.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-threshold-rule-reference",
+                    "name": "External threshold or signature policy reference",
+                    "description": "Pointer to the externally owned rule that determines whether the collected participation satisfies the requirement.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-declaration-digest",
+                    "name": "Declaration canonical digest",
+                    "description": "Digest over the canonical bytes of the declaration, referenced by each collected proof so that substitution of the declaration is detectable.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-participation-declaration",
+                    "name": "Multi-party signing requirement declaration",
+                    "description": "The retained, immutably bound declaration of required participation slots, dependency edges, per-slot purposes, declared minimum count and the reference to the externally owned threshold rule, together with its canonical digest.",
+                    "media_or_form": [
+                      "Structured declaration document bound to one pinned payload version",
+                      "Registration-policy style precondition set held by the registering service",
+                      "Signing-plan record in an adopting-Dimension store",
+                      "Human-readable rendering used for participant instruction, derived from the bound canonical form"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Use the authoritative master-system identifier issued by the system of record that holds the signing process. Where none exists, use a governed global identifier or IRI. Where neither exists, assign a UUID or ULID and mark it as locally assigned. Declaration versions are distinguished by an explicit version reference and supersession link, never by a date in the identifier.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-life-completion-reporting",
+                "name": "Per-member and per-dependency completion reporting without inference",
+                "description": "A read-only projection over what has actually been recorded: for each declared slot and each dependency position, whether a proof has been collected, what status an external validator returned for it, and where evidence is absent, stale or contradictory. Satisfaction of a threshold, an authorization or a workflow approval is reported only when an external decision result explicitly states it, and is otherwise reported as indeterminate.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-009",
+                  "SRC-003",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-completion-per-slot-state",
+                    "text": "What is the recorded completion state of each declared slot and each dependency position at a stated observation time?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Per-slot state from the closed set collected, not-collected, indeterminate or reported-failed",
+                      "Per-dependency-position state including whether the covered position has its own recorded outcome",
+                      "Observation instant as an RFC 3339 value with offset",
+                      "Reference to the declaration version the projection was computed against"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-completion-count-insufficiency",
+                    "text": "How many slots are satisfied, unsatisfied or indeterminate, and why is that count alone insufficient to conclude that the requirement is met?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "Counts by state, each labelled as a count of recorded facts only",
+                      "Explicit non-inference statement attached to the counts",
+                      "List of conditions that the count cannot capture, such as purpose mismatch, stale validation or unresolved dependency",
+                      "Note that a threshold-produced signature occupies exactly one slot and does not represent multiple parties"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-completion-decision-reference",
+                    "text": "Which external decision or validation result, if any, explicitly states that the requirement is satisfied, and where is that result referenced?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "Reference to the external decision result record",
+                      "Issuing authority or service reference and the result's own observation time",
+                      "Verbatim satisfaction statement as returned, without local reinterpretation",
+                      "Explicit absent marker where no such result exists"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-completion-evidence-quality",
+                    "text": "What evidence supports each per-member outcome, and what is reported when that evidence is missing, stale or contradicted by another source?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Per-slot evidence reference such as a validation result, receipt or time-stamp token",
+                      "Freshness statement comparing the evidence's observation time to the projection's observation time",
+                      "Conflict entry listing contradictory outcomes with their sources",
+                      "Indeterminate reason code and text where evidence is insufficient"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-completion-attribution-exception",
+                    "text": "How are participants reported whose identity is sealed, or whose contribution is attributable only in aggregate?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Sealed-slot representation carrying slot identifier and state but no party identity",
+                      "Aggregate-attribution marker for signatures where per-party attribution is not recoverable",
+                      "Condition and authority under which sealed identity may later be disclosed",
+                      "Statement that a sealed or aggregate slot never contributes to an inferred satisfaction conclusion"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-slot-completion-state",
+                    "name": "Per-slot completion state",
+                    "description": "State of one declared slot at the projection's observation time, drawn from a closed set and derived only from recorded facts.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-completion-observed-at",
+                    "name": "Completion projection observation time",
+                    "description": "The instant at which the projection was computed, recorded separately from the times of the underlying signing and validation events.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-external-decision-reference",
+                    "name": "External decision result reference",
+                    "description": "Pointer to the externally produced result that explicitly states requirement satisfaction. Absence of this reference means the projection reports indeterminate.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-indeterminate-reason",
+                    "name": "Indeterminate reason",
+                    "description": "Coded and human-readable reason why a slot, dependency position or overall requirement could not be resolved from recorded evidence.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The completion report is a derived, non-authoritative projection over records that already exist elsewhere in this model and over validation results owned by an external validator. Persisting it as an artifact would create a second, silently ageing statement about participation that consumers could mistake for an authoritative verdict, and would invite exactly the inference this model forbids. It is therefore defined as inline, recomputed on demand and always labelled with its observation time and the declaration version it was computed against. Where a durable statement of satisfaction is genuinely required, the durable object is the external decision result, referenced here and stored by the model that owns it."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-life-append-only-operations",
+        "name": "Append-Only Proof Lifecycle Operations",
+        "description": "The safety contract that governs every mutation of proof context: idempotency and optimistic-concurrency preconditions, immutability of original proof bytes and earlier versions, and the two reasoned append-only assertions by which reliance on a proof changes, namely scoped invalidation and directed supersession.",
+        "rationale": "Every authoritative mechanism examined expresses lifecycle change by appending a new record that references the old one, never by rewriting signed bytes: revocation is itself a signature, transparency ledgers forbid modification, deletion and reordering, and provenance vocabularies model invalidation and revision as separate assertions rather than as edits. The mutation surface must therefore be additive and must be safe under retry and concurrency.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005",
+          "SRC-007",
+          "SRC-009",
+          "SRC-014"
+        ],
+        "layers": [
+          {
+            "id": "sig-life-mutation-safety",
+            "name": "Mutation Safety: Idempotency, Concurrency and Immutability",
+            "description": "The preconditions that every mutation must satisfy before it is accepted, and the invariants that hold afterwards: retries never duplicate a signature, concurrent appends never silently overwrite one another, and no original byte sequence or earlier version record is ever altered.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-009",
+              "SRC-010",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "sig-life-mutation-preconditions",
+                "name": "Idempotency and optimistic-concurrency preconditions for every mutation",
+                "description": "No co-sign, countersign, invalidate or supersede operation is accepted without a caller-supplied idempotency key with a request fingerprint, and an expected-version token for the target. A replayed key with an identical fingerprint returns the first stored outcome without appending anything; a replayed key with a differing fingerprint is rejected; a stale expected-version token fails the precondition and is never merged.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-013",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-precondition-inputs",
+                    "text": "Which idempotency key, request fingerprint and expected-version token must accompany a mutation before it may be accepted?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Caller-supplied idempotency key, unique within a declared scope and retention window",
+                      "Fingerprint over the canonical request content, including the pinned payload version and target reference",
+                      "Expected-version token for the target record or chain, obtained from a prior read",
+                      "Retention period for which the first stored outcome remains replayable"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-precondition-failure-modes",
+                    "text": "What is the exact outcome when a key is replayed with a different fingerprint, and separately when the expected-version token does not match the current version?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Fingerprint-mismatch outcome: reject, append nothing, return a conflict indication naming the stored fingerprint",
+                      "Version-mismatch outcome: fail the precondition, append nothing, return the current version token",
+                      "Rule that neither failure produces a partial write or a merged record",
+                      "Guidance that the caller re-reads, re-evaluates and resubmits rather than retrying blindly"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-precondition-concurrent-cosign",
+                    "text": "When two participants co-sign concurrently, which attempt is serialized first and how is the second attempt preserved rather than lost?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Serialization rule assigning version tokens in a total order per target",
+                      "Statement that the loser receives the current version token and resubmits against it",
+                      "Rule that both co-signatures ultimately appear as independent set members, because neither depends on the other",
+                      "Contrasting rule for chain positions, where the loser must obtain the new next-free ordinal"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-precondition-retry-vs-second-signature",
+                    "text": "How is an accidental retry distinguished from a genuine second signature by the same participant over the same pinned payload version?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "Comparison of idempotency key and request fingerprint against stored values",
+                      "Comparison of the submitted proof bytes against already-stored bytes for the same participant and slot",
+                      "Rule that identical bytes with a new key are recorded as a duplicate submission rather than a second slot",
+                      "Rule that differing bytes with a new key are accepted only if a slot or purpose distinguishes them"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-precondition-time-recording",
+                    "text": "Which time is recorded for a replayed mutation: the instant of the first accepted attempt or the instant of the replay?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Rule that the recorded event time is that of the first accepted attempt and does not move on replay",
+                      "Separate observation time recorded for each replay handled",
+                      "Both values expressed with seconds and an explicit offset",
+                      "Statement that a claimed signing time supplied by the caller is stored as a claim, distinct from either recorded time"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-idempotency-key",
+                    "name": "Idempotency key",
+                    "description": "Caller-supplied key identifying one logical mutation attempt so that retries can be recognised and answered from the stored first outcome.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-request-fingerprint",
+                    "name": "Request fingerprint",
+                    "description": "Digest over the canonical content of the mutation request, used to detect reuse of an idempotency key with different content.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-expected-version-token",
+                    "name": "Expected-version token",
+                    "description": "The version token the caller believes the target currently carries. A mismatch fails the precondition without any state change.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-resulting-version-token",
+                    "name": "Resulting version token",
+                    "description": "The version token produced by an accepted mutation, returned so that the caller can chain further preconditions.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-precondition-outcome",
+                    "name": "Precondition outcome",
+                    "description": "Coded result of precondition evaluation: accepted, replayed-from-stored-outcome, fingerprint-mismatch or version-mismatch.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Idempotency keys, request fingerprints and version tokens are control data scoped to a single mutation attempt, not evidence about the subject. They are carried on the request and echoed on the response, and their durable trace is the version record produced by the accepted mutation, which is modelled separately. Promoting them to standalone artifacts would create a parallel operations log that overlaps the externally owned audit store and would tempt consumers to treat control metadata as proof context. They are therefore inline fields on the mutation interface and on the resulting version record, with retention of the first stored outcome bounded by an explicitly declared window."
+              },
+              {
+                "id": "sig-life-immutability-invariant",
+                "name": "Immutability of original proof bytes and earlier versions",
+                "description": "The original byte sequence of every proof, and every earlier version record, are immutable once accepted. Change is expressed exclusively by appending a new version record. Nothing that was covered by a signature may be altered, and a detected mismatch between stored bytes and the recorded digest is reported as an integrity failure rather than corrected in place.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-006",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-immutability-version-provenance",
+                    "text": "Which actor, method and time produced each retained version record, and how is the original byte sequence preserved unaltered across storage projections?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Actor reference for the append and the operation kind that produced the version",
+                      "Event time of the append and the separate observation time at which it was recorded",
+                      "Storage rule requiring the original bytes to be retained verbatim or content-addressed, never re-serialized",
+                      "Version ordinal and pointer to the immediately preceding version record"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-immutability-mutable-surface",
+                    "text": "Which fields may be appended to an existing record without breaking a recorded signature, and which may never change?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Immutable set: original proof bytes, covered digests, pinned payload version, canonicalization method, dependency edges and ordinals",
+                      "Appendable set: external evidence references, recorded external outcomes, observation timestamps and non-covered annotations",
+                      "Rule that appendable fields must lie outside anything the signature covers",
+                      "Rejection behaviour for any request that would modify a covered field"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-immutability-integrity-detection",
+                    "text": "How is a mismatch between stored bytes and the recorded digest detected and reported, and why must it never be repaired in place?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "Periodic and on-read digest comparison procedure and its outcome code",
+                      "Report format naming the affected record, the expected digest and the computed digest",
+                      "Rule that the record is marked indeterminate and escalated rather than rewritten",
+                      "Reference to any external proof-of-existence evidence that can adjudicate which byte sequence is original"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-immutability-retention-of-versions",
+                    "text": "For how long are earlier version records retained, and what is preserved when a record is tombstoned?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "Retention period set by the adopting Dimension for proof version records",
+                      "Tombstone content: identifier, digest, dependency position, reason and timestamps, without payload-bearing fields",
+                      "Rule that tombstoning never removes an earlier version and never renumbers ordinals",
+                      "Named owner of physical deletion execution and the disposition event reference recorded here"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-version-ordinal",
+                    "name": "Version ordinal",
+                    "description": "Monotonically increasing integer identifying the position of a version record for one proof, assigned by the system of record and never reused.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-original-proof-bytes",
+                    "name": "Original proof bytes",
+                    "description": "The verbatim byte sequence of the proof as produced by the external signing operation, retained directly or as an immutable content-addressed reference.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-record-integrity-state",
+                    "name": "Record integrity state",
+                    "description": "Result of comparing stored bytes against the recorded digest: intact, mismatch or not-yet-checked, with the instant of the last check.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-version-event-and-observation-time",
+                    "name": "Version event time and observation time",
+                    "description": "The instant the appending operation is deemed to have occurred and, separately, the instant this model recorded it.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-proof-version-record",
+                    "name": "Immutable proof version record",
+                    "description": "One append-only version entry for a proof, retaining the original proof bytes or their content-addressed reference, the digest algorithm and value, the operation kind that created the version, actor reference, event and observation times, the preceding version pointer and the integrity state.",
+                    "media_or_form": [
+                      "Append-only entry in an adopting-Dimension store",
+                      "Content-addressed object with an immutable reference",
+                      "Entry in an externally operated append-only log, referenced here by receipt",
+                      "Serialized version history document accompanying a detached proof"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Use the authoritative master-system identifier of the version entry issued by the system of record. Where none exists, use a governed global identifier or IRI. Where neither exists, assign a UUID or ULID and mark it as locally assigned. The version ordinal orders records within one proof but is never the identifier, and no date may be used as an identifier.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-life-reasoned-assertions",
+            "name": "Reasoned Invalidation and Supersession Assertions",
+            "description": "The two append-only assertions by which reliance on an existing proof changes: a scoped, reasoned invalidation that names what should no longer be relied upon and from when, and a directed supersession link that names which record replaces or corrects which, over which effective interval.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-009",
+              "SRC-014",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "sig-life-invalidation-assertion",
+                "name": "Scoped, reasoned invalidation assertion",
+                "description": "An appended assertion by an entitled party that a named scope should no longer be relied upon from a stated instant. The scope is exactly one of: the proof instance, the signer or key binding, the payload binding, or a named policy use. The assertion carries a coded and human-readable reason. It does not revoke a key or certificate, does not write a credential status list, does not delete content and does not alter the proof it concerns.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-005",
+                  "SRC-011",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-invalidation-scope-choice",
+                    "text": "Which single scope does this assertion target: the proof instance, the signer or key binding, the payload binding, or one named policy use?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "Scope code drawn from the closed set of four scopes",
+                      "Reference to the exact target record or binding within that scope",
+                      "Statement of what remains unaffected, in particular sibling co-signatures bound to the same payload",
+                      "Rule that a broader effect requires additional assertions, each separately reasoned"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-invalidation-entitlement",
+                    "text": "Who is entitled to assert invalidation for that scope, and what recorded evidence supports the entitlement?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "Asserting party reference and the role claimed",
+                      "Reference to the entitlement rule or delegation held by the authority model",
+                      "Evidence reference such as a designated-revoker arrangement or an authority record",
+                      "Handling rule for assertions from parties whose entitlement cannot be established, which are retained but marked unentitled"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-invalidation-effective-instant",
+                    "text": "From which instant does non-reliance apply, and does the assertion disturb conclusions that were reached before that instant?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective instant expressed with seconds and an explicit offset",
+                      "Separate assertion event time and observation time where they differ",
+                      "Rule stating whether the effect is prospective only or retroactive to the proof's creation, recorded explicitly per assertion",
+                      "Reference to proof-of-existence evidence establishing what was knowable before the effective instant"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-invalidation-non-effects",
+                    "text": "What does this assertion explicitly not do to the key, the certificate, any status list, the transparency log entry or the stored content?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Explicit non-effect statement enumerating key and certificate revocation, status-list publication, log mutation and content deletion",
+                      "Named owner model for each of those effects",
+                      "Rule that a related external revocation is recorded here only as a referenced supporting event",
+                      "Rule that the invalidated record itself remains stored and unaltered"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-invalidation-trigger",
+                    "text": "What triggering event or finding prompted the assertion, and how is the reason recorded so that a consumer can act on it?",
+                    "kind": "event",
+                    "answer_data": [
+                      "Reason code from a governed list, such as key compromise, superseded binding, erroneous issuance or no longer applicable",
+                      "Human-readable reason text intended for the relying party",
+                      "Reference to the triggering event, incident or validation result",
+                      "Whether the reason is disclosable to all readers or restricted"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-invalidation-scope",
+                    "name": "Invalidation scope",
+                    "description": "Closed-set code naming what is no longer to be relied upon: proof instance, signer or key binding, payload binding, or a named policy use.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-invalidation-reason",
+                    "name": "Invalidation reason code and text",
+                    "description": "Governed reason code together with human-readable text, following the practice that a revocation-style assertion carries a machine reason and an explanatory string.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-invalidation-effective-at",
+                    "name": "Invalidation effective instant",
+                    "description": "The instant from which non-reliance applies, recorded separately from the assertion event time and the observation time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-asserting-party",
+                    "name": "Asserting party reference and entitlement evidence",
+                    "description": "Reference to the party making the assertion and to the evidence that the party is entitled to assert for the named scope.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-invalidation-retroactivity",
+                    "name": "Retroactivity declaration",
+                    "description": "Explicit statement of whether the assertion applies prospectively from the effective instant or retroactively to the proof's creation.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-invalidation-assertion-record",
+                    "name": "Proof invalidation assertion record",
+                    "description": "The appended, immutable record of one scoped invalidation assertion: scope code and target reference, reason code and text, asserting party and entitlement evidence, effective instant, retroactivity declaration, event and observation times, and any supporting external event references.",
+                    "media_or_form": [
+                      "Signed assertion record appended to the proof's version history",
+                      "Statement registered with an external append-only service and referenced by receipt",
+                      "Structured invalidation statement expressed with provenance invalidation vocabulary",
+                      "Record in an adopting-Dimension store, retained alongside the unaltered target record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Use the authoritative master-system identifier issued by the system of record that accepted the assertion. Where none exists, use a governed global identifier or IRI. Where neither exists, assign a UUID or ULID and mark it as locally assigned. The effective instant is never part of the identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-life-supersession-link",
+                "name": "Supersession and correction link with effective interval",
+                "description": "A directed, append-only link stating that one proof or proof version replaces or corrects another, with a reason distinguishing correction of an error from routine replacement, and an effective interval indicating when the superseding record is the one to rely on. Supersession does not by itself change the superseded proof's cryptographic validity; where non-reliance is intended, a separate invalidation assertion is required.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-009",
+                  "SRC-014",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-life-supersession-direction-and-reason",
+                    "text": "Which record supersedes which, and is the link a correction of an error or a routine replacement?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "Reference to the superseding record and to the superseded record, in an explicitly directed link",
+                      "Reason code distinguishing correction, routine replacement, re-issuance under changed circumstances and consolidation",
+                      "Cycle-prevention rule and the check applied before the link is appended",
+                      "Handling rule where the superseded record already carries a conflicting supersession link"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-supersession-effective-interval",
+                    "text": "Over which effective interval is the superseding record the one to rely on, and how are overlapping or gapped intervals reported?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "Effective-from instant and optional effective-until instant, each with seconds and an explicit offset",
+                      "Rule for reporting an overlap between the superseded and superseding intervals rather than silently truncating either",
+                      "Rule for reporting a gap where neither record is effective",
+                      "Separate observation time at which the link was recorded"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-supersession-derivation",
+                    "text": "What derivation relationship holds between superseding and superseded content, and how much of the earlier content is carried forward?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Derivation kind indicating substantial content carried forward versus independent re-creation",
+                      "Statement of which pinned payload version each record binds to",
+                      "List of differences that motivated the supersession, where recorded",
+                      "Reference to the actor and operation that produced the superseding record"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-supersession-validity-effect",
+                    "text": "Does supersession by itself change the superseded proof's recorded validity, and what must be asserted separately if non-reliance is intended?",
+                    "kind": "state",
+                    "answer_data": [
+                      "Explicit statement that supersession is a relation, not a validity verdict",
+                      "Requirement for a separate invalidation assertion where non-reliance is intended, with its own scope and reason",
+                      "Rule that the superseded record and its recorded validation outcomes remain unaltered and readable",
+                      "Reporting rule for consumers that encounter a superseded but not invalidated proof"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-supersession-projection",
+                    "text": "How is the supersession link expressed when the underlying mechanism supports only re-registration under the same issuer and subject, with no explicit replacement pointer?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "Mapping rule from the explicit link to same-issuer, same-subject re-registration ordering",
+                      "Rule that the explicit link is retained locally even where the projection cannot carry it",
+                      "Note that consumers of the weaker projection must evaluate the full statement history themselves",
+                      "Record of information loss detected during projection"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-life-de-supersedes-reference",
+                    "name": "Supersedes reference",
+                    "description": "Directed reference from the superseding record to the record it replaces or corrects.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-supersession-reason",
+                    "name": "Supersession reason",
+                    "description": "Coded reason distinguishing correction of an error from routine replacement, re-issuance or consolidation.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-effective-interval",
+                    "name": "Effective interval",
+                    "description": "Effective-from and optional effective-until instants over which the superseding record is the one to rely on.",
+                    "value_kind": "duration",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-014",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-life-de-derivation-kind",
+                    "name": "Derivation kind",
+                    "description": "Whether the superseding record carries substantial content forward from the superseded one or was created independently.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-life-art-supersession-link-record",
+                    "name": "Proof supersession link record",
+                    "description": "The appended, immutable record of one directed supersession relation: superseding and superseded references, reason code, derivation kind, effective interval, actor reference, event and observation times, and any detected overlap or gap notes.",
+                    "media_or_form": [
+                      "Directed link record appended to the proof's version history",
+                      "Provenance revision statement relating two proof records",
+                      "Re-registered statement under the same issuer and subject in an external append-only service, referenced by receipt",
+                      "Link row or document in an adopting-Dimension store"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Use the authoritative master-system identifier issued by the system of record that accepted the link. Where none exists, use a governed global identifier or IRI. Where neither exists, assign a UUID or ULID and mark it as locally assigned. Effective-interval endpoints are attributes of the link and never part of its identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-life-fn-append-cosignature",
+      "name": "Append an independent co-signature",
+      "description": "Record an additional proof that binds independently to an already pinned payload version and canonical byte form, as an unordered member of a co-signature set. The signature bytes are produced outside this model and supplied as input.",
+      "inputs": [
+        "Pinned payload version reference with canonicalization method and payload digest",
+        "Signer or attesting party reference and verification-method or key reference",
+        "Declared proof purpose and, where a declaration exists, the target slot identifier and declaration digest",
+        "Externally produced signature bytes with the declared suite or algorithm identifier",
+        "Idempotency key with request fingerprint",
+        "Expected-version token for the co-signature set"
+      ],
+      "outputs": [
+        "Appended co-signature proof record with topology marker set to independent-set",
+        "New proof version record and the resulting version token",
+        "Per-slot completion state for the affected slot, reported as collected but validation-indeterminate until an external outcome is recorded",
+        "Precondition outcome code"
+      ],
+      "preconditions": [
+        "The referenced payload version exists, is pinned, and its stored digest matches the digest supplied with the request",
+        "Where a signing requirement declaration is bound, the declaration digest matches and the target slot's declared purpose equals the declared proof purpose",
+        "The idempotency key is unused, or is replayed with an identical request fingerprint",
+        "The expected-version token equals the current version token of the target set"
+      ],
+      "effects": [
+        "Appends one new proof record and one new version record; no existing record is modified",
+        "Leaves every sibling co-signature and its recorded outcomes unchanged",
+        "Does not compute, verify or validate the signature; validation outcomes are recorded only when returned by the external validator",
+        "Does not create, evaluate or enforce any authorization decision and does not assert that a threshold has been reached",
+        "Does not write to any key, certificate, status-list, transparency-log or audit store"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-004",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "sig-life-fn-append-countersignature",
+      "name": "Append a dependency-aware countersignature",
+      "description": "Record a proof that covers the exact bytes or digest of one named prior signature, occupying the next free ordinal in that signature's dependency chain. The covered signature is left byte-for-byte unchanged.",
+      "inputs": [
+        "Reference to the covered prior proof record and the digest of the exact covered bytes",
+        "Chain root reference and the dependency binding kind",
+        "Countersigning party reference, verification-method reference, declared purpose and attestation scope",
+        "Externally produced countersignature bytes with the declared suite or algorithm identifier",
+        "Idempotency key with request fingerprint",
+        "Expected-version token for the chain"
+      ],
+      "outputs": [
+        "Appended countersignature record with an assigned chain ordinal and topology marker set to dependency-chain",
+        "Recorded dependency edge from the new position to the covered position",
+        "New proof version record and the resulting version token",
+        "Per-dependency-position completion state, propagating indeterminate where the covered position has no recorded outcome"
+      ],
+      "preconditions": [
+        "The covered prior proof record exists, is immutable and its stored digest equals the digest supplied with the request",
+        "The requested position is the next free ordinal for the named chain root, and no ordinal is being reused or renumbered",
+        "The dependency binding kind is declared explicitly, distinguishing covered-bytes binding from prior-proof-identifier pointing",
+        "The idempotency key is unused or replayed with an identical fingerprint, and the expected-version token matches the chain's current version token"
+      ],
+      "effects": [
+        "Appends one ordered chain position and one version record; the covered signature bytes and every earlier position remain unchanged",
+        "Records that a later position may never report a stronger status than the position it covers",
+        "Does not compute or verify any signature and does not upgrade a recorded status indication",
+        "Does not reorder, remove or rewrite any existing position; an order correction requires a superseding chain",
+        "Does not decide, evaluate or enforce policy and does not write to an external audit or log store"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-001",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "sig-life-fn-assert-invalidation",
+      "name": "Append a scoped invalidation assertion",
+      "description": "Record a reasoned assertion by an entitled party that a named scope, namely the proof instance, the signer or key binding, the payload binding or one named policy use, should no longer be relied upon from a stated instant.",
+      "inputs": [
+        "Invalidation scope code and reference to the exact target within that scope",
+        "Reason code from the governed list and human-readable reason text",
+        "Asserting party reference and entitlement evidence reference",
+        "Effective instant, retroactivity declaration, and any supporting external event references",
+        "Idempotency key with request fingerprint and expected-version token for the target"
+      ],
+      "outputs": [
+        "Appended invalidation assertion record",
+        "Updated reliance signal for the named scope, effective from the stated instant",
+        "New version record and the resulting version token",
+        "Entitlement marker where the asserting party's entitlement could not be established"
+      ],
+      "preconditions": [
+        "The target of the named scope exists and is identified unambiguously",
+        "The scope is exactly one of the four permitted scopes; broader effects require separate assertions",
+        "The effective instant is present and expressed with seconds and an explicit offset",
+        "Idempotency and expected-version preconditions are satisfied"
+      ],
+      "effects": [
+        "Appends one immutable assertion record; the target proof record and its bytes remain stored and unaltered",
+        "Does not revoke a key, subkey or certificate and does not create or modify any credential status-list entry",
+        "Does not delete proof bytes, host content or any external log entry",
+        "Does not enforce non-reliance; enforcement belongs to the relying party's own policy component",
+        "Does not alter sibling co-signatures unless each is separately named by its own assertion"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-005",
+        "SRC-011",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "sig-life-fn-record-supersession",
+      "name": "Record a supersession or correction link",
+      "description": "Append a directed link stating that one proof or proof version replaces or corrects another, with a reason and an effective interval, without altering the superseded record or asserting anything about its cryptographic validity.",
+      "inputs": [
+        "Reference to the superseding record and to the superseded record",
+        "Supersession reason code and derivation kind",
+        "Effective-from instant and optional effective-until instant",
+        "Idempotency key with request fingerprint and expected-version token"
+      ],
+      "outputs": [
+        "Appended supersession link record",
+        "Effective interval with any detected overlap or gap reported explicitly",
+        "New version record and the resulting version token",
+        "Projection note where the target securing mechanism cannot carry an explicit replacement pointer"
+      ],
+      "preconditions": [
+        "Both records exist, are immutable and are readable at the time of the append",
+        "Appending the link introduces no cycle in the supersession graph",
+        "Interval endpoints are expressed with seconds and an explicit offset, and effective-until, where present, is not earlier than effective-from",
+        "Any pre-existing conflicting link on the superseded record is itself already superseded, or the conflict is recorded rather than silently resolved"
+      ],
+      "effects": [
+        "Appends one directed derivation link and one version record; the superseded record and its recorded outcomes remain unchanged",
+        "Does not by itself invalidate the superseded proof; non-reliance requires a separate invalidation assertion",
+        "Does not modify effective intervals of other links and does not merge overlapping intervals",
+        "Does not refresh, re-issue or re-sign any payload and does not trigger any external issuance process"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-009",
+        "SRC-014",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "sig-life-fn-project-completion-state",
+      "name": "Project multi-party completion state",
+      "description": "Compute a read-only, time-labelled report of how far a bound participation declaration has been fulfilled, per declared slot and per dependency position, relaying externally supplied validation outcomes verbatim and marking everything unsupported by evidence as indeterminate.",
+      "inputs": [
+        "Bound participation declaration reference and its digest",
+        "Collected co-signature and countersignature records for the same pinned payload version",
+        "Validation status indications and sub-indications supplied by the external validator, each with its own observation time",
+        "Optional reference to an external decision result that explicitly states requirement satisfaction",
+        "Observation instant for the projection"
+      ],
+      "outputs": [
+        "Per-slot completion state and per-dependency-position state, each with its supporting evidence reference",
+        "Counts by state, labelled as counts of recorded facts only",
+        "Indeterminate entries with coded and human-readable reasons, including stale, missing and contradictory evidence",
+        "A satisfaction statement only where an external decision result explicitly states it, reproduced verbatim with its source reference",
+        "Sealed-slot and aggregate-attribution markers where per-party attribution is not available"
+      ],
+      "preconditions": [
+        "Read-only access is sufficient and no mutation is attempted",
+        "The declaration is bound to the same pinned payload version as the collected proofs and its digest matches",
+        "Every relayed validation outcome carries its issuing validator reference and observation time",
+        "The projection observation instant is supplied and expressed with seconds and an explicit offset"
+      ],
+      "effects": [
+        "Changes no state and appends no record",
+        "Performs no cryptographic verification and derives no validation status of its own",
+        "Never infers threshold satisfaction, authorization or workflow approval from a count of collected signatures",
+        "Reports a threshold-produced signature as exactly one slot and never as multiple parties",
+        "Produces a projection that is superseded by recomputation rather than stored as an authoritative verdict"
+      ],
+      "source_refs": [
+        "SRC-006",
+        "SRC-012",
+        "SRC-001",
+        "SRC-009"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006 (parent proof and attestation host model)",
+      "relation": "CHILD",
+      "purpose": "Mount this mixin into the parent's proof surface so that the parent's records gain multi-party composition and append-only proof lifecycle context. The parent retains the host record's own identity, classification and lifecycle; this entry contributes only proof-scoped structure.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Host record and payload version model (adopting-Dimension registry entry)",
+      "relation": "REFERENCE",
+      "purpose": "Resolve the pinned payload version and its canonical byte form that every proof binds to. The host model owns payload versioning, serialization and physical deletion; this entry carries only the version reference, canonicalization method and digest.",
+      "required": true,
+      "source_refs": [
+        "SRC-010",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "Key and certificate lifecycle model (adopting-Dimension registry entry)",
+      "relation": "REFERENCE",
+      "purpose": "Resolve the verification-method or key reference declared by each signer, and carry references to key or certificate revocation events as supporting evidence. Key generation, rotation, revocation and trust-anchor management stay entirely with that model.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Cryptographic verification and validation service model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the validation status indication and sub-indication returned for each proof, together with the validator reference, validation policy reference and observation time. The validation procedure, its constraints and its verdicts are owned there and are relayed here verbatim.",
+      "required": true,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Authorization and policy decision model",
+      "relation": "REFERENCE",
+      "purpose": "Carry the reference to the external decision result that may explicitly state threshold satisfaction, approval or signature-policy compliance. Policy evaluation and enforcement remain outside; absence of a result is reported here as indeterminate.",
+      "required": true,
+      "source_refs": [
+        "SRC-006",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Transparency log and audit record model",
+      "relation": "REFERENCE",
+      "purpose": "Carry registration receipt references and audit-entry references as evidence that an append occurred. Append-only log operation, inclusion proofs, receipt issuance and audit-trail retention are owned there and are never reproduced here.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Trusted time-stamp model",
+      "relation": "REFERENCE",
+      "purpose": "Carry references to time-stamp tokens used as proof of existence for proof bytes and for declarations. Token issuance and authority operation remain outside; this entry records only the token reference and what it covers.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Credential status and revocation list model",
+      "relation": "REFERENCE",
+      "purpose": "Carry a reference to any externally published status entry that concerns the same subject, so that consumers can distinguish a proof invalidation assertion from a credential revocation or suspension. Status publication and reversal remain outside.",
+      "required": false,
+      "source_refs": [
+        "SRC-011",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credential Data Integrity 1.0 proof sets and proof chains",
+      "relation": "ALIGN",
+      "purpose": "Map the independent co-signature set to a proof set and the dependency-ordered chain to a proof chain expressed through previous-proof pointers, recording that the alignment binds by identifier rather than by covered bytes.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "IETF countersignature constructs in COSE and CMS",
+      "relation": "ALIGN",
+      "purpose": "Map the dependency binding to constructs that cover the prior signature bytes, and map parallel signing to multiple independent signer entries over one content, preserving the distinction between the two topologies during projection.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "W3C PROV-O invalidation and revision vocabulary",
+      "relation": "ALIGN",
+      "purpose": "Map the scoped invalidation assertion to invalidation-with-time semantics understood as cessation of usability rather than destruction, and map the supersession link to revision-style derivation. Alignment is recorded as a mapping, not as a conformance claim.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "A named owner accountable for proof lifecycle records, with a documented escalation path for detected integrity mismatches and for assertions submitted by parties whose entitlement cannot be established",
+        "Registered references to the external models this entry depends on: host payload versioning, key and certificate lifecycle, verification service, authorization and policy decision, transparency or audit store, time-stamp service and credential status service, each with a named owner",
+        "A governed reason-code list for invalidation and supersession, a governed proof-purpose list, and a documented rule stating which parties are entitled to assert invalidation for each of the four scopes",
+        "A declared retention window for stored idempotency outcomes, for proof version records and for tombstones, aligned with the adopting Dimension's retention policy",
+        "A documented projection register recording which securing mechanisms and serializations the Dimension supports and what information each projection cannot carry"
+      ],
+      "namespace_guidance": "Place all identifiers under a Dimension-controlled namespace segmented as organisation, then the signature and proof domain, then this entry, then the record kind, for example org.xct.sig.proof, org.xct.sig.chain, org.xct.sig.assertion. Identifiers must not encode dates, ordinals, party names or status values, since all four change or repeat. Governed IRIs from external standards are recorded in a mapping table alongside the local identifier and are never renamed into the local namespace. Reason codes, purpose codes and scope codes are namespaced separately from record identifiers so that code lists can version independently of the records that cite them.",
+      "registry_links": [
+        "Vercy registry entry vr.wm-xct-034 and its parent entry WM-XCT-006",
+        "IANA CBOR Object Signing and Encryption (COSE) registries for header parameters, algorithms and tags used by projected countersignature constructs",
+        "W3C Verifiable Credentials specification directory and cryptosuite registrations used by projected proof sets and proof chains",
+        "The adopting Dimension's own registers of proof purposes, invalidation reason codes, supersession reason codes and entitled asserting parties"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "The canonical byte form that was signed is a recorded property, not a recomputed one: store the named canonicalization method, the digest algorithm and the digest value alongside the pinned payload version, because re-serializing with any other procedure yields different bytes and would silently break the signature",
+        "Never re-serialize, reformat, reorder or normalise stored proof bytes, covered bytes or payload bytes for any reason, including storage migration; move them as opaque byte sequences or content-addressed references",
+        "Canonicalization of this model's own records is permitted only for computing request fingerprints, equality checks and internal digests, and never as a substitute for or reconstruction of the recorded original bytes",
+        "Where a projection cannot carry the canonicalization method or the original bytes, record the information loss explicitly in the projection register rather than accepting the projection as equivalent"
+      ],
+      "patch_rules": [
+        "All changes are additive: co-sign, countersign, invalidate and supersede append new records; there is no in-place edit of a proof record, its bytes, its bindings, its dependency edges or its ordinals",
+        "Every patch carries an idempotency key with a request fingerprint and an expected-version token; a fingerprint mismatch is rejected as a conflict and a version mismatch fails the precondition, in both cases writing nothing",
+        "Chain ordinals and version ordinals are assigned by the system of record, are monotonic within their scope, and are never reused, renumbered, back-filled or closed over gaps; correcting an order requires a superseding chain",
+        "Fields that lie outside anything a signature covers, such as external evidence references, relayed validation outcomes and observation timestamps, may be appended to a record without producing a new proof, but each such append still produces a new version record",
+        "A detected mismatch between stored bytes and a recorded digest is written as an integrity finding and escalated; it is never repaired by rewriting bytes or by recomputing the stored digest"
+      ],
+      "compatibility_rules": [
+        "Adding a new independent co-signature, adding a new chain position at the next free ordinal, or adding a new appended assertion is backward compatible for existing consumers",
+        "Changing a dependency binding kind, re-pointing a covered-signature reference, re-pointing a previous-proof pointer, or altering a declared threshold or slot set on a bound declaration is breaking and requires a new declaration or chain plus a supersession link",
+        "Unknown proof types, unknown assertion types and unknown reason codes must be preserved verbatim and reported as indeterminate; they must never be dropped, coerced to a known value, or treated as absent",
+        "Consumers must not treat the absence of a field as a negative assertion: absent validation outcome means indeterminate, absent decision result means requirement satisfaction is unknown, and absent invalidation means nothing about validity",
+        "Code-list versions are recorded with each record so that a later widening of a reason or purpose list does not retrospectively change the meaning of an existing record"
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record that holds the proof or assertion, such as the signing service, notarial register, registering service or transparency-service entry identifier, recorded together with the naming system that issued it",
+        "Governed global identifier or IRI from a namespace the adopting Dimension controls or formally recognises, such as a proof identifier IRI or a resolvable verification-method IRI",
+        "UUID or ULID assigned by the adopting Dimension where neither of the above exists, explicitly marked as locally assigned so that a later authoritative identifier can be attached without rewriting history",
+        "A content digest of proof bytes is an integrity check and a secondary locator only, never a primary identifier; a date, an effective instant, a chain ordinal, a version ordinal, a party name and a status value are never identifiers"
+      ],
+      "timestamp_rule": "All time values are RFC 3339 date-time strings that include whole seconds and an explicit numeric offset or the literal Z; local wall-clock strings without an offset are rejected. Event time and observation or ingestion time are recorded as separate fields whenever they differ and neither may overwrite the other: signing or assertion event time is the instant the act is deemed to have occurred, observation time is the instant this model recorded the fact, and both are distinct from a claimed signing time supplied by an actor and from an externally issued proof-of-existence time such as a time-stamp token or registration receipt, which is stored with its own issuer reference. On a replayed idempotent mutation the event time remains that of the first accepted attempt while a new observation time is recorded for the replay.",
+      "serial_naming_rule": "Two ordinal series exist and are kept apart. Countersignature chain ordinals are monotonically increasing integers starting at one within the scope of one chain root and one pinned payload version. Proof version ordinals are monotonically increasing integers starting at one within the scope of one proof record. Both are assigned by the system of record, both are attributes of the record rather than parts of its identifier, and neither is ever reused, renumbered, reordered or re-sequenced after an invalidation, a supersession or a tombstone. Gaps are impossible by construction because ordinals are assigned only on acceptance; an observed gap is reported as a defect, not closed.",
+      "integrity_rule": "Every artifact record stores the original byte sequence verbatim, or an immutable content-addressed reference to it, together with the digest algorithm identifier and the digest value, and for countersignatures also the digest of the exact covered bytes. Digests are verified on read and on scheduled sweeps; any mismatch sets the record's integrity state to mismatch, marks every dependent chain position indeterminate, and raises a finding naming the expected and computed digests. A mismatch is never repaired in place, and a stored digest is never recomputed from bytes that failed to match it."
+    },
+    "policies": [
+      "Threshold satisfaction, authorization and workflow approval are never inferred from a count of collected signatures, from the absence of objections or from elapsed time. They may be recorded only when an external decision result explicitly states them, reproduced verbatim with a reference to that result and its observation time; otherwise the state is indeterminate.",
+      "Invalidation is an appended, reasoned assertion scoped to exactly one of the proof instance, the signer or key binding, the payload binding or one named policy use. It never revokes a key, subkey or certificate, never creates or changes a credential status entry, never mutates an external log entry and never deletes content.",
+      "No mutation is accepted without both an idempotency key with a request fingerprint and an expected-version token; partial writes and silent merges are prohibited, and a rejected mutation leaves no trace in the record other than the operational outcome returned to the caller.",
+      "Countersignature dependency order is immutable once recorded. A correction to order, to a covered-signature reference or to a bound requirement declaration is expressed by a new chain or declaration version linked by supersession, never by editing an existing record.",
+      "A threshold-produced signature occupies exactly one participation slot. Per-party attribution is claimed only where the mechanism actually yields it, and aggregate or sealed contributions are reported as such rather than expanded into multiple satisfied slots.",
+      "Supersession and invalidation are independent assertions. A superseded proof is not thereby invalid, and an invalidated proof is not thereby superseded; a consumer that needs both effects must find both assertions recorded."
+    ],
+    "crud": {
+      "read": [
+        "Reads return proof records, chain positions, participation declarations, assertions and version history together with the current version token, so that a caller can use it as a precondition for a subsequent mutation",
+        "Reads never mutate state, never re-run cryptographic verification and never upgrade, downgrade or reinterpret a recorded validation status indication",
+        "Completion state is returned as recorded per slot and per dependency position, with explicit indeterminate entries and reasons wherever evidence is absent, stale or contradictory, and with no aggregate verdict unless an external decision result is referenced",
+        "Every read response is labelled with its observation time and, for projections, with the declaration version and evidence times it was computed from",
+        "Reads of records whose integrity state is mismatch return the mismatch prominently and mark dependent positions indeterminate"
+      ],
+      "create": [
+        "Creation is append-only and is limited to four mutations: append an independent co-signature, append a dependency-aware countersignature, append a scoped invalidation assertion and append a supersession link",
+        "Every creation requires an idempotency key with a request fingerprint and an expected-version token; a replay with an identical fingerprint returns the first stored outcome and appends nothing",
+        "A co-signature requires a pinned payload version, its canonicalization method and digest, a signer and verification-method reference and a declared purpose; a countersignature additionally requires the covered prior proof reference, the digest of the exact covered bytes, the chain root and the declared dependency binding kind",
+        "An invalidation assertion requires a single scope code, a target reference, a governed reason code with human-readable text, an asserting party with entitlement evidence, an effective instant and a retroactivity declaration; a supersession link requires directed references, a reason, a derivation kind and an effective interval",
+        "Signature bytes are never generated here; they are supplied as input, stored verbatim and accompanied by the declared suite or algorithm identifier"
+      ],
+      "update": [
+        "There is no in-place update of proof bytes, covered digests, payload bindings, canonicalization methods, dependency edges, chain ordinals or version ordinals",
+        "Only fields lying outside anything a signature covers may be appended: external evidence references such as receipts and time-stamp tokens, relayed validation outcomes with their validator reference and observation time, integrity-check results, and non-covered annotations",
+        "Every such append requires an expected-version token and produces a new version record; a mismatch fails the precondition and is returned as a conflict with the current version token, never merged",
+        "Correcting a substantive error requires appending a new record plus a supersession link and, where non-reliance is intended, a separate invalidation assertion",
+        "Relayed external outcomes are stored verbatim with their source and are never edited to resolve a contradiction; contradictions are recorded as conflicts"
+      ],
+      "delete": [
+        "This model's own records are retained append-only for the retention period declared by the adopting Dimension; no operation removes a proof record, a chain position, an assertion or an earlier version record from the history",
+        "Logical removal is expressed only as a tombstone version record that preserves the record identifier, the digest, the dependency position and ordinal, the reason for tombstoning and the event and observation times, while withholding payload-bearing fields; tombstoning never renumbers ordinals, never removes an earlier version and never edits an existing record",
+        "Physical deletion is outside this model's boundary and this model never executes it. Deletion of signed host content is executed by the host record and payload version model; deletion or expiry of key and certificate material is executed by the key and certificate lifecycle model; entries in an external append-only transparency log cannot be deleted at all by that architecture's own rule; deletion of audit entries is executed by the audit or log store under its own retention rule; and the governing retention, legal-hold and disposition policy is owned by the adopting Dimension",
+        "A deletion or disposition performed by any of those owners is recorded here only as a referenced disposition event carrying the executing model, the authority, the scope and the time, and never as a local removal",
+        "A legal hold recorded against a record blocks tombstoning and blocks expiry of stored idempotency outcomes for that record until the hold is released by the authority that placed it",
+        "Where a record must be rendered unreadable to satisfy a data-protection obligation, the permitted mechanism is withholding or crypto-erasure executed by the owning storage model, with the identifier, digests and ordinals retained so that dependency order and integrity checks remain evaluable"
+      ]
+    },
+    "roles": [
+      {
+        "name": "Proof lifecycle owner",
+        "responsibilities": [
+          "Owns this entry's records, the governed reason and purpose code lists and the entitlement rules for invalidation scopes",
+          "Approves projection mappings and records information loss where a target mechanism cannot carry a topology, binding kind or supersession link",
+          "Escalates integrity mismatches, unentitled assertions and unresolved contradictions between relayed external outcomes"
+        ]
+      },
+      {
+        "name": "Signing participant",
+        "responsibilities": [
+          "Signs the pinned payload version for a declared slot and purpose using externally held key material, and supplies the resulting bytes with the declared suite identifier",
+          "Supplies a fresh idempotency key per logical attempt and a current expected-version token, and resubmits after a precondition failure rather than retrying blindly",
+          "Declares the verification-method reference under which the signature is to be resolved"
+        ]
+      },
+      {
+        "name": "Countersigning party",
+        "responsibilities": [
+          "Countersigns the exact bytes of a named prior signature and declares whether the attestation covers the existence of that signature or endorses the payload",
+          "Confirms the covered digest and the chain root before signing, and accepts the next free ordinal assigned by the system of record",
+          "Never requests reordering or re-pointing of an existing chain position"
+        ]
+      },
+      {
+        "name": "Participation requirement steward",
+        "responsibilities": [
+          "Authors and binds the participation declaration, defining slots, purposes, dependency edges and the declared minimum, and registers the reference to the externally owned threshold rule",
+          "Versions the declaration by supersession when the requirement changes, and states what happens to signatures already collected",
+          "Confirms that no local field or report can be read as a statement that the requirement has been satisfied"
+        ]
+      },
+      {
+        "name": "Integrity reviewer",
+        "responsibilities": [
+          "Runs and reviews digest sweeps, byte-drift checks and ordinal-continuity checks across proof and version records",
+          "Reviews completion projections for inferred conclusions and for stale or contradictory relayed evidence",
+          "Verifies that no local function performs verification, policy evaluation, key revocation, log operation or deletion"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Least privilege with explicit grants. Reading proof metadata, topology, ordinals and recorded validation outcomes is granted to parties with a documented need in relation to the host record. Reading original proof bytes and covered digests requires an integrity or verification need. Appending a co-signature or countersignature requires being the declared participant for the target slot or an authorised delegate recorded as such. Appending an invalidation assertion requires recorded entitlement for the named scope. Appending a supersession link requires the proof lifecycle owner's grant. No role may edit or remove an existing record.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Sealed multi-party processes may withhold participant identity until the declaration completes, exposing only slot identifiers, counts and per-slot states; disclosure requires the authority and condition named in the declaration",
+        "A legal hold blocks tombstoning, blocks expiry of stored idempotency outcomes and may restrict read access to a defined reviewer set, and is released only by the authority that placed it",
+        "Break-glass read access to sealed participant identity or to original proof bytes during an incident is time-boxed, granted by the proof lifecycle owner, and recorded with the reason and the granting authority",
+        "Invalidation assertions and their reason text may be readable more widely than the underlying proof, because relying parties need the non-reliance signal even without access to the proof itself; a reason marked restricted is replaced by a coded reason only",
+        "Data-protection obligations may require participant identity minimisation in projections and reports, in which case the projection register records what was withheld"
+      ],
+      "audit_requirements": [
+        "Every accepted mutation records the acting party, the operation kind, the idempotency key, the request fingerprint, the expected and resulting version tokens, the event time and the observation time on the resulting version record",
+        "Every rejected mutation returns and records the precondition outcome code without writing any partial record",
+        "Grants and uses of break-glass access, disclosures of sealed participant identity, and placements and releases of legal holds are recorded with authority and reason",
+        "Durable audit-trail storage, tamper-evidence and audit retention are owned by the external audit or transparency model; this entry stores only the reference to the external audit entry and never asserts the completeness, immutability or admissibility of that external trail",
+        "Integrity sweep results, including digest mismatches and their escalation, are recorded and reviewed on the cadence set by the adopting Dimension"
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Registry ID",
+        "Owner"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Name, Type, Registry ID and Owner before touching any record",
+        "Read the Specification URL to obtain this entry's boundary, in-scope and out-of-scope statements and the known-relation ledger, so that externally owned concerns are not modelled or executed locally",
+        "Read the Storage type URL to learn how original proof bytes, version records, ordinals and tombstones are physically held, including whether bytes are inline or content-addressed",
+        "Read the Interface URL to learn how idempotency keys, request fingerprints and expected-version tokens are conveyed and how precondition failures are surfaced in that projection",
+        "Read the Processes URL for the four permitted mutations, the entitlement rules for invalidation scopes, the projection register and the retention, legal-hold and disposition procedure",
+        "Resolve the referenced external models for payload versioning, keys and certificates, verification, policy decisions, time-stamping, transparency or audit storage and credential status before relying on any completion state"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This entry structures the multi-party composition and append-only lifecycle-operation surface of WM-XCT-034: how independent co-signatures and dependency-ordered countersignatures bind and differ, how required participation is declared and how partial completion is reported without inference, and how idempotency, optimistic concurrency, immutability, scoped invalidation and directed supersession govern every mutation. Every structural node is grounded in normative securing-mechanism specifications, an append-only transparency architecture, a validation-procedure standard, a provenance ontology and an interface-semantics standard. Cryptographic execution, key and certificate lifecycle, policy evaluation and enforcement, audit-trail storage, time-stamp issuance, credential status publication and physical deletion are deliberately referenced rather than modelled.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority names the authoritative master-system identifier first, then a governed IRI, then a locally assigned UUID or ULID. Digests, ordinals, effective instants, party names and status values are explicitly excluded as identifiers, and every artifact carries its own identity strategy."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "The mutation surface is exactly four append-only operations with declared preconditions and effects, plus an explicit statement that supersession and invalidation are independent. Host record lifecycle, key lifecycle and workflow approval lifecycle are placed out of scope with named owners."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Two distinct topologies are modelled and distinguished by an explicit marker: unordered independent set membership and ordered dependency edges bound to covered bytes. Supersession is a separate directed relation with cycle prevention, and eleven composition links record what is referenced rather than owned."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 with seconds and explicit offset is required. Signing or assertion event time, observation or ingestion time, claimed signing time and externally issued proof-of-existence time are kept distinct, replay does not move event time, and supersession carries an effective interval with overlap and gap reporting."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Each version record carries actor, operation kind, event and observation times and a preceding-version pointer; supersession records a derivation kind; original bytes are preserved verbatim; relayed external outcomes are stored with their issuing validator and observation time."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five roles are defined with non-overlapping responsibilities, the Dimension owner package names an accountable owner and external dependency owners, and every out-of-boundary effect names the model that executes it."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Validation status indications are relayed verbatim from an external validator with a propagation rule for dependency chains, integrity mismatches are detected and escalated rather than repaired, and unknown types are preserved and reported as indeterminate rather than coerced."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Least-privilege default with grants tied to declared slots and recorded entitlement, four declared scopes, and exceptions for sealed participants, legal hold, break-glass and wider readability of non-reliance signals."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Append-only retention with tombstones that preserve identifier, digest and ordinal; physical deletion is explicitly outside the boundary with the host payload model, key model, transparency log, audit store and adopting-Dimension retention policy named as the executing owners; legal hold and crypto-erasure handling are stated."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments are recorded as mappings, not conformance: proof sets and chains, COSE and CMS countersignature constructs, provenance invalidation and revision, and same-issuer re-registration. A projection register records information loss where a target mechanism cannot carry topology, binding kind or a supersession pointer."
+      },
+      {
+        "dimension": "idempotency and concurrency",
+        "status": "covered",
+        "notes": "Every mutation requires an idempotency key with a request fingerprint and an expected-version token; replay semantics, fingerprint mismatch, version mismatch and concurrent co-sign serialization are each specified, with no partial writes or silent merges."
+      },
+      {
+        "dimension": "immutability",
+        "status": "covered",
+        "notes": "Original proof bytes, covered digests, bindings, dependency edges and ordinals are immutable; only fields outside signature coverage may be appended, and each append still produces a new version record."
+      },
+      {
+        "dimension": "authorization and threshold",
+        "status": "gap",
+        "notes": "The model deliberately declines to evaluate thresholds and relays an external decision result instead. No single authoritative standard was found that specifies a portable schema for declaring required participants and thresholds, so the participation declaration finding is supported by analogy to registration policy, proof purpose and validation policy rather than by a directly normative source, and is marked as a gap-supported node."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Completion counts are defined as counts of recorded facts only, carry a non-inference statement and an enumeration of what a count cannot capture, and treat a threshold-produced signature as exactly one slot."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Declaration substitution is detectable through a canonical declaration digest referenced by each collected proof, byte drift is detectable through stored canonicalization method and digest, and entitlement for invalidation is required and recorded."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "No spatial or geographic dimension is intrinsic to proof composition or proof lifecycle operations. Jurisdictional questions bearing on legal effect are handled as regional assumptions and are owned by the adopting Dimension's policy, not by location attributes on proof records."
+      }
+    ],
+    "known_omissions": [
+      "No normative source specifies a portable declaration schema for required participants and thresholds. That finding is assembled from registration-policy preconditions, declared proof purpose and validation-policy references, and should be treated as a gap-supported node rather than as canonical structure.",
+      "Container-specific countersignature encodings for XML, PDF and CMS advanced-signature profiles are not enumerated; only the generic binding distinction is modelled, with the projection register left to record encoding-specific loss.",
+      "Long-term archival augmentation and evidence-record renewal are referenced as external processes; renewal scheduling, hash-algorithm migration for aged evidence and archival time-stamp chaining are not modelled here.",
+      "Aggregate and blind signature schemes where per-member attribution is not recoverable are handled only by an aggregate-attribution marker; the model does not describe how such schemes map onto declared slots.",
+      "Distributed-ledger and account-abstraction multi-signature wallets are not covered as a normative alignment, since no comparably authoritative specification was identified for their participation semantics.",
+      "Retention windows for stored idempotency outcomes are left to the adopting Dimension; no authoritative source fixes a duration, and an unbounded window would itself become a data-protection liability.",
+      "The ETSI deliverable cited for validation status indications and augmentation is served from a host that refuses automated retrieval, so its clauses were confirmed through indexed extracts of the official document rather than by direct fetch during this research."
+    ],
+    "conflicts": [
+      "Set semantics differ across families. Data Integrity requires that every proof referenced by a previous-proof pointer must also verify for the current proof to be considered verified, and a combined verification result fails as a whole, whereas CMS states that successful validation of one signer's signature is usually treated as success for that signer while other environments must define their own rules. The model therefore records the topology and the governing application rule explicitly instead of assuming either convention.",
+      "Binding strength differs between chain mechanisms. A COSE countersignature covers the prior signature bytes, while a Data Integrity proof chain points at a prior proof identifier. An identifier-based dependency is not cryptographically bound to the prior bytes and depends on the resolver's integrity, so the model records a dependency binding kind rather than treating the two as equivalent.",
+      "The word revocation is overloaded. OpenPGP revocation signatures act on keys, subkeys and certifications, and status-list revocation acts on a credential, while this model's invalidation acts on a proof, a binding or a policy use. The model uses invalidation exclusively and records external revocations only as referenced supporting evidence.",
+      "Threshold cryptography and M-of-N participation are frequently conflated. A threshold-produced signature must verify under the conventional verification algorithm and is therefore indistinguishable from a single-party signature to a verifier, so it cannot evidence multiple satisfied slots; the model states this explicitly as a reporting rule.",
+      "Correction models diverge. The transparency architecture corrects by registering a new statement under the same issuer and subject, with no explicit replacement pointer and with relying parties evaluating the statement history, whereas provenance vocabularies use an explicit revision link. The model keeps the explicit link locally and records the loss when projecting into the weaker form.",
+      "There is no ratified standard for idempotency keys. The relevant Internet-Draft is expired, so the normative anchor is method idempotency and conditional preconditions from HTTP semantics, with the key-and-fingerprint pattern recorded as common practice rather than as a standards requirement."
+    ],
+    "regional_assumptions": [
+      "Validation status indication terminology follows a European trust-services standard. Adopting it is an alignment for reporting vocabulary and is not a claim of qualified electronic signature conformance, which would require conformity assessment evidence this model does not hold.",
+      "The legal effect of a countersignature, of a witness or notarial role and of a party's entitlement to invalidate varies by jurisdiction. The model records evidence and declarations only and makes no claim about enforceability or non-repudiation in any forum.",
+      "Data-protection regimes differ on whether participant identity and reason text may be retained in an append-only history. The access exceptions and the crypto-erasure route exist so that the adopting Dimension can meet a local obligation without breaking ordinal continuity or integrity checks.",
+      "Where an adopting Dimension operates under a regime that mandates erasure of personal data on request, the tension with append-only retention must be resolved by that Dimension's retention policy and by the owning storage model, not by weakening the immutability invariant here."
+    ],
+    "adversarial_checks": [
+      "Chain-collapse check: take a recorded co-signature set and confirm that removing any one member leaves every remaining member verifiable on its own against the pinned payload version. If a member's outcome depends on a sibling, the topology marker is wrong and the set is actually a chain.",
+      "Threshold-inflation check: attempt to reach a conclusion of approved or authorised from any combination of fields available in this model without an external decision result. Every completion projection must yield indeterminate, and a threshold-produced signature must contribute exactly one slot.",
+      "Byte-drift check: re-serialize a pinned payload with a different serializer and confirm that the recorded canonicalization method and digest surface a mismatch rather than the record silently re-binding to the new bytes.",
+      "Ownership check: walk every function's effects and confirm that none revokes a key or certificate, evaluates or enforces policy, writes or attests an audit trail, operates a log, issues a time-stamp or deletes content. Each such capability must appear only as a composition reference with a named external owner.",
+      "Replay-and-conflict check: submit the same co-sign request twice with an identical idempotency key but a differing body, and confirm rejection as a fingerprint conflict rather than the appending of a second proof; then submit with a stale expected-version token and confirm a precondition failure with no partial write.",
+      "Order-rewrite check: attempt to renumber, reorder or delete a countersignature ordinal after an invalidation assertion has been appended, and confirm rejection with the requirement to create a superseding chain instead.",
+      "Silent-inference check: remove all recorded validation outcomes from a set and confirm that reads report indeterminate for each member rather than defaulting to collected-and-therefore-valid, and that absent invalidation is not reported as positive evidence of validity.",
+      "Scope-creep check: confirm that an invalidation assertion naming the signer or key binding leaves sibling co-signatures, the payload binding and any credential status entry untouched, and that no local record was written to a key, status, log or audit store."
+    ]
+  }
+}

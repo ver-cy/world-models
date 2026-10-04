@@ -1,0 +1,3 @@
+# Field inventory
+
+quantity.schema.json supplies one closed $defs schema for each named embedded shape. Their semantic fields, owners, operations and cardinalities are defined in model-spec.md and the five-facet matrix embedded in spec.json. Document wrappers have exactly one quantity; conversions have exactly one target and result. No graph edge or URI is an authorization. UnitDefinition uses seven ordered integer dimension exponents, one authority/reference/kind/anchor Pin each, and one to three unique roles. Host objects may have many quantity facts under host constraints; this profile supplies no global cardinality cap.

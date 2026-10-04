@@ -1,0 +1,136 @@
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "profileName": "Enterprise Work Calendar and Availability",
+  "cases": [
+    {
+      "id": "cal-residual-closed-form",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "Half-time engagement with contractedCapacityFraction 0.5 against a declared FTE basis, two concurrent assignments at 0.25 each, no ordinary absence, Europe/Athens, tzdbRelease and calendarRuleSetRelease pinned in the manifest.",
+      "expect": "plannedAvailability is computed as pattern intersected with calendar working time minus approved ordinary absence; allocationResidual is published as 0.0; no worklog is read.",
+      "violates": null,
+      "closesDefect": 2,
+      "expectedCode": null
+    },
+    {
+      "id": "cal-residual-published-negative",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "contractedCapacityFraction 0.5 with concurrent allocations 0.25 and 0.35; the projection publishes residualFraction -0.10.",
+      "expect": "The projection is rejected; a negative residualFraction is never published.",
+      "violates": "inv-residual-never-negative-never-doubled",
+      "closesDefect": 2,
+      "expectedCode": "EM-PEO-07-CAL-001"
+    },
+    {
+      "id": "cal-overcommitment-finding",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "contractedCapacityFraction 0.5 with concurrent allocations 0.25 and 0.35.",
+      "expect": "residualFraction 0 is published with an overcommitment finding carrying excessFraction 0.10; both source assignments, the absence set and every worklog remain unchanged.",
+      "violates": null,
+      "closesDefect": 2,
+      "expectedCode": null
+    },
+    {
+      "id": "cal-worklog-subtracted-from-residual",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "Residual capacity is recomputed by subtracting the exact elapsed duration of the period's worklogs from plannedAvailability.",
+      "expect": "The computation is rejected; worklogs are not inputs to availability or residual.",
+      "violates": "inv-worklog-excluded-from-capacity",
+      "closesDefect": 3,
+      "expectedCode": "EM-PEO-07-CAL-002"
+    },
+    {
+      "id": "cal-overlap-summed-into-capacity",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "Two worklogs on different charge targets overlap by one clock hour; both elapsed durations are summed and charged against contracted capacity.",
+      "expect": "The computation is rejected; the overlapping clock interval is counted once for reporting only and never enters capacity.",
+      "violates": "inv-overlaps-retained-not-collapsed",
+      "closesDefect": 3,
+      "expectedCode": "EM-PEO-07-CAL-003"
+    },
+    {
+      "id": "cal-fall-back-repeated-hour",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "Europe/Athens fall-back day 2026-10-25 on which local 03:00-03:59 occurs twice, first at offset +03:00 then at offset +02:00, with tzdbRelease pinned.",
+      "expect": "The day resolves to 25 exact hours with both occurrences distinguished by offset; the nominal working day from the contractual pattern is unchanged and plannedAvailability does not grow.",
+      "violates": null,
+      "closesDefect": 5,
+      "expectedCode": null
+    },
+    {
+      "id": "cal-spring-forward-nominal-stable",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "Europe/Athens spring-forward day 2026-03-29 on which local 03:00-03:59 does not exist.",
+      "expect": "The day resolves to 23 exact hours; the week still yields five nominal working days and plannedAvailability neither shrinks nor inflates.",
+      "violates": null,
+      "closesDefect": 5,
+      "expectedCode": null
+    },
+    {
+      "id": "cal-nominal-rewritten-to-exact",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "On the spring-forward day the nominal working duration is rewritten to 7 hours to match the 23 exact clock hours of the day.",
+      "expect": "The rewrite is rejected; nominal duration is never derived from or replaced by exact elapsed duration.",
+      "violates": "inv-nominal-exact-distinct",
+      "closesDefect": 5,
+      "expectedCode": "EM-PEO-07-CAL-004"
+    },
+    {
+      "id": "cal-manifest-complete",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "An AvailabilityProjection run declares runId, computedAt, tzdbRelease, calendarRuleSetRelease, organizationalScopeRef, periodRef, patternRef, absenceSetDigest, allocationSetDigest and policyRef.",
+      "expect": "The projection is publishable as derived, non-master output addressed by runId.",
+      "violates": null,
+      "closesDefect": 13,
+      "expectedCode": null
+    },
+    {
+      "id": "cal-manifest-missing-release",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "An AvailabilityProjection is published with no tzdbRelease and no calendarRuleSetRelease in its manifest.",
+      "expect": "Publication is rejected; an incomplete manifest is not publishable.",
+      "violates": "inv-availability-derived-with-manifest",
+      "closesDefect": 13,
+      "expectedCode": "EM-PEO-07-CAL-005"
+    },
+    {
+      "id": "cal-availability-mastered-as-person-fact",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "A computed availability window is stored as a mastered attribute of the person and later read as authoritative without a run manifest.",
+      "expect": "The mastership is rejected; availability is derived and resolvable only as an identified run.",
+      "violates": "inv-work-calendar-no-independent-mastership",
+      "closesDefect": 13,
+      "expectedCode": "EM-PEO-07-CAL-006"
+    },
+    {
+      "id": "cal-act-008-profiled",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "negative",
+      "input": "The profile adds a constraint that narrows a WM-ACT-008 scheduling component and treats WM-ACT-008 as a profiled base.",
+      "expect": "The constraint is rejected; WM-ACT-008 is reference-only and is never profiled, constrained or extended.",
+      "violates": "inv-act-008-reference-only",
+      "closesDefect": 1,
+      "expectedCode": "EM-PEO-07-CAL-007"
+    },
+    {
+      "id": "cal-act-008-reference-only",
+      "target": "Enterprise Work Calendar and Availability",
+      "kind": "positive",
+      "input": "A dated scheduled commitment held in WM-ACT-008 is cited by the availability projection as planned intent.",
+      "expect": "The citation resolves as a reference; the commitment does not master pattern, absence, allocation or availability, and the projection still derives from pattern, calendar, absence and allocation only.",
+      "violates": null,
+      "closesDefect": 1,
+      "expectedCode": null
+    }
+  ]
+}

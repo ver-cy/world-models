@@ -1,0 +1,9 @@
+# Exact unsent Grok prompt — EM-LEG-02
+
+Independent enterprise metamodel review. Do not browse, invent identifiers or claim standards conformance.
+
+EM-LEG-02 covers ExternalRequirement, NormVersion, ApplicabilityAssessment and Jurisdiction. WM-POL-001 already owns legal work/expression/manifestation/source/provision/norm identity and temporal applicability; WM-ACT-034 owns assessment identity and lifecycle; WM-KNW-012 can hold internal interpretations; WM-XCT-029 owns instantiated duties.
+
+Assess this proposal: reuse WM-POL-001 and treat ExternalRequirement and NormVersion as profiles within it; profile WM-ACT-034 for applicability assessments; reference jurisdiction externally; allocate no new model ID. Keep publication/promulgation, commencement, efficacy/applicability, transitional or compliance deadline, repeal/supersession and knowledge time distinct. Model source exceptions, authority-backed derogations, beneficiary-scoped exemptions and transitional periods separately. Each assessment pins norm expression and provisions, subject/activity/product/market state, jurisdiction, facts-as-of, assessor/authority, reasoning/evidence, conclusion, confidence/limitations and review/expiry. Conflicting assessments coexist and are never silently merged. Citation, applicability, obligation and compliance are separate claims.
+
+Test a future-effective amendment with partial commencement and a transitional period, plus two reasoned interpretations for different markets. Return <=900 words with: Verdict; strongest evidence; strongest counterexample; identity/mastership; temporal axes; exceptions/transitions; assessment boundary; conflict handling; jurisdiction; obligations/compliance; scenario; at least 10 invariants; minimum completion shape; blockers. Explicitly decide whether ApplicabilityAssessment needs a new aggregate and whether Jurisdiction needs an independently allocated model.

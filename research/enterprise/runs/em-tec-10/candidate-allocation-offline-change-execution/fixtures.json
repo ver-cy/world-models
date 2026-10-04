@@ -1,0 +1,198 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Change Execution",
+  "cases": [
+    {
+      "id": "ce-normal-execution",
+      "kind": "positive",
+      "input": "A normal execution pins approved request revision, conditions, authority, effectivity, window and target outcomes.",
+      "expect": "Accepted with immutable pins and distinct request, decision and execution identities.",
+      "expectedCode": "OK_NORMAL_EXECUTION"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d01-emergency-execution-without-prior-approval",
+      "kind": "positive",
+      "input": "Execution E9 starts with authorizationKind=emergency, no approvedRequestRevisionRef, and relaxedControls, relaxationReason, relaxationAuthorityRef and retrospectiveDueAt populated; status=pending-retrospective-authorization.",
+      "expect": "Accepted; the revision pin is waived only under the emergency kind and the relaxation record is mandatory."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d01b-emergency-closed-with-open-retrospective",
+      "kind": "negative",
+      "input": "E9 is moved to closed while retrospectiveDecisionRef is absent and retrospectiveDueAt has passed.",
+      "expect": "Closure is rejected and the undischarged retrospective obligation is reported.",
+      "expectedCode": "E-CE-RETROSPECTIVE-OPEN"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d02-execution-without-pinned-conditions",
+      "kind": "negative",
+      "input": "E1 pins approvedRequestRevisionRef=R1 but carries no conditionsRef and no effectivity bounds.",
+      "expect": "Rejected; the invariant requiring the revision and its conditions cannot be satisfied.",
+      "expectedCode": "E-CE-CONDITIONS-UNPINNED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d02b-start-outside-authorization-effectivity",
+      "kind": "negative",
+      "input": "E4 starts after effectivityTo of the authorization that governs R1.",
+      "expect": "Rejected; execution must start within the pinned effectivity.",
+      "expectedCode": "E-CE-EFFECTIVITY-EXPIRED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d03-plan-superseded-after-execution",
+      "kind": "positive",
+      "input": "Rollback plan P1 is superseded by P2 after E2 has closed; E2 is re-read.",
+      "expect": "E2 still reports P1 with its revision and digest unchanged; no retroactive rewrite occurs."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d03b-reference-without-revision-component",
+      "kind": "negative",
+      "input": "windowRef and rollbackPlanRef are supplied as bare identifiers with no revision or digest.",
+      "expect": "Rejected; every pin requires model, id, revision and digest.",
+      "expectedCode": "E-CE-REF-UNVERSIONED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d04-rollback-as-separate-occurrence",
+      "kind": "positive",
+      "input": "E2 is created with kind=rollback, revertsExecutionRef=E1 and rollbackPlanRef=P1 pinned; E1 remains partially-completed.",
+      "expect": "Accepted; E1 and E2 hold distinct identities and the revert link is directed E2 to E1."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d04b-rollback-state-on-reverted-execution",
+      "kind": "negative",
+      "input": "E1 is transitioned to rollback-started and then rolled-back instead of creating E2.",
+      "expect": "Rejected; rollback states may not exist on the reverted occurrence.",
+      "expectedCode": "E-CE-ROLLBACK-STATE-COLLAPSE"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d04c-untyped-rollback-link",
+      "kind": "negative",
+      "input": "rollbackExecutionRef is set on both E1 and E2 with no kind discriminator.",
+      "expect": "Rejected; the revert direction and execution kind must be explicit.",
+      "expectedCode": "E-CE-KIND-MISSING"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d05-restored-claimed-without-verification",
+      "kind": "negative",
+      "input": "E2 asserts restored state and closes with verificationRefs empty.",
+      "expect": "Rejected; rolled back never implies restored without verification evidence.",
+      "expectedCode": "E-CE-RESTORED-UNVERIFIED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d05b-verification-target-undeclared",
+      "kind": "negative",
+      "input": "verificationRefs points at a model that is not in the declared reference whitelist.",
+      "expect": "Rejected; the verification master must be a declared reference target.",
+      "expectedCode": "E-CE-REF-TARGET-UNDECLARED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d06-scheduled-without-start-instant",
+      "kind": "positive",
+      "input": "E5 exists with status=scheduled, windowRef pinned and no startedAt.",
+      "expect": "Accepted; startedAt is required only from started onward."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d06b-terminal-without-end-instant",
+      "kind": "negative",
+      "input": "E5 is set to completed with endedAt absent.",
+      "expect": "Rejected; every terminal state requires endedAt.",
+      "expectedCode": "E-CE-TERMINAL-NO-END"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d07-partial-without-per-target-coverage",
+      "kind": "negative",
+      "input": "E1 is partially-completed with perTargetOutcomes absent, then with outcomes covering two of five targets in targetScope.",
+      "expect": "Both forms are rejected; partial outcomes must cover the declared scope and no aggregate result is inferred.",
+      "expectedCode": "E-CE-PARTIAL-NO-OUTCOMES"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d08-start-inside-freeze-without-derogation",
+      "kind": "negative",
+      "input": "E6 starts inside freeze interval F-US with no derogation recorded.",
+      "expect": "Rejected; a freeze prohibition blocks execution start absent a bounded derogation.",
+      "expectedCode": "E-CE-FREEZE-VIOLATION"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d08b-freeze-derogation-recorded",
+      "kind": "positive",
+      "input": "E6 starts inside F-US under a registered derogation with grantingAuthorityRef, bounded validity and a compensating obligation.",
+      "expect": "Accepted; the derogation, its authority, bounds and obligation are recorded on the execution."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d09b-execution-without-window-binding",
+      "kind": "negative",
+      "input": "E7 reaches started with no executedWindowRef and no recorded exemption.",
+      "expect": "Rejected; execution start must cite a window or a recorded exemption.",
+      "expectedCode": "E-CE-WINDOW-UNBOUND"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d11-authority-must-be-decision-triad",
+      "kind": "negative",
+      "input": "authorityRef points at a WM-ACT-008 window instance.",
+      "expect": "Rejected; authority resolves only to the decision triad and a window is never authorization.",
+      "expectedCode": "E-CE-AUTHORITY-NOT-DECISION"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d12b-deployment-as-caused-association",
+      "kind": "positive",
+      "input": "E1 records causedDeploymentRefs=[D1] where D1 is a WM-SFT-009 deployment.",
+      "expect": "Accepted; deployment, release and execution identities remain separate and the link is causal association."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d15-successor-assertions-unordered",
+      "kind": "negative",
+      "input": "Two correction records cite supersedesRef=E1 with no assertedAt on either.",
+      "expect": "Rejected; successor assertions require an assertion instant as ordering key.",
+      "expectedCode": "E-CE-ASSERTION-UNORDERED"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d15b-instant-without-offset",
+      "kind": "negative",
+      "input": "startedAt is supplied as a local date-time with no explicit offset.",
+      "expect": "Rejected; every instant is RFC 3339 with seconds and an explicit offset.",
+      "expectedCode": "E-CE-INSTANT-NO-OFFSET"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d17b-acting-shift-intervals-across-handover",
+      "kind": "positive",
+      "input": "E2 records actingShiftRef intervals for S-EU and S-US and handoverRefs for the A-to-B handover.",
+      "expect": "Accepted; the acting party at every instant of E2 is recoverable from the execution record."
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d18-privileged-action-without-grant",
+      "kind": "negative",
+      "input": "An operator performs a privileged step with operatorRefs empty, or present with no accessGrantRef and no expiry.",
+      "expect": "Rejected or recorded as an explicit gap; roster membership confers no permission and the grant is a separate audited object.",
+      "expectedCode": "E-CE-GRANT-MISSING"
+    },
+    {
+      "target": "ChangeExecution",
+      "id": "d20-execution-after-request-closure",
+      "kind": "negative",
+      "input": "E8 starts against R1 after the operational change request has been recorded as closed.",
+      "expect": "Rejected; closure asserts no latent or in-flight execution remains.",
+      "expectedCode": "E-CE-POST-CLOSURE-EXECUTION"
+    }
+  ]
+}

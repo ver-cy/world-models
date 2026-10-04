@@ -1,0 +1,794 @@
+PUBLIC STATIC AUDIT INPUT, PART 3 OF 4. Do not analyze yet. No tools. Reply only RECEIVED PART 3. Wait for all parts.
+
+der never proves compatibility. `active` is a valid domain code only under an accepted vocabulary, never a schema version. External object revision, timeline revision, schema version and domain state occupy separate fields. A schema pin ID/version cannot silently acquire different bytes. Changing a declared schema version requires an exact accepted new tuple; old segments retain their original pins. Historical reads do not reinterpret records using the current schema. A new snapshot may explicitly bind the same opaque payload to a different accepted schema or state profile; this is a new interpretation declaration requiring the commit reason, not a payload conversion or proof of compatibility. Earlier snapshots retain the earlier interpretation.\n\nEach commit includes `sequence`, `recordedAt`, `writer`, a `scopeDigest` over the complete immutable header, and the exact request. The scope digest binds even the genesis commit to Dimension, timeline and context; transplanting an unchanged chain under a new header fails consistency validation. It is not an authentication proof. Request has `key`, `revision`, `expectedHead`, `operation`, `reason`, nullable `sourceRecordedAt`, and complete `segments`. `reason` is attributed explanatory text, not a validated classification of a domain event. It must explain removals, new future assertions and backdated corrections; mixed intent needs clear text or separate commits. A commit changes assertions about effective history, not the external domain object itself. `sourceRecordedAt` is source-declared metadata, may be null, and cannot follow receipt in this narrow profile. It never chooses knowledge order. Source events/observation times are outside this executable schema and may be linked through separately governed provenance records.\n\n## Time and querying\n\nAll instants use a real Gregorian date in exact ASCII `YYYY-MM-DDTHH:MM:SSZ`, seconds 00..59. No fractions, local times, explicit numeric offsets, uncertain dates or leap seconds. Reject unsupported input; never round or infer midnight/zone. A civil-date or clock conversion needs a separately reviewed adapter and pinned rules. A future **valid** instant is allowed for a scheduled assertion; a future **recorded** instant or knowledge cutoff is rejected against trusted `now`.\n\nIntervals are half-open `[validFrom, validTo)`. `validTo:null` explicitly means no asserted upper bound, not an unknown date or eternal truth. Start is always known. Empty/reversed intervals and overlaps reject; segments must be sorted. Adjacent boundaries are legal, and an open segment must be last. Gaps and an empty snapshot are permitted and return `insufficient-context`; they are not false, absent or unassigned. Explicit negation needs a separately pinned domain value. A snapshot replaces the entire scope's current asserted timeline, so omitted periods become unknown in that new recorded view. Previous snapshots remain intact.\n\n`knownAt` selects the timeline host's recorded axis. It does not mean that the native Dimension already contained the snapshot at that instant. A trusted pre-existing timeline may later be stored in a newly bootstrapped Dimension: its inner receipts remain unchanged, while the outer native fact records the later storage receipt. The acceptance fixtures explicitly simulate such a host history, not earlier native Dimension existence or knowledge. Validation does not authenticate imported receipts.\n\nThe trusted host assigns non-decreasing receipt instants and strictly increasing contiguous sequences within this one timeline. Two commits in the same second are permitted; sequence resolves them. Clock regression rejects. One mistakenly admitted forward clock excursion can make reads and writes reject as `Future receipt` until the trusted clock catches up; there is no in-place repair operation. The host must check its clock against an independent trusted reference and a locally configured skew bound before every admission. On detection, quarantine the root and freeze writes. Recover through an explicitly governed new timeline identity that preserves the original root as restricted evidence, links its provenance and records the loss of continuity, or wait for verified catch-up under a current configuration. Never rewrite receipts or silently roll back. This operational migration is not implemented here. Sequences cannot compare different timelines or Dimensions; no global consistency or synchronized-clock claim exists.\n\n`resolve(... validAt, knownAt, knownSequence=None)` first checks **current** full-timeline reader and purpose permission, then checks the governed header matches before validating history and cutoffs. Trusted configuration validation precedes the reader gate; configuration errors stay inside the host and must be converted to generic endpoint errors. It chooses the latest commit with receipt ≤ knownAt and, if supplied, sequence ≤ knownSequence; then selects the segment covering validAt. No hidden defaults to “now”. `knownSequence=0` deliberately precedes all receipts. Instant-only cutoffs include all received commits in that second; they can gain a later commit with that same second. **Pin the returned sequence for stable historical content.** A supplied sequence is an additional upper bound, not an assertion that a commit existed at the timestamp. Before first receipt and uncovered periods produce distinct missing-context explanations. Denied reads raise a denial before inspecting ledger/query contents; denied is never an unknown-fact answer.\n\nReturned value remains a `recorded-assertion`, with truth, domain validation and transition legality explicitly unevaluated. The view includes commit revision/sequence/receipt/digest, exact segment, and supplied ledger/configuration digests. `archivedAsKnown` belongs to the selected history; `archiveNow` describes the current supplied root and is expressly current context. Root/policy digests and archiveNow may change when historical content remains the same. Consequently reproducibility means the selected historical commit and segment under the pinned cutoff, not byte equality of all current-context metadata. Full-history authority is required for this view; no partial redaction or hidden contrary-evidence signal is supplied.\n\n## Writes, authority, conflicts and imports\n\n`admit(ledger, request, config, actor, now)` is a pure **trusted-host internal** function. The host authenticates actor, selects its current configuration/latest complete root/clock, and serializes durable persistence. It must enforce request size limits before parsing. Config includes exact dimension/timeline/scope, a half-open current validity interval, one writer, full-history readers, purposes and accepted schema/state pins. Claimed source authorship grants nothing. On grant rotation, old writer attribution remains; static validation does not retrospectively authenticate it. A write-only caller must receive only a receipt or generic rejection, never the function's whole returned ledger or detailed exceptions.\n\nFirst operation is `record`; subsequent operations are `correct` or `archive`. Host stamps every new sequence, receipt and writer; caller-supplied receipt fields are rejected. A correction must match the current head digest. Exactly unchanged segments retained from the preceding snapshot may keep retired pins for metadata maintenance or archival; a new, replaced or resegmented interval is a new use requiring currently accepted schema/state bindings. Archival itself preserves the prior snapshot exactly and remains possible after pin retirement, subject to capacity limits. Complete snapshots intentionally serialize even disjoint changes; no automatic merge, last-writer contest resolution, branch or cross-scope transaction exists. Rejected head, replay and authority attempts leave the input unchanged. **The host must durably record its own restricted conflict/rejection artifact** before reporting a conflict; this library has no conflict store or network side effect. A competing master's assertion needs a distinct governed scope and an explicit authority-resolution process. Receipt does not certify priority or correctness.\n\nRepeated key with canonically equivalent request and the same authenticated writer is a no-op, retaining the original receipt even after the head moved or archival. Current authorization/config validity is still checked. Replay compares the complete canonical request, including original expectedHead; it does not rewrite it to the new head. Same key/different request or writer rejects. Changing keys with a reused revision also rejects. Admission is not a durable transaction service.\n\nArchive appends a new commit with exactly the prior segments and freezes further new writes. It does not deactivate the subject, close business-valid periods, retract an assertion or delete retained history. An identical retry remains permitted. **Erasure, tombstones, retention schedules and legal-hold decisions are unimplemented, separate integrations.** Do not promise perpetual retention or adopt this reference where the required disposal path is absent. The host must not turn source knowledge into an earlier receipt: new admission must call admit with the actual timeline-host time and retain earlier source time only as metadata. The pure function trusts its supplied clock and cannot enforce a real-world creation floor. A structurally valid imported ledger cannot prove it was actually received then; only a trusted host archive/chain can supply that assurance.\n\n## Integrity, native binding and migration\n\n`validate_ledger` checks shape and internal temporal/identity chain consistency against explicit trusted now. `validate_extension` additionally requires exact old headers and the entire old commit prefix. They require the host's trusted latest predecessor, cannot detect an omitted newer root, and do not establish historical authorization. Export/import the complete same-version ledger losslessly; `migrate` rejects any other contract version. No automatic schema migration, SCD2/SQL/XTDB adapter, partial export or existing-Dimension upgrade is implemented.\n\nThe encoding named **vercy-python-json-v1** is UTF-8 of Python `json.dumps(sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False)`. There is no Unicode normalization. Integers for sequence must use integer JSON encoding, not Boolean or `1.0`. This profile is not RFC 8785; independent language ports must reproduce fixtures exactly. Invalid Unicode, nonfinite numbers and unsupported JSON values reject. JSON objects reaching the callable must come from an input parser that rejects duplicate keys; the bundled file loader is for trusted fixture/archive files. Hashes provide consistency against a trusted predecessor, not signatures, anti-rollback storage or origin authenticity.\n\nBounds: ≤1000 commits, ≤100 segments per snapshot and ≤8 MiB serialized root. These are structural ceilings, not measured production capacity. Full validation scans retained history and admission copies it; host limits, concurrency, availability, monitoring and rollover/migration planning are required before production growth. Overflow refuses the operation without truncation. At the commit/byte ceiling even the extra archive commit may be refused; the host must plan migration or freeze writes through current configuration before capacity exhaustion. This reference does not guarantee an always-available archive slot.\n\nSpecification dependency graph has no runtime imports. Exact WM-XCT-009, 021 and 022 references are conceptual selected-pattern alignments only. Instance references and package composition are separate graphs. No universal WM ID or parent subtype is created. A native V3 fact stores one complete timeline under `temporal.timeline.snapshot` with its own companion namespace. The native outer validator permits object-shaped values and is **not** this nested semantic validator. `validate_snapshot` takes the expected native Dimension explicitly and checks it, timeline subject, asserted/null-unit/open envelope with receipt not before the latest inner receipt, snapshot digest, an immediate successor fact ID different from its predecessor, predecessor linkage and append-only extension after native envelope validation. Both current and immediate previous envelopes receive the same semantic checks, and a successor storage receipt cannot precede its predecessor. Trusted previous snapshot selection is external. Initial installation tests fresh synthetic Dimensions; existing-Dimension migration remains deferred.\n\n## Invariants and minimum use\n\nI01 scope/Dimension remain fixed; I02 opaque revision/schema version/state remain separate; I03 host receipt order differs from effective/source time; I04 positive half-open nonoverlapping sorted intervals; I05 gaps/pre-receipt are unknown; I06 full prior snapshot prefix survives correction; I07 request-bound idempotency retains first receipt; I08 expected-head conflict cannot overwrite; I09 current reader/purpose gate precedes diagnostics; I10 immutable schema/value pins across history; I11 archive preserves history and blocks new commits; I12 unsupported migration refuses loss; I13 explicit nested native validation; I14 no transition/permission/truth inferred; I15 equal-second history needs sequence for stable content; I16 new accepted bindings never reinterpret old content.\n\nA startup needs one governed scope, local config, a pinned domain value/schema and its first snapshot; state references are optional. A matrix group uses separate assignment scopes. An AI deployment uses an environment-qualified artifact binding; model-weight revision, deployment status, evaluation schema and record revision remain different references. No example is a claim about any real organization. The full question routes live in spec.json; missing artifacts remain insufficient context. Allowed actions describe operations to propose or execute under host authority, not grants from this package.\n",
+  "structure": {
+    "bundles": [
+      {
+        "id": "TH-B-scope",
+        "name": "Scope and interpretation",
+        "description": "Scope and interpretation with explicit uncertainty and host responsibility.",
+        "layers": [
+          {
+            "id": "TH-L-identity",
+            "name": "Identity and boundaries",
+            "description": "Identity and boundaries for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F01",
+                "name": "What is the governed fact scope?",
+                "description": "What is the governed fact scope?",
+                "questions": [
+                  {
+                    "id": "TH-Q01",
+                    "text": "What is the governed fact scope?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Dimension, timeline and subject/predicate/context URIs",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A01",
+                    "name": "Dimension, timeline and subject/predicate/context URIs",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT01",
+                    "description": "Compare exact references; request missing context"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F02",
+                "name": "What survives a rename, transfer or split?",
+                "description": "What survives a rename, transfer or split?",
+                "questions": [
+                  {
+                    "id": "TH-Q02",
+                    "text": "What survives a rename, transfer or split?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "External identity decision and fixed timeline header",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A02",
+                    "name": "External identity decision and fixed timeline header",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT02",
+                    "description": "Keep stable scope; create a new governed scope when meaning changes"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F03",
+                "name": "Can two masters or values apply simultaneously?",
+                "description": "Can two masters or values apply simultaneously?",
+                "questions": [
+                  {
+                    "id": "TH-Q03",
+                    "text": "Can two masters or values apply simultaneously?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Scope/master register and separate context keys",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A03",
+                    "name": "Scope/master register and separate context keys",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT03",
+                    "description": "Separate scopes; request an authority decision, never silently choose a winner"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "TH-L-bindings",
+            "name": "Schema and state bindings",
+            "description": "Schema and state bindings for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F04",
+                "name": "Which schema interprets this value?",
+                "description": "Which schema interprets this value?",
+                "questions": [
+                  {
+                    "id": "TH-Q04",
+                    "text": "Which schema interprets this value?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Exact schema ID, numeric version and digest; external payload pin",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A04",
+                    "name": "Exact schema ID, numeric version and digest; external payload pin",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT04",
+                    "description": "Check accepted tuple; delegate payload validation"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F05",
+                "name": "Which status axis and vocabulary are in use?",
+                "description": "Which status axis and vocabulary are in use?",
+                "questions": [
+                  {
+                    "id": "TH-Q05",
+                    "text": "Which status axis and vocabulary are in use?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "State profile pin, axis and code",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A05",
+                    "name": "State profile pin, axis and code",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT05",
+                    "description": "Check vocabulary membership only"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F06",
+                "name": "Did a legitimate domain transition occur?",
+                "description": "Did a legitimate domain transition occur?",
+                "questions": [
+                  {
+                    "id": "TH-Q06",
+                    "text": "Did a legitimate domain transition occur?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Host transition definition, execution and provenance evidence",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A06",
+                    "name": "Host transition definition, execution and provenance evidence",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT06",
+                    "description": "Route to the domain owner; report legality not evaluated"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TH-B-history",
+        "name": "Effective and recorded history",
+        "description": "Effective and recorded history with explicit uncertainty and host responsibility.",
+        "layers": [
+          {
+            "id": "TH-L-valid",
+            "name": "Effective intervals",
+            "description": "Effective intervals for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F07",
+                "name": "What is recorded as effective on the selected date?",
+                "description": "What is recorded as effective on the selected date?",
+                "questions": [
+                  {
+                    "id": "TH-Q07",
+                    "text": "What is recorded as effective on the selected date?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Explicit validAt and selected segment",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A07",
+                    "name": "Explicit validAt and selected segment",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT07",
+                    "description": "Resolve within the selected recorded snapshot"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F08",
+                "name": "Does the exact endpoint belong to this interval?",
+                "description": "Does the exact endpoint belong to this interval?",
+                "questions": [
+                  {
+                    "id": "TH-Q08",
+                    "text": "Does the exact endpoint belong to this interval?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Half-open interval boundaries",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A08",
+                    "name": "Half-open interval boundaries",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT08",
+                    "description": "Exclude validTo; reject zero duration or overlap"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F09",
+                "name": "What do uncovered periods or an empty snapshot mean?",
+                "description": "What do uncovered periods or an empty snapshot mean?",
+                "questions": [
+                  {
+                    "id": "TH-Q09",
+                    "text": "What do uncovered periods or an empty snapshot mean?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Coverage gaps and missing-context explanation",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A09",
+                    "name": "Coverage gaps and missing-context explanation",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT09",
+                    "description": "Return insufficient context, never false"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "TH-L-receipt",
+            "name": "Receipts and corrections",
+            "description": "Receipts and corrections for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F10",
+                "name": "What had this timeline host recorded by a cutoff?",
+                "description": "What had this timeline host recorded by a cutoff?",
+                "questions": [
+                  {
+                    "id": "TH-Q10",
+                    "text": "What had this timeline host recorded by a cutoff?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "knownAt, optional knownSequence and selected receipt",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A10",
+                    "name": "knownAt, optional knownSequence and selected receipt",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT10",
+                    "description": "Choose the latest eligible commit; before first receipt return unknown"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F11",
+                "name": "Which of two same-second receipts is intended?",
+                "description": "Which of two same-second receipts is intended?",
+                "questions": [
+                  {
+                    "id": "TH-Q11",
+                    "text": "Which of two same-second receipts is intended?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Host sequence and receipt time",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A11",
+                    "name": "Host sequence and receipt time",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT11",
+                    "description": "Pin the returned sequence for stable historical content"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F12",
+                "name": "How does a late correction preserve earlier answers?",
+                "description": "How does a late correction preserve earlier answers?",
+                "questions": [
+                  {
+                    "id": "TH-Q12",
+                    "text": "How does a late correction preserve earlier answers?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Two complete snapshots and predecessor digest",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A12",
+                    "name": "Two complete snapshots and predecessor digest",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT12",
+                    "description": "Append a corrected snapshot; compare historical answers"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TH-B-control",
+        "name": "Authority and controlled operations",
+        "description": "Authority and controlled operations with explicit uncertainty and host responsibility.",
+        "layers": [
+          {
+            "id": "TH-L-writes",
+            "name": "Write integrity",
+            "description": "Write integrity for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F13",
+                "name": "Was this retry already applied?",
+                "description": "Was this retry already applied?",
+                "questions": [
+                  {
+                    "id": "TH-Q13",
+                    "text": "Was this retry already applied?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Original key, full request and first receipt",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A13",
+                    "name": "Original key, full request and first receipt",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT13",
+                    "description": "Return unchanged root only for exact authorized replay"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F14",
+                "name": "Is this write based on the current head?",
+                "description": "Is this write based on the current head?",
+                "questions": [
+                  {
+                    "id": "TH-Q14",
+                    "text": "Is this write based on the current head?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Expected/current head and host conflict artifact",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A14",
+                    "name": "Expected/current head and host conflict artifact",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT14",
+                    "description": "Reject stale writes; host records conflict without altering history"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F15",
+                "name": "Who may assert this scope now?",
+                "description": "Who may assert this scope now?",
+                "questions": [
+                  {
+                    "id": "TH-Q15",
+                    "text": "Who may assert this scope now?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Current host config, authenticated writer and mastership evidence",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A15",
+                    "name": "Current host config, authenticated writer and mastership evidence",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT15",
+                    "description": "Require current grant; preserve old attribution"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "TH-L-reads",
+            "name": "Historical disclosure",
+            "description": "Historical disclosure for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F16",
+                "name": "May this role read historical data for this purpose?",
+                "description": "May this role read historical data for this purpose?",
+                "questions": [
+                  {
+                    "id": "TH-Q16",
+                    "text": "May this role read historical data for this purpose?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Current full-timeline reader/purpose decision",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A16",
+                    "name": "Current full-timeline reader/purpose decision",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT16",
+                    "description": "Deny before hidden ledger/query diagnostics"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F17",
+                "name": "Does a pinned assertion establish truth or permission?",
+                "description": "Does a pinned assertion establish truth or permission?",
+                "questions": [
+                  {
+                    "id": "TH-Q17",
+                    "text": "Does a pinned assertion establish truth or permission?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Selected assertion plus independently governed evidence",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A17",
+                    "name": "Selected assertion plus independently governed evidence",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT17",
+                    "description": "Report truth and transition legality as unevaluated"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "TH-B-adoption",
+        "name": "Adoption and continuity",
+        "description": "Adoption and continuity with explicit uncertainty and host responsibility.",
+        "layers": [
+          {
+            "id": "TH-L-continuity",
+            "name": "Archival and import",
+            "description": "Archival and import for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F18",
+                "name": "What changes when this timeline is archived?",
+                "description": "What changes when this timeline is archived?",
+                "questions": [
+                  {
+                    "id": "TH-Q18",
+                    "text": "What changes when this timeline is archived?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Archive commit and unchanged segment snapshot",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A18",
+                    "name": "Archive commit and unchanged segment snapshot",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT18",
+                    "description": "Freeze new writes; retain historical reads"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F19",
+                "name": "How can an imported history avoid forged local knowledge?",
+                "description": "How can an imported history avoid forged local knowledge?",
+                "questions": [
+                  {
+                    "id": "TH-Q19",
+                    "text": "How can an imported history avoid forged local knowledge?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Actual local receipt and separate sourceRecordedAt",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A19",
+                    "name": "Actual local receipt and separate sourceRecordedAt",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT19",
+                    "description": "Admit at local receipt; require actual host receipt for new admissions; static imports cannot prove receipt history"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F20",
+                "name": "Which precision or calendar adapter is required?",
+                "description": "Which precision or calendar adapter is required?",
+                "questions": [
+                  {
+                    "id": "TH-Q20",
+                    "text": "Which precision or calendar adapter is required?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Original civil/offset/fractional time and pinned conversion rules",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A20",
+                    "name": "Original civil/offset/fractional time and pinned conversion rules",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT20",
+                    "description": "Reject unsupported input; do not silently truncate"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "TH-L-integration",
+            "name": "Composition and migration",
+            "description": "Composition and migration for one governed temporal assertion scope.",
+            "findings": [
+              {
+                "id": "TH-F21",
+                "name": "What is the minimum useful Company Dimension setup?",
+                "description": "What is the minimum useful Company Dimension setup?",
+                "questions": [
+                  {
+                    "id": "TH-Q21",
+                    "text": "What is the minimum useful Company Dimension setup?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "One scope, config, external value/schema pin and first snapshot",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A21",
+                    "name": "One scope, config, external value/schema pin and first snapshot",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT21",
+                    "description": "Install own companion identity and validate nested snapshot"
+                  }
+                ]
+              },
+              {
+                "id": "TH-F22",
+                "name": "Can we migrate or export without losing recorded history?",
+                "description": "Can we migrate or export without losing recorded history?",
+                "questions": [
+                  {
+                    "id": "TH-Q22",
+                    "text": "Can we migrate or export without losing recorded history?",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Full same-version ledger, checksums, predecessor and loss analysis",
+                      "If unavailable: insufficient-context; name missing evidence. A denied read remains denied."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "TH-A22",
+                    "name": "Full same-version ledger, checksums, predecessor and loss analysis",
+                    "description": "Exact references or reproducible report; no implicit truth or authority."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "TH-ACT22",
+                    "description": "Allow same-version roundtrip; refuse unsupported migration"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "statistics": {
+    "bundles": 4,
+    "layers": 8,
+    "findings": 22,
+    "questions": 22,
+    "artifacts": 22,
+    "actions": 22
+  },
+  "catalogue": {
+    "alternateNames": [
+      "Time, states and versions",
+      "Bitemporal fact history"
+    ],
+    "domain": [
+      "Enterprise",
+      "Temporal history",
+      "Lifecycle"
+    ],
+    "tags": [
+      "temporal",
+      "history",
+      "bitemporal",
+      "schema",
+      "lifecycle"
+    ],
+    "adoption": "Start with one fact scope, a pinned domain value and its schema, then append complete effective-time snapshots. Query by effective date and recorded cutoff; later corrections preserve earlier recorded views. The package includes three synthetic examples, a closed schema, a reference validator and native installation checks.",
+    "limits": "A trusted host owns authentication, latest history, receipt clock and durable conflict handling. This companion does not establish source truth, domain transition legality or payload-schema conformance."
+  }
+}
+
+</file-content>
+END FILE spec.json
+
+## FILE AGENTS.md
+Raw SHA-256: ba6bfbdc79d4e3ea4d1dccc8eb1168de54ca3c7994e119dec381e2cb5c7df7cc
+
+<file-content name="AGENTS.md">
+# Agent instructions
+
+Read model-spec.md, temporal.schema.json and temporal.py. Read spec.json for the Bundle → Layer → Finding → Question → Artifact → Action tree. Query explicit valid/recorded cutoffs; pin sequence for reproducibility within a second. Unknown is not false. Schema version, artifact revision, timeline revision and state are separate.
+
+This is a trusted-host reference, not a security boundary. Host supplies authenticated actor, current config, latest complete root, clock and durable serialization. Enforce raw input size limits and duplicate-key rejection during parsing. Invoke admit on every new request, preserve first receipt on replay, record restricted host conflict artifacts for rejected writes, and persist atomically. Return only receipt/generic error to a writer without full history read authority. Config and diagnostic details stay inside the host.
+
+Never backdate local receipt using source time, merge competing masters, infer truth or transition legality, silently truncate timestamps, invoke external adapters, or dispose of history. Archive freezes new commits while retaining reads. Retention/erasure and existing-Dimension migration require a separate integration. Validate native envelope and nested snapshot separately against the trusted latest predecessor. Current read rights apply to old history too. Static import validation proves only internal consistency. Do not contact people, access external payloads or execute domain transitions on the basis of this package.
+
+</file-content>
+END FILE AGENTS.md
+
+## FILE acceptance.py
+Raw SHA-256: 8dbffa2e50ddd2c6f12400419e8f304fd7f7e39aaa691aa5a7633eafd8ba17ce
+
+<file-content name="acceptance.py">
+"""Trusted synthetic new-Dimension composition, admission and snapshot checks."""
+import argparse,copy,hashlib,importlib.util,json,sys,tempfile
+from datetime import datetime,timedelta,timezone
+from pathlib import Path
+import temporal as p
+from test_temporal import fixture,T1,T2,NOW
+HERE=Path(__file__).resolve().parent
+PROFILE_ID='vr.profile.enterprise-temporal-history'
+SLUG='enterprise-temporal-history'
+def run(composer,skill):
+    p.require(__debug__,'Run without -O');composer=Path(composer).resolve();skill
+
+END TRANSPORT PART 3 OF 4.

@@ -1,0 +1,228 @@
+{
+  "format": "vercy-model-allocation-candidate/v1",
+  "contourId": "EM-FIN-04",
+  "proposedName": "Consolidation Run",
+  "modelId": null,
+  "registryId": null,
+  "allocationState": "unassigned",
+  "decision": "NEW MODEL",
+  "canonicalPublishable": false,
+  "identityTest": {
+    "stableIdentity": "Each consolidation execution remains identifiable independently of the statement that cites it.",
+    "versionIdentity": "Changed scope, ledgers, mappings, rates, cutoff or corrections create successor runs rather than mutating a completed run.",
+    "independentLifecycle": [
+      "planned",
+      "running",
+      "completed",
+      "failed",
+      "superseded",
+      "retired"
+    ],
+    "mastership": "group finance consolidation execution authority"
+  },
+  "boundary": {
+    "owns": [
+      "immutable run identity",
+      "pinned scope, framework, ledgers, mappings, rates and cutoff",
+      "ordered transformation and reconciliation evidence",
+      "contained run outputs and comparability bridge",
+      "successor-run lineage"
+    ],
+    "references": [
+      {
+        "target": "candidate:consolidation-scope",
+        "purpose": "Pinned immutable scope revision consumed by the run",
+        "allocationState": "unassigned"
+      },
+      {
+        "target": "WM-ECO-016",
+        "purpose": "Source and consolidation-book journal entries"
+      },
+      {
+        "target": "WM-ECO-017",
+        "purpose": "Pinned positions and trial-balance sets"
+      },
+      {
+        "target": "WM-ECO-015",
+        "purpose": "Ledger and account identity"
+      },
+      {
+        "target": "WM-KNW-012",
+        "purpose": "Accounting, consolidation-method and transformation policy revisions"
+      }
+    ],
+    "excludes": [
+      "statement issue lifecycle",
+      "scope identity and scope lifecycle (pinned by reference only)",
+      "source posting identity",
+      "account and position identity",
+      "assurance engagement",
+      "inbound statement citation (WM-ECO-018 cites this root; this root never references a statement issue)"
+    ]
+  },
+  "objects": {
+    "ConsolidationRun": {
+      "identity": [
+        "consolidationRunId"
+      ],
+      "required": [
+        "scopeRevisionRef",
+        "frameworkRef",
+        "sourceBookRefs",
+        "sourceRevisionRefs",
+        "mappingRefs",
+        "rateSetRef",
+        "cutoff",
+        "executedAt",
+        "status",
+        "knowledgeCutAt",
+        "periodStart",
+        "periodEnd",
+        "taxonomyRef",
+        "tolerancePolicyRef",
+        "contentDigest",
+        "executorRef",
+        "authorizationRef"
+      ],
+      "optional": [
+        "successorRunRef",
+        "supersedesRunRef",
+        "restatementClass",
+        "restatementReason",
+        "compensatingControlRef"
+      ],
+      "lifecycle": [
+        "planned",
+        "running",
+        "completed",
+        "failed",
+        "superseded",
+        "retired"
+      ],
+      "pinTypes": {
+        "mappingRefs": "ExternalVersionPin[]",
+        "rateSetRef": "ExternalVersionPin",
+        "taxonomyRef": "ExternalVersionPin",
+        "tolerancePolicyRef": "ExternalVersionPin",
+        "sourceRevisionRefs": "ExternalVersionPin[]"
+      }
+    },
+    "TransformationStep": {
+      "identity": [
+        "consolidationRunId",
+        "stepId"
+      ],
+      "required": [
+        "ruleRevisionRef",
+        "inputRefs",
+        "outputRefs",
+        "sequence"
+      ],
+      "optional": [
+        "authorizationRef",
+        "residualExplanation"
+      ],
+      "conditionalRequirements": {
+        "authorizationRef": "required when the step is a post-cutoff adjustment"
+      }
+    },
+    "ExternalVersionPin": {
+      "required": [
+        "identifier",
+        "version",
+        "digest"
+      ],
+      "optional": [
+        "masterRef"
+      ]
+    },
+    "ComparabilityBridge": {
+      "identity": [
+        "consolidationRunId",
+        "comparedRunRef"
+      ],
+      "required": [
+        "scopeDelta",
+        "methodDelta",
+        "rateDelta",
+        "activityDelta",
+        "nonComparabilityMarker"
+      ]
+    },
+    "EliminationEntryProfile": {
+      "base": "WM-ECO-016",
+      "required": [
+        "bookClass",
+        "adjustmentClass",
+        "consolidationRunRef",
+        "scopeRevisionRef",
+        "counterpartyLegRefs",
+        "matchKey",
+        "matchedAmount",
+        "unmatchedAmount",
+        "residualReason",
+        "tolerancePolicyRef",
+        "initiatorRef",
+        "authorizationRef"
+      ],
+      "fixed": {
+        "bookClass": "consolidation"
+      },
+      "cardinality": {
+        "counterpartyLegRefs": 2
+      },
+      "enums": {
+        "adjustmentClass": [
+          "intercompanyRevenueCost",
+          "receivablePayable",
+          "investmentEquity",
+          "unrealisedProfit",
+          "dividend"
+        ],
+        "residualReason": [
+          "timing",
+          "fx",
+          "inTransit",
+          "cutoff",
+          "none"
+        ]
+      }
+    }
+  },
+  "invariants": [
+    "Every run pins scope, framework, taxonomy, rates, mappings, cutoff and source revisions.",
+    "Source postings remain immutable in their books.",
+    "Transformations record input, output and rule versions.",
+    "Adjustments post only to consolidation books.",
+    "Every elimination cites paired evidence and explains residuals.",
+    "Each entry balances within one consolidation book and one currency, inside one run, against one pinned tolerance policy revision; no cross-book or cross-currency netting; scope is not a balancing dimension.",
+    "Unmatched legs remain visible breaks.",
+    "Transaction, functional and presentation currencies remain explicit.",
+    "Rate value, type, date, source and set version are pinned.",
+    "Event, cutoff, run, issue and knowledge times remain distinct.",
+    "Completed runs are immutable and corrected by successors.",
+    "Restatements preserve original runs and statement editions.",
+    "Post-cutoff adjustments are dated and authorized.",
+    "Run identifiers and contained steps are never recycled.",
+    "A run pins exactly one scope revision whose status is approved or effective at the run knowledge cut; draft revisions are not pinnable.",
+    "Replay at knowledge time T resolves only revisions and pins whose recordedAt is less than or equal to T, never current configuration.",
+    "A successor resolves its predecessor and never replaces it; both editions remain resolvable.",
+    "A failed run emits no citable output.",
+    "A retired run remains immutable and resolvable for every statement that already cites it; retirement never invalidates an existing citation.",
+    "initiatorRef differs from authorizerRef, or compensatingControlRef is present."
+  ],
+  "holds": [
+    "Registry allocation is pending and no identifier may be guessed.",
+    "Independent Grok review and the single frozen semantic audit are complete; all material defects were remediated without rerun.",
+    "All bases remain non-canonical reviewable drafts; provider waivers/timeouts and source/crosswalk holds remain.",
+    "WM-REC-002 parent is unfrozen.",
+    "No installability, canonical-completeness or publication-readiness claim is made.",
+    "WM-ECO-016 self-declared omission of intercompany elimination structure remains unclosed; the profile fails if bookClass and consolidationRunRef cannot be carried without sharing source-journal identity.",
+    "Chart-of-accounts/group mapping, FX rate set, taxonomy, tolerance policy, intercompany match and trial-balance sets have no allocated master; they are opaque external version pins.",
+    "WM-ECO-018 COMPOSE WM-ECO-017 conflicts with WM-ECO-017 REFERENCE WM-ECO-018."
+  ],
+  "candidateRevision": 2,
+  "status": "held",
+  "installable": false,
+  "presentIndependentIdentity": true
+}

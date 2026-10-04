@@ -1,0 +1,1133 @@
+[
+  {
+    "id": "money-core-fn-parse-amount",
+    "name": "Parse and normalize an exact decimal amount",
+    "description": "Accepts an amount as a decimal lexical token or as an explicit coefficient-and-scale pair, and produces a normalized sign, coefficient and scale together with the canonical lexical form. Rejects any input that cannot be held exactly at the declared scale; it never rounds silently and never accepts a binary floating-point source as authoritative.",
+    "inputs": [
+      "Amount as a decimal lexical token or as an explicit coefficient-and-scale pair",
+      "Declared scale for the host field",
+      "Total-digit and fraction-digit bounds in force",
+      "Negative-zero policy"
+    ],
+    "outputs": [
+      "Normalized sign, coefficient and scale",
+      "Canonical lexical form of the amount",
+      "Parse and validation diagnostics"
+    ],
+    "preconditions": [
+      "The input is a decimal lexical form or an exact coefficient-and-scale pair, not a binary floating-point value",
+      "The declared scale and digit bounds are supplied by the host or profile",
+      "The negative-zero policy is declared where a signed zero can occur"
+    ],
+    "effects": [
+      "Rejects an input that is not exactly representable at the declared scale and records the reason",
+      "Preserves the declared scale so that trailing-zero significance is not lost",
+      "Produces a canonical form suitable for storage, hashing and equality",
+      "Performs no rounding, no arithmetic and no currency conversion"
+    ],
+    "source_refs": [
+      "SRC-004",
+      "SRC-005",
+      "SRC-006",
+      "SRC-008"
+    ]
+  },
+  {
+    "id": "money-core-fn-validate-currency-ref",
+    "name": "Validate the currency reference against the pinned catalogue edition",
+    "description": "Resolves the declared currency code against the pinned, integrity-verified catalogue snapshot and reports the entry's class, status and published minor unit, or reports the code as unresolved. It reads the catalogue; it never allocates, amends or withdraws a code, and it never substitutes a default currency.",
+    "inputs": [
+      "Alphabetic currency code and optional numeric code",
+      "Catalogue identifier, list designator and pinned published edition",
+      "Integrity digest of the retained catalogue snapshot",
+      "Set of code classes the host field permits"
+    ],
+    "outputs": [
+      "Resolution status for the code",
+      "Resolved code class and status as at the pinned edition",
+      "Published minor unit value or an explicit not-applicable flag",
+      "Mismatch and unresolved diagnostics"
+    ],
+    "preconditions": [
+      "A catalogue snapshot for the declared edition is retained and its digest verifies",
+      "The catalogue and list the code belongs to are declared on the reference",
+      "The host has declared which code classes it accepts"
+    ],
+    "effects": [
+      "Marks an unresolved or class-disallowed code explicitly rather than substituting any currency",
+      "Reports disagreement between the alphabetic and numeric forms without choosing one silently",
+      "Forces an explicit host-declared scale when the catalogue publishes no applicable minor unit",
+      "Makes no change to catalogue content and no assertion about jurisdiction, legal tender or exchangeability"
+    ],
+    "source_refs": [
+      "SRC-001",
+      "SRC-002",
+      "SRC-003",
+      "SRC-010"
+    ]
+  },
+  {
+    "id": "money-core-fn-classify-value-state",
+    "name": "Determine the declared value determinacy state",
+    "description": "Inspects a monetary declaration and reports whether it asserts an exact point value, an interval, an approximate value or an explicit absence with a reason, flagging contradictory combinations. Its purpose is to keep an absent or unknown value from collapsing into a numeric zero.",
+    "inputs": [
+      "Monetary declaration payload",
+      "Declared determinacy-state vocabulary",
+      "Declared absent-reason vocabulary",
+      "Interval endpoints where present"
+    ],
+    "outputs": [
+      "Determinacy state code",
+      "Absent reason where the declaration asserts no amount",
+      "Interval endpoint set with inclusivity flags",
+      "Contradiction diagnostics"
+    ],
+    "preconditions": [
+      "The adopting Dimension has declared the determinacy-state and absent-reason vocabularies",
+      "Interval endpoints, where present, each carry a currency reference and a declared scale"
+    ],
+    "effects": [
+      "Rejects a numeric zero offered in place of an absent, unknown or not-applicable value",
+      "Flags a declaration that simultaneously asserts an amount and an absence",
+      "Flags interval endpoints whose currency references or scales disagree",
+      "Assigns no business meaning to the state and takes no action on the host record"
+    ],
+    "source_refs": [
+      "SRC-008",
+      "SRC-009",
+      "SRC-011"
+    ]
+  },
+  {
+    "id": "money-core-fn-compare-same-currency",
+    "name": "Compare exact same-currency representations",
+    "description": "Compares two exact point declarations that resolve to the same currency code under the same catalogue, returning an ordering or equality result. Whether the two declarations are policy-compatible for comparison is supplied externally; the function neither judges compatibility nor converts between currencies.",
+    "inputs": [
+      "Two normalized monetary declarations",
+      "Externally supplied policy-compatibility assertion",
+      "Trailing-zero significance policy to apply to equality"
+    ],
+    "outputs": [
+      "Comparison result, or an explicit not-comparable outcome",
+      "Reason code when comparison is refused",
+      "Statement of the equality semantics applied"
+    ],
+    "preconditions": [
+      "Both declarations assert an exact point value rather than an interval, approximation or absence",
+      "Both currency references resolve to the same code under the same catalogue and pinned edition",
+      "A policy-compatibility assertion is supplied by the caller"
+    ],
+    "effects": [
+      "Refuses comparison across differing currency codes or differing catalogues and returns a reason",
+      "Refuses comparison when the external compatibility assertion is missing",
+      "Distinguishes numeric equality from representational identity according to the trailing-zero policy",
+      "Performs no currency conversion, no rate lookup and no arithmetic beyond comparison"
+    ],
+    "source_refs": [
+      "SRC-005",
+      "SRC-007",
+      "SRC-008",
+      "SRC-010"
+    ]
+  },
+  {
+    "id": "money-policy-validate-precision-policy",
+    "name": "Validate a monetary precision and rounding policy declaration",
+    "description": "Checks that a declared precision and rounding policy is complete, internally consistent and resolvable: currency binding with a pinned list version, declared scale or increment, rounding mode, tie rule, precision tier and channel scope.",
+    "inputs": [
+      "policy declaration under review",
+      "currency precision profile snapshot reference",
+      "exchange-profile digit limits where a profile is named"
+    ],
+    "outputs": [
+      "validation verdict of valid, invalid or incomplete",
+      "defect list naming the declaration element at fault for each unmet requirement",
+      "resolved effective policy view for the caller"
+    ],
+    "preconditions": [
+      "the currency code resolves within a pinned maintenance-agency list version",
+      "the policy declares an effective-from timestamp"
+    ],
+    "effects": [
+      "returns a verdict and defect list to the caller",
+      "does not alter any monetary value, and does not apply, enforce or persist the policy"
+    ],
+    "source_refs": [
+      "SRC-005",
+      "SRC-001",
+      "SRC-010",
+      "SRC-018"
+    ]
+  },
+  {
+    "id": "money-policy-quantize-under-explicit-rule",
+    "name": "Quantize an amount under an explicitly named rule",
+    "description": "Applies one named quantization rule — target exponent or non-decimal increment, mode, tie handling — to an amount and returns the quantized value together with every condition raised. No default rule is supplied: an unnamed rule is a failure, never a licence to assume two decimals or half-up.",
+    "inputs": [
+      "source amount with its currency binding",
+      "quantization policy record reference and version",
+      "arithmetic context precision and digit capacity"
+    ],
+    "outputs": [
+      "quantized amount carrying its declared scale or increment",
+      "raised signal set covering inexact, rounded, clamped, invalid-operation, overflow and underflow",
+      "rule reference and version stamped onto the result"
+    ],
+    "preconditions": [
+      "the caller names a quantization rule explicitly",
+      "the target exponent or increment is representable within the declared digit capacity"
+    ],
+    "effects": [
+      "returns a new value; the source value is not mutated",
+      "raises an explicit failure when the result is not representable, instead of truncating or clamping silently",
+      "does not persist the result, enforce the rule or write an audit entry"
+    ],
+    "source_refs": [
+      "SRC-006",
+      "SRC-005",
+      "SRC-013",
+      "SRC-015",
+      "SRC-016"
+    ]
+  },
+  {
+    "id": "money-policy-expose-residual",
+    "name": "Expose the residual introduced by quantization",
+    "description": "Computes the signed difference between a pre-quantization value and its quantized result, or between two declared precision tiers, and returns it as a first-class amount so the host can disclose, carry or assign it.",
+    "inputs": [
+      "pre-quantization amount",
+      "quantized amount",
+      "identifiers of the two tiers being compared",
+      "host-supplied tolerance threshold where one is provided"
+    ],
+    "outputs": [
+      "residual amount with currency binding and scale",
+      "direction of the residual relative to the payer",
+      "comparison of the residual against the supplied threshold where one is provided"
+    ],
+    "preconditions": [
+      "both values share the same currency binding",
+      "both values reference the same quantization policy version"
+    ],
+    "effects": [
+      "makes the residual visible to the caller instead of absorbing it",
+      "does not decide who bears the residual; that decision belongs to the host or to the applicable rule",
+      "does not set or derive the tolerance threshold it reports against"
+    ],
+    "source_refs": [
+      "SRC-014",
+      "SRC-018",
+      "SRC-019"
+    ]
+  },
+  {
+    "id": "money-policy-allocate-with-reconciliation",
+    "name": "Allocate a total into quantized parts that reconcile exactly",
+    "description": "Distributes a total across parts under a named allocation rule with per-part quantization, assigns the residual to the target designated by the caller's rule, and returns a reconciliation difference that must be zero.",
+    "inputs": [
+      "total amount with its currency binding",
+      "allocation basis or weights in a deterministic order",
+      "allocation rule reference and version",
+      "per-part quantization rule reference",
+      "residual assignment target"
+    ],
+    "outputs": [
+      "ordered set of quantized parts",
+      "residual amount and its assigned target",
+      "reconciliation difference",
+      "reproducibility fingerprint over the recorded inputs and rule versions"
+    ],
+    "preconditions": [
+      "the allocation rule and the residual assignment target are stated explicitly",
+      "every part shares the total's currency binding",
+      "the input ordering is deterministic"
+    ],
+    "effects": [
+      "guarantees that the sum of parts plus the assigned residual equals the total, or fails explicitly",
+      "returns the result to the caller without posting, settling, enforcing or auditing it"
+    ],
+    "source_refs": [
+      "SRC-013",
+      "SRC-014",
+      "SRC-010",
+      "SRC-018"
+    ]
+  },
+  {
+    "id": "money-policy-compare-or-aggregate-compatible-values",
+    "name": "Compare, order or aggregate values only under a compatible context",
+    "description": "Evaluates the compatibility predicate over currency binding, valuation basis and rounding context, and only then compares, orders or sums the values; otherwise it refuses with a typed incompatibility reason. It never converts, normalises or coerces implicitly.",
+    "inputs": [
+      "set of monetary values with their context declarations",
+      "requested operation of equality, ordering or aggregation",
+      "equality semantics selection",
+      "host-supplied tolerance where the operation permits one"
+    ],
+    "outputs": [
+      "operation result with the governing context stamped onto it",
+      "typed refusal naming the incompatible attributes where the predicate fails",
+      "record of the tolerance applied and its owner reference"
+    ],
+    "preconditions": [
+      "every input value declares a currency binding and a rounding context",
+      "the equality semantics is stated when the values differ in scale"
+    ],
+    "effects": [
+      "prohibits implicit currency conversion and implicit re-quantization",
+      "returns an explicit refusal rather than a best-effort answer",
+      "does not source, select or apply an exchange rate, and does not persist the comparison outcome"
+    ],
+    "source_refs": [
+      "SRC-013",
+      "SRC-014",
+      "SRC-010",
+      "SRC-019"
+    ]
+  },
+  {
+    "id": "money-val-fn-bind-valuation-context",
+    "name": "Bind valuation context to an amount",
+    "description": "Attaches a complete, versioned valuation frame — amount role, valuation instant and temporal kind, measurement basis with its defining authority, and market or scenario reference — to an amount that already exists in its owning record, without altering the amount value or currency.",
+    "inputs": [
+      "Amount instance reference and its currency code",
+      "Amount role code with classifier scheme version",
+      "Valuation instant with seconds and offset, plus temporal kind",
+      "Measurement basis code and defining authority reference",
+      "Market, session or scenario reference"
+    ],
+    "outputs": [
+      "Bound valuation context attached to the amount instance",
+      "Completeness report listing any missing mandatory context",
+      "Ingestion instant recorded separately from the valuation instant"
+    ],
+    "preconditions": [
+      "The amount value and ISO 4217 currency designation are already established by the owning system of record",
+      "The currency code exists in the register version applicable at the valuation instant",
+      "All referenced classifier schemes resolve to a concrete version"
+    ],
+    "effects": [
+      "Creates a valuation assertion referencing the amount; never modifies the amount value, currency or the owning record",
+      "Pins classifier versions so a later scheme change cannot retroactively reinterpret the assertion",
+      "Records asserting identity and ingestion instant alongside the valuation instant"
+    ],
+    "source_refs": [
+      "SRC-020",
+      "SRC-021",
+      "SRC-027",
+      "SRC-001"
+    ]
+  },
+  {
+    "id": "money-val-fn-select-declared-rate",
+    "name": "Select a declared rate under a caller-supplied policy",
+    "description": "Applies caller-supplied selection criteria — admissible sources, rate type, session, staleness tolerance and fallback order — to the candidate rate references resolvable in the owning publication model, and records which candidate was selected and why the others were not.",
+    "inputs": [
+      "Base and quote currency codes and required direction",
+      "Valuation instant and required effective coverage",
+      "Caller-supplied selection policy identifier and criteria set"
+    ],
+    "outputs": [
+      "Selected rate reference with series and observation key, effective interval, status and declared accuracy",
+      "Rejection reasons for each considered candidate",
+      "Record of the policy identifier and version that was applied"
+    ],
+    "preconditions": [
+      "Candidate rate references are resolvable in the owning publication model",
+      "The caller supplies the selection criteria; this model holds no default policy of its own",
+      "The requested currency pair is not suspended by the chosen source at the valuation instant"
+    ],
+    "effects": [
+      "Records a selection outcome bound to the valuation assertion",
+      "Performs no rate determination, calculation, aggregation or benchmark administration",
+      "Applies declared criteria deterministically and records the result; policy authoring, approval, runtime evaluation and enforcement remain with the adopting Dimension's policy model"
+    ],
+    "source_refs": [
+      "SRC-023",
+      "SRC-024",
+      "SRC-028",
+      "SRC-029"
+    ]
+  },
+  {
+    "id": "money-val-fn-calculate-conversion",
+    "name": "Calculate a reproducible conversion",
+    "description": "Derives a converted amount from a preserved original using the selected rate or rate chain, applying a declared equation, chain ordering and rounding parameters, and emitting the full reproduction input set alongside the result.",
+    "inputs": [
+      "Original amount value and currency code",
+      "Selected rate reference or ordered rate chain with pivot currencies",
+      "Derivation method, working precision, rounding mode and target minor unit"
+    ],
+    "outputs": [
+      "Converted amount value with declared accuracy and target currency code",
+      "Conversion equation expression and ordered rounding trace",
+      "Reproduction input set and its content digest"
+    ],
+    "preconditions": [
+      "The selected rate covers the valuation instant and satisfies the declared staleness tolerance",
+      "The target currency minor unit resolves from the ISO 4217 register version applicable at the valuation instant",
+      "Any intermediate chain step declares whether rounding is permitted at that step"
+    ],
+    "effects": [
+      "Creates a converted amount linked to the original; the original is never overwritten, replaced or masked",
+      "Records the equation, chain and rounding order so the result can be independently recomputed",
+      "Leaves fees, spreads, mark-ups and taxes as separate references and never folds them into the rate or the converted amount"
+    ],
+    "source_refs": [
+      "SRC-025",
+      "SRC-026",
+      "SRC-001",
+      "SRC-023"
+    ]
+  },
+  {
+    "id": "money-val-fn-reconcile-original-reported",
+    "name": "Reconcile original and reported values",
+    "description": "Recomputes a stored converted or reported amount from its retained reproduction inputs and compares the result with the stored value, classifying the outcome against the declared tolerance.",
+    "inputs": [
+      "Original amount and the stored converted or reported amount",
+      "Reproduction input set with pinned versions",
+      "Declared recomputation tolerance"
+    ],
+    "outputs": [
+      "Reconciliation outcome: reproduced, within tolerance, or disputed",
+      "Residual difference expressed in the target currency minor unit",
+      "Discrepancy findings identifying the divergent input"
+    ],
+    "preconditions": [
+      "Both amounts carry declared role codes and a shared derivation lineage",
+      "The reproduction input set is complete and its references still resolve",
+      "The tolerance has a named owner and version"
+    ],
+    "effects": [
+      "Records the reconciliation outcome against the valuation assertion",
+      "Marks a disputed assertion for correction rather than silently recomputing or overwriting the stored value",
+      "Does not post accounting entries, adjust ledgers or execute remediation; those belong to the accounting and workflow models"
+    ],
+    "source_refs": [
+      "SRC-026",
+      "SRC-025",
+      "SRC-020"
+    ]
+  },
+  {
+    "id": "money-val-fn-record-correction",
+    "name": "Record a correction or supersession",
+    "description": "Issues a correcting valuation assertion that supersedes a prior one, capturing the reason, effective interval, issuer and approver, and emitting a serially numbered correction notice for the referenced notification and audit models.",
+    "inputs": [
+      "Reference to the assertion being superseded",
+      "Correction reason code and triggering event reference",
+      "Corrected context or values with pinned classifier versions",
+      "Issuer identity and independent approver identity"
+    ],
+    "outputs": [
+      "New valuation assertion with a supersession link",
+      "Updated state on the superseded assertion",
+      "Serially numbered valuation correction notice"
+    ],
+    "preconditions": [
+      "The superseded assertion exists and its computational fields are immutable",
+      "The issuer is authorised and the approver is independent of the consumer of the corrected value",
+      "The correction reason maps to a governed reason code"
+    ],
+    "effects": [
+      "Appends a new assertion and marks the prior one superseded without mutating it; identifiers of superseded assertions are never reused",
+      "Emits the correction notice; delivery to downstream consumers, audit-trail persistence and retention execution are performed by the referenced notification, audit and retention models",
+      "Never rewrites, revises or re-publishes the source rate, which remains under the publisher's own revision regime"
+    ],
+    "source_refs": [
+      "SRC-028",
+      "SRC-029",
+      "SRC-023",
+      "SRC-027"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-check-role-completeness",
+    "name": "Check accountable role completeness",
+    "description": "Compare the declared role assignments for a monetary assertion against the role set required by its governing profile and report missing or expired assignments.",
+    "inputs": [
+      "monetary assertion reference",
+      "declared role assignment set",
+      "governing profile reference"
+    ],
+    "outputs": [
+      "role completeness report",
+      "missing role list",
+      "expired assignment list"
+    ],
+    "preconditions": [
+      "The assertion carries a host reference and a role on host",
+      "A governing profile version is pinned or a default profile is declared"
+    ],
+    "effects": [
+      "Emits an advisory report only; assigns no permission, blocks no operation and creates no obligation"
+    ],
+    "source_refs": [
+      "SRC-040"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-check-duty-segregation",
+    "name": "Check segregation of duties declarations",
+    "description": "Test whether preparer, independent reviewer and approver references are distinct parties and, where they are not, whether a relief declaration with a compensating measure is present and unexpired.",
+    "inputs": [
+      "preparer reference",
+      "reviewer reference",
+      "approver reference",
+      "segregation relief declaration"
+    ],
+    "outputs": [
+      "segregation check result",
+      "overlapping position list",
+      "unmitigated overlap list"
+    ],
+    "preconditions": [
+      "Party references resolve to distinguishable identifiers",
+      "Relief rules are declared with an effective interval"
+    ],
+    "effects": [
+      "Produces a declarative finding; does not decide whether the control is effective and does not stand in for audit testing"
+    ],
+    "source_refs": [
+      "SRC-040"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-resolve-effective-assertion",
+    "name": "Resolve the effective monetary assertion",
+    "description": "Given a host reference, a role on host and a point in time, return the assertion version whose effective interval covers that point, together with its status and any superseding version.",
+    "inputs": [
+      "host reference",
+      "role on host",
+      "point in time"
+    ],
+    "outputs": [
+      "effective assertion version",
+      "assertion status",
+      "superseding version reference or none"
+    ],
+    "preconditions": [
+      "Effective intervals and recorded-at timestamps are present with explicit offsets",
+      "At most one non-superseded version covers the requested point"
+    ],
+    "effects": [
+      "Read-only resolution; writes nothing and does not alter status"
+    ],
+    "source_refs": [
+      "SRC-027",
+      "SRC-038"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-check-reference-pins",
+    "name": "Check currency-list and policy pins",
+    "description": "Verify that the currency code-list pin and policy version pins are present and resolvable, and flag a code that has become historic or been replaced relative to the pinned list.",
+    "inputs": [
+      "currency code",
+      "currency code-list pin",
+      "policy version pin set"
+    ],
+    "outputs": [
+      "pin resolution report",
+      "code status finding",
+      "unpinned reference list"
+    ],
+    "preconditions": [
+      "Read access to the published code-list edition named in the pin",
+      "Policy references expose a version label or a content digest"
+    ],
+    "effects": [
+      "Reports drift between pinned and current references; never amends the register and never changes the stored currency code"
+    ],
+    "source_refs": [
+      "SRC-001"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-verify-provenance-chain",
+    "name": "Verify provenance chain completeness",
+    "description": "Check that a derived monetary value carries an original value reference, a derivation activity, an applied rate with its reference instant and retrieval time, and an attributed agent, and report which links are absent.",
+    "inputs": [
+      "derived value assertion",
+      "lineage fields",
+      "required lineage profile"
+    ],
+    "outputs": [
+      "provenance completeness report",
+      "missing link list",
+      "recomputability indicator"
+    ],
+    "preconditions": [
+      "The value is declared as derived rather than original",
+      "Timestamps are expressed with explicit offsets"
+    ],
+    "effects": [
+      "Emits a completeness report; performs no market-data retrieval and does not re-derive the value"
+    ],
+    "source_refs": [
+      "SRC-034",
+      "SRC-027",
+      "SRC-023"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-verify-evidence-integrity",
+    "name": "Verify evidence integrity against manifest",
+    "description": "Recompute digests for referenced evidence items and compare them with the recorded integrity manifest, reporting mismatches, missing items and unrecorded additions.",
+    "inputs": [
+      "evidence item set",
+      "integrity manifest",
+      "digest algorithm"
+    ],
+    "outputs": [
+      "integrity verification report",
+      "mismatch list",
+      "unverifiable item list"
+    ],
+    "preconditions": [
+      "Evidence items are readable at their recorded references",
+      "The manifest records algorithm and computation time for each entry"
+    ],
+    "effects": [
+      "Reports discrepancies without remediating, quarantining or deleting evidence; does not constitute audit evidence of control operation"
+    ],
+    "source_refs": [
+      "SRC-038",
+      "SRC-040"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-derive-access-labels",
+    "name": "Derive published access attributes",
+    "description": "Compute the object attribute set and declared scopes that an external decision point consumes, from sensitivity class, restriction basis, handling labels and access exception declarations.",
+    "inputs": [
+      "sensitivity class",
+      "restriction basis",
+      "handling label set",
+      "access exception declarations"
+    ],
+    "outputs": [
+      "published attribute set",
+      "declared scope list",
+      "projection constraint list"
+    ],
+    "preconditions": [
+      "A sensitivity class is declared or a default class is pinned by the governing profile"
+    ],
+    "effects": [
+      "Publishes attributes only; renders no permit or deny decision, enforces nothing and discharges no obligation"
+    ],
+    "source_refs": [
+      "SRC-035",
+      "SRC-036"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-assess-disposition-readiness",
+    "name": "Assess disposition readiness",
+    "description": "Determine whether the retention period computed from the trigger event has elapsed, whether any legal hold is active, and whether the host record's period is longer, and report an eligibility outcome.",
+    "inputs": [
+      "retention class",
+      "retention trigger event and time",
+      "legal hold flag",
+      "host retention period"
+    ],
+    "outputs": [
+      "disposition readiness report",
+      "eligible-from timestamp",
+      "blocking reason list"
+    ],
+    "preconditions": [
+      "A retention class and trigger event are declared",
+      "Hold status is current at evaluation time"
+    ],
+    "effects": [
+      "Advisory readiness assessment only; the records programme executes disposal, transfer and destruction and owns the disposition record"
+    ],
+    "source_refs": [
+      "SRC-037",
+      "SRC-038"
+    ]
+  },
+  {
+    "id": "money-govctl-fn-report-profile-conformance",
+    "name": "Report profile conformance and mapping loss",
+    "description": "Check mapping completeness against a named external representation and emit an alignment or conformance report listing mapped fields, unmapped fields and declared losses.",
+    "inputs": [
+      "governing profile reference",
+      "mapping table",
+      "target representation version"
+    ],
+    "outputs": [
+      "conformance report",
+      "unmapped field list",
+      "declared loss list"
+    ],
+    "preconditions": [
+      "The target representation version is identified or a content digest is recorded",
+      "Required checks for a conformance claim are declared"
+    ],
+    "effects": [
+      "Records an alignment by default and a conformance claim only where the declared checks pass and are evidenced; asserts nothing about the external system's behaviour"
+    ],
+    "source_refs": [
+      "SRC-032",
+      "SRC-017",
+      "SRC-039"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-resolve-effective",
+    "name": "Resolve effective monetary assertion version",
+    "description": "Select exactly one version of a bound monetary assertion for a stated effective instant and observation cut-off, and return it verbatim with a reproducible selection trace.",
+    "inputs": [
+      "Assertion identifier or host anchor with attribute path",
+      "Requested effective instant",
+      "Requested observation cut-off instant",
+      "Interval boundary convention and tie-break key in force"
+    ],
+    "outputs": [
+      "Selected version identifier and validator, or an explicit none-applicable outcome",
+      "Verbatim amount string, declared scale and referenced currency code",
+      "Currency register list and status that applied at the effective instant",
+      "Ordered selection trace and, on failure, a structured failure descriptor"
+    ],
+    "preconditions": [
+      "The assertion identifier or host anchor is syntactically resolvable",
+      "Both instants are RFC 3339 values carrying seconds and an explicit offset or Z",
+      "The version series is readable and its effective intervals are well formed"
+    ],
+    "effects": [
+      "Returns a declarative resolution result only",
+      "Performs no write, no conversion, no rounding and no re-scaling",
+      "Emits no audit entry; audit capture belongs to the external audit component"
+    ],
+    "source_refs": [
+      "SRC-001",
+      "SRC-041",
+      "SRC-027",
+      "SRC-043",
+      "SRC-044",
+      "SRC-048"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-check-bind-preconditions",
+    "name": "Check binding and creation preconditions",
+    "description": "Evaluate every precondition for creating a monetary assertion and binding it to a host anchor, including currency-register validity, scale consistency, anchor resolvability and idempotency key state, and emit the precondition report.",
+    "inputs": [
+      "Proposed assertion payload in canonical form",
+      "Host anchor reference and attribute path",
+      "Idempotency key and prior-request state where supplied",
+      "Applicable currency register lists and minor-unit reference values"
+    ],
+    "outputs": [
+      "Binding precondition and idempotency report with per-check verdicts and severities",
+      "Aggregate accept or reject recommendation",
+      "Computed request fingerprint",
+      "Structured failure descriptor for each failing check"
+    ],
+    "preconditions": [
+      "The canonical form of the payload can be computed",
+      "The currency register reference is resolvable for the effective instant",
+      "The host anchor reference is well formed"
+    ],
+    "effects": [
+      "Produces a report; creates and persists nothing",
+      "Does not reserve, lock or allocate any identifier in the host",
+      "Makes no authorization decision and enforces no outcome"
+    ],
+    "source_refs": [
+      "SRC-001",
+      "SRC-041",
+      "SRC-043",
+      "SRC-044",
+      "SRC-046",
+      "SRC-047"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-plan-correction",
+    "name": "Plan a correction by supersession",
+    "description": "Compose a correction plan that names the version to be superseded and its validator, states the replacement values, closes the prior effective interval, and reports overlap and gap conditions across the version series.",
+    "inputs": [
+      "Target assertion version identifier and the validator observed on the last read",
+      "Proposed replacement amount, currency reference, scale and effective interval",
+      "Correction reason code, justification and responsible agent reference",
+      "Existing version series with its effective intervals"
+    ],
+    "outputs": [
+      "Monetary assertion correction plan",
+      "Interval overlap and gap findings across the series",
+      "Retroactivity flag and the required conditional predicate for submission",
+      "Enumerated failure outcomes for a stale validator or an ill-formed interval"
+    ],
+    "preconditions": [
+      "The target version exists and is readable",
+      "A validator for the target version has been supplied",
+      "The proposed interval is well formed under the declared boundary convention"
+    ],
+    "effects": [
+      "Produces a proposal; applies nothing and mutates no stored version",
+      "Never rewrites the superseded version or reuses its identifier",
+      "Leaves acceptance, ordering and persistence entirely to the host"
+    ],
+    "source_refs": [
+      "SRC-034",
+      "SRC-041",
+      "SRC-043",
+      "SRC-045",
+      "SRC-047",
+      "SRC-048"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-compile-review-evidence",
+    "name": "Compile review and approval evidence",
+    "description": "Assemble the evidence set for a proposed monetary state change, verify evidence validity intervals, status and securing proofs, and report completeness with named gaps.",
+    "inputs": [
+      "Reference to the precondition report or correction plan under review, pinned by digest",
+      "Reviewer identity references and asserted mandate references",
+      "Recorded review decisions and their instants",
+      "Status or revocation references for each evidence item"
+    ],
+    "outputs": [
+      "Monetary change review record",
+      "Per-item validity, status and integrity verification outcomes",
+      "Completeness verdict listing every missing or stale item by name",
+      "Structured failure descriptor where evidence cannot be verified"
+    ],
+    "preconditions": [
+      "The reviewed plan or report is retrievable and its digest can be recomputed",
+      "Each evidence item exposes a validity interval or an explicit absence statement",
+      "Status references, where present, are resolvable"
+    ],
+    "effects": [
+      "Produces a compiled evidence record only",
+      "Does not approve, reject or enforce anything and issues no credential",
+      "Does not operate a status list; revocation is owned by the issuing party"
+    ],
+    "source_refs": [
+      "SRC-037",
+      "SRC-035",
+      "SRC-045",
+      "SRC-047"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-report-eligibility",
+    "name": "Report advisory eligibility for a monetary operation",
+    "description": "Assemble the subject, object, operation and environment attributes for a requested read or change and emit a non-binding eligibility statement that names the external component holding decision authority.",
+    "inputs": [
+      "Requested action and the target assertion version with its validator",
+      "Subject attribute references supplied by the caller or an attribute source",
+      "Object attributes of the assertion and its host anchor",
+      "Environment attributes such as request instant and channel reference"
+    ],
+    "outputs": [
+      "Advisory eligibility verdict drawn from eligible, not-eligible, indeterminate or not-applicable",
+      "The attribute set as supplied, with sources and observation instants",
+      "Explicit disclaimer naming the external decision point as the holder of permit or deny",
+      "Structured failure descriptor when required attributes cannot be resolved"
+    ],
+    "preconditions": [
+      "The target assertion version is identifiable",
+      "The requested action is one of the operations defined by this model",
+      "Attribute sources, where referenced, are resolvable or explicitly recorded as unavailable"
+    ],
+    "effects": [
+      "Emits an advisory statement that may be safely disregarded",
+      "Renders no authorization decision and performs no enforcement",
+      "Grants, denies and revokes nothing, and writes no access log"
+    ],
+    "source_refs": [
+      "SRC-035",
+      "SRC-047",
+      "SRC-036"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-report-disposition-readiness",
+    "name": "Report disposition readiness",
+    "description": "Assess whether a monetary assertion is ready for removal by collecting holds in force, the referenced retention class, reference-integrity results and outstanding blockers, and emit the readiness report with proposed tombstone content.",
+    "inputs": [
+      "Assertion identifier and its full version series",
+      "Hold and freeze references applying to the assertion or its host",
+      "Retention class reference and its owning authority",
+      "Inbound reference inventory from the host and from prior versions"
+    ],
+    "outputs": [
+      "Disposition readiness report",
+      "Blocker list with types, severities and external owners",
+      "Proposed tombstone content excluding amount, currency and interval values",
+      "Aggregate verdict of ready, blocked or indeterminate with a re-evaluation instant"
+    ],
+    "preconditions": [
+      "Hold and retention references are resolvable, or their unavailability is recorded as a blocker",
+      "The version series and its invalidation markers are readable",
+      "The inbound reference inventory can be enumerated or its incompleteness is declared"
+    ],
+    "effects": [
+      "Produces a readiness assessment only",
+      "Deletes, destroys, transfers and anonymises nothing",
+      "Never asserts that disposition occurred; execution belongs to the records authority and the host"
+    ],
+    "source_refs": [
+      "SRC-037",
+      "SRC-042",
+      "SRC-043",
+      "SRC-047"
+    ]
+  },
+  {
+    "id": "money-svcstate-fn-describe-failure",
+    "name": "Describe an operation failure",
+    "description": "Render any refusal, precondition failure, conflict or unresolvable reference from the operations above as a machine-identifiable failure descriptor with a resolvable type and a stable title.",
+    "inputs": [
+      "Failing operation identifier and its inputs digest",
+      "Failure category such as unknown identifier, unresolvable binding, stale validator, duplicate in flight, fingerprint mismatch, tombstoned, blocked by hold or unverifiable evidence",
+      "Contextual references relevant to the failure",
+      "Observation instant of the failure"
+    ],
+    "outputs": [
+      "Failure descriptor carrying a resolvable type identifier, stable title, status, instance and detail",
+      "Extension members naming the target assertion version, validator and offending reference",
+      "Remediation instruction where one is defined",
+      "Correlation reference for reconciliation with the external audit entry"
+    ],
+    "preconditions": [
+      "The failure category is drawn from the model's published enumeration",
+      "A resolvable type identifier exists for that category"
+    ],
+    "effects": [
+      "Produces a descriptor only and changes no state",
+      "Does not suppress, retry or escalate the failing operation",
+      "Writes no audit record; it emits a correlation reference for the audit component to use"
+    ],
+    "source_refs": [
+      "SRC-041",
+      "SRC-043",
+      "SRC-046",
+      "SRC-047"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-validate-monetary-value",
+    "name": "Validate monetary value",
+    "description": "Evaluate a monetary value for admissibility against a caller-pinned profile and a referenced currency register version, returning typed outcomes without altering the value.",
+    "inputs": [
+      "monetary value with amount, currency identifier, declared scale, measurement basis and valuation instant",
+      "validation profile reference and version",
+      "currency register version reference"
+    ],
+    "outputs": [
+      "admissibility verdict",
+      "ordered list of validation outcome codes with severity and attribute pointers"
+    ],
+    "preconditions": [
+      "Currency register version is resolvable by the caller",
+      "Validation profile, if pinned, is resolvable and versioned",
+      "Amount is presented as an exact decimal with a declared scale"
+    ],
+    "effects": [
+      "Emits a verdict and outcome codes only",
+      "Performs no coercion, normalisation, persistence, posting or enforcement",
+      "Does not resolve or amend the currency register itself"
+    ],
+    "source_refs": [
+      "SRC-001",
+      "SRC-052",
+      "SRC-027"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-quantize-amount",
+    "name": "Quantise amount",
+    "description": "Round an exact amount to a target scale under a referenced rounding policy and report the signed residual and the resulting value interval.",
+    "inputs": [
+      "exact decimal amount and currency identifier",
+      "target scale or a rule for deriving it from the currency minor unit",
+      "rounding policy profile reference and version"
+    ],
+    "outputs": [
+      "quantised amount with declared decimals",
+      "signed residual",
+      "implied value interval",
+      "exactness indicator and precision-loss outcome code where applicable"
+    ],
+    "preconditions": [
+      "Amount is exact and admissible",
+      "Rounding policy profile is resolvable and its version is pinned",
+      "Target scale is either the register minor unit or a pinned deviation with a stated authority"
+    ],
+    "effects": [
+      "Returns a computed value and residual",
+      "Never silently discards the residual: it is reported even when zero",
+      "Performs no persistence or ledger allocation of the residual"
+    ],
+    "source_refs": [
+      "SRC-001",
+      "SRC-026",
+      "SRC-050",
+      "SRC-051"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-allocate-residual",
+    "name": "Allocate quantisation residual",
+    "description": "Distribute the residual arising when a quantised total is split into components, so that the quantised components sum exactly to the quantised total.",
+    "inputs": [
+      "quantised total",
+      "component weights or shares",
+      "rounding policy profile reference including the allocation method"
+    ],
+    "outputs": [
+      "quantised component amounts",
+      "allocation trace identifying which components absorbed residual units",
+      "post-allocation sum check result"
+    ],
+    "preconditions": [
+      "All components share one currency and one target scale",
+      "Allocation method is declared in the referenced policy profile",
+      "Total is already quantised"
+    ],
+    "effects": [
+      "Returns component amounts whose sum equals the given total exactly",
+      "Reports the allocation trace for reproduction",
+      "Does not post, settle or persist the allocation"
+    ],
+    "source_refs": [
+      "SRC-049",
+      "SRC-050",
+      "SRC-051"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-convert-value",
+    "name": "Value or convert monetary value",
+    "description": "Restate a monetary value in a target currency or under a target measurement basis using a rate binding supplied by the caller, emitting a complete derivation record.",
+    "inputs": [
+      "source monetary value",
+      "target currency identifier and target measurement basis",
+      "rate binding with source reference, direction, reference instant, retrieval instant and any chain legs",
+      "rounding policy profile reference",
+      "reference-time selector and staleness threshold"
+    ],
+    "outputs": [
+      "derived monetary value carrying the original amount and currency",
+      "derivation record",
+      "derivation outcome codes"
+    ],
+    "preconditions": [
+      "Rate binding is supplied; this function never retrieves a rate",
+      "Rate reference instant and retrieval instant are both present with explicit offsets",
+      "Rate value is non-zero and the quotation direction is stated",
+      "Any inverse or chained computation is permitted by the pinned policy"
+    ],
+    "effects": [
+      "Returns a derived value that never replaces or overwrites the original amount and currency",
+      "Emits explicit outcomes for missing, stale, ambiguous or non-exchangeable rates, prohibited inverse, zero or non-positive rate and precision loss instead of substituting a fallback rate",
+      "Performs no rate acquisition, accounting recognition, posting or persistence"
+    ],
+    "source_refs": [
+      "SRC-032",
+      "SRC-033",
+      "SRC-023",
+      "SRC-012",
+      "SRC-050",
+      "SRC-027"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-reconcile-values",
+    "name": "Reconcile monetary values",
+    "description": "Compare a set of monetary values against a stated total or against one another within a declared tolerance and report the verdict with attribution of any difference.",
+    "inputs": [
+      "reconciliation set with member references, roles and signed weights",
+      "reported total where applicable",
+      "tolerance declaration and its basis",
+      "rounding policy profile reference and derivation record references for restated members"
+    ],
+    "outputs": [
+      "reconciliation verdict",
+      "signed difference with currency",
+      "difference attribution",
+      "reconciliation statement"
+    ],
+    "preconditions": [
+      "All members resolve to one common currency",
+      "Measurement bases are compatible or their incompatibility is declared",
+      "Declared decimals or value intervals are available for each member",
+      "Tolerance is declared explicitly and not inferred silently"
+    ],
+    "effects": [
+      "Reports consistency, inconsistency or non-evaluability",
+      "Never adjusts, plugs or writes back a difference",
+      "Performs no posting, approval or enforcement of a corrective action"
+    ],
+    "source_refs": [
+      "SRC-049",
+      "SRC-026",
+      "SRC-032"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-project-monetary-value",
+    "name": "Project monetary value to target representation",
+    "description": "Map a monetary value and its precision into a named target representation, declaring any scaling or rounding introduced by the projection.",
+    "inputs": [
+      "monetary value with declared decimals and exactness indicator",
+      "target representation identifier and version with its field mapping rules",
+      "scale factor where presentation scaling is requested"
+    ],
+    "outputs": [
+      "projected value in the target representation",
+      "projection manifest entry with lossiness and reconcilability indicators",
+      "interoperability outcome codes for unmapped or narrowed constraints"
+    ],
+    "preconditions": [
+      "Target representation and version are resolvable",
+      "Currency identifier is representable in the target representation",
+      "Declared decimals are known for the source value"
+    ],
+    "effects": [
+      "Emits a projected value and a declaration of losses introduced",
+      "Flags rather than silently truncates when the target permits fewer digits than the source declares",
+      "Performs no transmission, publication, storage or disclosure authorisation"
+    ],
+    "source_refs": [
+      "SRC-026",
+      "SRC-052",
+      "SRC-010"
+    ]
+  },
+  {
+    "id": "money-svccalc-fn-redact-monetary-value",
+    "name": "Apply authorised redaction to a monetary projection",
+    "description": "Apply an already-authorised disclosure-protection operation — suppression, banding, controlled rounding or interval publication — to a monetary projection and declare the resulting information loss.",
+    "inputs": [
+      "monetary projection or set of projected values",
+      "redaction directive naming the operation, the affected values and the secondary suppression set",
+      "authorisation decision reference issued by an external authority"
+    ],
+    "outputs": [
+      "redacted projection",
+      "updated lossiness and reconcilability declaration",
+      "information-loss statement and redaction outcome codes"
+    ],
+    "preconditions": [
+      "An external authorisation decision reference is present; the function never decides authorisation",
+      "The redaction directive names a defined protection operation",
+      "Any secondary suppression required to protect a primary suppression is supplied in the directive"
+    ],
+    "effects": [
+      "Returns a degraded projection marked as lossy and, where applicable, non-reconcilable",
+      "Never deletes or alters the underlying source value",
+      "Performs no authorisation evaluation, enforcement or audit-trail writing"
+    ],
+    "source_refs": [
+      "SRC-053",
+      "SRC-026"
+    ]
+  }
+]

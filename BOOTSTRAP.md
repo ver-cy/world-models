@@ -12,6 +12,8 @@ The Vercy world-model catalogue: 111 vendor-neutral meta-models in 15 clusters d
 2. [Library-Architecture.md](Library-Architecture.md): the catalogue architecture, clusters, conventions, adoption guide. This is the map; read it before any card.
 3. [world-models.csv](world-models.csv): the machine register. One row per model; a card exists for every row.
 4. `models/`, cluster by cluster in the register's order; within a cluster, cards in ID order.
+5. [research/README.md](research/README.md), then the queue and the selected model run only.
+6. `publications/`, which contains website-ready projections generated only from validated syntheses.
 
 ## Local conventions
 
@@ -27,6 +29,8 @@ The Vercy world-model catalogue: 111 vendor-neutral meta-models in 15 clusters d
 - Register and cards must not diverge: adding, renaming or retiring a model updates `world-models.csv` and the card set in the same commit; `Library-Architecture.md` section 3 counts follow.
 - A model's status flips `described -> deepened` only when a richer specification or package exists and the card links it.
 - Do not renumber existing IDs; new models take the next free number in their cluster.
+- Publication lifecycle and research assurance are separate. A validated synthesis with no critical conflict may be labelled `published` while its research state remains `reviewable-draft`; every hold and provider waiver must stay visible. Only a hold-free independently reviewed synthesis may be labelled canonical.
+- Generate website packages with `tools/publish_model_research.py`; do not hand-edit files under `publications/`.
 
 ## For AI agents
 

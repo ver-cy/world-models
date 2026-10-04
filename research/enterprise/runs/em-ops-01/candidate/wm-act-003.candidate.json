@@ -1,0 +1,631 @@
+{
+  "format": "vercy-world-model-candidate/v1",
+  "contourId": "EM-OPS-01",
+  "modelId": "WM-ACT-003",
+  "registryId": "vr.wm-act-003",
+  "name": "Process / Workflow",
+  "version": "0.3.0-candidate.3",
+  "entryKind": "standalone-mm",
+  "status": "research-candidate",
+  "purpose": "Represent immutable released operational-flow definitions and append-only instance evidence while keeping reusable procedure knowledge, task identity, assignments and atomic acts with their authoritative masters.",
+  "boundary": {
+    "owns": [
+      "process family and concurrently valid variants",
+      "immutable released definition versions",
+      "steps gateways roles and state model",
+      "process instances and their pinned definition references",
+      "work items and assignment lifecycle",
+      "step executions deviations escalations and compensations",
+      "reproducible conformance projections"
+    ],
+    "delegates": [
+      "reusable method and procedure editions to WM-ACT-009",
+      "atomic act identity to WM-ACT-002 when referenced",
+      "organization and performer identity to external masters",
+      "policy and rule identity to external knowledge masters"
+    ],
+    "excludes": [
+      "mutable released definitions",
+      "process execution as proof of method publication",
+      "assignment state as evidence of performed work",
+      "BPMN or CMMN planned paths as observed trace",
+      "silent retroactive conformance changes"
+    ]
+  },
+  "objects": {
+    "ProcessFamily": {
+      "identity": [
+        "processId"
+      ],
+      "required": [
+        "name",
+        "purpose",
+        "ownerRef",
+        "status"
+      ]
+    },
+    "ProcessVariant": {
+      "identity": [
+        "processId",
+        "variantKey"
+      ],
+      "required": [
+        "meaning",
+        "validFrom",
+        "status"
+      ],
+      "constraints": [
+        "variantKey is mandatory; __default__ is the reserved sentinel for a single-variant family"
+      ]
+    },
+    "ReleasedDefinition": {
+      "identity": [
+        "processId",
+        "variantKey",
+        "version"
+      ],
+      "required": [
+        "releasedAt",
+        "contentDigest",
+        "variantKey",
+        "trigger",
+        "inputContract",
+        "outputContract",
+        "steps",
+        "gateways",
+        "roles",
+        "stateModel",
+        "knowledgeEditionPins",
+        "status"
+      ],
+      "lifecycle": [
+        "draft",
+        "released",
+        "superseded",
+        "withdrawn"
+      ],
+      "optional": [
+        "supersedesDefinitionRef",
+        "withdrawnAt",
+        "withdrawalReason"
+      ],
+      "constraints": [
+        "knowledgeEditionPins is zero-to-many",
+        "each knowledge pin is edition id+digest only; adopter-specific adoption is resolved at instance scope",
+        "step definitions retain entryCondition, exitCondition and expectedDuration when applicable"
+      ]
+    },
+    "ProcessInstance": {
+      "identity": [
+        "instanceId"
+      ],
+      "required": [
+        "processFamilyRef",
+        "variantKey",
+        "definitionRef",
+        "definitionDigest",
+        "subjectRef",
+        "startedAt",
+        "recordedAt"
+      ],
+      "optional": [
+        "knowledgePins",
+        "completionEventRef",
+        "terminationEventRef",
+        "cutoverRefs"
+      ],
+      "state": "derived from immutable ProcessEvent records; never stored as authoritative status"
+    },
+    "WorkItem": {
+      "identity": [
+        "workItemId"
+      ],
+      "required": [
+        "instanceId",
+        "stepRef",
+        "offeredAt",
+        "recordedAt"
+      ],
+      "optional": [
+        "taskRef",
+        "assignmentRef",
+        "dueAt"
+      ],
+      "lifecycle": [
+        "offered",
+        "claimed",
+        "assigned",
+        "released",
+        "completed",
+        "expired",
+        "cancelled"
+      ],
+      "state": "derived from WorkItemEvent records; never stored as authoritative status"
+    },
+    "StepExecution": {
+      "identity": [
+        "executionId"
+      ],
+      "required": [
+        "instanceId",
+        "stepRef",
+        "processFamilyRef",
+        "variantKey",
+        "definitionRef",
+        "definitionDigest",
+        "knowledgePins",
+        "startedAt",
+        "recordedAt",
+        "eventSequence"
+      ],
+      "optional": [
+        "completedAt",
+        "resultRef",
+        "actRefs",
+        "assignmentRef",
+        "performerRef",
+        "correctionOfExecutionId",
+        "correctionReason"
+      ],
+      "constraints": [
+        "immutable observed event",
+        "knowledgePins is zero-to-many and must be permitted by the definition pins",
+        "missing performer requires a same-unit performer-unknown deviation",
+        "correction is a successor event"
+      ]
+    },
+    "Deviation": {
+      "identity": [
+        "deviationId"
+      ],
+      "required": [
+        "instanceId",
+        "definitionRef",
+        "definitionDigest",
+        "kind",
+        "kindVocabularyVersion",
+        "observedAt",
+        "recordedAt",
+        "eventSequence",
+        "reason"
+      ],
+      "optional": [
+        "executionRef",
+        "evidenceRefs",
+        "evidenceAbsentReason",
+        "causeRef",
+        "resolutionRef",
+        "severity"
+      ],
+      "constraints": [
+        "evidenceRefs may be empty only when evidenceAbsentReason is present",
+        "authorization-gap deviation and execution are one atomic append unit"
+      ]
+    },
+    "Compensation": {
+      "identity": [
+        "compensationId"
+      ],
+      "required": [
+        "instanceId",
+        "targetExecutionRef",
+        "definitionRef",
+        "definitionDigest",
+        "knowledgePins",
+        "recordedAt",
+        "eventSequence",
+        "reason"
+      ],
+      "optional": [
+        "compensatingExecutionRefs",
+        "cutoverRef"
+      ],
+      "state": "immutable event; compensated state of target is derived"
+    },
+    "CutoverRecord": {
+      "identity": [
+        "cutoverId"
+      ],
+      "required": [
+        "instanceId",
+        "fromDefinitionRef",
+        "fromDefinitionDigest",
+        "toDefinitionRef",
+        "toDefinitionDigest",
+        "fromKnowledgePins",
+        "toKnowledgePins",
+        "authorityRef",
+        "reason",
+        "effectiveAt",
+        "recordedAt",
+        "eventSequence"
+      ],
+      "optional": [
+        "affectedStepRefs",
+        "backdatingAuthorizationRef"
+      ],
+      "constraints": [
+        "binds only records with eventSequence greater than its own",
+        "never alters pins already written",
+        "backdating requires separately scoped authority and never repoints prior records"
+      ]
+    },
+    "ConformanceResult": {
+      "identity": [
+        "conformanceResultId"
+      ],
+      "required": [
+        "instanceId",
+        "pinRegimes",
+        "traceDigest",
+        "ruleSetVersion",
+        "computedAt",
+        "coverage",
+        "outcome",
+        "fitness",
+        "alignment",
+        "resultDigest",
+        "counterfactual"
+      ],
+      "optional": [
+        "gapRefs",
+        "priorResultRef",
+        "supersedesResultRef"
+      ],
+      "domains": {
+        "coverage": [
+          "complete",
+          "partial",
+          "unknown"
+        ],
+        "outcome": [
+          "conformant",
+          "nonconformant",
+          "inconclusive"
+        ],
+        "fitness": "number in [0,1] or null when not computable",
+        "alignment": "versioned structured measure set"
+      },
+      "constraints": [
+        "pinRegimes is ordered and each regime carries sequence bounds, definition id+digest, zero-to-many knowledge edition id+digest pins and cutoverRef",
+        "coverage other than complete permits only outcome=inconclusive",
+        "resultDigest covers input tuple and measures but excludes conformanceResultId and computedAt",
+        "equal input tuple cannot yield unequal measures under one rule-set version",
+        "counterfactual requires priorResultRef and forbids supersedesResultRef",
+        "supersedesResultRef is allowed only for the same pin regimes under a newer rule set"
+      ]
+    },
+    "ProcessEvent": {
+      "identity": [
+        "instanceId",
+        "eventSequence"
+      ],
+      "required": [
+        "eventKind",
+        "occurredAt",
+        "recordedAt",
+        "actorRef"
+      ],
+      "optional": [
+        "reason",
+        "evidenceRefs"
+      ],
+      "constraints": [
+        "eventSequence is strictly monotonic per instance"
+      ]
+    },
+    "WorkItemEvent": {
+      "identity": [
+        "instanceId",
+        "eventSequence"
+      ],
+      "required": [
+        "workItemId",
+        "eventKind",
+        "occurredAt",
+        "recordedAt",
+        "actorRef"
+      ],
+      "optional": [
+        "reason",
+        "assignmentRef"
+      ],
+      "eventKinds": [
+        "offered",
+        "claimed",
+        "assigned",
+        "released",
+        "completed",
+        "expired",
+        "cancelled",
+        "escalated"
+      ]
+    },
+    "DeviationKindVocabulary": {
+      "identity": [
+        "vocabularyVersion"
+      ],
+      "values": [
+        "manual-exception",
+        "authorization-gap",
+        "performer-unknown",
+        "assignment-divergence",
+        "out-of-sequence",
+        "other-declared"
+      ],
+      "constraints": [
+        "unknown kinds are rejected"
+      ]
+    },
+    "ClaimRetractionNote": {
+      "identity": [
+        "legacyAssemblyId",
+        "noteVersion"
+      ],
+      "required": [
+        "claims",
+        "status",
+        "recordedAt"
+      ],
+      "constraints": [
+        "external to immutable legacy bytes"
+      ]
+    }
+  },
+  "relations": [
+    {
+      "target": "vr.wm-act-009",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Pin the exact immutable method edition and adopter-owned adoption record used by a released definition and execution."
+    },
+    {
+      "target": "vr.wm-act-006",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Reference Task identity from a work item without remastering the task."
+    },
+    {
+      "target": "vr.wm-org-016",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Reference the authority or assignment that authorized work; execution remains observed evidence."
+    },
+    {
+      "target": "vr.wm-act-002",
+      "relation": "REFERENCE",
+      "required": false,
+      "cardinality": "zero-to-many pending crosswalk",
+      "purpose": "Reference one or more atomic acts without transferring their identity or asserting one-to-one cardinality."
+    },
+    {
+      "target": "vr.wm-knw-012",
+      "relation": "REFERENCE",
+      "required": false,
+      "purpose": "Proposed restoration of the held governing-policy relation; no mastership transfer."
+    }
+  ],
+  "operations": [
+    {
+      "id": "release-definition",
+      "effect": "Issue one immutable version in a variant lineage.",
+      "authority": "process owner"
+    },
+    {
+      "id": "start-instance",
+      "effect": "Create an instance pinned to one released definition.",
+      "authority": "authorized initiator"
+    },
+    {
+      "id": "offer-work",
+      "effect": "Create a work item without asserting execution.",
+      "authority": "workflow engine or authorized coordinator"
+    },
+    {
+      "id": "record-execution",
+      "effect": "Append observed performance with definition and method pins.",
+      "authority": "authorized recorder"
+    },
+    {
+      "id": "record-deviation",
+      "effect": "Append an explicit departure or exception.",
+      "authority": "authorized recorder"
+    },
+    {
+      "id": "record-compensation",
+      "effect": "Append a new execution linked to the execution it compensates.",
+      "authority": "authorized coordinator"
+    },
+    {
+      "id": "derive-conformance",
+      "effect": "Compute a reproducible projection over a pinned definition and trace.",
+      "authority": "authorized analyst"
+    }
+  ],
+  "invariants": [
+    "Every process instance pins process family, mandatory variant (using __default__ for a single-variant family), released-definition id and digest, zero-to-many knowledge edition id+digest pins, any applicable adopter-owned adoption record, and recorded-at time.",
+    "Every step execution repeats its applicable family, variant, definition, method-edition, adoption and recorded-at pins.",
+    "Draft definitions are not citable by instances or executions.",
+    "Variants are concurrent alternatives; versions form acyclic supersession lineages within one variant.",
+    "Released definitions and trace records are immutable and content-addressed.",
+    "A method edition affects new instances only through an effective adoption record.",
+    "An in-flight change requires an explicit authorized CutoverRecord; otherwise the original pins remain.",
+    "A completed trace is never repointed by a definition, method-edition or adoption successor.",
+    "A WorkItem references Task identity in vr.wm-act-006 and never becomes the Task master.",
+    "Assignment and execution are separate facts; an assignment may have zero executions.",
+    "Execution without a surviving applicable assignment requires an explicit deviation.",
+    "A planned path never proves an observed path.",
+    "Trace order is append-only and monotonic per instance.",
+    "Correction is a successor execution with a reason and never mutates the historical event.",
+    "Every known departure, manual exception or authorization gap is an explicit deviation.",
+    "Compensation is append-only, preserves the applicable pins, and links its target execution.",
+    "A remount to different pins requires an explicit CutoverRecord referenced by the compensation.",
+    "StepExecution may reference zero or more atomic acts; cardinality remains a held crosswalk.",
+    "Missing trace evidence yields partial or unknown coverage and never conformance pass.",
+    "ConformanceResult is immutable and reproducible from definition digest, method-edition digest, trace digest and rule-set version.",
+    "A counterfactual conformance replay is labelled and never replaces the historical result.",
+    "No floating conformant flag is authoritative on an instance.",
+    "External BPMN, CMMN and process-mining standards are alignments only until pinned crosswalk evidence exists.",
+    "Publication is refused while fixturesExecuted is false, publishableCanonical is false or any release hold is open.",
+    "A definition, instance and execution use mandatory variantKey; __default__ is the only no-alternative sentinel.",
+    "All trace state is derived from immutable events; direct status mutation is forbidden.",
+    "Every trace record participates in one strictly monotonic cross-type event sequence.",
+    "Knowledge pins are zero-to-many; their absence never causes a synthetic edition.",
+    "Where a work item and its execution both cite assignments, they agree or an assignment-divergence deviation is present.",
+    "Withdrawn knowledge editions remain digest-resolvable for every historical pin.",
+    "Legacy assembly identifiers can never label a successor candidate version.",
+    "A local Task, Assignment, Act or Policy master is never minted to satisfy an optional reference."
+  ],
+  "holds": [
+    "The single frozen semantic audit and its one-pass remediation are pending.",
+    "Legacy 0.2.0-legacy remains immutable and non-installable.",
+    "CRUD, roles, artifacts and executable package conversion are absent.",
+    "Relations are candidate-only until ledger approval.",
+    "StepExecution-to-atomic-act cardinality and cross-system trace mastership remain unverified.",
+    "External notation and standards crosswalks are alignments rather than conformance claims.",
+    "Live HTTP/runtime/search/resolve/package verification is pending.",
+    "External registry ids vr.wm-act-006 and vr.wm-org-016 are unverified against the frozen reservation registry; their references remain optional.",
+    "WM-ACT-002 COMPOSE-to-REFERENCE and WM-KNW-012 relation changes are proposed ledger amendments only."
+  ],
+  "publishableCanonical": false,
+  "legacyVersion": "0.2.0-legacy",
+  "fixturesExecuted": false,
+  "candidateRevision": 3,
+  "digestPolicy": {
+    "algorithm": "sha256",
+    "canonicalization": "RFC8785 JSON Canonicalization Scheme for candidate records",
+    "mismatch": "hard-reject",
+    "digestDomain": "normative object content excluding local display labels and record identifiers explicitly named outside each digest"
+  },
+  "alignments": [],
+  "alignmentPolicy": "Only a source with an exact version or digest may appear; every entry must state claim=alignment-only. No current pinned alignment is claimed.",
+  "legacyPreservation": {
+    "version": "0.2.0-legacy",
+    "immutable": true,
+    "installable": false,
+    "legacyAssemblyIds": [
+      "vercy:world:k3"
+    ],
+    "claimRetractionNote": {
+      "version": "1",
+      "claims": [
+        "MUC 2.0 conformance",
+        "MMAS A1",
+        "wildcard imports as conformance"
+      ],
+      "status": "unverified-and-retracted-for-successor",
+      "externalToLegacyBytes": true
+    },
+    "registryActions": [
+      "Bind legacy assembly id permanently to 0.2.0-legacy",
+      "Record K3/K6 spec-path rename without editing legacy bytes"
+    ]
+  },
+  "referencePolicy": "Every *Ref field resolves through referenceTypes; external-unmastered references must carry namespace, source and resolution rule.",
+  "publicationGate": {
+    "publishableCanonical": false,
+    "fixturesExecuted": false,
+    "legacyInstallable": false,
+    "openHolds": 7
+  },
+  "traceContract": {
+    "recordTypes": [
+      "ProcessEvent",
+      "WorkItemEvent",
+      "StepExecution",
+      "Deviation",
+      "Compensation",
+      "CutoverRecord"
+    ],
+    "ordering": "strictly increasing eventSequence per instance across all record types",
+    "traceDigestOrder": "eventSequence ascending, then canonical record digest",
+    "atomicAppendUnits": [
+      "execution plus authorization-gap deviation when no applicable assignment",
+      "execution plus performer-unknown deviation when performer is absent"
+    ]
+  },
+  "tombstonePolicy": "A protected referent may be tombstoned by removing referent content while preserving the reference token, event identity, event sequence and historical record digest.",
+  "authorityRules": {
+    "cutover": "process owner or an in-scope delegation record",
+    "adoption": "owned by vr.wm-act-009 and scoped to the adopting organization"
+  },
+  "referenceTypes": {
+    "ownerRef": "external organization master",
+    "subjectRef": "typed external subject namespace",
+    "actorRef": "external actor master or system actor",
+    "taskRef": "vr.wm-act-006 (unverified, optional)",
+    "assignmentRef": "vr.wm-org-016 (unverified, optional)",
+    "performerRef": "external actor master or system actor",
+    "actRefs": "vr.wm-act-002 (cardinality held)",
+    "resultRef": "external-unmastered with namespace/source",
+    "causeRef": "external-unmastered with namespace/source",
+    "resolutionRef": "external-unmastered with namespace/source",
+    "evidenceRefs": "external evidence masters",
+    "authorityRef": "process owner or delegation record",
+    "backdatingAuthorizationRef": "delegation record"
+  },
+  "ledgerAmendments": [
+    {
+      "subject": "vr.wm-act-002",
+      "from": "COMPOSE",
+      "to": "REFERENCE",
+      "status": "proposed-pending-crosswalk"
+    },
+    {
+      "subject": "vr.wm-knw-012",
+      "action": "retain-as-optional-reference",
+      "status": "proposed-pending-ledger-approval"
+    },
+    {
+      "subject": "registry composition_role/default_link_type/relations_ref",
+      "action": "reconcile to typed non-owning references",
+      "status": "pending"
+    }
+  ],
+  "contracts": [
+    {
+      "id": "definitionAccess",
+      "scope": "released definitions and permitted pins"
+    },
+    {
+      "id": "executionMonitoring",
+      "scope": "authorized trace access with purpose binding"
+    },
+    {
+      "id": "benchmarkExchange",
+      "scope": "de-identified aggregates only; suppress case and actor identity"
+    }
+  ],
+  "projections": [
+    {
+      "id": "currentInstanceState",
+      "authority": "derived from immutable trace"
+    },
+    {
+      "id": "performanceDigest",
+      "authority": "derived from pinned trace and rule set"
+    },
+    {
+      "id": "benchmarkAggregate",
+      "authority": "de-identified and non-authoritative"
+    }
+  ],
+  "stewardship": {
+    "processOwner": [
+      "family",
+      "variant",
+      "released definition"
+    ],
+    "traceRecorder": [
+      "immutable observed events"
+    ],
+    "analyst": [
+      "derived conformance results"
+    ],
+    "privacySteward": [
+      "retention",
+      "tombstones",
+      "de-identification"
+    ]
+  }
+}

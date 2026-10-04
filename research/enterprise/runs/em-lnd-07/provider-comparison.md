@@ -1,0 +1,3 @@
+# EM-LND-07 provider comparison
+
+Claude and Grok independently uphold Offering Portfolio Scope as a versioned governance/filter profile and Offering Landscape as a non-authoritative projection. Neither has independent business identity. Both preserve Product, Service, Offering, Quote and Entitlement boundaries, predicate-derived membership, explicit comparison semantics, typed internal-service value and downstream obligations through retirement. The Grok response was provider-truncated in its blockers paragraph; only visible text is admitted. The single frozen audit preserved the decision and found 19 artifact defects; all were remediated without rerun.

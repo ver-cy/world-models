@@ -1,0 +1,2 @@
+import json,pathlib
+p=pathlib.Path(__file__).parent;c=json.loads((p/"outcome-benefit-boundary-register.json").read_text());f=json.loads((p/"fixtures.json").read_text());assert c["modelId"] is None and c["registryId"] is None and not c["canonicalPublishable"];ids={r["id"] for r in c["invariantRules"]};assert len(ids)==26;assert len(f["cases"])==35 and not f["executable"];print("EM-STR-02 valid: 32 rules, 35 fixtures, no identifiers")

@@ -1,0 +1,33 @@
+The full S2 brief through END S2 BRIEF is visible. No tools were used. No implementation or test success is claimed. S2 is treated as superseding contradictory S0/S1 wording.
+
+The revised research boundary is coherent. No remaining concrete blocker.
+
+S2 closes the S1 writing gaps that actually mattered: unknown generation is non-joinable; computed mapping pins are excluded from retry identity and are not recomputed; uniqueness is enforced on every transition into active; write-only disclosure is principal-bound and existence-safe; archive validation is not resume; rounds compare on scope and consistency evidence, not on token/LSN or epoch alone; closed epochs are append-frozen.
+
+## How the seven decisions fit
+
+**Unknown generation.** Occurrences with unknown record generation stay in the conservation count as `continuity-unknown` and carry no operative mapping pin. Later steward attestation or a source non-reuse guarantee creates evidence for *new* admissions; it does not patch historical rows, join two unknowns, or treat key/digest/new-capture as continuity. Source-instance generation, record generation, and sync epoch remain three axes. Mapping anchors include the full qualified source key and both generations. That is a consistent rule set.
+
+**Pins and replay.** The register computes mapping outcomes once, inside the commit transaction. The client digest is only immutable supplied acquisition content. Expected head, fence, and optional expected mapping revision are admission preconditions, not body identity. An exact digest match returns the stored `(mappingId, stateRevision)` and status after current authorization; it does not re-pin. Changed acquisition content under the same scope/epoch/batch key is a restricted conflict. Batch key is scope/epoch-wide, so a second writer cannot mint a parallel commit of the same acquisition by adding their principal to the key. Key-extraction or interpretation change still opens a new scope.
+
+Decision 4 specializes the phrase “after current authorization”: a write-only identical retry returns a minimal acknowledgement only when the authenticated principal is the original committer. A different current writer hitting an existing key receives one generic not-accepted response plus a restricted scope-level diagnostic, never a receipt. That is not a contradiction if digest-matched COMMIT by a non-committer is classified as collision, not as retry.
+
+**Writing limit, not a blocker.** Digest-matched retry must short-circuit the optional expected-mapping-revision precondition and return the stored result. If that precondition were evaluated against a *later* active mapping, original-principal retry after a mapping correction would fail even though pins must not be recomputed. First admission of a new batch key evaluates the precondition; exact retry does not.
+
+**Mapping uniqueness and kinds.** Every path into active, including disputed→active, checks `(complete lineage, purpose)`. Replacement is a new mapping ID plus correction link; the old claim is non-active before the new claim activates. A visible zero-active interval is allowed; two actives are not. Anchors never mutate. SourceObjectKind, target kind, and allowed aboutness pair are pinned host interpretations. Later catalogue reclassification makes *new* pinning `insufficient-context` until steward review and does not rewrite old pins. Occurrence corrections carry asserted-by and source-or-steward basis; an operator cannot impersonate the source. The package records host-verified assertions, not live identity proof.
+
+**Acknowledgement.** Authorize the specific operation before existence lookup. Unauthorized callers see one generic response. Closed-epoch COMMIT is refused uniformly; retained history is a separate READ that requires current read permission. Closing an epoch forbids new effects, not authorized historical access. Write-only recovery rights do not transfer across principals.
+
+**Archive.** 0.1.0 import is read-only historical validation. The wrapper marks the archive non-resumable; original bytes and epoch states are not rewritten; there is no append-to-imported-epoch API. Origin-host handover and writable restoration stay deferred. Another host that wants live intake opens a new locally owned register/epoch and a fresh baseline, with no imported token continuation. Ordinary process-crash reopen is not restore; current ownership and continuity are host duties. This reference cannot detect a coherent stale or cloned live DB. Validation is not an authenticated latest-state proof.
+
+Imported complete rounds may inform `not-observed-in-comparable-rounds` *proposals* only. They cannot resume a cursor or emit effects.
+
+**Rounds.** Tokens/LSNs are per-round evidence. Comparison requires equal acquisition scope, two complete compatible source-snapshot rounds, and host-verified not-earlier consistency evidence. Different sync epochs do not by themselves block comparison; changed source-instance generation or scope does. That matches decision 1: a 410/token expiry may open a new epoch without changing what the source instance is. Best-effort, unknown ordering, missing pages, visibility not covered by the declared source guarantee, or quarantine that prevents full key accounting yield `insufficient-context`. Non-terminal page commits may advance progress and never complete a round. Same principal does not prove per-object visibility. Explicit removal/deletion stays a separate conclusion and is never subject death. Local admitted sequence ≠ source consistency order. Opaque tokens are not sorted. Absence candidates have no effects.
+
+**Local commit.** Head CAS and exact fence comparison occur inside BEGIN IMMEDIATE. Fence increments have immutable audit events. Receipts/checkpoints are append-only in the open epoch. Later rejected attempts attach as scope-level diagnostics that refer to epochs; they do not mutate a closed epoch. `received = accepted + quarantined`; accept-loss remains refused. Only committing and conflict attempt IDs enter the register. External payload/token durability is a host obligation; a stored reference is not proof those bytes survived.
+
+## Package posture
+
+The intended package stays a local companion: no runtime imports, no automatic Identity/EFA/EAP adapters, no MUFP federation, no subject effects, no production connector, no distributed exactly-once claim. Three synthetic profiles and A–O dispositions remain future implementation work to be audited on frozen inputs. This pass is research acceptance only.
+
+The boundary is coherent and ready for contract text. Remaining work is specification wording of the digest-matched-retry short-circuit and fixture design, not a further research split.

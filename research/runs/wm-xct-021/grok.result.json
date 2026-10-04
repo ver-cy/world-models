@@ -1,0 +1,3799 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-021",
+    "model_id": "WM-XCT-021",
+    "name": "Lifecycle / Status",
+    "entry_kind": "mixin",
+    "purpose": "Common state machine and effective validity for any host subject, covering discrete status, legal configurations, transitions, and the interval during which a status is valid in the world.",
+    "scope_statement": "WM-XCT-021 is a format-neutral mixin that an adopting Dimension attaches to a host entity, event, relationship or artifact so that agents can understand, create, inspect and operate that host's discrete lifecycle status and its effective validity. It models the governing state machine, the current configuration, transition events and guards, valid-time versus record-time, unknown and error outcomes, replacement, and the authority and evidence required to change status. It does not own host identity, calendars, full process orchestration, full provenance graphs, retention schedules, or domain taxonomies of asset stages.",
+    "in_scope": [
+      "Identity of a lifecycle binding, of a governing state machine, and of status codes, using master-system identifiers, governed IRIs, or Dimension-assigned UUID/ULID.",
+      "State-machine topology: atomic, compound, parallel and final states; history vertices; initial configuration; legal configurations.",
+      "Transition definition and execution: triggering events, guard conditions, internal versus external transitions, document-order selection, on-entry and on-exit effects, delayed events, and child-machine invoke.",
+      "Current runtime status and, for parallel regions, the active configuration as a set rather than a single token.",
+      "Canonical and resource-specific status codes, lifecycle pattern families, publication status versus process status, unknown, and entered-in-error as a non-deleting outcome.",
+      "Effective validity as a (possibly open) interval with inclusive bounds, future planned validity, and missing-end meaning ongoing.",
+      "Bitemporal split: valid time of the subject in the world versus transaction/record time of the observation or ingestion.",
+      "Temporal encoding with RFC 3339 timestamps including seconds and an explicit offset or Z, event time versus observation time, and optional temporal reference system.",
+      "Allen-style interval relations between validity intervals.",
+      "Transition audit, history restoration (shallow and deep), replacement and supersession, and terminal outcomes.",
+      "Authority, evidence and confirmation of a status, access consequences of status, and retention of status history as records.",
+      "Interoperability mappings onto canonical status codes without claiming lossless round-trip."
+    ],
+    "out_of_scope": [
+      "Host identity, naming and identifier assignment for the subject itself, which belong to an identity sibling.",
+      "Calendar, clock, time-zone rule and temporal reference-system definition, which belong to a time sibling; this mixin only records which TRS a validity instant uses.",
+      "Full process, workflow, choreography or BPMN orchestration of work, which belong to a process sibling; SCXML/UML machines here are the status control abstraction, not a work-plan.",
+      "The complete provenance graph of all generations and derivations, which belongs to a provenance sibling; this mixin only records the activity that effected a status transition.",
+      "Physical or industry asset life-cycle stage taxonomies whose names ISO 55000 leaves to the organization.",
+      "Legal in-force status of instruments, licences or statutes, which belongs to a legal-status sibling.",
+      "Records retention schedule design, disposal authorities and legal hold policy, which belong to a records sibling; this mixin only records that status history is a record that must be kept as long as needed.",
+      "Technical resource versioning versus business versions as a versioning sibling, except to note that lifecycle is not a version identifier.",
+      "Spatial geometry and location models, except where a status is about entity availability of a located thing.",
+      "SQL:2011 APPLICATION_TIME and SYSTEM_TIME syntax, IEC 61512/ISA-88 equipment states, and Petri-net semantics, which were not taken as canonical for this mixin."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Identity / identifier model",
+        "distinction": "A date is not an identifier. Status, validity start and validity end do not identify the host. Entered-in-error does not retire the host identifier. This mixin references the host; it does not assign host identity.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Time / calendar / temporal reference system",
+        "distinction": "OWL-Time and RFC 3339 supply instants, intervals, durations and TRS. This mixin uses those primitives to state when a status is valid; it does not define calendars, leap-second policy, or local daylight-saving rules. RFC 3339 timestamps are instants and explicitly do not describe periods.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Process / workflow / activity model",
+        "distinction": "SCXML and UML state machines are a control abstraction for status. They are not a substitute for process models that plan work, allocate resources or choreograph participants. FHIR itself separates clinical workflow process, request/order fulfilment, entity availability and clinical interpretation.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Provenance model",
+        "distinction": "A status change is an activity that generates or invalidates a status entity. The full influence graph, derivations and alternate-of relations belong to PROV. This mixin records the transition activity, agent, event time and observation time only.",
+        "source_refs": [
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Version / revision model",
+        "distinction": "FHIR distinguishes technical resource versions from business lifecycle. A new technical version may leave business status unchanged; a status transition may occur without a new business identifier. This mixin does not version content.",
+        "source_refs": [
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Classification / code-system model",
+        "distinction": "Status codes are a specialised classifier with modifier and legal-transition semantics. General type, kind and taxonomy membership belong to a classifier sibling. Canonical FHIR resource-status is an experimental mapping target, not a universal taxonomy.",
+        "source_refs": [
+          "SRC-004"
+        ]
+      },
+      {
+        "neighbor": "Party / agent / organization model",
+        "distinction": "Who may authorise a transition, who requested it, and who observed it are agent references. Agent identity and roles live in a party sibling; this mixin only records the association of an agent with a transition activity.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Records / retention model",
+        "distinction": "ISO 15489 requires records and their metadata to be created, captured and managed over time with assigned responsibilities. Status history is a record. Retention periods, disposal and legal hold are not defined here.",
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Legal instrument / in-force status",
+        "distinction": "Whether a law, licence or contract is in force is a legal-status concern. Discrete operational status and valid-time intervals here do not decide legal force.",
+        "source_refs": [
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Current-list / membership model",
+        "distinction": "FHIR states there is no element on a resource that can convey whether it is on a current curated list; status=active is not membership. Current-list membership is a sibling relationship, not a status value.",
+        "source_refs": [
+          "SRC-003"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "State Chart XML (SCXML): State Machine Notation for Control Abstraction",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/scxml/",
+      "version_or_date": "W3C Recommendation 1 September 2015",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:00:00Z",
+      "relevance": "Normative generic state-machine execution: states, parallel regions, transitions with event and cond, initial and final, onentry and onexit, history, legal configurations, events, IDs, and interpretation algorithm."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Time Ontology in OWL",
+      "organization": "World Wide Web Consortium (W3C) / Open Geospatial Consortium (OGC)",
+      "url": "https://www.w3.org/TR/owl-time/",
+      "version_or_date": "W3C Candidate Recommendation Draft 15 November 2022 (OGC 16-071r3)",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-23T16:05:00Z",
+      "relevance": "Temporal entities, hasBeginning and hasEnd, hasTime, durations, TRS, xsd:dateTimeStamp, Allen interval relations, and documented PROV-O alignment. Effective validity is expressed with these primitives."
+    },
+    {
+      "id": "SRC-003",
+      "title": "FHIR Life Cycle Page (Resource Status, Current Lists, Entered in Error)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://www.hl7.org/fhir/lifecycle.html",
+      "version_or_date": "FHIR R5 v5.0.0, 26 March 2023, Trial Use, Maturity 3",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-23T16:10:00Z",
+      "relevance": "Four lifecycle pattern families, entered-in-error without implied deletion, technical versus business versions, and the rule that current-list membership cannot be inferred from status."
+    },
+    {
+      "id": "SRC-004",
+      "title": "CodeSystem http://hl7.org/fhir/resource-status — Canonical Status Codes for FHIR Resources",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://hl7.org/fhir/codesystem-resource-status.html",
+      "version_or_date": "FHIR R5 v5.0.0, draft as of 2023-03-26, Experimental, Trial Use",
+      "source_type": "classifier",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-23T16:15:00Z",
+      "relevance": "Master set of canonical status codes including error, proposed, planned, draft, requested, active, suspended, failed, replaced, complete, inactive, abandoned, unknown, unconfirmed, confirmed, resolved and refuted, used as an alignment target not a mandated vocabulary."
+    },
+    {
+      "id": "SRC-005",
+      "title": "PROV-O: The PROV Ontology",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/prov-o/",
+      "version_or_date": "W3C Recommendation 30 April 2013",
+      "source_type": "ontology",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:20:00Z",
+      "relevance": "Status change as Activity; generatedAtTime and invalidatedAtTime; startedAtTime and endedAtTime; atTime on instantaneous events; wasAssociatedWith an Agent; wasGeneratedBy and wasInvalidatedBy."
+    },
+    {
+      "id": "SRC-006",
+      "title": "ISO 19108:2002 Geographic information — Temporal schema",
+      "organization": "International Organization for Standardization (ISO/TC 211)",
+      "url": "https://www.iso.org/standard/26013.html",
+      "version_or_date": "ISO 19108:2002, confirmed 2026-07-20, Cor 1:2006",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:25:00Z",
+      "relevance": "Normative emphasis on valid time rather than transaction time for temporal characteristics abstracted from the real world; basis for validity intervals of features, operations and metadata."
+    },
+    {
+      "id": "SRC-007",
+      "title": "DCMI Metadata Terms",
+      "organization": "Dublin Core Metadata Initiative (DCMI)",
+      "url": "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/",
+      "version_or_date": "DCMI Recommendation 2020-01-20 (ISO 15836-2:2019 alignment)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:30:00Z",
+      "relevance": "dcterms:valid as date or range of validity; dcterms:available; dcterms:issued and dcterms:modified; dcterms:replaces and dcterms:isReplacedBy; dcterms:accessRights; PeriodOfTime class."
+    },
+    {
+      "id": "SRC-008",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339",
+      "version_or_date": "RFC 3339, July 2002, Proposed Standard; updated by RFC 9557",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:35:00Z",
+      "relevance": "Internet profile of ISO 8601 for instants with four-digit year, seconds, and explicit UTC offset or Z; unknown offset convention -00:00; periods are out of scope of this RFC."
+    },
+    {
+      "id": "SRC-009",
+      "title": "OMG Unified Modeling Language (UML) Version 2.5.1",
+      "organization": "Object Management Group (OMG)",
+      "url": "https://www.omg.org/spec/UML/2.5.1/About-UML",
+      "version_or_date": "UML 2.5.1, December 2017, formal/17-12-05",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:40:00Z",
+      "relevance": "Normative UML state-machine metamodel that SCXML cites via Harel state tables. Clause 14 of UML is the abstract syntax that PSSM executes. Graphical UML is an alignment, not this mixin's storage format."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Precise Semantics of UML State Machines (PSSM) Version 1.0",
+      "organization": "Object Management Group (OMG)",
+      "url": "https://www.omg.org/spec/PSSM/1.0/PDF",
+      "version_or_date": "PSSM 1.0, May 2019, formal/2019-05-01",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T16:45:00Z",
+      "relevance": "Operational execution semantics for a large subset of UML 2.5.1 state machines as an extension of fUML, including semantic variation points for time sources. Used to ground transition effects without treating UML XMI as the mixin semantics."
+    },
+    {
+      "id": "SRC-011",
+      "title": "ISO 15489-1:2016 Information and documentation — Records management — Part 1: Concepts and principles",
+      "organization": "International Organization for Standardization (ISO/TC 46/SC 11)",
+      "url": "https://www.iso.org/standard/62542.html",
+      "version_or_date": "ISO 15489-1:2016, confirmed 2021-11-09",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T17:00:00Z",
+      "relevance": "Records, metadata, assigned responsibilities and processes for creating, capturing and managing records over time regardless of form. Status history is a record; retention duration itself is out of scope."
+    },
+    {
+      "id": "SRC-012",
+      "title": "HL7 FHIR R5 Period datatype (StructureDefinition)",
+      "organization": "Health Level Seven International (HL7)",
+      "url": "https://www.hl7.org/fhir/R5/period.profile.json",
+      "version_or_date": "FHIR R5 v5.0.0, 2023-03-26, Normative from 4.0.0",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-23T17:05:00Z",
+      "relevance": "Normative time range with inclusive start and end; missing end means ongoing; start SHALL be less than or equal to end; start may be past and end future. Complements OWL-Time intervals for effective validity."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "mixin-identity-and-binding",
+        "name": "Mixin identity and host binding",
+        "description": "How a lifecycle/status record is identified and bound to a host subject and to the machine and code system that govern it, without becoming the host's identity.",
+        "rationale": "A mixin that cannot name its own record, its host, or its governing machine cannot be inspected or operated. SCXML requires IDs; FHIR requires resource identity distinct from status; DCMI and PROV identify the described entity separately from its validity or generation time.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-005",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "lifecycle-record-identity",
+            "name": "Lifecycle record identity",
+            "description": "Identifiers for the mixin instance itself and the priority order in which they are assigned and resolved.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "lifecycle-binding-identity",
+                "name": "Lifecycle binding identifier",
+                "description": "Each attached lifecycle record has its own identifier, distinct from the host identifier and from any timestamp. SCXML 3.14 requires IDs on machine vertices; FHIR resource identity is separate from status; a date is not an identifier.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-binding-master-id",
+                    "text": "What authoritative master-system identifier uniquely names this lifecycle binding, and which system is the master?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "master-system identifier string",
+                      "master-system URI",
+                      "identifier type code"
+                    ]
+                  },
+                  {
+                    "id": "q-binding-iri-or-uuid",
+                    "text": "If no master-system identifier exists, what governed global IRI, or which Dimension-assigned UUID or ULID, identifies the binding?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "IRI",
+                      "UUID or ULID",
+                      "assignment authority",
+                      "assignment timestamp RFC 3339"
+                    ]
+                  },
+                  {
+                    "id": "q-binding-not-a-date",
+                    "text": "Has any date, validity start, or observation time been incorrectly treated as the binding identifier?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "boolean flag",
+                      "offending field path",
+                      "corrective identifier"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "lifecycle-record-id",
+                    "name": "Lifecycle record identifier",
+                    "description": "Primary identifier of this mixin instance, never a date.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "id-scheme",
+                    "name": "Identifier scheme",
+                    "description": "Whether the identifier is a master-system key, a governed IRI, or a Dimension UUID/ULID.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "assigned-at",
+                    "name": "Identifier assignment time",
+                    "description": "RFC 3339 instant when the identifier was assigned; not itself an identifier.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The binding identifier is reference data carried on the mixin record; no separate artefact is required unless the master system issues a certificate or register extract."
+              },
+              {
+                "id": "host-subject-binding",
+                "name": "Host subject binding",
+                "description": "The mixin is meaningless without a host. FHIR status is a property of a resource; OWL-Time hasTime associates a temporal entity with anything; PROV generation times bound an Entity. The host is referenced, not copied.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-host-ref",
+                    "text": "Which host subject does this lifecycle record describe, and by which identity priority is that host referenced?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "host reference",
+                      "host identifier scheme",
+                      "host type or class"
+                    ]
+                  },
+                  {
+                    "id": "q-host-aspect",
+                    "text": "Does the status apply to the whole host, to a stated aspect, role, or version of the host, or to a process the host represents?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "aspect code",
+                      "aspect description",
+                      "process-versus-entity flag"
+                    ]
+                  },
+                  {
+                    "id": "q-host-multiplicity",
+                    "text": "May the same host carry multiple concurrent lifecycle bindings (for example workflow status plus clinical status plus publication status)?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "boolean",
+                      "allowed pattern family list",
+                      "disambiguating aspect codes"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "host-ref",
+                    "name": "Host subject reference",
+                    "description": "Reference to the identified host to which this mixin is attached.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "status-aspect",
+                    "name": "Status aspect",
+                    "description": "Which facet of the host this binding governs, so concurrent machines do not collide.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "host-type",
+                    "name": "Host type",
+                    "description": "Type or class of the host, for pattern selection, not a status code.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Host binding is a reference; the host artefact lives in the host model."
+              }
+            ]
+          },
+          {
+            "id": "governing-definitions-identity",
+            "name": "Governing machine and code-system identity",
+            "description": "Which state machine and which status code system this binding is evaluated against.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-004",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "state-machine-identifier",
+                "name": "Governing state machine identifier",
+                "description": "SCXML documents declare an xmlns, version and initial state; UML state machines have a context classifier. The mixin must name the machine definition, its version, and its initial configuration independently of any XML or XMI projection.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-machine-id",
+                    "text": "What identifier and version name the governing state machine definition for this binding?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "machine identifier",
+                      "machine version",
+                      "namespace URI"
+                    ]
+                  },
+                  {
+                    "id": "q-machine-initial",
+                    "text": "What is the declared initial state or initial configuration of that machine?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "initial state identifier",
+                      "initial configuration set"
+                    ]
+                  },
+                  {
+                    "id": "q-machine-conformance",
+                    "text": "Does this Dimension claim SCXML, UML/PSSM, or only a local machine profile, and is that claim evidenced?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "alignment profile code",
+                      "conformance evidence reference",
+                      "non-conformance notes"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "machine-ref",
+                    "name": "State machine reference",
+                    "description": "Reference to the governing machine definition.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "machine-version",
+                    "name": "Machine definition version",
+                    "description": "Version of the machine definition, distinct from host business version.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "initial-state-id",
+                    "name": "Initial state identifier",
+                    "description": "Declared entry vertex of the machine.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "state-machine-definition-artifact",
+                    "name": "State machine definition",
+                    "description": "The governed definition of states, transitions, guards and effects. Projection may be SCXML, UML, or another serial form; the semantics are the machine, not the file type.",
+                    "media_or_form": [
+                      "application/scxml+xml",
+                      "UML state machine",
+                      "canonical machine object"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system identifier of the machine definition; else a governed IRI for the definition; else a Dimension UUID/ULID. Version is not the identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "status-code-system-binding",
+                "name": "Status code system binding",
+                "description": "Status values are codes from a named system. FHIR maps resource-specific required value sets onto experimental canonical resource-status. DCMI recommends controlled vocabularies. The mixin records the local system and any canonical mapping, and must not claim FHIR canonical codes as universal.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-local-code-system",
+                    "text": "Which code system and value set constrain the status codes used by this machine?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "code system URI",
+                      "value set URI",
+                      "extensibility code required-or-extensible"
+                    ]
+                  },
+                  {
+                    "id": "q-canonical-map",
+                    "text": "To which canonical status code, if any, does each local code map, and is that mapping lossy?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "local code",
+                      "canonical code",
+                      "mapping relationship",
+                      "lossiness flag"
+                    ]
+                  },
+                  {
+                    "id": "q-unknown-in-system",
+                    "text": "Does the bound code system include a first-class unknown (or equivalent) rather than allowing omission to mean unknown?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "unknown code",
+                      "omission-equals-unknown boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "status-code-system",
+                    "name": "Status code system",
+                    "description": "URI or identifier of the local status code system.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "status-value-set",
+                    "name": "Status value set",
+                    "description": "Constrained set of codes the machine may emit as current status.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "canonical-map-ref",
+                    "name": "Canonical mapping reference",
+                    "description": "Optional map from local codes to http://hl7.org/fhir/resource-status or another canonical set.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "status-code-system-artifact",
+                    "name": "Status code system",
+                    "description": "Enumerated codes, definitions and any canonical map used by this machine.",
+                    "media_or_form": [
+                      "code system",
+                      "value set",
+                      "concept map"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Canonical URI of the code system if published; else master-system identifier; else Dimension UUID/ULID.",
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state-machine-specification",
+        "name": "State machine specification",
+        "description": "The definition of vertices, hierarchy, orthogonality, history, transitions and legal configurations that constrain runtime status.",
+        "rationale": "SCXML, UML and PSSM agree that status is not a free token: it is a configuration of a machine with well-defined legal shapes, compound and parallel structure, and transition rules. Without the specification, a status code cannot be validated or progressed.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-009",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "machine-topology",
+            "name": "Machine topology",
+            "description": "Kinds of states and how they nest, run in parallel, terminate, or remember prior configuration.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-009",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "states-and-kinds",
+                "name": "States and vertex kinds",
+                "description": "SCXML distinguishes atomic states, compound states with children, parallel regions whose children are all active, final states that complete a region, and history vertices. UML adds pseudostate kinds executed by PSSM. A status token that ignores kind cannot represent parallel or nested machines.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-state-inventory",
+                    "text": "What states exist in the machine, and is each atomic, compound, parallel, final, or a history vertex?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "state identifier",
+                      "state kind code",
+                      "parent state identifier",
+                      "label"
+                    ]
+                  },
+                  {
+                    "id": "q-state-definition",
+                    "text": "What is the definition of each state in domain terms, and which host aspects may occupy it?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "definition text",
+                      "allowed host aspects",
+                      "notes"
+                    ]
+                  },
+                  {
+                    "id": "q-unique-state-ids",
+                    "text": "Are state identifiers unique within the machine, and what scheme assigns them?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "state identifier",
+                      "uniqueness scope",
+                      "identifier scheme"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "state-id",
+                    "name": "State identifier",
+                    "description": "Unique identifier of a vertex within the machine.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "state-kind",
+                    "name": "State kind",
+                    "description": "atomic, compound, parallel, final, history-shallow, history-deep, or other declared kind.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "parent-state-id",
+                    "name": "Parent state identifier",
+                    "description": "Containing compound or parallel state, absent for top-level vertices.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "state-label",
+                    "name": "State label",
+                    "description": "Human-readable name; not an identifier.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "State vertices are part of the machine definition artefact already declared; they are inline members of that definition."
+              },
+              {
+                "id": "compound-parallel-final",
+                "name": "Compound, parallel and final semantics",
+                "description": "When a compound state is active, exactly one child is active. When a parallel state is active, all children are active and process events independently. A final state completes its region; a top-level final completes the machine and yields a done event in SCXML. These rules make current status a configuration, not always a single code.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-compound-child",
+                    "text": "For each compound state, which child is the default initial child, and must exactly one child be active?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "compound state id",
+                      "default child id",
+                      "exactly-one-child boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-parallel-regions",
+                    "text": "Which regions are orthogonal, and is the current status therefore a set of active states rather than one token?",
+                    "kind": "state",
+                    "answer_data": [
+                      "parallel state id",
+                      "region identifiers",
+                      "multi-active boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-final-completion",
+                    "text": "Which states are final, and what completion event or done data is produced when they are entered?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "final state id",
+                      "completion event name",
+                      "done data"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "default-child-id",
+                    "name": "Default child identifier",
+                    "description": "Initial child of a compound or parallel region.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "orthogonal-flag",
+                    "name": "Orthogonal region flag",
+                    "description": "True when siblings are simultaneously active.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "completion-event",
+                    "name": "Completion event",
+                    "description": "Event raised when a final state is entered.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Compound, parallel and final rules are members of the machine definition artefact."
+              },
+              {
+                "id": "history-vertices",
+                "name": "History vertices",
+                "description": "SCXML history records the last active configuration of a compound state so that re-entry can restore shallow (immediate children) or deep (full descendant configuration) history. Absence of history means re-entry uses the default initial child. This is a rare but first-class lifecycle case.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-history-kind",
+                    "text": "Does the machine declare shallow or deep history vertices, and for which compound states?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "history vertex id",
+                      "shallow-or-deep code",
+                      "owning state id"
+                    ]
+                  },
+                  {
+                    "id": "q-history-default",
+                    "text": "If no history has yet been recorded, which default transition does the history vertex take?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "default target state id",
+                      "condition"
+                    ]
+                  },
+                  {
+                    "id": "q-history-scope",
+                    "text": "Is recorded history retained across suspend, invoke of a child machine, or only within a single run-to-completion cycle?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retention scope code",
+                      "cleared-on-exit boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "history-kind",
+                    "name": "History kind",
+                    "description": "shallow or deep.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "history-default-target",
+                    "name": "History default target",
+                    "description": "Target used when no history value exists.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "history-retention-scope",
+                    "name": "History retention scope",
+                    "description": "How long and across which sessions the last configuration is kept.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "History vertices are members of the machine definition; recorded history values at runtime belong to the transition-audit artefact."
+              }
+            ]
+          },
+          {
+            "id": "transitions-and-legality",
+            "name": "Transitions and legal configurations",
+            "description": "How the machine is allowed to move, and which sets of active states are legal.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "transition-definition",
+                "name": "Transition definition",
+                "description": "A transition has a source, optional event descriptor, optional guard condition, optional target, optional executable content, and type internal or external. Eventless transitions fire when the condition is true. If several match, SCXML takes the first in document order. Unmatched events are discarded.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-transition-inventory",
+                    "text": "What transitions are defined, including source, target, event, guard, type and order?",
+                    "kind": "process",
+                    "answer_data": [
+                      "transition id",
+                      "source state id",
+                      "target state ids",
+                      "event descriptor",
+                      "guard expression",
+                      "internal-or-external type",
+                      "document order"
+                    ]
+                  },
+                  {
+                    "id": "q-eventless",
+                    "text": "Which transitions are eventless, and what condition causes them to fire without an external event?",
+                    "kind": "event",
+                    "answer_data": [
+                      "transition id",
+                      "condition expression",
+                      "priority order"
+                    ]
+                  },
+                  {
+                    "id": "q-unmatched-event",
+                    "text": "If no transition matches an event, is the event discarded, logged, or treated as an exception?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "unmatched-event policy code",
+                      "log required boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "transition-id",
+                    "name": "Transition identifier",
+                    "description": "Identifier of a defined transition.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "event-descriptor",
+                    "name": "Event descriptor",
+                    "description": "Event name pattern that enables the transition; absent for eventless transitions.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "guard-condition",
+                    "name": "Guard condition",
+                    "description": "Boolean condition that must hold for the transition to be selected.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "transition-type",
+                    "name": "Transition type",
+                    "description": "internal or external, controlling whether the source state is exited.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "target-state-ids",
+                    "name": "Target state identifiers",
+                    "description": "One or more target vertices.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Transition definitions are members of the machine definition artefact."
+              },
+              {
+                "id": "legal-configurations",
+                "name": "Legal state configurations",
+                "description": "SCXML section 3.11 defines legal state configurations and specifications: not every set of states may be simultaneously active. Parallel regions require all children; compound states require exactly one child path to an atomic state. Runtime status that is not a legal configuration is invalid regardless of code-system membership.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-legal-config-rules",
+                    "text": "What rules determine whether a set of active states is a legal configuration of this machine?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "rule identifiers",
+                      "rule expressions",
+                      "severity"
+                    ]
+                  },
+                  {
+                    "id": "q-illegal-observed",
+                    "text": "If an observed configuration is illegal, is it rejected, repaired to the last legal configuration, or recorded as error?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "policy code",
+                      "repair target",
+                      "error status code"
+                    ]
+                  },
+                  {
+                    "id": "q-config-as-status",
+                    "text": "When parallel regions are active, is the recorded current status the full configuration set, a projection to one canonical code, or both?",
+                    "kind": "state",
+                    "answer_data": [
+                      "configuration set",
+                      "projected canonical code",
+                      "projection method"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "configuration-rule",
+                    "name": "Configuration rule",
+                    "description": "A constraint on simultaneous active states.",
+                    "value_kind": "object",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "illegal-config-policy",
+                    "name": "Illegal configuration policy",
+                    "description": "reject, repair, or mark-error.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Legal-configuration rules are part of the machine definition; observed illegal configurations are recorded on the runtime status and audit artefacts."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "status-classification",
+        "name": "Status classification and pattern families",
+        "description": "Which family of lifecycle the host uses, which codes are allowed, and how special codes such as unknown, error, publication and clinical interpretation are distinguished.",
+        "rationale": "FHIR shows that a single universal status list is neither the primary objective nor sufficient: work groups choose resource-specific required value sets, then optionally map them to an experimental canonical set. Mixing publication, process, entity-availability and clinical-interpretation codes without a pattern family causes false transitions.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "pattern-families",
+            "name": "Lifecycle pattern families",
+            "description": "Named families of status value sets that are not interchangeable.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "lifecycle-pattern-family",
+                "name": "Lifecycle pattern family",
+                "description": "FHIR documents four families: clinical workflow process (planned, in-progress, on-hold, stopped, completed, cancelled); request/order (proposed, draft, requested, rejected, accepted, in-progress, completed, cancelled); entity availability (draft, active, suspended, amended, retired); and clinical status (active, inactive, unknown) which is explicitly not a workflow lifecycle. ISO 15489 adds a records-management process family of create, capture and manage over time. The mixin must declare which family a binding uses.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-pattern-family",
+                    "text": "Which lifecycle pattern family does this binding use, and is more than one family attached to the same host via distinct aspects?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "pattern family code",
+                      "aspect code",
+                      "coexistence notes"
+                    ]
+                  },
+                  {
+                    "id": "q-family-forbidden-codes",
+                    "text": "Which status codes are meaningless in this family and must be rejected (for example retired on a clinical-interpretation binding)?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "forbidden codes",
+                      "rejection reason"
+                    ]
+                  },
+                  {
+                    "id": "q-clinical-not-workflow",
+                    "text": "If the family is clinical interpretation, has it been kept distinct from workflow or request status so that inactive does not mean completed?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "boolean distinct",
+                      "paired workflow binding reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "pattern-family",
+                    "name": "Pattern family",
+                    "description": "workflow-process, request-order, entity-availability, clinical-interpretation, records-management, or local family.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "family-notes",
+                    "name": "Family notes",
+                    "description": "Local interpretation of the family and any deviations from the FHIR characteristic sets.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Pattern family is a classification field on the binding; characteristic code lists live in the bound code system artefact."
+              },
+              {
+                "id": "canonical-status-codes",
+                "name": "Canonical status codes",
+                "description": "http://hl7.org/fhir/resource-status enumerates a master set including error, proposed, planned, draft, requested, received, declined, accepted, arrived, active, suspended, failed, replaced, complete, inactive, abandoned, unknown, unconfirmed, confirmed, resolved, refuted, differential, partial and several availability and device codes. FHIR states all status codes are mapped to one of these, but the code system is experimental and not ready for production. Alignment is optional and possibly lossy.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-local-status-code",
+                    "text": "What local status code currently applies, including its system, code, display and definition?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "system URI",
+                      "code",
+                      "display",
+                      "definition"
+                    ]
+                  },
+                  {
+                    "id": "q-canonical-status",
+                    "text": "What canonical resource-status code, if any, is this local code mapped to, and is the map official, local, or absent?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "canonical code",
+                      "map provenance",
+                      "absent-map flag"
+                    ]
+                  },
+                  {
+                    "id": "q-experimental-warning",
+                    "text": "If canonical FHIR resource-status is used as a production vocabulary, what evidence overrides its experimental and not-ready-for-production flags?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "decision record reference",
+                      "risk acceptance",
+                      "alternative vocabulary"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "local-status-code",
+                    "name": "Local status code",
+                    "description": "The status token in the bound local code system.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "canonical-status-code",
+                    "name": "Canonical status code",
+                    "description": "Optional map target in http://hl7.org/fhir/resource-status.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "status-display",
+                    "name": "Status display",
+                    "description": "Human-readable display; not an identifier.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Codes are inline values whose definitions live in the status code system artefact."
+              }
+            ]
+          },
+          {
+            "id": "special-status-codes",
+            "name": "Special status codes",
+            "description": "Unknown, error, publication and confirmation codes that are often misused as ordinary workflow states.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "unknown-error-and-modifier",
+                "name": "Unknown, error and modifier semantics",
+                "description": "unknown means the authoring system does not know the status. error / entered-in-error means the resource was created accidentally and should be ignored, but FHIR notes that in many cases the information cannot be removed. Artifact status in FHIR is a modifier because applications should not use a retired artefact without due consideration. Omission is not a substitute for unknown.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-unknown-explicit",
+                    "text": "When status is not known, is unknown recorded explicitly, and which agent and observation time support that assertion?",
+                    "kind": "state",
+                    "answer_data": [
+                      "unknown flag or code",
+                      "observing agent",
+                      "observation time RFC 3339"
+                    ]
+                  },
+                  {
+                    "id": "q-error-non-delete",
+                    "text": "If the host was created in error, is entered-in-error (or error) set without deleting the record, and what redaction or notification is required?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "error status code",
+                      "deletion-forbidden boolean",
+                      "redaction policy",
+                      "notification required"
+                    ]
+                  },
+                  {
+                    "id": "q-is-modifier",
+                    "text": "Is this status a modifier that consuming applications must inspect before using the host?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "is-modifier boolean",
+                      "modifier reason"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "is-unknown",
+                    "name": "Unknown flag",
+                    "description": "True when status is explicitly unknown.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "is-entered-in-error",
+                    "name": "Entered-in-error flag",
+                    "description": "True when the host or this status was created accidentally and must be ignored.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "is-modifier",
+                    "name": "Modifier flag",
+                    "description": "True when consumers must not ignore this status.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "error-handling-note",
+                    "name": "Error handling note",
+                    "description": "Local rule for redaction, notification or retention when entered-in-error is set.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "entered-in-error-record",
+                    "name": "Entered-in-error correction record",
+                    "description": "Evidence that a host or status was created accidentally, the decision to mark error rather than delete, and any notifications.",
+                    "media_or_form": [
+                      "correction record",
+                      "audit event",
+                      "notification"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system correction identifier; else governed IRI; else Dimension UUID/ULID. Event time and observation time are not identifiers.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "publication-versus-process-status",
+                "name": "Publication status versus process status",
+                "description": "FHIR PublicationStatus (draft | active | retired | unknown) tracks artefact life-cycle of content, while process and request statuses track work. DCMI issued, available, modified and valid are publication and validity dates, not process states. Using draft both as unpublished content and as an unsent order collapses two machines.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-publication-status",
+                    "text": "What publication status applies to the host if it is an artefact (draft, active, retired, unknown), distinct from any process status?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "publication status code",
+                      "artefact flag"
+                    ]
+                  },
+                  {
+                    "id": "q-dcmi-dates",
+                    "text": "What issued, available, created, modified and valid dates are asserted, and which of them is validity rather than publication?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "issued timestamp",
+                      "available timestamp or period",
+                      "created timestamp",
+                      "modified timestamp",
+                      "valid period"
+                    ]
+                  },
+                  {
+                    "id": "q-retired-use",
+                    "text": "If publication status is retired, what due consideration is required before a consumer uses the host?",
+                    "kind": "access",
+                    "answer_data": [
+                      "retired flag",
+                      "consumer warning",
+                      "override authority"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "publication-status",
+                    "name": "Publication status",
+                    "description": "draft, active, retired, or unknown for artefact hosts.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "date-issued",
+                    "name": "Date issued",
+                    "description": "Formal issuance instant or period.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "date-available",
+                    "name": "Date available",
+                    "description": "Instant or period the host became or will become available.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Publication status and DCMI dates are inline fields; the artefact they describe is the host, not this mixin."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "runtime-and-effective-validity",
+        "name": "Runtime configuration and effective validity",
+        "description": "The currently active configuration and the interval during which that status is valid in the world, plus the separate record of when that fact was observed or ingested.",
+        "rationale": "ISO 19108 emphasises valid time. FHIR Period provides inclusive start and end with missing end meaning ongoing. OWL-Time supplies hasBeginning, hasEnd, hasTime and interval relations. RFC 3339 encodes instants, not periods. PROV separately timestamps generation, invalidation and observation. These axes must not be collapsed.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-006",
+          "SRC-008",
+          "SRC-012",
+          "SRC-005"
+        ],
+        "layers": [
+          {
+            "id": "runtime-configuration",
+            "name": "Runtime configuration",
+            "description": "What is active now, including multi-state configurations and reasons.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "current-status-value",
+                "name": "Current status value",
+                "description": "The status that currently applies. For a single-region machine this is one code; it remains a projection of the active configuration. Status reason, where used, explains suspended, failed, declined or similar without replacing the code.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-current-code",
+                    "text": "What is the current local status code, and at what event time did it become current?",
+                    "kind": "state",
+                    "answer_data": [
+                      "local status code",
+                      "effective from timestamp RFC 3339",
+                      "machine configuration reference"
+                    ]
+                  },
+                  {
+                    "id": "q-status-reason",
+                    "text": "What reason, if any, explains the current status (for example why suspended or declined)?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "reason code",
+                      "reason text",
+                      "reason code system"
+                    ]
+                  },
+                  {
+                    "id": "q-as-of-query",
+                    "text": "As of a stated instant, which status applied, and is that answer taken from valid time rather than record time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "as-of instant RFC 3339",
+                      "status at that instant",
+                      "axis valid-or-record"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "current-status",
+                    "name": "Current status",
+                    "description": "Current local status code.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "status-reason",
+                    "name": "Status reason",
+                    "description": "Coded or textual reason for the current status.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "status-reason-text",
+                    "name": "Status reason text",
+                    "description": "Narrative reason when no code is available.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Current status and reason are inline runtime fields; their change history is the transition-audit artefact."
+              },
+              {
+                "id": "active-configuration",
+                "name": "Active configuration set",
+                "description": "SCXML configuration is the set of active states. Parallel regions make a single status code insufficient. The mixin records the full set and optionally a projected code for interchange.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-active-set",
+                    "text": "Which states are currently active, and is that set a legal configuration?",
+                    "kind": "state",
+                    "answer_data": [
+                      "active state identifiers",
+                      "legal-configuration boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-projected-code",
+                    "text": "What single status code is projected from the configuration for systems that cannot represent a set, and is that projection lossy?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "projected code",
+                      "lossiness flag",
+                      "projection rule"
+                    ]
+                  },
+                  {
+                    "id": "q-invoke-children",
+                    "text": "Are any child machines invoked from the current configuration, and what is their session identity and status?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "invoked machine references",
+                      "session identifiers",
+                      "child statuses"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "active-state-ids",
+                    "name": "Active state identifiers",
+                    "description": "Set of currently active vertices.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "projected-status",
+                    "name": "Projected status",
+                    "description": "Optional single-code projection of the configuration.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "invoked-sessions",
+                    "name": "Invoked sessions",
+                    "description": "Child machine sessions started from current states.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The active configuration is runtime reference data; child machine definitions are separate artefacts already in scope."
+              }
+            ]
+          },
+          {
+            "id": "effective-validity",
+            "name": "Effective validity",
+            "description": "Valid-time interval, record-time, encoding and interval relations.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-006",
+              "SRC-007",
+              "SRC-008",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "valid-time-interval",
+                "name": "Valid-time interval",
+                "description": "dcterms:valid is a date often a range of validity of a resource. FHIR Period is a time range with inclusive start and inclusive end; if end is missing the period is ongoing; start SHALL be less than or equal to end; start may be in the past and end in the future. OWL-Time TemporalEntity has hasBeginning and hasEnd. Planned FHIR statuses describe a still-future course of action, so validity may start in the future.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-012",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-valid-start",
+                    "text": "When does this status become valid in the world, is the bound inclusive, and may it be in the future?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "valid start timestamp RFC 3339",
+                      "inclusive boolean",
+                      "future-planned boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-valid-end",
+                    "text": "When does this status cease to be valid, is the bound inclusive, and if end is absent is the period ongoing?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "valid end timestamp RFC 3339",
+                      "inclusive boolean",
+                      "ongoing boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-period-constraint",
+                    "text": "If both start and end are present, is start less than or equal to end, and which temporal reference system applies?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "constraint result boolean",
+                      "TRS identifier",
+                      "violation note"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "valid-start",
+                    "name": "Valid start",
+                    "description": "Inclusive beginning of valid time, RFC 3339 with seconds and offset or Z when an instant is used.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-008",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "valid-end",
+                    "name": "Valid end",
+                    "description": "Inclusive end of valid time; absent means ongoing.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "valid-ongoing",
+                    "name": "Valid ongoing flag",
+                    "description": "True when no end is known or the period is still open.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "valid-start-inclusive",
+                    "name": "Valid start inclusive",
+                    "description": "Whether the start bound is inclusive; FHIR Period start is inclusive.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "validity-declaration",
+                    "name": "Validity declaration",
+                    "description": "Declared effective validity interval for a status binding, including bounds, ongoing flag and TRS.",
+                    "media_or_form": [
+                      "period object",
+                      "time:ProperInterval",
+                      "dcterms:valid literal"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Identifier of the status binding plus valid-start; if those collide, a Dimension UUID/ULID for the declaration. Dates alone are not identifiers.",
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "transaction-versus-valid-time",
+                "name": "Transaction time versus valid time",
+                "description": "ISO 19108 emphasises valid time rather than transaction time because it abstracts temporal characteristics from the real world. PROV still requires generatedAtTime, invalidatedAtTime and activity start/end. RFC 3339 timestamps protocol events. The mixin records event time of the real-world status change separately from observation or ingestion time. SQL bitemporal APPLICATION_TIME versus SYSTEM_TIME is an unadopted alignment, not a claim of this model.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-005",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "q-event-time",
+                    "text": "At what event time did the status actually change in the world, with seconds and explicit offset or Z?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "event time RFC 3339",
+                      "time source",
+                      "uncertainty note"
+                    ]
+                  },
+                  {
+                    "id": "q-observation-time",
+                    "text": "At what observation or ingestion time was that change recorded, and which agent recorded it?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "observation time RFC 3339",
+                      "recording agent",
+                      "activity identifier"
+                    ]
+                  },
+                  {
+                    "id": "q-axis-conflict",
+                    "text": "If valid time and record time disagree (late entry, planned future, correction), which axis is authoritative for which query?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "authoritative axis per query type",
+                      "correction flag",
+                      "explanation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "event-time",
+                    "name": "Event time",
+                    "description": "When the status change occurred in the world.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "observation-time",
+                    "name": "Observation time",
+                    "description": "When the change was observed or ingested.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "generated-at",
+                    "name": "Generated at time",
+                    "description": "PROV generatedAtTime of this status entity.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "invalidated-at",
+                    "name": "Invalidated at time",
+                    "description": "PROV invalidatedAtTime when this status entity ceased to apply as a record.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Bitemporal instants are inline on the status record and on the transition-audit artefact; they are not a separate document."
+              },
+              {
+                "id": "temporal-encoding-and-trs",
+                "name": "Temporal encoding and reference system",
+                "description": "RFC 3339 requires four-digit years, a stated relationship to UTC, and seconds; Z denotes offset 00:00; -00:00 means UTC time known but local offset unknown. OWL-Time prefers xsd:dateTimeStamp, allows other TRS including Unix-time and geologic time, and notes its encodings ignore leap seconds that ISO 8601 mandates. PSSM notes implementations may have a single centralised time source. Unqualified local time is not interoperable.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-002",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-timestamp-profile",
+                    "text": "Do all recorded instants conform to RFC 3339 with seconds and an explicit offset or Z?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "conformance boolean",
+                      "violating values",
+                      "normalised values"
+                    ]
+                  },
+                  {
+                    "id": "q-trs",
+                    "text": "Which temporal reference system is used for each instant or interval, and is it Gregorian-UTC or another TRS?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "TRS identifier",
+                      "calendar code",
+                      "clock code"
+                    ]
+                  },
+                  {
+                    "id": "q-unknown-offset",
+                    "text": "If UTC is known but local offset is not, is -00:00 used rather than Z, and is unqualified local time forbidden?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "offset convention code",
+                      "unqualified-local-forbidden boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "temporal-trs",
+                    "name": "Temporal reference system",
+                    "description": "TRS used for validity and event times.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "timestamp-profile",
+                    "name": "Timestamp profile",
+                    "description": "Declared profile, normally RFC 3339 / xsd:dateTimeStamp.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "leap-second-policy",
+                    "name": "Leap-second policy",
+                    "description": "Whether leap seconds are represented; OWL-Time encodings ignore them.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Encoding and TRS are parameters of timestamp fields, not a standalone artefact."
+              },
+              {
+                "id": "interval-topology",
+                "name": "Interval topology",
+                "description": "OWL-Time implements Allen's interval relations: before, after, meets, met-by, overlaps, overlapped-by, starts, started-by, during, contains, finishes, finished-by, equals, plus in and disjoint. These are required to compare successive validity intervals, detect illegal overlap of exclusive statuses, and relate a query instant to a validity period. IANA link relations exist for the interval relations.",
+                "source_refs": [
+                  "SRC-002"
+                ],
+                "questions": [
+                  {
+                    "id": "q-successive-relation",
+                    "text": "What Allen relation holds between this validity interval and the previous and next intervals for the same host aspect?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "previous interval ref",
+                      "relation to previous",
+                      "next interval ref",
+                      "relation to next"
+                    ]
+                  },
+                  {
+                    "id": "q-overlap-allowed",
+                    "text": "May two non-identical statuses of the same aspect have overlapping valid times, or must they meet or be disjoint?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "overlap policy",
+                      "allowed relations",
+                      "exception cases"
+                    ]
+                  },
+                  {
+                    "id": "q-instant-during",
+                    "text": "Does a stated query instant fall during, before, or after the validity interval?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "query instant RFC 3339",
+                      "relation code",
+                      "boolean during"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "relation-to-previous",
+                    "name": "Relation to previous interval",
+                    "description": "Allen relation to the prior validity interval of the same aspect.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "overlap-policy",
+                    "name": "Overlap policy",
+                    "description": "Whether exclusive statuses may overlap in valid time.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Interval relations are computed or asserted properties of validity declarations, not a separate artefact."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "transition-execution-and-history",
+        "name": "Transition execution, history and terminal outcomes",
+        "description": "How status changes are triggered, selected, executed, provenanced, restored, replaced, and brought to terminal outcomes including entered-in-error.",
+        "rationale": "SCXML and PSSM define selection and execution order (exit, transition content, enter). PROV records the activity and agent. FHIR and DCMI model replacement and error. History vertices restore prior configuration. Without this bundle an agent can read status but cannot operate it.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-003",
+          "SRC-007",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "execution",
+            "name": "Transition execution",
+            "description": "Events, guards, delayed sends, and entry/exit effects.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-010",
+              "SRC-005"
+            ],
+            "findings": [
+              {
+                "id": "triggering-events-and-guards",
+                "name": "Triggering events and guards",
+                "description": "Events may be internal, external, delayed (SCXML send), or completion events from final states. Guards are conditions evaluated at selection time. SCXML processes internally enabled transitions before waiting on the external queue. Invoke starts a child session; finalize processes returned data.",
+                "source_refs": [
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-trigger-event",
+                    "text": "What event, including delayed or completion events, is proposed to trigger a transition, and is it internal or external?",
+                    "kind": "event",
+                    "answer_data": [
+                      "event name",
+                      "event origin internal-external-delayed-completion",
+                      "event payload",
+                      "event time RFC 3339"
+                    ]
+                  },
+                  {
+                    "id": "q-guard-eval",
+                    "text": "Does the guard evaluate to true in the current datamodel, and which data did that evaluation depend on?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "guard expression",
+                      "evaluation result boolean",
+                      "dependent data paths"
+                    ]
+                  },
+                  {
+                    "id": "q-delayed-send",
+                    "text": "If the trigger is delayed, what delay or absolute time was requested, and can it still be cancelled?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "delay duration",
+                      "absolute fire time RFC 3339",
+                      "cancelable boolean",
+                      "send identifier"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "event-name",
+                    "name": "Event name",
+                    "description": "Name of the triggering event.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "event-origin",
+                    "name": "Event origin",
+                    "description": "internal, external, delayed, or completion.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "guard-result",
+                    "name": "Guard result",
+                    "description": "Last evaluated guard outcome.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "delay-until",
+                    "name": "Delay until",
+                    "description": "Absolute RFC 3339 time at which a delayed event should fire.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Event and guard evaluations are captured on the transition-audit artefact when a transition is attempted or taken."
+              },
+              {
+                "id": "entry-exit-and-effects",
+                "name": "Entry, exit and transition effects",
+                "description": "Taking transition T from S1 to S2 executes onexit of S1, then T's executable content, then onentry of S2. External transitions also exit and enter intermediate ancestors relative to the least common compound ancestor. Effects may assign data, raise events, send, log, or invoke. They are part of operating the mixin, not a general process model.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-exit-actions",
+                    "text": "Which onexit actions must run, and in what order, for the states being left?",
+                    "kind": "process",
+                    "answer_data": [
+                      "ordered action list",
+                      "source states"
+                    ]
+                  },
+                  {
+                    "id": "q-transition-actions",
+                    "text": "Which executable content is attached to the transition itself, and did it succeed?",
+                    "kind": "process",
+                    "answer_data": [
+                      "action list",
+                      "success boolean",
+                      "error"
+                    ]
+                  },
+                  {
+                    "id": "q-entry-actions",
+                    "text": "Which onentry actions must run, including default initial children down to atomic states, and what side effects are expected on the host?",
+                    "kind": "process",
+                    "answer_data": [
+                      "ordered action list",
+                      "target states",
+                      "host side-effect summary"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "onexit-actions",
+                    "name": "On-exit actions",
+                    "description": "Executable content run on leaving a state.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "onentry-actions",
+                    "name": "On-entry actions",
+                    "description": "Executable content run on entering a state.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "transition-actions",
+                    "name": "Transition actions",
+                    "description": "Executable content on the transition.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Action lists are part of the machine definition; their execution results are written to the transition-audit artefact."
+              }
+            ]
+          },
+          {
+            "id": "history-and-outcomes",
+            "name": "History, replacement and terminal outcomes",
+            "description": "Audit of transitions, restoration, supersession, error and completion.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-005",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "transition-audit-and-provenance",
+                "name": "Transition audit and provenance",
+                "description": "Each taken or rejected transition is an Activity associated with an Agent, with atTime, startedAtTime and endedAtTime, generating a new status entity and invalidating the previous. ISO 15489 requires capture of records and metadata with assigned responsibilities. Event time and observation time are recorded separately.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-011",
+                  "SRC-001"
+                ],
+                "questions": [
+                  {
+                    "id": "q-who-transitioned",
+                    "text": "Which agent performed or authorised the transition, on whose behalf, and under which role?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "agent reference",
+                      "on-behalf-of agent",
+                      "role",
+                      "authority basis"
+                    ]
+                  },
+                  {
+                    "id": "q-activity-times",
+                    "text": "What are the activity start, end and event atTime, and the observation/ingestion time of the audit record?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "startedAtTime RFC 3339",
+                      "endedAtTime RFC 3339",
+                      "atTime RFC 3339",
+                      "observation time RFC 3339"
+                    ]
+                  },
+                  {
+                    "id": "q-rejected-transition",
+                    "text": "If the transition was not taken, was it because of a failed guard, illegal configuration, insufficient authority, or unmatched event, and was that recorded?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "rejection reason code",
+                      "recorded boolean",
+                      "related event"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "activity-id",
+                    "name": "Transition activity identifier",
+                    "description": "Identifier of the PROV Activity that attempted or took the transition.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "associated-agent",
+                    "name": "Associated agent",
+                    "description": "Agent associated with the activity.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "from-configuration",
+                    "name": "From configuration",
+                    "description": "Active state set before the transition.",
+                    "value_kind": "collection",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "to-configuration",
+                    "name": "To configuration",
+                    "description": "Active state set after a taken transition.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "transition-outcome",
+                    "name": "Transition outcome",
+                    "description": "taken, rejected, or cancelled.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "transition-audit-record",
+                    "name": "Transition audit record",
+                    "description": "Evidence of an attempted or taken status transition, including agent, times, from/to configurations, event, guard result and outcome. This is a record in the ISO 15489 sense.",
+                    "media_or_form": [
+                      "audit event",
+                      "PROV activity record",
+                      "records metadata"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system audit identifier; else governed IRI; else Dimension UUID/ULID. Event time is not the identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "history-restoration",
+                "name": "History restoration",
+                "description": "Re-entering a compound state with a history vertex restores the last recorded configuration (shallow or deep) instead of the default initial child. This is the rare resume-where-left-off case used after suspend, on-hold, or invoke return.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-last-configuration",
+                    "text": "What last configuration is stored for each history vertex, and when was it captured?",
+                    "kind": "state",
+                    "answer_data": [
+                      "history vertex id",
+                      "stored state set",
+                      "captured at RFC 3339"
+                    ]
+                  },
+                  {
+                    "id": "q-restore-or-default",
+                    "text": "On re-entry, should history be restored or the default initial child used, and who decides?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "restore boolean",
+                      "decision agent",
+                      "reason"
+                    ]
+                  },
+                  {
+                    "id": "q-stale-history",
+                    "text": "If the machine definition changed since history was captured, is restoration forbidden?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "machine version at capture",
+                      "current machine version",
+                      "incompatible boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "stored-history-configuration",
+                    "name": "Stored history configuration",
+                    "description": "Last active child set for a history vertex.",
+                    "value_kind": "collection",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "history-captured-at",
+                    "name": "History captured at",
+                    "description": "When the configuration was stored.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Stored history values are inline runtime data; capture events are rows in the transition-audit artefact."
+              },
+              {
+                "id": "replacement-and-entered-in-error",
+                "name": "Replacement and entered-in-error",
+                "description": "FHIR replaced means information was replaced by another resource; DCMI replaces / isReplacedBy model supersession. entered-in-error is usually not a clinical workflow state but applies to request and entity-availability cycles; handling is business-specific and there are no generic rules for redaction. Replacement is a relationship plus a status, not a silent overwrite.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-replaced-by",
+                    "text": "If this status or host is replaced, which resource or binding supersedes it, and is the inverse isReplacedBy asserted?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "replacing reference",
+                      "replaced reference",
+                      "bidirectional boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-error-vs-replaced",
+                    "text": "Is the host entered-in-error, replaced, retired, or inactive, and why is that distinction required for consumers?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "outcome code",
+                      "consumer instruction"
+                    ]
+                  },
+                  {
+                    "id": "q-integrity-keep",
+                    "text": "Must the erroneous or replaced record be retained for integrity or digital signatures even though it must be ignored?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retain boolean",
+                      "integrity reason",
+                      "redaction applied boolean"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "replaced-by-ref",
+                    "name": "Replaced-by reference",
+                    "description": "The binding or host that supersedes this one.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "replaces-ref",
+                    "name": "Replaces reference",
+                    "description": "The binding or host this one supersedes.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "retain-for-integrity",
+                    "name": "Retain for integrity",
+                    "description": "True when deletion is forbidden despite error or replacement.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Replacement links are references; the entered-in-error record artefact already covers accidental creation."
+              },
+              {
+                "id": "terminal-outcomes",
+                "name": "Terminal outcomes",
+                "description": "Characteristic terminal codes include complete/finished, failed/stopped/aborted, abandoned, declined, cancelled, retired, inactive and resolved/refuted. A top-level SCXML final generates a done event and ends interpretation. Terminal does not imply deletable. Abandoned is usually a workflow error distinct from successful complete and from failed.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-is-terminal",
+                    "text": "Is the current configuration terminal for this machine, and which terminal kind applies (complete, failed, abandoned, cancelled, retired)?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "terminal boolean",
+                      "terminal kind code",
+                      "done event emitted boolean"
+                    ]
+                  },
+                  {
+                    "id": "q-further-action",
+                    "text": "Is any further action planned, or has the process stopped with no further action planned?",
+                    "kind": "state",
+                    "answer_data": [
+                      "further-action-planned boolean",
+                      "explanation"
+                    ]
+                  },
+                  {
+                    "id": "q-reactivation",
+                    "text": "May a terminal status be left (for example retired to active, or complete to in-progress), and under which transition and authority?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "reactivation-allowed boolean",
+                      "allowed transitions",
+                      "required authority"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "is-terminal",
+                    "name": "Terminal flag",
+                    "description": "True when no further automatic progress is defined.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "terminal-kind",
+                    "name": "Terminal kind",
+                    "description": "complete, failed, abandoned, cancelled, retired, or other declared kind.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "further-action-planned",
+                    "name": "Further action planned",
+                    "description": "False for FHIR complete, failed, abandoned and similar.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Terminal flags are inline runtime fields derived from the configuration and code system."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "governance-quality-and-interop",
+        "name": "Governance, quality, access and interoperability",
+        "description": "Who may change status, on what evidence, who may see it, how long status history is kept, and how it is mapped across systems.",
+        "rationale": "ISO 15489 assigns responsibilities and records controls. PROV associates agents. DCMI accessRights describes security status of access. FHIR requires due consideration for retired and has no generic error-handling rules. Canonical mapping is experimental. These are operating questions, not boilerplate.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-005",
+          "SRC-007",
+          "SRC-003",
+          "SRC-004"
+        ],
+        "layers": [
+          {
+            "id": "authority-evidence-access",
+            "name": "Authority, evidence and access",
+            "description": "Authorisation, confirmation quality and access consequences of status.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-004",
+              "SRC-007",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "transition-authority",
+                "name": "Transition authority",
+                "description": "ISO 15489 requires assigned responsibilities. PROV wasAssociatedWith and actedOnBehalfOf record who acted. Not every agent may take every transition; draft to requested, or active to retired, typically need different authority. The mixin records the required role or rule, not a complete IAM model.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-required-role",
+                    "text": "Which role or permission is required to take this transition, and which agent actually requested it?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "required role",
+                      "requesting agent",
+                      "delegating agent"
+                    ]
+                  },
+                  {
+                    "id": "q-duty-to-record",
+                    "text": "Is the transition a records-management action that must be captured with metadata under assigned responsibility?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "must-capture boolean",
+                      "responsible role",
+                      "metadata required"
+                    ]
+                  },
+                  {
+                    "id": "q-unauthorised",
+                    "text": "If authority is missing, is the transition rejected and audited, or queued for approval as proposed or requested?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "policy code",
+                      "queued status code",
+                      "audit reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "required-role",
+                    "name": "Required role",
+                    "description": "Role needed to execute the transition.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "responsible-party",
+                    "name": "Responsible party",
+                    "description": "Party assigned responsibility for this status record.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "authority-basis",
+                    "name": "Authority basis",
+                    "description": "Policy, delegation or instrument that authorises the change.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "transition-authorisation",
+                    "name": "Transition authorisation",
+                    "description": "Evidence that a named agent was authorised to take a status transition, including role, basis and time.",
+                    "media_or_form": [
+                      "authorisation record",
+                      "delegation",
+                      "policy decision"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system authorisation identifier; else governed IRI; else Dimension UUID/ULID.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "evidence-confirmation-quality",
+                "name": "Evidence, confirmation and quality",
+                "description": "Canonical codes include unconfirmed, confirmed, refuted, resolved, differential and partial. Clinical status is about how evidence affects interpretation, not workflow. Quality of a status assertion includes whether it is approved, ruled out, or still being assembled. PROV hadPrimarySource and qualified generation support evidence.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-003",
+                  "SRC-005"
+                ],
+                "questions": [
+                  {
+                    "id": "q-confirmation",
+                    "text": "Is the current status unconfirmed, confirmed, refuted, or still partial, and what evidence supports that?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "confirmation code",
+                      "evidence references",
+                      "method"
+                    ]
+                  },
+                  {
+                    "id": "q-primary-source",
+                    "text": "What is the primary source of the status assertion, and was it derived from another status record?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "primary source reference",
+                      "derivation flag",
+                      "source quality note"
+                    ]
+                  },
+                  {
+                    "id": "q-conflict-evidence",
+                    "text": "If evidence conflicts (differential, refuted versus confirmed), which status is displayed and which is retained?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "displayed status",
+                      "retained statuses",
+                      "conflict policy"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "confirmation-code",
+                    "name": "Confirmation code",
+                    "description": "unconfirmed, confirmed, refuted, resolved, differential, partial, or local equivalent.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "evidence-refs",
+                    "name": "Evidence references",
+                    "description": "Supporting observations, tests or documents.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "primary-source",
+                    "name": "Primary source",
+                    "description": "PROV hadPrimarySource of the status entity.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Confirmation and evidence are references and codes on the status record; the evidence documents themselves belong to other models."
+              },
+              {
+                "id": "access-and-exceptions",
+                "name": "Access and exceptions by status",
+                "description": "dcterms:accessRights describes who may access a resource or its security status. Retired, entered-in-error, draft and unknown each imply different consumer behaviour. FHIR says applications should not use a retired artefact without due consideration. Exceptions include break-glass, research-only, and redacted error records. Spatial location of access is out of scope except as a policy parameter.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-default-access",
+                    "text": "Given the current status, who may read, transition, or export this binding by default?",
+                    "kind": "access",
+                    "answer_data": [
+                      "read roles",
+                      "transition roles",
+                      "export roles",
+                      "status-specific rule"
+                    ]
+                  },
+                  {
+                    "id": "q-retired-warning",
+                    "text": "If status is retired, error, or draft, what warning or block is presented to consumers?",
+                    "kind": "security",
+                    "answer_data": [
+                      "warning text",
+                      "block boolean",
+                      "override role"
+                    ]
+                  },
+                  {
+                    "id": "q-privacy-redaction",
+                    "text": "Does entered-in-error or another status require redaction of payload while retaining the status history for integrity?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "redaction required boolean",
+                      "fields redacted",
+                      "legal basis"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "access-rights",
+                    "name": "Access rights",
+                    "description": "Statement of who may access the host or status given current status.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "consumer-warning",
+                    "name": "Consumer warning",
+                    "description": "Required warning for retired, error, draft or unknown.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "redaction-applied",
+                    "name": "Redaction applied",
+                    "description": "Whether payload redaction accompanied a status such as entered-in-error.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Access implications are policy attributes of status; access-control systems are a sibling. Warnings are inline."
+              }
+            ]
+          },
+          {
+            "id": "records-and-interop",
+            "name": "Retention and interoperability",
+            "description": "How long status history is kept and how status is mapped across vocabularies and machines.",
+            "source_refs": [
+              "SRC-011",
+              "SRC-004",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "retention-of-status-history",
+                "name": "Retention of status history",
+                "description": "ISO 15489 applies to creating, capturing and managing records over time regardless of form. FHIR notes erroneous information often cannot be removed for integrity. Status history, including error marks, is a record. The duration of retention is a records-sibling decision; this mixin only records the requirement to keep history and any hold.",
+                "source_refs": [
+                  "SRC-011",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-history-kept",
+                    "text": "Must prior configurations and transition audits be retained even after a terminal or error status, and under which records policy?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retain-history boolean",
+                      "records policy reference",
+                      "minimum keep duration"
+                    ]
+                  },
+                  {
+                    "id": "q-delete-allowed",
+                    "text": "Is hard deletion of a status record permitted, or only logical error/inactive marking?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "deletion policy code",
+                      "allowed-if conditions"
+                    ]
+                  },
+                  {
+                    "id": "q-legal-hold",
+                    "text": "Is a legal or audit hold preventing disposal of this status history, and who placed it?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "hold flag",
+                      "hold authority",
+                      "hold start RFC 3339"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "retain-history",
+                    "name": "Retain history",
+                    "description": "Whether transition history must be kept.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "deletion-policy",
+                    "name": "Deletion policy",
+                    "description": "forbidden, logical-only, or permitted-under-policy.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "disposal-hold",
+                    "name": "Disposal hold",
+                    "description": "True when disposal is suspended.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Retention flags are inline; the retention schedule itself is a sibling records artefact and is out of scope."
+              },
+              {
+                "id": "interoperability-mappings",
+                "name": "Interoperability mappings",
+                "description": "FHIR maps resource-specific required value sets to canonical resource-status but says consistency is not the primary objective and the canonical system is experimental. SCXML, UML/PSSM and local machines are alignments, not identical semantics. dcterms:valid literals are not FHIR Period objects. Claims of conformance require evidence. Device-specific codes such as transduc-discon are not general.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-001",
+                  "SRC-009",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-map-used",
+                    "text": "Which concept map, if any, is used to translate local status to a partner vocabulary, and what is its version?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "concept map reference",
+                      "map version",
+                      "partner vocabulary"
+                    ]
+                  },
+                  {
+                    "id": "q-lossy-map",
+                    "text": "Which local distinctions are lost in the map (for example abandoned versus failed versus cancelled), and is that acceptable to both parties?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "lost distinctions",
+                      "acceptance boolean",
+                      "mitigation"
+                    ]
+                  },
+                  {
+                    "id": "q-conformance-claim",
+                    "text": "Is any conformance to SCXML, UML/PSSM, FHIR lifecycle, OWL-Time or ISO 19108 claimed, and where is the evidence?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "claimed specifications",
+                      "evidence artefacts",
+                      "non-conformance notes"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "concept-map-ref",
+                    "name": "Concept map reference",
+                    "description": "Map used for interchange of status codes.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "conformance-claims",
+                    "name": "Conformance claims",
+                    "description": "Named specifications this binding claims to follow, each requiring evidence.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "lossy-distinctions",
+                    "name": "Lossy distinctions",
+                    "description": "Local codes that collapse under the chosen map.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "status-concept-map",
+                    "name": "Status concept map",
+                    "description": "Documented mapping between local status codes and one or more partner or canonical vocabularies, including lossy notes.",
+                    "media_or_form": [
+                      "concept map",
+                      "alignment table"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Canonical URI of the map if published; else master-system identifier; else Dimension UUID/ULID.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "bind-lifecycle-mixin",
+      "name": "Bind lifecycle mixin",
+      "description": "Attach a lifecycle binding to a host with a governing machine, code system, pattern family and identifiers.",
+      "inputs": [
+        "host reference",
+        "machine reference",
+        "code system reference",
+        "pattern family",
+        "identifier scheme"
+      ],
+      "outputs": [
+        "lifecycle record identifier",
+        "initial configuration",
+        "observation time"
+      ],
+      "preconditions": [
+        "Host identity exists in the identity sibling.",
+        "Machine definition is identified and has a legal initial configuration."
+      ],
+      "effects": [
+        "Creates a lifecycle record bound to the host.",
+        "Does not change host identity."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    },
+    {
+      "id": "instantiate-machine",
+      "name": "Instantiate machine",
+      "description": "Enter the initial configuration, run onentry actions down to atomic states, and record observation time.",
+      "inputs": [
+        "lifecycle record identifier",
+        "optional start time"
+      ],
+      "outputs": [
+        "active configuration",
+        "current status",
+        "observation time"
+      ],
+      "preconditions": [
+        "Binding exists.",
+        "Initial configuration is legal."
+      ],
+      "effects": [
+        "Sets runtime configuration to the declared initial states.",
+        "Emits entry effects."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "select-enabled-transitions",
+      "name": "Select enabled transitions",
+      "description": "Given an event or empty event, evaluate guards in document order and return the enabled transition set without executing it.",
+      "inputs": [
+        "lifecycle record identifier",
+        "event",
+        "datamodel snapshot"
+      ],
+      "outputs": [
+        "enabled transitions in order",
+        "unmatched-event flag"
+      ],
+      "preconditions": [
+        "Machine is instantiated and not exited."
+      ],
+      "effects": [
+        "None on configuration; may produce an audit of unmatched events if policy requires."
+      ],
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "execute-transition",
+      "name": "Execute transition",
+      "description": "Exit source states, run transition content, enter targets, update configuration and project current status.",
+      "inputs": [
+        "lifecycle record identifier",
+        "transition identifier",
+        "event",
+        "authorising agent",
+        "event time",
+        "observation time"
+      ],
+      "outputs": [
+        "new configuration",
+        "projected status",
+        "transition audit identifier"
+      ],
+      "preconditions": [
+        "Transition is enabled.",
+        "Resulting configuration would be legal.",
+        "Agent meets required role.",
+        "Event time and observation time are RFC 3339 instants."
+      ],
+      "effects": [
+        "Invalidates the previous status entity.",
+        "Generates a new status entity.",
+        "Writes a transition audit record.",
+        "May emit completion events."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-005",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "evaluate-validity-at",
+      "name": "Evaluate validity at instant",
+      "description": "Decide whether a status applied at a query instant on the valid-time axis, using inclusive bounds and ongoing-if-missing-end.",
+      "inputs": [
+        "lifecycle record identifier",
+        "query instant RFC 3339",
+        "axis valid-or-record"
+      ],
+      "outputs": [
+        "applies boolean",
+        "Allen relation of instant to interval",
+        "status at that instant"
+      ],
+      "preconditions": [
+        "Query instant uses RFC 3339 with offset or Z.",
+        "Caller states which time axis is intended."
+      ],
+      "effects": [
+        "Read-only; does not change status."
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-006",
+        "SRC-012",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "map-to-canonical-status",
+      "name": "Map to canonical status",
+      "description": "Translate a local status code through a concept map to a canonical or partner code, recording lossiness.",
+      "inputs": [
+        "local code",
+        "concept map reference"
+      ],
+      "outputs": [
+        "canonical or partner code",
+        "lossiness flag",
+        "unmapped flag"
+      ],
+      "preconditions": [
+        "Map version is identified.",
+        "No silent claim that FHIR resource-status is production-ready."
+      ],
+      "effects": [
+        "Does not change local status.",
+        "May attach a mapping annotation."
+      ],
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "mark-entered-in-error",
+      "name": "Mark entered in error",
+      "description": "Set error or entered-in-error without deleting the host, record the correction, and apply any redaction or notification policy.",
+      "inputs": [
+        "lifecycle record identifier",
+        "authorising agent",
+        "reason",
+        "event time",
+        "observation time"
+      ],
+      "outputs": [
+        "error status",
+        "correction record identifier",
+        "redaction applied boolean"
+      ],
+      "preconditions": [
+        "Agent is authorised.",
+        "Deletion is not used as a substitute when integrity requires retention."
+      ],
+      "effects": [
+        "Sets modifier status so consumers ignore the host.",
+        "Retains the record.",
+        "Writes a correction artefact."
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "restore-history-configuration",
+      "name": "Restore history configuration",
+      "description": "On re-entry of a compound state, apply stored shallow or deep history instead of the default child.",
+      "inputs": [
+        "lifecycle record identifier",
+        "history vertex identifier",
+        "authorising agent"
+      ],
+      "outputs": [
+        "restored configuration",
+        "current status"
+      ],
+      "preconditions": [
+        "History kind is declared.",
+        "Stored configuration is compatible with the current machine version."
+      ],
+      "effects": [
+        "Replaces default initial entry with stored configuration.",
+        "Audits the restoration."
+      ],
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "id": "supersede-status-record",
+      "name": "Supersede status record",
+      "description": "Assert replaces / isReplacedBy, set replaced or retired as required by the pattern family, and keep the old record.",
+      "inputs": [
+        "old lifecycle record identifier",
+        "new lifecycle record identifier",
+        "authorising agent"
+      ],
+      "outputs": [
+        "updated replacement links",
+        "status codes on both records"
+      ],
+      "preconditions": [
+        "Both records identified.",
+        "Pattern family allows replacement."
+      ],
+      "effects": [
+        "Writes bidirectional replacement references.",
+        "Does not delete the superseded record."
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "validate-legal-configuration",
+      "name": "Validate legal configuration",
+      "description": "Test whether a proposed active set is a legal SCXML/UML configuration and whether start is less than or equal to end for validity.",
+      "inputs": [
+        "machine reference",
+        "proposed state set",
+        "optional valid start and end"
+      ],
+      "outputs": [
+        "legal boolean",
+        "violations"
+      ],
+      "preconditions": [
+        "Machine definition is available."
+      ],
+      "effects": [
+        "Read-only unless invoked as a pre-condition of execute-transition."
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "record-transition-provenance",
+      "name": "Record transition provenance",
+      "description": "Create a PROV Activity for a transition attempt with agent, times, used event and generated status entity.",
+      "inputs": [
+        "transition attempt",
+        "agent",
+        "event time",
+        "observation time"
+      ],
+      "outputs": [
+        "activity identifier",
+        "generated entity identifier"
+      ],
+      "preconditions": [
+        "Times are RFC 3339.",
+        "Agent is identified in the party sibling or as a local agent reference."
+      ],
+      "effects": [
+        "Adds an audit artefact that is a record under ISO 15489 principles."
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-011",
+        "SRC-008"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Host entity, event, relationship or artefact in the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "Attach common state machine and effective validity to any host without becoming that host's identity or type.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Time / calendar / temporal reference system",
+      "relation": "ALIGN",
+      "purpose": "Reuse instants, intervals, durations and TRS; do not redefine calendars or leap-second policy.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Provenance (PROV)",
+      "relation": "ALIGN",
+      "purpose": "Treat each status change as an Activity that generates and invalidates status entities, with agents and times.",
+      "required": true,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Process / workflow / BPMN",
+      "relation": "REFERENCE",
+      "purpose": "Keep work-plan orchestration in a process sibling; this mixin only executes the status control machine.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Identity / identifier",
+      "relation": "REFERENCE",
+      "purpose": "Host and binding identifiers come from the identity sibling; timestamps are not identifiers.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Classifier / code system",
+      "relation": "REFERENCE",
+      "purpose": "Status vocabularies and concept maps are specialised classifiers with transition constraints.",
+      "required": true,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "Party / agent",
+      "relation": "REFERENCE",
+      "purpose": "Transition authority, responsibility and observation agents are party references.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Records / retention schedule",
+      "relation": "REFERENCE",
+      "purpose": "Status history is a record that must be captured and managed; disposal schedules remain in the records sibling.",
+      "required": false,
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Version / revision",
+      "relation": "REFERENCE",
+      "purpose": "Technical versions are not business lifecycle; do not encode status as a version number.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Legal in-force status",
+      "relation": "REFERENCE",
+      "purpose": "Operational status and valid time do not decide legal force of instruments.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "W3C SCXML state machines",
+      "relation": "ALIGN",
+      "purpose": "Primary alignment for machine topology, events, guards, history, parallel regions and interpretation.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "OMG UML 2.5.1 state machines and PSSM",
+      "relation": "ALIGN",
+      "purpose": "Abstract syntax and operational semantics for Harel state machines; not an identity of SCXML XML.",
+      "required": false,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "HL7 FHIR lifecycle and canonical resource-status",
+      "relation": "ALIGN",
+      "purpose": "Pattern families, entered-in-error, Period bounds and optional canonical mapping; experimental flags preserved.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "ISO 19108 valid time",
+      "relation": "ALIGN",
+      "purpose": "Prefer valid time for real-world effectiveness; keep transaction time on a second axis.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "DCMI terms valid, available, replaces",
+      "relation": "ALIGN",
+      "purpose": "Literal validity dates, availability and supersession relations as metadata alignment.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "Current-list / membership",
+      "relation": "REFERENCE",
+      "purpose": "Current curated membership is not a function of status and must not be inferred from active.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "A designated governance steward owns the Dimension package that adopts WM-XCT-021 and names the master systems for lifecycle record identifiers, machine definitions and status code systems.",
+        "The package SHALL declare which lifecycle pattern families are permitted, which local code systems are bound, and whether any map to http://hl7.org/fhir/resource-status is used in production despite its experimental flag.",
+        "The package SHALL declare the timestamp profile (RFC 3339 with seconds and explicit offset or Z), the default TRS, and the policy that event time and observation time are stored separately.",
+        "The package SHALL name the records policy that retains status history and forbids silent deletion of entered-in-error records."
+      ],
+      "namespace_guidance": "Place mixin instance IRIs under the adopting Dimension's governed namespace. Align temporal terms with http://www.w3.org/2006/time# when OWL-Time is used, PROV terms with http://www.w3.org/ns/prov#, DCMI validity with http://purl.org/dc/terms/valid, and optional canonical status codes with http://hl7.org/fhir/resource-status without importing FHIR resource identity. Machine vertex identifiers are unique within a machine, not globally, unless a governed IRI is assigned.",
+      "registry_links": [
+        "vr.wm-xct-021 Lifecycle / Status mixin",
+        "NAV.XCT.LIF",
+        "Adopting Dimension registry of machine definitions and status code systems",
+        "Optional alignment registers for FHIR resource-status, SCXML documents and UML state machines"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonical timestamps are RFC 3339 date-time with seconds and an explicit numeric offset or Z; four-digit years required; unqualified local time is rejected; -00:00 is reserved for unknown local offset.",
+        "Canonical current status for interchange is the local code plus optional mapped canonical code; the local code remains authoritative.",
+        "A current configuration is canonicalised as a sorted set of state identifiers unique within the machine; a single projected code is an optional derivative.",
+        "Valid-time intervals canonicalise missing end as ongoing; if both bounds exist, start SHALL be less than or equal to end; bound inclusivity is explicit.",
+        "Replacement is canonicalised as a pair of references (replaces and isReplacedBy), not as in-place overwrite."
+      ],
+      "patch_rules": [
+        "Status patches are transitions: a patch MUST name the event or explicit transition, the authorising agent, event time and observation time.",
+        "Direct overwrite of current-status without a transition audit is forbidden except for correcting transcription errors that themselves produce an entered-in-error or replacement record.",
+        "Validity bounds may be patched only by invalidating the previous validity declaration and generating a new one with provenance.",
+        "Machine definition patches produce a new machine version; in-flight bindings MUST record whether they stay on the old version or migrate."
+      ],
+      "compatibility_rules": [
+        "Adding states or transitions is backward compatible if existing legal configurations remain legal.",
+        "Removing or renaming a state that appears in stored history is a breaking change.",
+        "Changing pattern family of an existing binding is a breaking change.",
+        "Maps to canonical resource-status MAY be added without breaking local codes; removing a local code is breaking.",
+        "Claiming new conformance to SCXML, UML/PSSM or FHIR requires evidence; silent tightening of guards is breaking for operators."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier of the lifecycle record, machine definition, audit event or code system.",
+        "Governed global identifier or IRI when the artefact is published across Dimensions.",
+        "UUID or ULID assigned by the adopting Dimension when neither master nor IRI exists. Dates, valid-start and observation time MUST NOT be used as identifiers."
+      ],
+      "timestamp_rule": "All event times and observation or ingestion times use RFC 3339 with seconds and an explicit offset or Z; record both axes when they can differ.",
+      "serial_naming_rule": "Serial artefacts use the artefact type, master or Dimension identifier, and an opaque serial component; do not embed status codes or dates as the unique name.",
+      "integrity_rule": "Transition audits, entered-in-error corrections and superseded records SHALL remain retrievable for integrity even when consumers must ignore the host; silent deletion is not a substitute for error status."
+    },
+    "policies": [
+      "Every status change is a recorded transition with agent, event time and observation time; unmatched or unauthorised attempts are audited.",
+      "unknown and entered-in-error are first-class; omission does not mean unknown; error does not mean delete.",
+      "Valid time answers what was true in the world; record time answers what the system knew when. Queries MUST name the axis.",
+      "Canonical FHIR resource-status and SCXML/UML alignments are optional; production use of experimental vocabularies requires an explicit Dimension decision."
+    ],
+    "crud": {
+      "read": [
+        "Any authorised reader of the host may read current status, configuration, validity interval and consumer warnings.",
+        "Transition audits and evidence are readable by auditor and steward roles; redacted error payloads remain redacted.",
+        "As-of reads MUST specify valid-time or record-time axis."
+      ],
+      "create": [
+        "Create is bind-lifecycle-mixin plus instantiate-machine, producing an initial configuration and observation time.",
+        "Create of a transition audit occurs only as an effect of execute-transition, mark-entered-in-error, restore-history-configuration or supersede-status-record."
+      ],
+      "update": [
+        "Update of current status occurs only through execute-transition or the specialised error, history-restore and supersede functions.",
+        "Update of validity replaces the previous declaration with provenance; it does not rewrite history in place.",
+        "Update of machine definition is a new version, not a silent mutation of in-flight bindings."
+      ],
+      "delete": [
+        "Hard delete is forbidden while retain-history is true or a disposal hold is set.",
+        "Logical delete is expressed as entered-in-error, retired, inactive or replaced according to pattern family.",
+        "Physical disposal, if ever allowed, follows the records sibling policy, not this mixin."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Governance steward",
+        "responsibilities": [
+          "Own the Dimension package, permitted pattern families, timestamp profile and whether experimental canonical maps are used.",
+          "Designate master systems for identifiers and machine definitions."
+        ]
+      },
+      {
+        "name": "Machine author",
+        "responsibilities": [
+          "Define states, transitions, guards, history and legal configurations.",
+          "Version machine definitions and declare breaking changes."
+        ]
+      },
+      {
+        "name": "Transition operator",
+        "responsibilities": [
+          "Submit events and request transitions within assigned roles.",
+          "Supply event time when known and never treat dates as identifiers."
+        ]
+      },
+      {
+        "name": "Status auditor",
+        "responsibilities": [
+          "Read transition audits, unmatched events, unauthorised attempts and entered-in-error records.",
+          "Verify that event time and observation time are both present where required."
+        ]
+      },
+      {
+        "name": "Records officer",
+        "responsibilities": [
+          "Ensure status history is captured as records with assigned responsibility.",
+          "Apply disposal holds and forbid silent deletion."
+        ]
+      },
+      {
+        "name": "Interoperability mapper",
+        "responsibilities": [
+          "Maintain concept maps and lossiness notes.",
+          "Refuse undocumented conformance claims."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Default deny on transition execution; read of current status follows host read permission unless status is entered-in-error or retired, in which case a consumer warning is mandatory and payload may be redacted.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Break-glass read of redacted error records by an auditor with recorded justification.",
+        "Machine authors may read machine definitions they do not operate.",
+        "Public artefacts with publication-status active may expose publication status without exposing transition audits."
+      ],
+      "audit_requirements": [
+        "Every execute-transition, rejected transition, mark-entered-in-error, restore-history-configuration and supersede-status-record SHALL write a transition audit with agent, event time and observation time.",
+        "Reads of redacted error records SHALL themselves be audited."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md bootstrap contract for this Dimension package",
+        "Machine definition identified by Specification URL",
+        "Status code system and any concept map",
+        "Current lifecycle bindings and transition audits via Interface URL",
+        "Process descriptions at Processes URL for allowed transitions"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This mixin covers the defensible operating surface of discrete lifecycle status and effective validity as a format-neutral attachment: machine topology and legal configurations (SCXML/UML/PSSM), pattern families and codes (FHIR, with experimental flags preserved), valid time versus record time (ISO 19108, OWL-Time, FHIR Period, RFC 3339, PROV), transition provenance (PROV, ISO 15489), and replacement, unknown and entered-in-error. It does not claim a universal status vocabulary, SQL bitemporal conformance, asset-stage taxonomies, or legal in-force semantics.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Binding, host, machine, state, activity and artefact identifiers with master/IRI/UUID priority; dates forbidden as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Pattern families, configurations, transitions, history restoration, terminal kinds, publication versus process, reactivation rules."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Host binding, replacement/isReplacedBy, invoked child sessions, interval relations, agent associations, concept maps."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Valid interval, ongoing end, future planned start, event versus observation time, RFC 3339 encoding, TRS, Allen relations, delayed events."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Transition activity, generatedAtTime, invalidatedAtTime, associated agent, primary source, audit artefact."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Assigned responsibility, associated agent, on-behalf-of, required roles; party identity remains a sibling."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Legal configurations, Period start<=end, guard evaluation, machine-version compatibility for history, timestamp profile checks."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Status-dependent read/transition rules, retired/error warnings, redaction, break-glass exception."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Status history as records; error does not delete; disposal hold; hard delete policy deferred to records sibling."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Optional canonical map, lossiness, SCXML/UML/FHIR/OWL-Time/ISO 19108 alignments without unearned conformance."
+      },
+      {
+        "dimension": "state-machine-semantics",
+        "status": "covered",
+        "notes": "Atomic, compound, parallel, final, history, internal/external transitions, document order, invoke."
+      },
+      {
+        "dimension": "effective-validity",
+        "status": "covered",
+        "notes": "Valid time as first-class interval with inclusive bounds and ongoing-if-missing-end."
+      },
+      {
+        "dimension": "entered-in-error",
+        "status": "covered",
+        "notes": "Non-deleting error outcome with correction artefact and integrity retention."
+      },
+      {
+        "dimension": "parallel-configuration",
+        "status": "covered",
+        "notes": "Current status as a set when orthogonal regions are active, with optional lossy projection."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Location models are out of scope; FHIR Location.status is only an example of entity-availability, not a spatial geometry."
+      }
+    ],
+    "known_omissions": [
+      "SQL:2011 APPLICATION_TIME and SYSTEM_TIME were not fetched as primary text and are not claimed.",
+      "IEC 61512 / ISA-88 equipment and batch states, ISA-95, and Petri-net semantics are uncovered.",
+      "ISO 55000:2024 asset life-cycle stage naming (organisation-defined) was seen only in secondary samples and is not canonical here.",
+      "RFC 9557 updates to RFC 3339 (time-zone suffixes) were not incorporated beyond noting the update.",
+      "BPMN 2.0 token state versus SCXML configuration is referenced as a sibling, not modelled.",
+      "Fuzzy, probabilistic or interval-valued uncertain validity has no primary support in the cited sources.",
+      "Saga/compensating-transaction status and two-phase commit states are omitted.",
+      "Legal hold procedures beyond a boolean flag belong to records/legal siblings.",
+      "Device-specific FHIR codes (transduc-discon, hw-discon) are not generalised.",
+      "Full SCXML datamodel, ECMAScript profile and HTTP event I/O processor are execution-environment details, not mixin semantics.",
+      "ISO 19108 TM_Period inner UML could not be quoted from the paywalled full text; only the official abstract (valid time versus transaction time) is used."
+    ],
+    "conflicts": [
+      "FHIR says consistency of status codes across resources is not the primary objective, yet publishes an experimental canonical map that is not ready for production.",
+      "ISO 19108 emphasises valid time; PROV and RFC 3339 emphasise event/transaction timestamps; both axes are required and must not be collapsed.",
+      "RFC 3339 describes instants only; FHIR Period, OWL-Time and dcterms:valid describe intervals, with dcterms:valid as a literal rather than a structured period.",
+      "OWL-Time encodings ignore leap seconds; ISO 8601 mandates them.",
+      "OWL-Time 2022 is a Candidate Recommendation Draft; a 2017 Recommendation exists. Align to the cited 2022 CRD without claiming W3C Recommendation status for that edition.",
+      "SCXML XML, UML graphical/XMI and PSSM operational semantics are related Harel descendants, not identical.",
+      "Clinical status is not workflow status; using one code list for both is a conflict with FHIR.",
+      "Current-list membership cannot be inferred from status=active.",
+      "entered-in-error should be ignored but often cannot be removed, conflicting with naive CRUD delete.",
+      "RFC 3339 -00:00 (unknown offset) is semantically distinct from Z."
+    ],
+    "regional_assumptions": [
+      "Default TRS is Gregorian calendar with UTC offsets as in RFC 3339 and xsd:dateTimeStamp; other TRS are allowed but not defaulted.",
+      "Canonical status tokens cited from FHIR are English codes; local systems may use other languages or jurisdictions.",
+      "Healthcare-shaped pattern families are alignments, not a requirement outside clinical Dimensions.",
+      "Records retention durations and legal holds are jurisdiction-specific and not specified here.",
+      "Daylight-saving and political offset changes are out of RFC 3339 scope; scheduled local wall-clock transitions need a time sibling."
+    ],
+    "adversarial_checks": [
+      "Treat any proposal that uses a date as the lifecycle identifier as invalid.",
+      "Reject models that store only one timestamp for a late-entered historical status.",
+      "Reject single-code current status as complete when the machine has parallel regions.",
+      "Reject delete-as-correction when entered-in-error applies.",
+      "Reject inference that status=active means membership of a current curated list.",
+      "Reject unstated production use of experimental http://hl7.org/fhir/resource-status.",
+      "Reject collapse of clinical-interpretation inactive with workflow completed.",
+      "Reject unqualified local times without offset or Z.",
+      "Reject silent overwrite of status without a transition audit and agent.",
+      "Reject claims of universal completeness of any status vocabulary."
+    ]
+  }
+}

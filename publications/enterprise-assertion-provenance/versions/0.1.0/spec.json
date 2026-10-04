@@ -1,0 +1,719 @@
+{
+  "metaModel": {
+    "id": "enterprise-assertion-provenance",
+    "registryId": "vr.profile.enterprise-assertion-provenance",
+    "version": "0.1.0",
+    "name": "Enterprise Assertion Provenance",
+    "kind": "companion-contract"
+  },
+  "canonicalUrl": "https://ver.cy/models/enterprise-assertion-provenance/versions/0.1.0/spec.json",
+  "researchAssurance": "reviewable-draft",
+  "researchContour": "EM-XCT-03",
+  "model": {
+    "purpose": "Preserve the origins, evidence, changes and method-qualified confidence of enterprise assertions without inferring truth or permission."
+  },
+  "composition": {
+    "runtimeImports": [],
+    "semanticReferences": [
+      {
+        "id": "WM-XCT-012",
+        "version": "0.3.0-research.1",
+        "specDigest": "sha256:aa6155354c55a87ab837ec9bd47f796ca582309fe383f1afffb802dafff7ecb5",
+        "relation": "selected-pattern-alignment-not-subtype"
+      },
+      {
+        "id": "WM-XCT-026",
+        "version": "0.3.0-research.1",
+        "specDigest": "sha256:efd72d845af742b7aa7d7592e5f6087ef034145f468a799927163cd6eb599ee5",
+        "relation": "selected-pattern-alignment-not-subtype"
+      },
+      {
+        "id": "WM-XCT-028",
+        "version": "0.3.0-research.1",
+        "specDigest": "sha256:3aab7ecb4ba7d4e56d650060b982058c4253e5bcbd621e2784480e8cc4f3d636",
+        "relation": "selected-pattern-alignment-not-subtype"
+      }
+    ]
+  },
+  "contract": "# Enterprise Assertion Provenance 0.1.0\n\nOriginal bounded companion contract for a Company Dimension. Publication lifecycle is distinct from research assurance, which is reviewable-draft. This specification, the closed schema and the reference validator describe the implemented boundary. They make no full PROV, SLSA, DQV, in-toto, OpenLineage or parent-model conformance claim.\n\n## Boundary and identities\n\nAn external claim is not its provenance account, a captured representation, an activity, an evidence relation or an assessment. External claims remain mastered elsewhere: this companion stores their exact `(id, revision, digest)` pins and the declared subject URI, not proposition text, truth or business-valid time. A new external claim revision receives no automatic support. An internal record ID is stable across corrections; a source URI, a content digest and a party URI do not imply the same identity. URI values are opaque absolute references, not automatically resolved or normalized.\n\nSix exported types have independent boundaries:\n\n| Type | Identity and cardinality | Master and lifecycle |\n|---|---|---|\n| Capture | One captured or unavailable representation, source reference/version, subject, acquisition time, mode and optional content digest. Source author and declared origin may be unknown | Recorder operates under host scope/type grants. A new acquisition, representation or source version gets a new ID. Metadata corrections and terminal withdrawal retain history |\n| Activity | One declared execution occurrence with actor, method pin, interval and 0..n prior Capture/ProvenanceRecord inputs | Event identity includes mode, actor, interval, inputs, target and method. A new execution gets a new ID. The record can be withdrawn or its notes corrected |\n| ProvenanceRecord | One asserter's account about exactly one external claim revision and subject, with an epistemic kind and optional generating Activity | Asserter, claim pin, subject and epistemic kind are identity anchors. Changing those creates a new account. Correcting an activity reference requires a revision and new reliance review |\n| EvidenceLink | One attributed relation from one exact Capture/ProvenanceRecord revision to one exact external claim revision | Endpoints, relation kind and relation author are immutable identity anchors. Selector/rationale corrections retain versions. Citation is not support by default |\n| ConfidenceAssessment | One assessor's judgement of one exact provenance account for a purpose under an exact method and scheme | Target, assessor, purpose, method and scheme are anchors. Label/basis corrections are explicit revisions; independent reassessment gets a new ID. One review Activity and 1..n basis pins are required |\n| ProvenanceRegister | Exactly one bounded aggregate `<dimension>:provenance-register` for this reference; 0..10000 records, independent inner IDs | Host register operator owns storage/head integrity. Each type/scope has separately configured writers. One full-register reader gate; no implicit company identity or global master |\n\n## Fields and value rules\n\n`provenance.schema.json` is the closed field/type/cardinality definition. All listed keys are required. Unknown keys, inline secrets, executable extensions and external schema fetching are unsupported. Arrays may be empty unless minItems says otherwise; each has a finite maximum. Serialized JSON is capped at 8 MiB; the host must also enforce byte limits before parsing untrusted input. This is not a throughput guarantee. Null means explicitly unknown or inapplicable, never zero. SourceVersion/sourceAuthor/originRef may be null; an unavailable Capture requires a null representationDigest and not-tested integrity. Every reference pin requires URI id, positive integer revision and `sha256:` plus 64 lowercase hex digits. Fractional encodings such as 1.0 and booleans are rejected for revisions. External pin truth, target existence and actual byte correspondence are not verified by this reference.\n\nEvery inner record has id, kind, scope, positive revision, nullable previousDigest, recordedAt, writer, state, change, reason and notes. Genesis has revision 1, previousDigest null, state active and change create. Every timestamp is independently parsed as a strict ASCII UTC instant with second precision and a real calendar date; Unicode digits and trailing newlines reject. Canonical UTC lexical order equals chronological order. Missing URI/date-time format support fails closed. Receipt order is globally strictly increasing: this serial reference admits one new record per second. The host supplies receipt time. Capture obtainedAt and Activity endedAt cannot follow receipt; Activity startedAt ≤ endedAt. External business-valid time stays with the pinned claim; this reference does not invent an effective-time interval for its truth.\n\nCapture.mode is file/live-api/manual; availability is captured/unavailable; integrity is not-tested/matched/mismatched. Integrity and origin are **recorded declarations**, not results of an implemented fetch/signature verifier. A digest binds declared content, not authenticity or truth. Changing availability from unavailable to captured creates a new Capture, since it represents a new acquisition. Mode, sourceRef, sourceVersion, aboutRef, obtainedAt, availability and representationDigest are immutable anchors.\n\nActivity.mode is file-acquisition/live-observation/synthesis/proposal/review. File acquisition requires one or more inputs, all captured file Captures; live observation requires one or more inputs, all captured live-api Captures about its explicit observedTarget. Their obtainedAt values must lie within the Activity interval. Other modes have observedTarget null. Synthesis and review require inputs; review inputs must all be provenance accounts. A proposal may have no inputs. Manual captures may be used as synthesis inputs or evidence; a separate direct-manual-observation profile is deferred. No connector is invoked and no declared event is authenticated.\n\nProvenanceRecord.epistemicKind is observed/source-asserted/inferred/proposed/unverified. There is **no total quality ordering** of these kinds. Observed requires live-observation with matching subject; source-asserted requires file-acquisition/live-observation with matching Capture subjects; inferred requires synthesis; proposed requires proposal. Unverified may have no Activity and must state at least one limitation. Source author, observer, asserter, recorder and assessor remain different roles. An AI file analysis cannot satisfy observed; a human review adds an assessment without rewriting inference as observation. These are consistency checks on supplied declarations, not proof of live execution.\n\nEvidenceLink.relation is supports/refutes/context/cites and has a nonempty selector and rationale. A selector is descriptive context over the pinned representation; the reference does not evaluate it or store quoted copyrighted material. Multiple incompatible support/refutation links coexist. No latest-writer, majority, authority or confidence rule chooses a proposition truth.\n\nConfidenceAssessment uses the bundled original qualitative-reliance scheme, pinned by SHA-256 of the scheme's sorted compact UTF-8 JSON representation. The schema embeds the same scheme for a self-contained native installation. Labels are insufficient/limited/supported **for the named purpose under the named method**, not probability or universal confidence. Limited requires limitations. Activity must be review of the exact account, actor equals assessor and method pins match. Numerical values, percentages, cross-method averaging and automatic cross-scheme mapping are rejected/deferred. Method-pin authenticity, evidence relevance to the account/claim and the quality of the assessor's judgement remain external. Receipt ordering checks when the recorder registered a review; it does not authenticate the real-world execution time.\n\nAll fields are governed by the current scope/type writer grant; none is autonomously mastered by an LLM, model maintainer, source author or storage operator. Instance records are purpose-restricted and potentially sensitive even if they contain only references. The public package contains synthetic examples only. Derived views and digests create no new writer rights.\n\n## Three separate graphs\n\nEvery new or changed immediate internal reference must pin an already admitted active current revision in the same scope. An unchanged immediate pin retained in the same field (or same collection field) in a correction instead resolves the exact historical revision: metadata maintenance must remain possible after its dependency changes. Indirect dependencies of an existing Activity likewise retain their original pins. These historical references are not upgraded or treated as fresh; the view continues to report changed/withdrawn dependency warnings. Typed targets and scope are always checked. Each pin points backwards in receipt order, so the revision graph cannot cycle. In addition, a record's transitive dependency closure must not contain any earlier revision of its own ID: an account cannot become generated by a later synthesis of itself. An input's known capture/producing-activity time cannot follow the consuming activity's end. Unknown production time is not invented. Inputs describe the recorder's retrospective account of event content: their metadata revisions need not have been recorded by the event's end. This is not proof of what the actor knew at execution time. Withdrawal creates no new reliance and preserves old references even when they have since changed. External claim/source/party references may form arbitrary external graphs; this module never traverses them.\n\nSpecification imports are empty. WM-XCT-012, WM-XCT-026 and WM-XCT-028 are exact **semantic references** with their published holds retained, not executable package dependencies or subtype assertions. Native installation optionally installs WM-XCT-012 semantic-only and the companion under its own ID `vr.profile.enterprise-assertion-provenance`. Package files and record relationships are not interchangeable with either graph.\n\n## Admission, correction, withdrawal and history\n\n`admit(previous, record, config, actor, now)` is a pure host-internal operation. The trusted host authenticates actor, chooses the current complete root/configuration and clock, and prevents concurrent updates. Config contains dimension, validFrom/validUntil, explicit `(kind,scope,actors)` grants, full-register readers and purposes. Validity is half-open. A matching grant permits recording/correcting/withdrawing records of that type and scope; claimed authorship alone grants nothing. A changed authorized writer can record a correction while preserving earlier attribution. Record.writer must match the supplied caller. No network IAM, signature or durable transaction service is implemented.\n\nA correction follows the immediate previous revision and digest, retains all prior rows and immutable anchors, and remains active. Unchanged historical dependencies may be retained when correcting notes, limitations, selectors, rationale or reducing an assessment label to insufficient. Every new assessment with a non-insufficient label, and every change to a non-insufficient assessment's label, basis or activity, requires every immediate and transitive dependency to be a current active revision; Capture dependencies must be available without declared integrity mismatch. On such a correction the review Activity must have a different ID and be first registered (revision 1 receipt) after the previous assessment. Every such review must be first registered (revision 1 receipt) no earlier than its explicit basis revisions. This check does not certify the new judgement or truth. Keeping label, basis and activity unchanged permits metadata maintenance, with changed-dependency warnings intact. Reduction to insufficient remains available when dependencies have changed; reduction from supported to limited uses the same current-basis rule as other non-insufficient reassessment. A pin moved to a different field is a new reference, even if its bytes were already present elsewhere in the record. Newly introduced/replaced immediate pins must be current and active. Correcting a judgement about an older account does not retarget it to the latest account; a fresh review needs a new review Activity and assessment. Withdrawal is terminal and changes only revision, previousDigest, receipt, writer, state, change and reason. It cannot rewrite the withdrawn content. Resurrecting, deleting or truncating records is unsupported. Retracting a capture/account/link or correcting its basis does not automatically negate an external claim or alter downstream epistemic kinds; a view reports the affected dependency pins for reassessment.\n\nRepeated `(id,revision)` admission is a no-op only for the identical payload, ignoring solely a newly restamped receipt and retaining the first receipt. Current authorization and receipt-now equality are rechecked. Conflicting replay rejects without mutation. `validate_extension` requires equal register headers, valid histories and the exact previous records as a prefix. It requires the host's trusted latest previous root; it cannot discover a missing newer root or prove that an arbitrary imported snapshot was authorized. Static validation checks consistency, not historical authorization. A host must call admit for each appended record and return only a receipt or generic rejection to write-only callers, never the entire returned ledger or raw diagnostics.\n\n## Reading and impact\n\n`view` gates the current reader and purpose **before ledger or query diagnostics**. A reader must be cleared for the whole register. Denial exposes no hidden IDs, counts or contrary-evidence indicators. No partial filtering, anonymous projection, redaction or retention/erasure guarantee is supplied. Configuration diagnostics are trusted-host details, never public endpoint responses.\n\nAt a nonfuture knowledge cut, the view selects the latest known revision per ID. It returns all accounts and links for the exact claim pin, including withdrawn current heads, and assessments whose pinned account addresses that claim. It reports transitive changed/withdrawn dependencies and unavailable/integrity-mismatched Capture bases. A changed Capture also exposes its current availability/integrity, explicitly distinguished from the historical cited pin. `context-available` means an active non-unverified account exists; it is **not** a ready-to-rely verdict. `insufficient-context` does not mean false. Every result explicitly says truth not-evaluated and permissions not-inferred. Input-slice and configuration digests pin reproducibility inputs, not signed publication.\n\nKnown shared representation digests or declared origin URIs across active accounts produce known-shared-origin, with the basis disclosed to the already authorized reader. All other independence results are unknown. This calculation uses historically pinned Capture origin declarations, even after withdrawal; corrected origin declarations are not silently substituted. Changed dependencies are disclosed separately and require reassessment. Distinct files, sources, IDs, roots, authors and digests never prove independence. The origin URI is an attributed declaration and shared bytes are an overlap signal, not authenticated historical provenance. Evidence can change independently of its claim; prior knowledge views preserve the original dependency state.\n\n## Executable invariants and minimum profile\n\nI01 independent typed identities; I02 exact typed local revision/digest pins; I03 no implicit carryover to a new claim pin; I04 append-only history and terminal withdrawal; I05 file/synthesis cannot claim live observation; I06 citation does not imply support; I07 integrity failure does not imply falsehood; I08 backwards-only local reliance; I09 dependency change requires review without rewriting conclusions; I10 purpose/method/assessor/scheme-qualified qualitative judgement; I11 full-reader gate before diagnostics; I12 explicit nested validation beyond native V3; I13 globally ordered trusted receipts and current-rights replay; I14 same-version lossless roundtrip or explicit migration refusal; I15 preserved writer-role separation; I16 opaque IDs, no implicit alias merge.\n\nA startup needs only trusted host configuration, an external claim pin, one file Capture, acquisition Activity and source-asserted account; evidence links and assessments are optional. The group fixture keeps opposing evidence and recognizes a shared input. The AI fixture preserves inferred kind after a separately attributed human review. These fixtures make no claim about actual organizations. `test_provenance.py` and `acceptance.py` record executed coverage and native limitations separately.\n\nThe normative `spec.json` also contains the full Bundle → Layer → Finding → Question → Artifact → Action tree. Unknown answers require the named missing context; listed actions confer no new authority. Sector/legal/clinical/forensic profiles, independent-source proof, PKI, external connectors, probabilistic calibration, fine-grained disclosure, erasure, concurrent durable storage, and existing-Dimension transactional migration remain deferred.\n\n`validate_snapshot(fact, config, previous, now=trusted_now)` additionally checks the aggregate subject, nested history, snapshotDigest, previousSnapshotDigest and supersedes relationship. A non-genesis snapshot requires the host's trusted previous snapshot. Use native V3 validation separately for the full envelope; neither check authenticates the supplied root. Hash prefixes use exact canonical JSON encoding, not Python value equality. Source files and native assets are separately pinned by their actual byte hashes.\n\n## Import clock, digest encoding and operational bounds\n\n`import_snapshot`, `migrate` and `validate_snapshot` require keyword `now` from the trusted host, require the configuration to be valid at that instant, and reject any inner receipt after that instant. `admit` and `view` always apply the same bound. `validate_ledger` and `validate_extension` accept an optional `now`; omitting it performs an offline consistency check only. These checks do not authenticate imported history or discover a newer root. An initial snapshot may contain a complete pre-existing history; accepting it is an explicit host bootstrap/import decision. A successor must have a different factId; a byte-identical no-op successor remains allowed. Previous-root trust and full native envelope checks remain host requirements.\n\nRecord and snapshot digests use this named encoding, **vercy-python-json-v1**: Python 3.11+ `json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode('utf-8')`. Dictionary keys in the closed record schema are ASCII; strings retain their Unicode code points without normalization; integer revisions have no fractional form. There is no added whitespace, BOM or trailing newline. This is not a claim of RFC 8785 conformance. Independently implemented adapters must reproduce these exact bytes. File asset digests instead hash the complete published file bytes, including any newline.\n\nAdmission repeatedly validates the complete history and may have quadratic CPU cost. The structural ceilings (10000 records and 8 MiB encoded JSON) are not measured production capacity. The host needs execution budgets and a supported migration/archive plan before approaching the limits; rollover and segmentation are deferred. This bounded draft cannot promise enterprise-volume throughput.\n\nEncoding test vector: input `{\"revision\":1,\"a\":\"é\\n\\u0001\\u2028\\u2029\"}` encodes to UTF-8 hex `7b2261223a22c3a95c6e5c7530303031e280a8e280a9222c227265766973696f6e223a317d`. Python uses the short escapes for backspace/form-feed/newline/carriage-return/tab, escapes quotes and backslashes, uses lowercase `\\u00xx` for remaining control characters, and does not escape U+2028/U+2029. No Unicode normalization is performed.\n",
+  "structure": {
+    "bundles": [
+      {
+        "id": "AP-SOURCE",
+        "name": "Sources and execution",
+        "description": "Sources and execution for the bounded assertion-provenance contract.",
+        "layers": [
+          {
+            "id": "AP-CAPTURE",
+            "name": "Captured representations",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F01",
+                "name": "What was directly acquired, and by whom?",
+                "description": "What was directly acquired, and by whom? Separate capture from claim truth",
+                "questions": [
+                  {
+                    "id": "Q01",
+                    "text": "What was directly acquired, and by whom? Separate capture from claim truth",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Capture and Activity and representation pin",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A01",
+                    "name": "Capture and Activity and representation pin",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT01",
+                    "description": "Show acquisition account; never infer source truth"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F05",
+                "name": "What survives rename or relocation?",
+                "description": "What survives rename or relocation? Distinguish source location and identity",
+                "questions": [
+                  {
+                    "id": "Q05",
+                    "text": "What survives rename or relocation? Distinguish source location and identity",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Qualified external pin",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A05",
+                    "name": "Qualified external pin",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT05",
+                    "description": "Preserve external source identity separately; a changed sourceRef, acquisition, version or content digest requires a new Capture ID"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F18",
+                "name": "Which representation and which execution event are being described?",
+                "description": "Which representation and which execution event are being described? Keep their identities separate",
+                "questions": [
+                  {
+                    "id": "Q18",
+                    "text": "Which representation and which execution event are being described? Keep their identities separate",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Capture and Activity pins, event and receipt times",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A18",
+                    "name": "Capture and Activity pins, event and receipt times",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT18",
+                    "description": "Record one representation and a separately identified event; reject incompatible declaration"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "AP-EVENT",
+            "name": "Execution activities",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F02",
+                "name": "Is this source-asserted, inferred or proposed?",
+                "description": "Is this source-asserted, inferred or proposed? Separate account and activity kind",
+                "questions": [
+                  {
+                    "id": "Q02",
+                    "text": "Is this source-asserted, inferred or proposed? Separate account and activity kind",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "ProvenanceRecord plus generation method",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A02",
+                    "name": "ProvenanceRecord plus generation method",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT02",
+                    "description": "Explain declared kind and its limits"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F06",
+                "name": "Correction or a new acquisition/assessment?",
+                "description": "Correction or a new acquisition/assessment? Preserve activity identity",
+                "questions": [
+                  {
+                    "id": "Q06",
+                    "text": "Correction or a new acquisition/assessment? Preserve activity identity",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Change reason and predecessor pin",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A06",
+                    "name": "Change reason and predecessor pin",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT06",
+                    "description": "Correct metadata or mint a genuinely new event"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "AP-ACCOUNT",
+        "name": "Assertion accounts",
+        "description": "Assertion accounts for the bounded assertion-provenance contract.",
+        "layers": [
+          {
+            "id": "AP-GRAIN",
+            "name": "Claim and account boundary",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F04",
+                "name": "Is this the claim, its account or its evidence?",
+                "description": "Is this the claim, its account or its evidence? Preserve grain",
+                "questions": [
+                  {
+                    "id": "Q04",
+                    "text": "Is this the claim, its account or its evidence? Preserve grain",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Typed IDs and external target reference",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A04",
+                    "name": "Typed IDs and external target reference",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT04",
+                    "description": "Resolve exact record kind"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F09",
+                "name": "Which system masters which data?",
+                "description": "Which system masters which data? Avoid a new master for the external claim",
+                "questions": [
+                  {
+                    "id": "Q09",
+                    "text": "Which system masters which data? Avoid a new master for the external claim",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Mastership matrix",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A09",
+                    "name": "Mastership matrix",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT09",
+                    "description": "Link to the owning system"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "AP-HISTORY",
+            "name": "Historical reliance",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F03",
+                "name": "How is an unreliable account withdrawn?",
+                "description": "How is an unreliable account withdrawn? Preserve immutable history",
+                "questions": [
+                  {
+                    "id": "Q03",
+                    "text": "How is an unreliable account withdrawn? Preserve immutable history",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Retraction revision and impact report",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A03",
+                    "name": "Retraction revision and impact report",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT03",
+                    "description": "Append an authorized withdrawal; propose re-review"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F10",
+                "name": "What was known at a particular time?",
+                "description": "What was known at a particular time? Keep occurrence/capture/receipt separate",
+                "questions": [
+                  {
+                    "id": "Q10",
+                    "text": "What was known at a particular time? Keep occurrence/capture/receipt separate",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "As-of history with exact pins",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A10",
+                    "name": "As-of history with exact pins",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT10",
+                    "description": "Read historical account without rewriting it"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F11",
+                "name": "Which state transitions are allowed?",
+                "description": "Which state transitions are allowed? Distinguish account lifecycle from kind",
+                "questions": [
+                  {
+                    "id": "Q11",
+                    "text": "Which state transitions are allowed? Distinguish account lifecycle from kind",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Transition table and immutable revisions",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A11",
+                    "name": "Transition table and immutable revisions",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT11",
+                    "description": "Admit authorized creation/correction/withdrawal"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "AP-REVIEW",
+        "name": "Evidence and assessment",
+        "description": "Evidence and assessment for the bounded assertion-provenance contract.",
+        "layers": [
+          {
+            "id": "AP-EVIDENCE",
+            "name": "Evidence relationships",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F07",
+                "name": "What is missing or disputed?",
+                "description": "What is missing or disputed? No selected truth from absent evidence",
+                "questions": [
+                  {
+                    "id": "Q07",
+                    "text": "What is missing or disputed? No selected truth from absent evidence",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Evidence links and explicit limitations",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A07",
+                    "name": "Evidence links and explicit limitations",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT07",
+                    "description": "Return insufficient-context and known gaps"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F12",
+                "name": "Which links and cardinalities are required?",
+                "description": "Which links and cardinalities are required? No dangling executable references",
+                "questions": [
+                  {
+                    "id": "Q12",
+                    "text": "Which links and cardinalities are required? No dangling executable references",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Closed schema and local graph check",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A12",
+                    "name": "Closed schema and local graph check",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT12",
+                    "description": "Reject malformed or unresolved internal pins"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F16",
+                "name": "Are multiple citations independent?",
+                "description": "Are multiple citations independent? Repetition is not corroboration",
+                "questions": [
+                  {
+                    "id": "Q16",
+                    "text": "Are multiple citations independent? Repetition is not corroboration",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Declared origin paths and overlap flags",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A16",
+                    "name": "Declared origin paths and overlap flags",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT16",
+                    "description": "Flag shared inputs; never count distinct roots as proof"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "AP-ASSESS",
+            "name": "Qualified confidence",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F17",
+                "name": "Can two confidence values be compared?",
+                "description": "Can two confidence values be compared? Method and scale matter",
+                "questions": [
+                  {
+                    "id": "Q17",
+                    "text": "Can two confidence values be compared? Method and scale matter",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Exact assessment and scheme pins",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A17",
+                    "name": "Exact assessment and scheme pins",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT17",
+                    "description": "Refuse automatic cross-scheme arithmetic"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "AP-GOV",
+        "name": "Governance and adoption",
+        "description": "Governance and adoption for the bounded assertion-provenance contract.",
+        "layers": [
+          {
+            "id": "AP-RIGHTS",
+            "name": "Rights and disclosure",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F08",
+                "name": "Who may change this record?",
+                "description": "Who may change this record? Authorship is not authentication",
+                "questions": [
+                  {
+                    "id": "Q08",
+                    "text": "Who may change this record? Authorship is not authentication",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Host-owned writer configuration",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A08",
+                    "name": "Host-owned writer configuration",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT08",
+                    "description": "Validate current scope; emit generic rejection"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F13",
+                "name": "What can this reader see for this purpose?",
+                "description": "What can this reader see for this purpose? Avoid evidence leakage",
+                "questions": [
+                  {
+                    "id": "Q13",
+                    "text": "What can this reader see for this purpose? Avoid evidence leakage",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Full-register projection gate",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A13",
+                    "name": "Full-register projection gate",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT13",
+                    "description": "Return full permitted view or generic denial"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F15",
+                "name": "What can an agent conclude or propose?",
+                "description": "What can an agent conclude or propose? Keep evidence distinct from permission",
+                "questions": [
+                  {
+                    "id": "Q15",
+                    "text": "What can an agent conclude or propose? Keep evidence distinct from permission",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Impact report and agent guide",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A15",
+                    "name": "Impact report and agent guide",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT15",
+                    "description": "Explain and propose a check; do not contact, publish or change rights"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "AP-ADOPT",
+            "name": "Minimal composition and migration",
+            "description": "Collect explicit context and preserve unknowns. See the semantic contract for exact rules.",
+            "findings": [
+              {
+                "id": "AP-F14",
+                "name": "What is the smallest useful setup?",
+                "description": "What is the smallest useful setup? Optional confidence, no mandatory ERP",
+                "questions": [
+                  {
+                    "id": "Q14",
+                    "text": "What is the smallest useful setup? Optional confidence, no mandatory ERP",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Startup capture/account example",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A14",
+                    "name": "Startup capture/account example",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT14",
+                    "description": "Compose the bounded companion"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F19",
+                "name": "Does the native envelope validate the inner history?",
+                "description": "Does the native envelope validate the inner history? Check both layers",
+                "questions": [
+                  {
+                    "id": "Q19",
+                    "text": "Does the native envelope validate the inner history? Check both layers",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Native report, installed schema and companion report",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A19",
+                    "name": "Native report, installed schema and companion report",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT19",
+                    "description": "Validate nested register and extension against trusted prior root"
+                  }
+                ]
+              },
+              {
+                "id": "AP-F20",
+                "name": "Can this old payload be imported without losing semantics?",
+                "description": "Can this old payload be imported without losing semantics? Preserve unknowns",
+                "questions": [
+                  {
+                    "id": "Q20",
+                    "text": "Can this old payload be imported without losing semantics? Preserve unknowns",
+                    "kind": "governed-context",
+                    "answer_data": [
+                      "Migration decision and exact source pins",
+                      "If unavailable: insufficient-context; name the missing pin, record, policy or evidence instead of inferring it."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "AP-A20",
+                    "name": "Migration decision and exact source pins",
+                    "description": "Exact records or reproducible report; no inferred truth or permissions."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "AP-ACT20",
+                    "description": "Accept same-version lossless snapshot only; stage other mappings for review"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "statistics": {
+    "bundles": 4,
+    "layers": 8,
+    "findings": 20,
+    "questions": 20,
+    "artifacts": 20
+  },
+  "nativeBinding": {
+    "modelId": "vr.profile.enterprise-assertion-provenance",
+    "path": "provenance.register.snapshot",
+    "companionRequired": true
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ver.cy/models/enterprise-quantity-values/versions/0.1.0/quantity.schema.json",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/QuantityDocument"
+    },
+    {
+      "$ref": "#/$defs/ConversionDocument"
+    }
+  ],
+  "$defs": {
+    "Pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "uri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(urn:|https://)[!-~]+(?![\\s\\S])"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "uri",
+        "revision",
+        "sha256"
+      ]
+    },
+    "Factor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 36,
+          "pattern": "^(0|-?[1-9][0-9]*)(?![\\s\\S])"
+        },
+        "d": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 36,
+          "pattern": "^[1-9][0-9]*(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "n",
+        "d"
+      ]
+    },
+    "Result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^(0|-?[1-9][0-9]*)(?![\\s\\S])"
+        },
+        "d": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[1-9][0-9]*(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "n",
+        "d"
+      ]
+    },
+    "UnitDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reference": {
+          "$ref": "#/$defs/Pin"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "kind": {
+          "$ref": "#/$defs/Pin"
+        },
+        "dimension": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "integer",
+            "minimum": -12,
+            "maximum": 12
+          }
+        },
+        "anchor": {
+          "$ref": "#/$defs/Pin"
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "scalar",
+              "point",
+              "difference"
+            ]
+          }
+        },
+        "formula": {
+          "const": "anchor=a*x+b"
+        },
+        "exactness": {
+          "const": "definition-exact"
+        },
+        "a": {
+          "$ref": "#/$defs/Factor"
+        },
+        "b": {
+          "$ref": "#/$defs/Factor"
+        },
+        "authority": {
+          "$ref": "#/$defs/Pin"
+        }
+      },
+      "required": [
+        "reference",
+        "code",
+        "kind",
+        "dimension",
+        "anchor",
+        "roles",
+        "formula",
+        "exactness",
+        "a",
+        "b",
+        "authority"
+      ]
+    },
+    "KnownMagnitude": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "const": "known"
+        },
+        "lexical": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 38,
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?(?![\\s\\S])"
+        },
+        "scale": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18
+        },
+        "precisionMeaning": {
+          "enum": [
+            "reported-digits",
+            "exact-by-definition"
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "lexical",
+        "scale",
+        "precisionMeaning"
+      ]
+    },
+    "MissingMagnitude": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "unknown",
+            "withheld",
+            "not-applicable"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "state",
+        "reason"
+      ]
+    },
+    "QuantityValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "$ref": "#/$defs/UnitDefinition"
+        },
+        "role": {
+          "enum": [
+            "scalar",
+            "point",
+            "difference"
+          ]
+        },
+        "context": {
+          "$ref": "#/$defs/Pin"
+        },
+        "source": {
+          "$ref": "#/$defs/Pin"
+        },
+        "magnitude": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/KnownMagnitude"
+            },
+            {
+              "$ref": "#/$defs/MissingMagnitude"
+            }
+          ]
+        }
+      },
+      "required": [
+        "unit",
+        "role",
+        "context",
+        "source",
+        "magnitude"
+      ]
+    },
+    "QuantityDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "vercy-embedded-quantity"
+        },
+        "version": {
+          "const": "0.1.0"
+        },
+        "quantity": {
+          "$ref": "#/$defs/QuantityValue"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "quantity"
+      ]
+    },
+    "ConversionDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "vercy-embedded-conversion"
+        },
+        "version": {
+          "const": "0.1.0"
+        },
+        "quantity": {
+          "$ref": "#/$defs/QuantityValue"
+        },
+        "target": {
+          "$ref": "#/$defs/UnitDefinition"
+        },
+        "result": {
+          "$ref": "#/$defs/Result"
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "quantity",
+        "target",
+        "result"
+      ]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "version",
+    "quantity"
+  ],
+  "properties": {
+    "format": {
+      "enum": [
+        "vercy-embedded-quantity",
+        "vercy-embedded-conversion"
+      ]
+    },
+    "version": {
+      "const": "0.1.0"
+    },
+    "quantity": {
+      "$ref": "#/$defs/QuantityValue"
+    },
+    "target": {
+      "$ref": "#/$defs/UnitDefinition"
+    },
+    "result": {
+      "$ref": "#/$defs/Result"
+    }
+  }
+}

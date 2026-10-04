@@ -1,0 +1,5 @@
+# EM-TEC-10 provider comparison
+
+Claude and Grok agree that Change Execution and Duty Roster require independent identity while remaining registry-unassigned. They also agree that Operational Change, Change Window / Freeze Period / Rollback Plan and Escalation Rule are profiles over existing masters, and that request, authorization, execution, rollback stages, standing assignment, roster shift and IAM grant must stay separate.
+
+Grok strengthened the EU-window/US-freeze scenario, explicit version pins, separate rollback execution, acknowledged handover and the prohibition on rights derived from roster membership. The frozen audit accepted the identity decision and found 21 bounded artifact defects. Remediation adds an executable emergency path, typed immutable pins, separate rollback occurrence, enforceable freeze derogation, coherent lifecycle fields, a full profile schema, association-only deployment, explicit shift/override/handover objects, bitemporal ordering, deterministic timezone resolution, access-grant references and expected-code fixture coverage. No identifier is allocated.

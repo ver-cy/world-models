@@ -1,0 +1,1881 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v2",
+  "candidateName": "Cost Allocation",
+  "fixedClock": "2026-08-03T09:00:00Z",
+  "cases": [
+    {
+      "id": "identity-plane-object-citation-under-unassigned-model",
+      "kind": "positive",
+      "input": {
+        "modelId": null,
+        "registryId": null,
+        "allocationState": "unassigned",
+        "costRecord": {
+          "costRecordId": "fx:cr/1",
+          "costBasis": "amortized-effective",
+          "period": {
+            "from": "2026-07-01",
+            "to": "2026-07-31"
+          },
+          "currency": "EUR",
+          "amount": 76000,
+          "citedRunRef": "fx:run/R2",
+          "citedResultRef": [
+            "fx:run/R2",
+            "fx:res/X"
+          ]
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "citation resolves via (allocationRunId,resultId)",
+          "no model identifier is read during resolution",
+          "allocationState remains 'unassigned'"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-03"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "identity-plane-model-id-substituted-for-object-key",
+      "kind": "negative",
+      "input": {
+        "costRecord": {
+          "costRecordId": "fx:cr/2",
+          "citedRunRef": "<model-catalogue-identifier>",
+          "citedResultRef": null
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a model/catalogue identifier cannot serve as a run key; citation requires allocationRunId"
+      },
+      "expectedCode": "IDENTIFIER-PLANE-SUBSTITUTION",
+      "invariantIds": [
+        "I-03"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "identity-plane-invented-registry-identifier",
+      "kind": "negative",
+      "input": {
+        "modelId": "<any non-null value>",
+        "registryId": "<any non-null value>",
+        "allocationState": "unassigned"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "identifiers may not be invented or allocated outside registry governance; allocationState 'unassigned' requires null on both planes"
+      },
+      "expectedCode": "IDENTIFIER-INVENTED",
+      "invariantIds": [
+        "I-03"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "rule-revision-reused-across-runs",
+      "kind": "positive",
+      "input": {
+        "ruleRevision": [
+          "fx:rule/P",
+          "3"
+        ],
+        "runs": [
+          {
+            "allocationRunId": "fx:run/R1a",
+            "ruleRevisionRef": [
+              "fx:rule/P",
+              "3"
+            ],
+            "sourcePeriod": {
+              "from": "2026-07-01",
+              "to": "2026-07-31"
+            }
+          },
+          {
+            "allocationRunId": "fx:run/R1b",
+            "ruleRevisionRef": [
+              "fx:rule/P",
+              "3"
+            ],
+            "sourcePeriod": {
+              "from": "2026-08-01",
+              "to": "2026-08-31"
+            }
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "one revision pinned by two runs",
+          "revision is not exclusively owned by either run",
+          "neither run mutates the revision"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-04"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "project-axis-normative-conservation",
+      "kind": "positive",
+      "input": {
+        "allocationRunId": "fx:run/R1",
+        "axis": "project",
+        "currency": "EUR",
+        "sourcePeriod": {
+          "from": "2026-07-01",
+          "to": "2026-07-31",
+          "calendarAuthority": "fx:cal/gregorian-utc"
+        },
+        "sourceAmountBasis": "amortized-effective",
+        "sourceAmount": 120000,
+        "sourceAmountDerivation": [
+          {
+            "componentKind": "invoice-gross",
+            "amount": 110000,
+            "sourceMasterRef": "WM-ECO-008"
+          },
+          {
+            "componentKind": "invoice-allowance",
+            "amount": -10000,
+            "sourceMasterRef": "WM-ECO-008"
+          },
+          {
+            "componentKind": "commitment-amortization",
+            "amount": 20000,
+            "sourceMasterRef": null,
+            "heldOn": "commitment mastership unbound"
+          }
+        ],
+        "baseKind": "metered-usage",
+        "baseCompleteness": {
+          "state": "partial",
+          "coverage": 0.9333
+        },
+        "results": [
+          {
+            "resultId": "fx:res/A",
+            "targetRef": "fx:project/A",
+            "amount": 72000,
+            "weight": 0.666667
+          },
+          {
+            "resultId": "fx:res/B",
+            "targetRef": "fx:project/B",
+            "amount": 36000,
+            "weight": 0.333333
+          },
+          {
+            "resultId": "fx:res/unused",
+            "residualKind": "unused-reserved-capacity",
+            "amount": 4000,
+            "residualShare": 0.033333
+          },
+          {
+            "resultId": "fx:res/untagged",
+            "residualKind": "untagged-base",
+            "amount": 8000,
+            "residualShare": 0.066667
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "sum(targetAmounts)+sum(residualAmounts)==120000",
+          "sum(targetWeights)==1.000000 within weightTolerance",
+          "allocable base == 108000",
+          "total residualShare == 0.100000",
+          "every residual carries a residualKind",
+          "no residual carries a targetRef"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-05",
+        "I-08",
+        "I-09",
+        "I-10",
+        "I-11",
+        "I-12"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "product-axis-independent-conservation",
+      "kind": "positive",
+      "input": {
+        "allocationRunId": "fx:run/R2",
+        "axis": "product",
+        "currency": "EUR",
+        "sourceAmountBasis": "amortized-effective",
+        "sourceAmount": 120000,
+        "sourceRecordRefs": "identical to fx:run/R1",
+        "results": [
+          {
+            "resultId": "fx:res/X",
+            "targetRef": "fx:product/X",
+            "amount": 76000,
+            "weight": 0.666667
+          },
+          {
+            "resultId": "fx:res/Y",
+            "targetRef": "fx:product/Y",
+            "amount": 38000,
+            "weight": 0.333333
+          },
+          {
+            "resultId": "fx:res/unused",
+            "residualKind": "unused-reserved-capacity",
+            "amount": 4000
+          },
+          {
+            "resultId": "fx:res/unmapped",
+            "residualKind": "unmapped-target",
+            "amount": 2000
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "sum==120000 independently of fx:run/R1",
+          "total residualShare == 0.050000",
+          "run is flagged non-additive with fx:run/R1 on intersecting sourceRecordRefs"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-05",
+        "I-08",
+        "I-14"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "cross-axis-sum-targets-only-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "sum(targetAmounts of fx:run/R1, targetAmounts of fx:run/R2)",
+        "computed": 222000,
+        "sourceAmount": 120000
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "parallel-axis runs over intersecting source records are non-additive; 108000+114000=222000 against a 120000 source"
+      },
+      "expectedCode": "CROSS-AXIS-ADDITION",
+      "invariantIds": [
+        "I-14"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "cross-axis-sum-full-runs-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "sum(fx:run/R1, fx:run/R2) including residuals",
+        "computed": 240000,
+        "sourceAmount": 120000
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "same rejection on the full-run basis; 120000+120000=240000"
+      },
+      "expectedCode": "CROSS-AXIS-ADDITION",
+      "invariantIds": [
+        "I-14"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "cross-axis-sum-mixed-basis-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "sum(one run in full, other run net of residual)",
+        "computed": 204000,
+        "note": "reproduces the dossier's inconsistent 174000-style construction on normative figures"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a cross-axis total computed on mixed bases is rejected before the non-additivity check; basis must be uniform"
+      },
+      "expectedCode": "MIXED-BASIS-AGGREGATION",
+      "invariantIds": [
+        "I-08",
+        "I-14"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "source-record-overlap-not-equality",
+      "kind": "negative",
+      "input": {
+        "runA": {
+          "sourceRecordRefs": [
+            "fx:line/1",
+            "fx:line/2",
+            "fx:line/3"
+          ]
+        },
+        "runB": {
+          "sourceRecordRefs": [
+            "fx:line/3",
+            "fx:line/4"
+          ]
+        },
+        "operation": "sum(runA,runB)"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "non-additivity triggers on non-empty intersection, not digest equality"
+      },
+      "expectedCode": "CROSS-AXIS-ADDITION",
+      "invariantIds": [
+        "I-14"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "residual-without-target-accepted",
+      "kind": "positive",
+      "input": {
+        "result": {
+          "resultId": "fx:res/untagged",
+          "residualKind": "untagged-base",
+          "amount": 8000,
+          "targetRef": null
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "targetRef is forbidden when residualKind is present",
+          "result is representable"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-10"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "residual-with-target-rejected",
+      "kind": "negative",
+      "input": {
+        "result": {
+          "resultId": "fx:res/untagged",
+          "residualKind": "untagged-base",
+          "amount": 8000,
+          "targetRef": "fx:project/Unassigned"
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a residual carries no target; attaching one converts a residual into an implicit tag"
+      },
+      "expectedCode": "RESIDUAL-TARGETED",
+      "invariantIds": [
+        "I-10",
+        "I-13"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "implicit-default-tag-rejected",
+      "kind": "negative",
+      "input": {
+        "baseCompleteness": {
+          "state": "partial",
+          "coverage": 0.9333
+        },
+        "results": [
+          {
+            "targetRef": "fx:project/A",
+            "amount": 72000
+          },
+          {
+            "targetRef": "fx:project/B",
+            "amount": 36000
+          },
+          {
+            "targetRef": "fx:project/Unassigned",
+            "amount": 12000,
+            "weight": 0.1
+          }
+        ],
+        "residuals": []
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "untagged usage must remain residual; a default target satisfies conservation while destroying the residual signal"
+      },
+      "expectedCode": "IMPLICIT-DEFAULT-TARGET",
+      "invariantIds": [
+        "I-13"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "partial-completeness-zero-residual-rejected",
+      "kind": "negative",
+      "input": {
+        "baseCompleteness": {
+          "state": "partial",
+          "coverage": 0.9333
+        },
+        "residualAmount": 0
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "declared partial base completeness requires a materialized non-zero residual"
+      },
+      "expectedCode": "COMPLETENESS-RESIDUAL-INCONSISTENT",
+      "invariantIds": [
+        "I-12"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "base-completeness-absent-schema",
+      "kind": "schema-negative",
+      "input": {
+        "allocationRunId": "fx:run/R9",
+        "baseCompleteness": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "baseCompleteness is a required field; this is schema validation, not a semantic case"
+      },
+      "expectedCode": "SCHEMA-REQUIRED-FIELD-MISSING",
+      "invariantIds": [
+        "I-12"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "weights-exceed-one-rejected",
+      "kind": "negative",
+      "input": {
+        "targetWeights": [
+          0.7,
+          0.38
+        ],
+        "sum": 1.08,
+        "weightTolerance": 1e-06,
+        "residuals": []
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "sum(targetWeights) exceeds 1 beyond weightTolerance"
+      },
+      "expectedCode": "WEIGHT-SUM-EXCEEDED",
+      "invariantIds": [
+        "I-09"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "rounding-remainder-materialized",
+      "kind": "positive",
+      "input": {
+        "sourceAmount": 100.0,
+        "currency": "EUR",
+        "targets": 3,
+        "weights": [
+          0.333333,
+          0.333333,
+          0.333333
+        ],
+        "roundingPolicy": {
+          "mode": "half-up",
+          "minorUnits": 2,
+          "remainderAbsorption": "residual-rounding-remainder"
+        },
+        "results": [
+          {
+            "amount": 33.33
+          },
+          {
+            "amount": 33.33
+          },
+          {
+            "amount": 33.33
+          },
+          {
+            "residualKind": "rounding-remainder",
+            "amount": 0.01
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "sum == 100.00 exactly",
+          "remainder is a typed residual, not discarded"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-10"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "rounding-remainder-discarded-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmount": 100.0,
+        "results": [
+          {
+            "amount": 33.33
+          },
+          {
+            "amount": 33.33
+          },
+          {
+            "amount": 33.33
+          }
+        ],
+        "residuals": [],
+        "amountTolerance": {
+          "value": 0,
+          "unit": "minor-currency-units"
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "0.01 remainder is unmaterialized and conservation fails at zero tolerance"
+      },
+      "expectedCode": "REMAINDER-DISCARDED",
+      "invariantIds": [
+        "I-08",
+        "I-10"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "within-tolerance-variance-must-be-recorded",
+      "kind": "negative",
+      "input": {
+        "sourceAmount": 120000.0,
+        "allocatedPlusResidual": 119999.99,
+        "amountTolerance": {
+          "value": 5,
+          "unit": "minor-currency-units"
+        },
+        "reconciliation": [
+          {
+            "tieKind": "source-total",
+            "expected": 120000.0,
+            "actual": 119999.99,
+            "variance": null,
+            "varianceReason": null
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a non-zero variance within tolerance is recorded with variance and reason, never suppressed"
+      },
+      "expectedCode": "VARIANCE-SUPPRESSED",
+      "invariantIds": [
+        "I-08"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "reconciliation-ties-incomplete-rejected",
+      "kind": "negative",
+      "input": {
+        "reconciliation": [
+          {
+            "tieKind": "source-total",
+            "expected": 120000,
+            "actual": 120000,
+            "variance": 0,
+            "varianceReason": "none"
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "all three tieKinds are required: source-total, ledger-recognized-period, base-population-completeness"
+      },
+      "expectedCode": "RECONCILIATION-TIES-INCOMPLETE",
+      "invariantIds": [
+        "I-08",
+        "I-12"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "source-basis-undeclared-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmount": 120000,
+        "sourceAmountBasis": null,
+        "sourceAmountDerivation": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "sourceAmountBasis is required; conservation is otherwise ambiguous between gross, invoice-net, amortized-effective and recognized"
+      },
+      "expectedCode": "SOURCE-BASIS-UNDECLARED",
+      "invariantIds": [
+        "I-11"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "source-derivation-does-not-sum-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmount": 120000,
+        "sourceAmountDerivation": [
+          {
+            "componentKind": "invoice-gross",
+            "amount": 110000
+          },
+          {
+            "componentKind": "invoice-allowance",
+            "amount": -10000
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "derivation sums to 100000 against a declared sourceAmount of 120000"
+      },
+      "expectedCode": "SOURCE-DERIVATION-MISMATCH",
+      "invariantIds": [
+        "I-11"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "commitment-amount-double-counted-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmountBasis": "invoice-net",
+        "sourceAmount": 90000,
+        "results": [
+          {
+            "residualKind": "unused-reserved-capacity",
+            "amount": 4000
+          }
+        ],
+        "note": "unused capacity derives from commitment amortization, which is absent from invoice-net"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a residual whose component is absent from sourceAmountDerivation cannot enter that run's conservation set; reproduces the dossier basis-mixing defect"
+      },
+      "expectedCode": "RESIDUAL-OUTSIDE-SOURCE-BASIS",
+      "invariantIds": [
+        "I-11",
+        "I-16"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unused-capacity-treatment-undeclared-rejected",
+      "kind": "negative",
+      "input": {
+        "commitmentAmortization": 20000,
+        "coveredUsage": 16000,
+        "unusedCapacity": 4000,
+        "ruleRevision": {
+          "unusedCapacityTreatment": null
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "unusedCapacityTreatment must be one of shared-pool-result, separate-chained-run, residual-unused-capacity"
+      },
+      "expectedCode": "UNUSED-CAPACITY-TREATMENT-UNDECLARED",
+      "invariantIds": [
+        "I-16"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unused-capacity-spread-to-consumers-rejected",
+      "kind": "negative",
+      "input": {
+        "unusedCapacity": 4000,
+        "treatment": "spread-on-allocation-base",
+        "effect": "Project A 74666.67, Project B 37333.33, no unused-capacity residual"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "spreading unused capacity across consumers is absorption into consumer unit cost and is not an admissible treatment"
+      },
+      "expectedCode": "UNUSED-CAPACITY-ABSORBED",
+      "invariantIds": [
+        "I-16"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "chained-pool-run-conserves",
+      "kind": "positive",
+      "input": {
+        "allocationRunId": "fx:run/R3",
+        "upstreamRunRef": "fx:run/R1",
+        "upstreamResultRefs": [
+          [
+            "fx:run/R1",
+            "fx:res/unused"
+          ]
+        ],
+        "sourceAmount": 4000,
+        "currency": "EUR",
+        "results": [
+          {
+            "targetRef": "fx:cc/platform",
+            "amount": 2500
+          },
+          {
+            "targetRef": "fx:cc/data",
+            "amount": 1500
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "sourceAmount equals cited upstream result amount exactly",
+          "chain graph remains acyclic",
+          "fx:res/unused is source to exactly one non-superseded downstream run"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-15"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "chained-run-cycle-rejected",
+      "kind": "negative",
+      "input": {
+        "chain": [
+          {
+            "run": "fx:run/R1",
+            "upstreamRunRef": "fx:run/R3"
+          },
+          {
+            "run": "fx:run/R3",
+            "upstreamRunRef": "fx:run/R1"
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "run-chain graph must be acyclic"
+      },
+      "expectedCode": "RUN-CHAIN-CYCLE",
+      "invariantIds": [
+        "I-15"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "chained-run-double-consumption-rejected",
+      "kind": "negative",
+      "input": {
+        "downstreamRuns": [
+          {
+            "run": "fx:run/R3",
+            "upstreamResultRefs": [
+              [
+                "fx:run/R1",
+                "fx:res/unused"
+              ]
+            ],
+            "state": "reconciled"
+          },
+          {
+            "run": "fx:run/R4",
+            "upstreamResultRefs": [
+              [
+                "fx:run/R1",
+                "fx:res/unused"
+              ]
+            ],
+            "state": "reconciled"
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "one result may source at most one non-superseded downstream run; two reconciled consumers double-count 4000"
+      },
+      "expectedCode": "UPSTREAM-RESULT-DOUBLE-CONSUMED",
+      "invariantIds": [
+        "I-15"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "two-axes-in-one-run-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R5",
+        "axis": [
+          "project",
+          "product"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a run has exactly one axis; scoping the conservation equation to one axis is insufficient"
+      },
+      "expectedCode": "RUN-AXIS-CARDINALITY",
+      "invariantIds": [
+        "I-05"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "multi-currency-source-sliced",
+      "kind": "positive",
+      "input": {
+        "source": [
+          {
+            "amount": 90000,
+            "currency": "EUR"
+          },
+          {
+            "amount": 30000,
+            "currency": "USD"
+          }
+        ],
+        "runs": [
+          {
+            "allocationRunId": "fx:run/R6",
+            "currency": "EUR",
+            "sourceAmount": 90000
+          },
+          {
+            "allocationRunId": "fx:run/R7",
+            "currency": "USD",
+            "sourceAmount": 30000
+          }
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "each run conserves independently in its own currency",
+          "no FX occurs inside either run",
+          "no cross-currency total enters conservation"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-05",
+        "I-18"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "multi-currency-single-run-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R8",
+        "currency": "EUR",
+        "sourceAmount": 120000,
+        "note": "30000 USD converted at run time into the EUR source"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a run has exactly one currency and performs no implicit FX; multi-currency sources are sliced per currency"
+      },
+      "expectedCode": "RUN-CURRENCY-CARDINALITY",
+      "invariantIds": [
+        "I-05",
+        "I-18"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "translation-before-allocation-rejected",
+      "kind": "negative",
+      "input": {
+        "order": [
+          "translate components to USD",
+          "allocate"
+        ],
+        "sourceCurrency": "EUR"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "allocation occurs in source currency; a translated amount is never an allocation input"
+      },
+      "expectedCode": "FX-BEFORE-ALLOCATION",
+      "invariantIds": [
+        "I-18"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "translated-result-metadata-and-exclusion",
+      "kind": "positive",
+      "input": {
+        "sourceResultRef": [
+          "fx:run/R2",
+          "fx:res/X"
+        ],
+        "amount": 83600,
+        "currency": "USD",
+        "rate": 1.1,
+        "rateType": "period-average",
+        "rateDate": "2026-07-31",
+        "rateSourceAuthority": "fx:fx-auth/1"
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "translated result carries rate, rateType, rateDate and authority",
+          "translated result is excluded from conservation",
+          "translated result is excluded from any unit-cost numerator"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-18"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "translated-result-in-conservation-rejected",
+      "kind": "negative",
+      "input": {
+        "conservationInputs": [
+          "EUR target results",
+          "USD translated result"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "translated results are derived presentations and never conservation inputs"
+      },
+      "expectedCode": "TRANSLATED-RESULT-IN-CONSERVATION",
+      "invariantIds": [
+        "I-18"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "run-source-period-absent-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R10",
+        "executedAt": "2026-08-03T09:00:00Z",
+        "sourcePeriod": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "sourcePeriod is required; execution time is not a period"
+      },
+      "expectedCode": "SOURCE-PERIOD-ABSENT",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "date-only-period-widened-rejected",
+      "kind": "negative",
+      "input": {
+        "sourcePeriod": {
+          "from": "2026-07-01T00:00:00Z",
+          "to": "2026-07-31T23:59:59.999Z"
+        },
+        "declaredGranularity": "date-only"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a date-only period is never widened to instants"
+      },
+      "expectedCode": "PERIOD-GRANULARITY-WIDENED",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "execution-time-substituted-for-period-rejected",
+      "kind": "negative",
+      "input": {
+        "sourcePeriod": {
+          "from": "2026-08-03",
+          "to": "2026-08-03"
+        },
+        "usageIntervalRefs": [
+          {
+            "from": "2026-07-01",
+            "to": "2026-07-31"
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "run execution instant substituted for the source period; billing period, usage interval, posting date, commitment period, run time and observation time stay separate"
+      },
+      "expectedCode": "TIME-AXIS-CONFLATED",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "overlapping-rule-revisions-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRuleId": "fx:rule/P",
+        "revisions": [
+          {
+            "revision": "3",
+            "effectiveFrom": "2026-01-01",
+            "effectiveTo": "2026-06-30"
+          },
+          {
+            "revision": "4",
+            "effectiveFrom": "2026-06-01",
+            "effectiveTo": null
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "revision effective intervals of one rule must be pairwise non-overlapping"
+      },
+      "expectedCode": "REVISION-INTERVAL-OVERLAP",
+      "invariantIds": [
+        "I-06"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "stored-current-revision-pointer-rejected",
+      "kind": "negative",
+      "input": {
+        "rule": {
+          "allocationRuleId": "fx:rule/P",
+          "currentRevisionRef": [
+            "fx:rule/P",
+            "4"
+          ]
+        },
+        "asOf": "2026-03-15"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "revision resolution is by as-of date against effective intervals; a stored currentRevisionRef contradicts effective-dating"
+      },
+      "expectedCode": "STORED-CURRENT-REVISION-POINTER",
+      "invariantIds": [
+        "I-06"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "axis-change-within-revision-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRuleId": "fx:rule/P",
+        "revision": "5",
+        "axisBefore": "project",
+        "axisAfter": "product"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "axis is identity-fixing; an axis change requires a new rule identity"
+      },
+      "expectedCode": "AXIS-CHANGED-IN-REVISION",
+      "invariantIds": [
+        "I-07"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "run-without-pinned-revision-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R11",
+        "ruleRef": "fx:rule/P",
+        "ruleRevisionRef": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a run pins exactly one immutable revision, not a rule"
+      },
+      "expectedCode": "REVISION-NOT-PINNED",
+      "invariantIds": [
+        "I-04"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "correction-successor-run",
+      "kind": "positive",
+      "input": {
+        "allocationRunId": "fx:run/R2p",
+        "supersedesRunRef": "fx:run/R2",
+        "correctionReason": "restated-usage",
+        "ruleRevisionRef": [
+          "fx:rule/Q",
+          "2"
+        ],
+        "sourceAmount": 120000
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "fx:run/R2 remains resolvable and unmodified",
+          "linkage stored on the successor only",
+          "predecessor results remain immutable and resolvable"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-21"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "predecessor-mutated-with-successor-pointer-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "write successorRunRef='fx:run/R2p' into closed run fx:run/R2"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a closed run is immutable; forward linkage is a derived view, not run content"
+      },
+      "expectedCode": "CLOSED-RUN-MUTATED",
+      "invariantIds": [
+        "I-21"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "correction-without-reason-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R2q",
+        "supersedesRunRef": "fx:run/R2",
+        "correctionReason": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "correctionReason is required from the closed enum when supersedesRunRef is present"
+      },
+      "expectedCode": "CORRECTION-REASON-ABSENT",
+      "invariantIds": [
+        "I-21"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "result-deleted-with-superseded-run-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "delete results of fx:run/R2 upon supersession by fx:run/R2p"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "supersession is not deletion; results remain resolvable after their run is superseded"
+      },
+      "expectedCode": "SUPERSEDED-RESULT-DELETED",
+      "invariantIds": [
+        "I-21",
+        "I-24"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "retired-identifier-recycled-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "mint a new rule reusing allocationRuleId 'fx:rule/P' after retirement"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "retired identifiers remain resolvable and are never recycled"
+      },
+      "expectedCode": "IDENTIFIER-RECYCLED",
+      "invariantIds": [
+        "I-24"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "discount-gross-and-net-reproducible",
+      "kind": "positive",
+      "input": {
+        "ruleRevision": {
+          "discountTreatment": "reduces-source-before-allocation"
+        },
+        "allowanceRef": "fx:allowance/vol-1",
+        "allowanceAmount": -10000,
+        "grossView": 130000,
+        "netView": 120000,
+        "resultAllowanceRefs": "present on every discount-affected result"
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "both gross 130000 and net 120000 views reconstructible from stored attribution",
+          "allowance identity remains WM-ECO-008-owned",
+          "attribution adds basis only, never a new allowance"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-17"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "silent-netting-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmount": 120000,
+        "allowanceRef": null,
+        "discountTreatment": null,
+        "note": "discount already netted into the source with no allowance reference"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "discountTreatment must be pinned on the revision and allowanceRef retained; silent netting makes the gross view irreproducible"
+      },
+      "expectedCode": "SILENT-DISCOUNT-NETTING",
+      "invariantIds": [
+        "I-17"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "discount-reidentified-as-local-allowance-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "mint a new allowance identity inside the allocation cluster for the invoiced volume discount"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "invoice allowance identity stays in WM-ECO-008; the cluster owns attribution basis only"
+      },
+      "expectedCode": "ALLOWANCE-REIDENTIFIED",
+      "invariantIds": [
+        "I-02",
+        "I-17",
+        "I-20"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-normative",
+      "kind": "positive",
+      "input": {
+        "numeratorBasis": "amortized-effective",
+        "numeratorAmount": 76000,
+        "runRef": "fx:run/R2",
+        "resultRef": [
+          "fx:run/R2",
+          "fx:res/X"
+        ],
+        "denominatorQuantityRef": {
+          "master": "WM-FLW-015",
+          "quantity": 19000000,
+          "unit": "billable-request"
+        },
+        "observationActRef": {
+          "master": "WM-MAT-008",
+          "heldOn": "boundary-review-required"
+        },
+        "metricDefinitionRef": {
+          "candidate": "EM-DAT-05 Metric Definition",
+          "allocationState": "unassigned",
+          "version": "2"
+        },
+        "denominatorCompleteness": {
+          "state": "complete",
+          "coverage": 1.0
+        },
+        "currency": "EUR",
+        "period": {
+          "from": "2026-07-01",
+          "to": "2026-07-31"
+        },
+        "targetScope": "fx:product/X",
+        "residualTreatment": "excluded-declared",
+        "residualShare": 0.05
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "value == 0.004 EUR per billable-request",
+          "no new observation identity is minted",
+          "denominator quantity sourced from WM-FLW-015 only",
+          "metric-definition version pinned",
+          "WM-MAT-008 binding carries its boundary hold"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-new-observation-master-rejected",
+      "kind": "negative",
+      "input": {
+        "UnitCostObservation": {
+          "newIdentity": true,
+          "mastersObservationAct": true
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "unit cost profiles WM-MAT-008 plus Metric Definition; a second observation master duplicates WM-MAT-008"
+      },
+      "expectedCode": "SECOND-OBSERVATION-MASTER",
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-denominator-master-ambiguous-rejected",
+      "kind": "negative",
+      "input": {
+        "denominatorQuantityRef": [
+          "WM-FLW-015",
+          "WM-MAT-008"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "exactly one denominator quantity source per observation; the measurement act and the quantity are separate bindings"
+      },
+      "expectedCode": "DENOMINATOR-SOURCE-AMBIGUOUS",
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-denominator-completeness-absent-rejected",
+      "kind": "negative",
+      "input": {
+        "denominatorCompleteness": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "denominatorCompleteness is required; base completeness alone does not bound denominator bias"
+      },
+      "expectedCode": "DENOMINATOR-COMPLETENESS-ABSENT",
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-metric-version-unpinned-rejected",
+      "kind": "negative",
+      "input": {
+        "metricDefinitionRef": {
+          "candidate": "EM-DAT-05 Metric Definition",
+          "version": null
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "the denominator definition version is pinned; changing the useful-result definition creates a new version, not a restated metric"
+      },
+      "expectedCode": "METRIC-VERSION-UNPINNED",
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-residual-treatment-mismatch-rejected",
+      "kind": "negative",
+      "input": {
+        "comparison": [
+          {
+            "observation": "fx:obs/1",
+            "residualTreatment": "excluded-declared",
+            "value": 0.004
+          },
+          {
+            "observation": "fx:obs/2",
+            "residualTreatment": "grossed-up-declared",
+            "value": 0.0042
+          }
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "observations are comparable only under the same residual treatment and metric-definition version"
+      },
+      "expectedCode": "UNIT-COST-INCOMPARABLE",
+      "invariantIds": [
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unit-cost-translated-numerator-rejected",
+      "kind": "negative",
+      "input": {
+        "numeratorAmount": 83600,
+        "numeratorCurrency": "USD",
+        "runCurrency": "EUR"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a translated result is never a unit-cost numerator"
+      },
+      "expectedCode": "TRANSLATED-RESULT-AS-NUMERATOR",
+      "invariantIds": [
+        "I-18",
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "metric-vintage-preserved-after-supersession",
+      "kind": "positive",
+      "input": {
+        "sequence": [
+          "fx:obs/1 cites fx:run/R2 at 0.004",
+          "fx:run/R2 superseded by fx:run/R2p",
+          "fx:obs/2 cites fx:run/R2p at 0.0038"
+        ]
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "fx:obs/1 remains resolvable at 0.004",
+          "fx:obs/1 is not restated in place",
+          "both vintages are distinguishable by run reference"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-21",
+        "I-23"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "allocated-cost-posted-without-journal-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "post fx:run/R1 results to WM-ECO-016 as recognized cost",
+        "authorizedJournalEntryRef": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "allocated cost is an analytical attribution; posting requires a separately authorized journal entry in WM-ECO-016"
+      },
+      "expectedCode": "ALLOCATION-POSTED-WITHOUT-JOURNAL",
+      "invariantIds": [
+        "I-19"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "allocation-posting-with-authorized-journal",
+      "kind": "positive",
+      "input": {
+        "authorizedJournalEntryRef": "fx:je/1",
+        "journalMaster": "WM-ECO-016",
+        "allocationRunRef": "fx:run/R1"
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "the journal entry is a distinct object mastered by WM-ECO-016",
+          "the run and its results are unchanged",
+          "the posting cites the run; the run does not cite the posting as content"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-19"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "result-mutates-invoice-master-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "write allocated amount 72000 onto invoice line fx:line/1 in WM-ECO-008"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a result never mutates an invoice master"
+      },
+      "expectedCode": "INVOICE-MASTER-MUTATED",
+      "invariantIds": [
+        "I-20"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "result-mutates-journal-master-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "amend posting fx:post/1 in WM-ECO-016 from an allocation correction"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "ledger corrections are reversing entries in WM-ECO-016; an allocation correction never rewrites a posting"
+      },
+      "expectedCode": "JOURNAL-MASTER-MUTATED",
+      "invariantIds": [
+        "I-20"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "allocation-creates-usage-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "mint a usage record inside the allocation cluster for untagged consumption"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "usage quantity is mastered only by WM-FLW-015; allocation never creates usage"
+      },
+      "expectedCode": "USAGE-MINTED-BY-ALLOCATION",
+      "invariantIds": [
+        "I-02"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "six-fact-substitution-rejected",
+      "kind": "negative",
+      "input": {
+        "assertion": "invoice amount 120000 treated as recognized cost for the period"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "invoice amount and recognized cost are distinct; amortization, late credits and accruals make them legitimately unequal"
+      },
+      "expectedCode": "FACT-SUBSTITUTION",
+      "invariantIds": [
+        "I-02"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "valuation-as-cost-basis-rejected",
+      "kind": "negative",
+      "input": {
+        "sourceAmountBasis": "valuation",
+        "sourceMasterRef": "WM-ECO-002"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "WM-ECO-002 is a price/valuation comparator only and masters no cost or allocation"
+      },
+      "expectedCode": "VALUATION-AS-COST-BASIS",
+      "invariantIds": [
+        "I-02"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unassertable-reference-row-rejected",
+      "kind": "negative",
+      "input": {
+        "referenceRow": {
+          "target": "WM-ECO-002",
+          "purpose": "Price or valuation comparator only",
+          "assertable": true
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "WM-ECO-002 has no approved outgoing relations; the row must carry assertable=false with its hold"
+      },
+      "expectedCode": "UNASSERTABLE-REFERENCE-ASSERTED",
+      "invariantIds": [
+        "I-02"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unevidenced-reference-row-rejected",
+      "kind": "negative",
+      "input": {
+        "referenceRow": {
+          "target": "WM-ECO-012",
+          "purpose": "Budget or commitment context",
+          "evidenceRefs": []
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "reference rows require evidence, and budget and commitment authorities may not share one row"
+      },
+      "expectedCode": "REFERENCE-UNEVIDENCED",
+      "invariantIds": [
+        "I-02"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "commitment-instrument-minted-rejected",
+      "kind": "negative",
+      "input": {
+        "newCandidate": "CommitmentInstrument",
+        "justification": "no contract master is bound in this dossier"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a missing binding does not justify a candidate; commitment effects are typed derivation components with a held commitmentRef"
+      },
+      "expectedCode": "CANDIDATE-FOR-MISSING-BINDING",
+      "invariantIds": [
+        "I-16"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "run-authorization-absent-rejected",
+      "kind": "negative",
+      "input": {
+        "allocationRunId": "fx:run/R12",
+        "actorRef": null,
+        "authorizationRef": null
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "an audit-citable run is attributable; actorRef and authorizationRef are required"
+      },
+      "expectedCode": "RUN-UNATTRIBUTED",
+      "invariantIds": [
+        "I-04"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "effective-state-without-approval-record-rejected",
+      "kind": "negative",
+      "input": {
+        "ruleRevision": {
+          "allocationRuleId": "fx:rule/P",
+          "revision": "3",
+          "lifecycle": "effective",
+          "approvalRecord": null
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "approval is evidenced by an approval record; lifecycle state never implies approval"
+      },
+      "expectedCode": "APPROVAL-INFERRED",
+      "invariantIds": [
+        "I-04"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "dossier-rules-asserted-approved-rejected",
+      "kind": "negative",
+      "input": {
+        "assertion": "any rule in the EM-FIN-05 dossier is approved or effective"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "no rule in this dossier carries an approval record; the frozen audit confers no approval"
+      },
+      "expectedCode": "APPROVAL-INFERRED",
+      "invariantIds": [
+        "I-04"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "collapsed-confidence-rejected",
+      "kind": "negative",
+      "input": {
+        "confidence": 0.87
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "confidence remains decomposed into measurement uncertainty, base representativeness, commitment-coverage certainty and residual share"
+      },
+      "expectedCode": "CONFIDENCE-COLLAPSED",
+      "invariantIds": [
+        "I-22"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "decomposed-confidence-accepted",
+      "kind": "positive",
+      "input": {
+        "confidence": {
+          "measurementUncertainty": "metered",
+          "baseRepresentativeness": "high",
+          "commitmentCoverageCertainty": "known",
+          "residualShare": 0.1
+        }
+      },
+      "expect": {
+        "accepted": true,
+        "assert": [
+          "four components present and separately readable",
+          "no collapsed scalar is derived for comparison"
+        ]
+      },
+      "expectedCode": null,
+      "invariantIds": [
+        "I-22"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "local-invariant-set-divergence-rejected",
+      "kind": "negative",
+      "input": {
+        "planes": {
+          "localStudy": 14,
+          "claudeStudy": 14,
+          "grokStudy": 14,
+          "candidateRecord": 15
+        }
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "exactly one normative invariant set I-01..I-24 lives in the candidate record; studies cite by identifier and carry no local lists"
+      },
+      "expectedCode": "MULTIPLE-INVARIANT-SETS",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "object-naming-inconsistent-rejected",
+      "kind": "negative",
+      "input": {
+        "names": [
+          "CostAllocationRule",
+          "CostAllocationRuleRevision",
+          "CostAllocationRun",
+          "AllocationResult"
+        ],
+        "fields": [
+          "costBasis",
+          "cost_basis"
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "canonical names are CostAllocationRule, CostAllocationRuleRevision, CostAllocationRun, CostAllocationResult, CostRecord, UnitCostObservation, with camelCase fields throughout"
+      },
+      "expectedCode": "NAMING-INCONSISTENT",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "unmodelled-normative-type-rejected",
+      "kind": "negative",
+      "input": {
+        "term": "CostRecord",
+        "usedNormativelyIn": [
+          "local synthesis",
+          "claude study",
+          "grok study"
+        ],
+        "presentInObjects": false
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "a type bound by invariants is modelled in objects or removed from normative text"
+      },
+      "expectedCode": "UNMODELLED-NORMATIVE-TYPE",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "stale-hold-rejected",
+      "kind": "negative",
+      "input": {
+        "holds": [
+          "Independent Grok review is pending.",
+          "Independent Grok review and frozen audit are pending."
+        ]
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "Grok review is delivered and the single frozen audit is spent; holds must state both and must not invite a rerun"
+      },
+      "expectedCode": "STALE-HOLD",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "frozen-audit-rerun-rejected",
+      "kind": "negative",
+      "input": {
+        "operation": "invoke a second frozen semantic audit for EM-FIN-05"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "the single independent frozen audit is spent; a rerun is not an admissible operation"
+      },
+      "expectedCode": "FROZEN-AUDIT-RERUN",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    },
+    {
+      "id": "publication-claim-rejected",
+      "kind": "negative",
+      "input": {
+        "claim": "EM-FIN-05 is publication-ready or installable"
+      },
+      "expect": {
+        "accepted": false,
+        "reason": "all bases are non-canonical reviewable drafts; registry allocation, crosswalks, immutable pins and comparison-track validation are absent"
+      },
+      "expectedCode": "PUBLICATION-CLAIM",
+      "invariantIds": [
+        "I-01"
+      ],
+      "fixedClock": "2026-08-03T09:00:00Z"
+    }
+  ]
+}

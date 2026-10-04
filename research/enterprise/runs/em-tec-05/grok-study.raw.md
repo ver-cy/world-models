@@ -1,0 +1,45 @@
+**EM-TEC-05 independent boundary review**  
+Scope: the proposed split only. Catalogue facts used as evidence of current shape, not as a completed crosswalk. No new identifiers. No completeness claim. All named models are legacy or reviewable-draft.
+
+**Verdict**  
+Conditional accept with holds. Keep observation/event, incident declaration, cyber qualification, problem, defect and task as distinct roles. Reuse WM-ACT-020 for cyber incidents. Treat rewritten WM-ACT-019 as an extend/rewrite of a physical-emergency legacy model, not a thin profile. Profile reserved WM-KNW-014 for persistent Problem. Hold versioned Defect as a reserved reference toward EM-TEC-08; do not remaster it here. Reuse WM-ACT-006 for response and remediation work. Keep ImpactAssessment as a revisioned incident child. Give RootCauseClaim independent *record* identity inside Problem, with evidence/confidence/status, without a new model ID.  
+Reject two peer incident masters for one occurrence. Reject collapsing operational and cyber determination into one undifferentiated type.
+
+**Identity / mastership**  
+Each declared incident, problem, defect and task keeps its own master-system identifier and lifecycle. Observation/event records are not incidents. A Problem may reference many incidents; it does not inherit their identity. A claim is addressable under the Problem root (issue identifier + claim/artifact sub-namespace + ordinal), not as a federated master and not as a silent field overwrite.  
+WM-KNW-014 already ranks master-system ID first, then governed IRI, then minted UUIDv7; fingerprints are matching aids only. That priority should apply to Problem and to claim children. Correspondence across ops incident, cyber record, problem and defect is REFERENCE with representation role (originating / master / mirror). Relationship does not prove identity. Projection does not create a second master.  
+WM-ACT-019 today is `world.x3-incident-and-emergency` 0.2.0-legacy, not installable, physical-harm/emergency (ISO 22320 / CAP), extending occurrence X1. Calling that a “profile” understates the rewrite. WM-ACT-020 is 0.3.0-research.1, installable, reviewable-draft. WM-ACT-006 is live 0.3.0-research.1 and can carry work via `based_on` / `focus_ref` without owning incident or problem state. WM-SFT-014 was not retrievable as a live spec; reserved ID only.
+
+**Event / incident / cyber boundary**  
+Observation or event is a detected occurrence or alert. Incident is a competent declaration that an unwanted interruption or compromise has been determined. Cyber qualification is a further determination that protected digital systems, information or computer-controlled infrastructure are actually or imminently compromised. Those three acts must not share one record type or one close action.  
+WM-ACT-020 already separates constituent events from incident determination and excludes problem management and response execution. Rewritten WM-ACT-019 must do the same for operational/service interruption. Regulatory clocks, evidence custody, attribution and disclosure markings belong on the cyber qualification, not on a generic outage.  
+Operational and cyber incidents should stay separate *as qualifications*, not as two peer masters of one occurrence. Dual declaration of the same event on rewritten WM-ACT-019 and WM-ACT-020 is the failure mode. Preferred rule: one declaration identity per determined incident; cyber may specialize a prior ops declaration onto WM-ACT-020 without minting a second incident identity, or originate on WM-ACT-020 when SOC detection is first. If both records exist, same-occurrence correspondence is mandatory. WM-AI-010 is another specialized sibling and needs the same rule, or it becomes a third master. Over-merge into one incident type would bury reporting duty and custody. Dual-master would split impact, close and legal hold.
+
+**Problem / defect / task**  
+Problem (WM-KNW-014 profile) is the persistent discrepancy and known-error knowledge: observed vs expected, recurrence, workaround knowledge, causal analysis, disposition. It references incidents; it does not run them. WM-KNW-014 already excludes incident operations and work execution and holds only a candidate REFERENCE to WM-ACT-021. That exclusion must survive the profile.  
+Defect is a version-pinned product nonconformity. It belongs with EM-TEC-08 / reserved WM-SFT-014, not as an EM-TEC-05 owned type. A supported cause claim may *point at* a defect; it must not *be* the defect.  
+Task (WM-ACT-006) is the assignable unit for containment, temporary restore and permanent remediation. ResponseAction on this card should be retired in favor of Task, with Work Order (WM-ACT-007) or Case (WM-ACT-021) only where authorization or requester coordination is required. Task state is not incident state and not problem disposition.
+
+**Impact / root cause**  
+ImpactAssessment stays an identified, revisioned child of the incident that owns the impact assertion. Three incidents can carry three impact revisions. Problem impact is not an automatic rollup. WM-ACT-034 exists; reuse vs incident-child remains an open neighbor, not a new ID.  
+RootCauseClaim belongs *inside* Problem. Independent record identity does not require a new model ID if Problem is the aggregate root and claims are namespaced children. Current WM-KNW-014 causal-analysis-report is a serial investigation artifact plus inline `root_cause` / `causal_conclusion_status` / `contested_claim`. That shape fails competing supported vs disputed claims if treated as successive revisions of one report. The required extension is first-class claim children: asserted / supported / disputed / withdrawn / endorsed, each with evidence refs, confidence, status, incident refs, optional defect ref. Do not reinvent support semantics; align to existing evidence/rationale practice. A claim may reference incidents; closing an incident must not retract the claim. If a later wave needs one claim as shared master across Problems *and* Defects, that is a correspondence hold, not a model ID now.
+
+**Lifecycle**  
+Clocks stay distinct: occurrence, detection, observation, declaration, restore, ingestion. Incident factual state ≠ task state ≠ problem disposition ≠ claim status ≠ defect state. Temporary restore may close a containment task and may allow an incident to close on service recovery; it must not close the Problem, endorse a claim, or complete permanent remediation. Known-error / workaround *knowledge* may sit on Problem; execution sits on Task. Reopen, supersession and merge preserve child ImpactAssessment revisions, claims and outbound work refs. Cascade delete across aggregates is forbidden.
+
+**Scenario**  
+Three incidents against one service: I1 operational declaration from monitoring; I2 recurrence after partial restore; I3 later cyber-qualified (same occurrence correspondence, no second master). Events that were not declared remain events. Temporary restore Task T-restore completes; I1 may close. One Problem P references I1–I3. Claim C-supported (config drift / versioned defect ref) and claim C-disputed (capacity) remain simultaneously live with evidence and confidence. Permanent-remediation Task T-fix stays unfinished.  
+Required outcomes: P open; C-disputed still disputed; T-fix open; defect ref untouched; I1 close does not delete P, claims, ImpactAssessment revisions or T-fix. Mixed cyber+ops must not fork P. Severity and priority remain separately asserted on incident vs work.
+
+**Invariants**  
+1. Observation ≠ incident declaration ≠ cyber qualification ≠ problem ≠ defect ≠ task.  
+2. A cause claim has evidence, confidence and status; competing claims coexist.  
+3. Restore or incident close does not close Problem, claims, Defect or unfinished Task.  
+4. Severity ≠ priority; incident state ≠ task state ≠ problem disposition.  
+5. Closing or merging an incident cannot destroy child impact revisions, claims or referenced work.  
+6. Same-occurrence correspondence never mints a second incident master.  
+7. Relationship and role assignment do not prove identity or execution.  
+8. Unknown is not null; schema, revision and state stay distinct.
+
+**Blockers**  
+WM-ACT-019 rewrite is a research obligation, not a profile overlay; semantic fit for service incidents is unproven. WM-SFT-014 has no live spec. Shared relation ledger is empty; WM-KNW-014 still points at an unnamed incident/occurrence model, not 019/020. WM-ACT-020 COMPOSE-vs-REFERENCE conflict with response neighbor must stay REFERENCE. WM-KNW-014 ITSM problem/known-error reading is a declared tier-4 gap; keep discrepancy as the primitive. Observation-plane identity (legacy X1 vs a live observation model) is unresolved. WM-ACT-034 vs incident-child ImpactAssessment is undecided. Fixtures and field-level crosswalk do not exist; the card is still queued. Physical emergency, service incident, cyber and AI-incident remain an open neighbor set. Publication-ready status is not reached.

@@ -1,0 +1,43 @@
+# EM-OPS-05 — independent adjudication
+
+## Verdict
+Five candidates, five decisions. **StockPosition — reuse** WM-OBJ-020 unchanged. **Shipment — reuse** WM-FLW-011, constrained by its mandatory semantic kind. **LogisticsEvent — reuse, no single root**: it decomposes onto WM-FLW-004 observations, WM-FLW-012 stock transitions, WM-FLW-013 graph edges and WM-ECO-024 milestones; minting one generic logistics event would duplicate four masters. **Lot — new root required**, identifier unassigned. **TransformationEvent — new root required**, identifier unassigned. Plus a thin enterprise Inventory–Genealogy profile for cross-model bindings, also identifier-unassigned. No identifier allocated here.
+
+## Evidence
+All ten drafts are `publishableCanonical: false` / `reviewable-draft`. WM-OBJ-001 and WM-ECO-019 are dual-provider; WM-ECO-024, WM-OBJ-020, WM-FLW-004/011/012/013 and WM-ACT-007 are codex-only under the 2026-09-06 single-provider waiver, each with an absence-of-external-review hold. WM-ECO-024 maps `conceptual-candidate` to EM-OPS-05 at `index-and-publication-metadata` depth only. Relation review states are all `candidate`. Evidence therefore supports boundary adjudication, not conformance.
+
+## Identity/mastership
+Eleven identities stay separate and are already separately mastered: product type, configured variant, serial item (WM-OBJ-001), stock position (WM-OBJ-020), handling unit (WM-OBJ-021, referenced but absent from the dossier), inventory movement (WM-FLW-012), shipment/consignment (WM-FLW-011), goods movement plan and leg (WM-FLW-004), trace edge (WM-FLW-013), fulfilment obligation with receipt, inspection and acceptance assertions (WM-ECO-024), work order (WM-ACT-007). Lot and transformation event have no master. WM-OBJ-001 refuses batch, bulk and fungible matter and redirects to a sibling that does not exist.
+
+## Lot/items/stock
+Lot needs an independent root: its own identity (lot code under an issuer scheme), quantity and unit, expiry, status, and a lifecycle WM-OBJ-001 cannot carry — creation by transformation, split, merge, blend, quarantine, release, expiry, exhaustion, recall. Lot membership on a serial item is provenance, never instance identity; ISO 22095 mass balance and controlled blending break one-to-one continuity. StockPosition stays the quantity aggregate at a declared dimension grain and must not be decomposed into instances unless each is separately identified. Handling unit remains a third thing: scanning an SSCC creates no item and no lot.
+
+## Transformation/genealogy
+WM-FLW-012 owns one stock-affecting transition with source and destination; it carries no input/output set, no yield, no scrap. WM-FLW-013 composes transformation edges but declares event masters external and requires WM-ACT-015, which is unregistered here. WM-OBJ-001's `transform-item-identity` was adjudicated as evidentiary re-grounding, explicitly "rejected as node". So the authoritative actual transformation event is a genuine gap. The new root must bind: input lots and consumed quantities with units, output lots and serialized outputs, yield and scrap with basis, event and record time, place and read point, performing agent and authority, evidence digest, and correction lineage. Planned routing and BOM intent never substitute.
+
+## Shipment/logistics/movement
+WM-FLW-011 is reusable only with its kind discriminator declared (trade-shipment, transport-consignment or combined view) and its many-to-many allocation intact; split and consolidation cannot be forced into containment. Planned shipment (WM-FLW-011 plan plus WM-FLW-004 route and leg) stays distinct from actual movement (WM-FLW-012 posting reference, WM-FLW-004 observation) and from custody transfer (WM-FLW-004 handover, WM-FLW-013 custody interval). Handling-unit membership is typed, time-bounded membership, not ownership of the unit.
+
+## Fulfilment/receipt/acceptance
+WM-ECO-024 already holds the negative case: dispatched does not prove delivered, delivered does not prove intended-recipient receipt, receipt does not prove inspection, inspection does not prove acceptance, completion does not prove conformity or discharge. Reuse it for delivery receipt, inspection and acceptance assertions. Its inspection determination and conformity authority remain external and unnamed — record that as a missing neighbour, not as covered.
+
+## Balance/corrections
+The brief's event-derived balance and WM-OBJ-020's source-qualified snapshot are not the same construct; WM-OBJ-020 explicitly assumes no complete movement ledger. The enterprise profile must declare derivation mode per position: source snapshot, or projection over WM-FLW-012 postings plus explicit corrections within a closed completeness perimeter. Neither authorizes a posting. A missing row is unobserved, never zero; unknown, zero, not-applicable, withheld and suppressed stay distinct. Counts do not adjust stock; corrections append successors and never overwrite.
+
+## Recall/impact
+Proven affected units are reachable by event-backed consumption and output edges from the recalled lot through transformation to serialized outputs. Potentially affected units follow mass-balance, blended, inferred, stale or incomplete edges and each carries its reason. Units matching only by product type or BOM are not evidenced and cannot be declared unaffected absent a closed perimeter. Whole-SKU recall is refused: it substitutes classification for genealogy. Exposure sets are analysis; recall, alert and enforcement are authority decisions outside every model here.
+
+## Time/quantity/provenance
+Keep planned, promised, effective, event, observation, record, posting, ingestion, publication and correction times distinct, RFC 3339 with seconds and explicit offset. Every quantity states item scope, unit with pinned code-list version, precision and measurement basis; unit conversion is sourced, not inferred. Every assertion carries source system, asserting agent, method, confidence and evidence digest, and declared, observed and inferred edges never merge.
+
+## Governance
+Mastership: inventory steward for positions, posting authority for ledger effects, production authority for transformations, logistics steward for shipments, recipient authority for inspection and acceptance. Deny-by-default, purpose-bound access; lot, serial, route and recipient data are sensitive. Projections declare version pins and semantic loss. No model may allocate, dispatch, post, accept or recall on its own authority.
+
+## Acceptance scenario
+Raw lot L (new Lot root) is consumed by transformation T, which outputs serialized assemblies S1–S10 with lot-of-origin provenance on WM-OBJ-001, a co-product lot from a blended silo, and recorded scrap. WM-FLW-012 postings move outputs into positions; WM-OBJ-020 reflects the grain. Shipment SH (trade-shipment kind) carries handling units holding S1–S6; WM-ECO-024 records dispatch, then receipt of five units with one damage exception — S6 is dispatched but neither delivered nor accepted. Recall of L: S1–S10 are proven affected via T's output edges; S7–S10 are quarantined by a status-change movement; the blended co-product lot is potentially affected on mass-balance grounds; same-SKU units from other lots are not evidenced. The SKU is not recalled.
+
+## Invariants
+1. Genealogy edges cite an actual event plus evidence. 2. BOM or routing never establishes actual composition. 3. Plan ≠ movement ≠ posting ≠ acceptance. 4. Lot ≠ serial item ≠ handling unit ≠ position. 5. Every quantity carries unit and scope. 6. Absent row is unobserved. 7. Custody ≠ title; location ≠ custody. 8. Transformation preserves inputs, outputs, yield and scrap. 9. Inferred never becomes asserted. 10. Corrections append; identifiers are never reused. 11. Shipped ≠ delivered ≠ accepted. 12. Exposure analysis is not a recall decision.
+
+## Holds
+Lot, TransformationEvent, production work order, handling unit (WM-OBJ-021), as-built assembly (WM-OBJ-012), occurrence/event (WM-ACT-015) and the inspection authority are unallocated or absent here. Registry parent signals contradict specs for WM-OBJ-020→WM-OBJ-001, WM-FLW-012→WM-OBJ-020, WM-FLW-011/013→WM-FLW-004 and WM-ECO-019→WM-ECO-024 (CONTAINS versus COMPOSE); registry `entry_kind` disagrees with spec `entryKind` on four models — reconcile, do not overwrite. EPCIS 2.0 versus 2.0.1 and UBL 2.3 versus 2.4 pins diverge; WM-ACT-007 is maintenance-scoped with unresolved K11 duplication; WM-FLW-011/012/013 bundle descriptions carry "Route / Itinerary" template leakage. Crosswalks and fixtures are absent. No canonical completeness, installability or publication readiness is claimed.

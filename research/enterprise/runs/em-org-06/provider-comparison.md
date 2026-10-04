@@ -1,0 +1,5 @@
+# EM-ORG-06 provider comparison
+
+Claude and Grok converge on **REUSE** of `WM-ORG-004` for the durable Position and **PROFILE** of `WM-XCT-023` for Accountability, held Decision Rights and RACI, with no new runtime or model identifier. Both keep occupancy external, preserve the seat through vacancy and occupant change, separate business/legal role assertions from IAM permissions, and leave `HeadcountPlan` unassigned.
+
+Grok sharpened the four-layer distinction between Job/Class, Position, Occupancy and BusinessRole; the distinction between derived seat vacancy and a recruitment vacancy; and the three authority planes of seat authority, held authority and assignment-time conveyance. Claude supplied the stronger concept/assertion split, the natural-key and capacity mechanics, and the requirement to treat the BusinessRole vocabulary as an unallocated dependency rather than silently embedding it. References to models outside the frozen dossier remain explanatory only and are not adopted as verified dependencies.

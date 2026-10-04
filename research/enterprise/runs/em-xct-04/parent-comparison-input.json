@@ -1,0 +1,2857 @@
+[
+  {
+    "id": "WM-XCT-009",
+    "version": "0.3.0-research.1",
+    "sha256": "060511804c09ed5992e3fdf222839f97a0d340db0a2cba3c4c08aded7767e90d",
+    "live_equal": true,
+    "statistics": {
+      "sources": 31,
+      "bundles": 7,
+      "layers": 20,
+      "findings": 20,
+      "questions": 111,
+      "artifacts": 27,
+      "functions": 13
+    },
+    "model": {
+      "registry_id": "vr.wm-xct-009",
+      "model_id": "WM-XCT-009",
+      "name": "Time / Calendar",
+      "entry_kind": "mixin",
+      "purpose": "Provide a format-neutral, authority-grounded reference model for temporal reference data (time scales, civil time zones, calendar systems, recurrence, holidays and observances) together with the embeddable temporal value shapes that every other model needs to express instants, intervals, durations, schedules and deadlines unambiguously.",
+      "scope_statement": "WM-XCT-009 is a mix-in plus reference model. It defines (a) the governed reference data that determines what a civil date-time means — time scales and leap adjustments, time zone identifiers and their offset-transition history, calendar systems, eras and week rules, and jurisdictional holidays and observances; and (b) the reusable temporal value shapes (instant, interval, duration, recurrence, precision, binding mode) that sibling models embed. It is storage- and interface-neutral: TZif, iCalendar, JSCalendar, JSON, XML, Git or MongoDB are projections of the same semantics. It records external standards as alignments, never as claimed conformance, and treats the IANA tz database and CLDR as mirrors of civil decisions rather than as the legal authority for them.",
+      "in_scope": [
+        "Time scales, epochs and their mutual offsets (UTC, TAI, UT1, GPS time, POSIX/Unix time), and the governance of leap adjustments",
+        "Civil time zone identity, canonical/alias relationships, standard and daylight offsets, and the complete transition history of a zone",
+        "Legal instruments and decision processes by which a jurisdiction sets or changes standard time and daylight saving arrangements",
+        "Calendar systems and their identifiers, eras and year numbering, intercalation and leap-month structure, and territory week rules",
+        "Reusable temporal value shapes: instant, interval, duration, period, granularity/precision, and the floating/zoned/absolute binding contract",
+        "Recurrence rule semantics, exceptions and overrides, and calendar-scale-aware recurrence expansion",
+        "Public holidays as proclaimed by an authority, cultural and religious observances and their computation methods",
+        "Working-day and business-day calendars, weekend rules and date-adjustment (business day) conventions",
+        "Reference-data lifecycle: release versioning, signing, distribution, expiry, freshness and correction of temporal reference data"
+      ],
+      "out_of_scope": [
+        "Clock synchronisation and time transfer protocols and their engineering (NTP, PTP, GNSS timing, UTC(k) traceability chains) — a distinct time-dissemination model",
+        "Calendaring and scheduling application semantics such as attendees, invitations, free/busy, alarms and iTIP scheduling workflows",
+        "The definition and geometry of jurisdictions and territories themselves — held by the place/jurisdiction model and only referenced here",
+        "General identifier-scheme governance — held by the identifier and naming model; this model only consumes registered temporal identifier schemes",
+        "Astronomical ephemeris computation and the physics of Earth rotation; only the published results (leap-second decisions, DUT1 limits) are consumed",
+        "Labour-law entitlements, pay premiums and leave accrual arising from holidays; only the day-off status of a holiday is modelled",
+        "Domain deadline policy (SLA targets, statutory limitation periods); this model supplies the calculus, not the policy",
+        "Localisation and formatting of dates for presentation, beyond the identifiers and week/calendar preference data needed to compute correct values"
+      ],
+      "boundary_notes": [
+        {
+          "neighbor": "Place / jurisdiction reference model",
+          "distinction": "Time zones and holidays are scoped to jurisdictions and sub-jurisdictional divisions (for example the UK bank-holiday divisions england-and-wales, scotland, northern-ireland, or US county-level zone boundaries in 49 CFR Part 71). This model references those jurisdiction identities; it does not define territories, boundaries or their geometry. tz zone names are deliberately not country-based and must not be treated as jurisdiction identifiers.",
+          "source_refs": [
+            "SRC-003",
+            "SRC-019",
+            "SRC-020"
+          ]
+        },
+        {
+          "neighbor": "Identifier and naming model",
+          "distinction": "tzids, CLDR BCP47 timezone keys and u-ca calendar keys are governed identifier schemes maintained elsewhere. This model records which scheme an identifier belongs to, its canonical form and its alias relations; scheme registration policy itself belongs to the identifier model.",
+          "source_refs": [
+            "SRC-011",
+            "SRC-013",
+            "SRC-002"
+          ]
+        },
+        {
+          "neighbor": "Time dissemination and clock synchronisation model",
+          "distinction": "BIPM Circular T and IERS bulletins are consumed here as authoritative statements about the scale (leap seconds, UTC-TAI, UTC(k) deviations). How a device acquires and steers to that scale, and traceability of a local clock, is a separate engineering model.",
+          "source_refs": [
+            "SRC-014",
+            "SRC-015",
+            "SRC-023"
+          ]
+        },
+        {
+          "neighbor": "Calendaring and scheduling application model",
+          "distinction": "RFC 5545 and RFC 8984 are alignments for recurrence and time-zone value semantics only. Event participation, scheduling negotiation and calendar-store synchronisation belong to an application model that embeds this mix-in.",
+          "source_refs": [
+            "SRC-007",
+            "SRC-009"
+          ]
+        },
+        {
+          "neighbor": "Financial settlement and instrument models",
+          "distinction": "Business day conventions and business-centre holiday calendars are defined here as reusable date arithmetic. Which convention a given contract or instrument elects is a fact of that instrument, held by the financial model.",
+          "source_refs": [
+            "SRC-021"
+          ]
+        },
+        {
+          "neighbor": "Statistics and records models",
+          "distinction": "Reference periods, retention triggers and reporting cut-offs embed this model's interval and recurrence shapes. The meaning of a reference period for a statistic, or of a retention trigger for a record, stays with those models.",
+          "source_refs": [
+            "SRC-017",
+            "SRC-007"
+          ]
+        }
+      ]
+    },
+    "holds": [
+      "Verify live availability, editions and claim-level support for every accepted primary source, including current tzdb, BIPM/IERS, IETF and Unicode releases.",
+      "Complete jurisdictional profiles for holiday and working-day authorities and direct clause-level verification of paywalled ISO 8601-1/2 before promoting a universal completeness claim."
+    ],
+    "structure": [
+      {
+        "id": "time-base",
+        "layers": [
+          {
+            "id": "time-scale-and-epoch",
+            "findings": [
+              "time-scale-definition"
+            ]
+          },
+          {
+            "id": "leap-adjustment-governance",
+            "findings": [
+              "leap-second-adjustment"
+            ]
+          },
+          {
+            "id": "instant-precision-and-resolution",
+            "findings": [
+              "instant-representation"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "civil-time-zone",
+        "layers": [
+          {
+            "id": "zone-identity-and-registry",
+            "findings": [
+              "zone-identifier"
+            ]
+          },
+          {
+            "id": "offset-rule-and-transition-history",
+            "findings": [
+              "offset-transition-record"
+            ]
+          },
+          {
+            "id": "local-time-anomaly-resolution",
+            "findings": [
+              "wall-clock-ambiguity-policy"
+            ]
+          },
+          {
+            "id": "zone-legal-authority",
+            "findings": [
+              "civil-time-decree"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "calendar-system",
+        "layers": [
+          {
+            "id": "calendar-identity-and-structure",
+            "findings": [
+              "calendar-system-definition"
+            ]
+          },
+          {
+            "id": "era-and-year-numbering",
+            "findings": [
+              "era-definition"
+            ]
+          },
+          {
+            "id": "week-rules-and-territory-defaults",
+            "findings": [
+              "week-rule-set"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "temporal-value-shapes",
+        "layers": [
+          {
+            "id": "instant-interval-duration",
+            "findings": [
+              "core-temporal-value-shapes"
+            ]
+          },
+          {
+            "id": "granularity-and-indeterminacy",
+            "findings": [
+              "temporal-granularity-and-openness"
+            ]
+          },
+          {
+            "id": "temporal-binding-contract",
+            "findings": [
+              "temporal-binding-declaration"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "recurrence-and-scheduling-rules",
+        "layers": [
+          {
+            "id": "recurrence-rule-semantics",
+            "findings": [
+              "recurrence-rule"
+            ]
+          },
+          {
+            "id": "recurrence-exceptions-and-calendar-scale",
+            "findings": [
+              "recurrence-exception-and-rscale"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "observance-and-working-day",
+        "layers": [
+          {
+            "id": "public-holiday-proclamation",
+            "findings": [
+              "public-holiday-instance"
+            ]
+          },
+          {
+            "id": "cultural-religious-observance",
+            "findings": [
+              "observance-definition"
+            ]
+          },
+          {
+            "id": "working-day-and-date-adjustment",
+            "findings": [
+              "working-day-calendar"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "reference-data-governance",
+        "layers": [
+          {
+            "id": "version-release-and-freshness",
+            "findings": [
+              "reference-data-release"
+            ]
+          },
+          {
+            "id": "provenance-conflict-and-quality",
+            "findings": [
+              "provenance-and-known-inaccuracy"
+            ]
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "resolve-local-to-instant",
+        "name": "Resolve local time to instant",
+        "description": "Convert a wall-clock local date-time in a named zone to an instant on the reference scale, applying the declared gap and overlap policy and recording the resolved offset.",
+        "inputs": [
+          "local date-time value",
+          "zone identifier",
+          "gap policy",
+          "overlap policy",
+          "pinned zone data release"
+        ],
+        "outputs": [
+          "instant with explicit offset",
+          "resolved offset",
+          "anomaly classification (none, gap, overlap)"
+        ],
+        "preconditions": [
+          "Zone identifier resolves to a canonical zone in the pinned release",
+          "Requested instant lies within the release's asserted validity bound or a projection rule is available"
+        ],
+        "effects": [
+          "Resolved offset and the zone data release identifier are persisted with the value so the resolution is reproducible",
+          "Anomalies are surfaced rather than silently defaulted"
+        ],
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-007",
+          "SRC-006"
+        ]
+      },
+      {
+        "id": "resolve-instant-to-local",
+        "name": "Render instant as local civil time",
+        "description": "Project an instant onto a named zone and calendar to obtain the civil date-time, era and designation in force at that instant.",
+        "inputs": [
+          "instant",
+          "zone identifier",
+          "calendar key",
+          "week data territory"
+        ],
+        "outputs": [
+          "local date-time",
+          "offset in force",
+          "daylight indicator",
+          "era and year-in-era",
+          "designation"
+        ],
+        "preconditions": [
+          "Calendar key is current and not deprecated in the pinned registry extract",
+          "Zone data covers the requested instant"
+        ],
+        "effects": [
+          "Emits the calendar and zone annotations alongside the value when crossing a system boundary"
+        ],
+        "source_refs": [
+          "SRC-004",
+          "SRC-006",
+          "SRC-011",
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "expand-recurrence",
+        "name": "Expand recurrence set",
+        "description": "Generate the occurrence set for a recurrence rule over a bounded window, applying by-part filters in specified order, week start, calendar scale, skip behaviour, exclusions, additions and overrides.",
+        "inputs": [
+          "recurrence rule expression",
+          "anchor value and binding mode",
+          "expansion window",
+          "recurrence scale",
+          "skip behaviour",
+          "exclusion and addition lists",
+          "override map"
+        ],
+        "outputs": [
+          "ordered occurrence list",
+          "per-occurrence keys",
+          "list of skipped or shifted dates with reason"
+        ],
+        "preconditions": [
+          "Anchor value is present and its binding mode is declared",
+          "Count and until bounds are not both present",
+          "Window is bounded when the rule is otherwise infinite"
+        ],
+        "effects": [
+          "Produces a materialised occurrence set stamped with the reference-data releases used",
+          "Reports override keys that matched no generated occurrence"
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-008",
+          "SRC-009"
+        ]
+      },
+      {
+        "id": "convert-calendar-date",
+        "name": "Convert between calendar systems",
+        "description": "Convert a date between registered calendar systems, resolving eras, leap months and intercalation, and reporting any loss.",
+        "inputs": [
+          "source calendar key",
+          "source date with era",
+          "target calendar key"
+        ],
+        "outputs": [
+          "target calendar date with era",
+          "leap month marker where applicable",
+          "loss report"
+        ],
+        "preconditions": [
+          "Both calendar keys exist in the pinned registry extract",
+          "Determination method is declared for observational calendars"
+        ],
+        "effects": [
+          "Records the determination method and registry release used for the conversion"
+        ],
+        "source_refs": [
+          "SRC-011",
+          "SRC-013",
+          "SRC-008"
+        ]
+      },
+      {
+        "id": "compute-holiday-set",
+        "name": "Compute holiday set for jurisdiction and period",
+        "description": "Assemble the authoritative holiday set for a jurisdictional division over a period from proclamations, published feeds and observance determinations, marking substitutions and confirmation status.",
+        "inputs": [
+          "division identifier",
+          "period bounds",
+          "holiday feed snapshots",
+          "observance determination records"
+        ],
+        "outputs": [
+          "dated holiday list with day-off status",
+          "substitution annotations",
+          "beyond-horizon marker for uncovered dates"
+        ],
+        "preconditions": [
+          "At least one authoritative feed or instrument covers the division",
+          "Period start and end are declared with inclusivity"
+        ],
+        "effects": [
+          "Marks dates beyond the authority's published horizon as unconfirmed rather than absent",
+          "Retains the feed snapshot as evidence"
+        ],
+        "source_refs": [
+          "SRC-019",
+          "SRC-020",
+          "SRC-018",
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "build-working-day-calendar",
+        "name": "Build working-day calendar",
+        "description": "Compose a territory weekend rule with one or more holiday sets to produce the working and non-working days for a named centre over a period.",
+        "inputs": [
+          "business centre code",
+          "territory week data",
+          "holiday sets",
+          "centre combination rule",
+          "period bounds"
+        ],
+        "outputs": [
+          "working day list",
+          "non-working day list with reason per date",
+          "input release manifest"
+        ],
+        "preconditions": [
+          "Week data exists for the territory or an explicit override is declared",
+          "Holiday sets cover the whole period or the shortfall is reported"
+        ],
+        "effects": [
+          "Emits a serial projection artifact retained alongside its predecessors for reproducibility"
+        ],
+        "source_refs": [
+          "SRC-012",
+          "SRC-019",
+          "SRC-021"
+        ]
+      },
+      {
+        "id": "adjust-date-to-business-day",
+        "name": "Adjust date to a business day",
+        "description": "Move a date that falls on a non-working day according to a named adjustment convention, respecting month-boundary behaviour where the convention requires it.",
+        "inputs": [
+          "unadjusted date",
+          "working-day calendar",
+          "adjustment convention code"
+        ],
+        "outputs": [
+          "adjusted date",
+          "adjustment applied (none, forward, backward)",
+          "month-boundary reversal flag"
+        ],
+        "preconditions": [
+          "Convention code is drawn from the governed enumeration",
+          "Working-day calendar covers the candidate dates in both directions"
+        ],
+        "effects": [
+          "Records the convention and calendar release used so the adjustment can be re-derived"
+        ],
+        "source_refs": [
+          "SRC-021",
+          "SRC-019",
+          "SRC-012"
+        ]
+      },
+      {
+        "id": "compute-elapsed-and-deadline",
+        "name": "Compute elapsed time and deadline",
+        "description": "Compute an elapsed duration or a deadline instant using a declared counting basis, cut-off time and endpoint inclusivity, distinguishing exact from nominal duration arithmetic.",
+        "inputs": [
+          "start value",
+          "duration or target count",
+          "counting basis",
+          "working-day calendar",
+          "cut-off time and binding mode",
+          "endpoint inclusivity"
+        ],
+        "outputs": [
+          "result instant or date",
+          "counting trace",
+          "clamping or transition adjustments applied"
+        ],
+        "preconditions": [
+          "Duration kind is declared as exact or nominal",
+          "Start value binding mode is declared"
+        ],
+        "effects": [
+          "Nominal arithmetic across zone transitions and short months is applied by the declared algorithm rather than by implementation default"
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-009",
+          "SRC-017",
+          "SRC-021"
+        ]
+      },
+      {
+        "id": "validate-temporal-value",
+        "name": "Validate temporal value against profile",
+        "description": "Check a temporal value against the Dimension's timestamp, precision and binding profiles, rejecting unqualified local times and unsupported granularities.",
+        "inputs": [
+          "temporal value",
+          "field binding declaration",
+          "timestamp conformance profile",
+          "temporal precision profile"
+        ],
+        "outputs": [
+          "validation verdict",
+          "violation list with error codes",
+          "normalised value where normalisation is permitted"
+        ],
+        "preconditions": [
+          "The field has an entry in the binding declaration register"
+        ],
+        "effects": [
+          "Blocks ingestion of values lacking a required offset, zone, calendar key or granularity"
+        ],
+        "source_refs": [
+          "SRC-005",
+          "SRC-006",
+          "SRC-024",
+          "SRC-009"
+        ]
+      },
+      {
+        "id": "detect-reference-data-change",
+        "name": "Detect and classify reference data change",
+        "description": "Compare a newly published reference-data release with the pinned release, classify each change, and identify affected stored values and computations.",
+        "inputs": [
+          "pinned release identifiers",
+          "candidate release identifiers",
+          "synchronisation token or entity tags",
+          "inventory of stored temporal values"
+        ],
+        "outputs": [
+          "change list classified by type (new zone, relink, offset rule change, holiday added or moved, era added, leap decision)",
+          "impact set",
+          "recommended adoption window"
+        ],
+        "preconditions": [
+          "Both releases are retained and verifiable",
+          "Stored values record the release they were computed against"
+        ],
+        "effects": [
+          "Raises a change notice for jurisdictional rule changes with short lead time",
+          "Triggers re-expansion of affected recurrence sets under the declared policy"
+        ],
+        "source_refs": [
+          "SRC-002",
+          "SRC-010",
+          "SRC-001",
+          "SRC-015"
+        ]
+      },
+      {
+        "id": "verify-release-integrity-and-freshness",
+        "name": "Verify release integrity and freshness",
+        "description": "Verify signature or checksum of each pinned reference dataset, confirm it is unexpired, and record an attestation.",
+        "inputs": [
+          "release manifest",
+          "publisher signatures or checksums",
+          "current instant"
+        ],
+        "outputs": [
+          "per-dataset verification result",
+          "expiry status",
+          "freshness attestation record"
+        ],
+        "preconditions": [
+          "Publisher key material or checksum reference is available",
+          "Each dataset entry declares an expiry or an explicit statement that none applies"
+        ],
+        "effects": [
+          "Emits a serial attestation and raises an alert when any dataset is expired or beyond the permitted adoption lag"
+        ],
+        "source_refs": [
+          "SRC-002",
+          "SRC-016",
+          "SRC-010"
+        ]
+      },
+      {
+        "id": "project-to-interchange-format",
+        "name": "Project temporal data to an interchange format",
+        "description": "Render zone, recurrence, calendar and holiday content into a target interchange projection and report which semantics the projection cannot carry.",
+        "inputs": [
+          "source model records",
+          "target projection identifier",
+          "truncation bounds"
+        ],
+        "outputs": [
+          "projected artifact",
+          "loss report listing dropped fields and annotations",
+          "validity upper bound where truncated"
+        ],
+        "preconditions": [
+          "Target projection is declared in the composition alignments",
+          "Truncation bounds are stated when the target supports them"
+        ],
+        "effects": [
+          "Never silently drops binding mode, calendar key or provenance; unrepresentable semantics are reported",
+          "Records the alias under which a zone was requested when it differs from the canonical identifier"
+        ],
+        "source_refs": [
+          "SRC-004",
+          "SRC-007",
+          "SRC-009",
+          "SRC-010"
+        ]
+      },
+      {
+        "id": "record-authority-decision",
+        "name": "Record a civil time or holiday authority decision",
+        "description": "Capture a legal instrument or proclamation that sets, changes or rescinds civil time arrangements or a public holiday, with announcement and effective instants recorded separately.",
+        "inputs": [
+          "instrument identifier and citation",
+          "competent authority",
+          "territory or division references",
+          "announcement instant",
+          "effective instant",
+          "decision content"
+        ],
+        "outputs": [
+          "authority decision record",
+          "derived change notice",
+          "mirroring task for reference data"
+        ],
+        "preconditions": [
+          "The issuing authority is competent for the stated territory",
+          "Official publication reference is available or the gap is recorded"
+        ],
+        "effects": [
+          "Creates the authoritative record that the mirrored dataset is later reconciled against",
+          "Starts the divergence clock when the mirrored dataset does not yet reflect the decision"
+        ],
+        "source_refs": [
+          "SRC-018",
+          "SRC-020",
+          "SRC-002",
+          "SRC-019"
+        ]
+      }
+    ],
+    "composition": [
+      {
+        "target": "Any model with temporal fields (universal mix-in surface)",
+        "relation": "MIX-IN",
+        "purpose": "Supplies the instant, interval, duration, granularity, recurrence and binding-mode value shapes so that sibling models express temporal facts once, consistently, with a declared binding rather than an implicit one.",
+        "required": true,
+        "source_refs": [
+          "SRC-017",
+          "SRC-007",
+          "SRC-009",
+          "SRC-005"
+        ]
+      },
+      {
+        "target": "world.place (jurisdiction and territory model)",
+        "relation": "REFERENCE",
+        "purpose": "Zones, week data, holidays and business centres are all scoped to jurisdictions and sub-jurisdictional divisions defined and maintained there; this model holds only references, never territory definitions or geometry.",
+        "required": true,
+        "source_refs": [
+          "SRC-019",
+          "SRC-020",
+          "SRC-012",
+          "SRC-003"
+        ]
+      },
+      {
+        "target": "world.identifierNaming (identifier and naming model)",
+        "relation": "REFERENCE",
+        "purpose": "tz identifiers, CLDR BCP47 timezone keys and calendar keys are governed schemes whose registration, canonicalisation and deprecation policy is held by the identifier model; this model records scheme membership, canonical form and alias relations.",
+        "required": true,
+        "source_refs": [
+          "SRC-011",
+          "SRC-013",
+          "SRC-002"
+        ]
+      },
+      {
+        "target": "IANA Time Zone Database (tzdb)",
+        "relation": "REFERENCE",
+        "purpose": "Authoritative mirror of civil zone identifiers, offsets and transition history, consumed by pinned release identifier; treated as a record of civil decisions, not as the legal authority for them.",
+        "required": true,
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003"
+        ]
+      },
+      {
+        "target": "Unicode CLDR supplemental and BCP47 registries",
+        "relation": "REFERENCE",
+        "purpose": "Source of stable timezone keys, metazones, calendar keys, era tables, week data and territory calendar preference, pinned by CLDR release version alongside the zone data release.",
+        "required": true,
+        "source_refs": [
+          "SRC-011",
+          "SRC-012",
+          "SRC-013",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "IERS and BIPM leap-second and UTC publications",
+        "relation": "REFERENCE",
+        "purpose": "Authoritative, serial statements of leap-second decisions, cumulative TAI-UTC offsets and UTC realisation that the time-base bundle consumes and re-publishes with expiry.",
+        "required": true,
+        "source_refs": [
+          "SRC-014",
+          "SRC-015",
+          "SRC-016",
+          "SRC-023"
+        ]
+      },
+      {
+        "target": "RFC 3339 and RFC 9557 timestamp profile",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for instant serialisation, offset semantics and time zone or calendar annotation with criticality. Alignment only: conformance is claimed per interface after profile testing, not model-wide.",
+        "required": true,
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "target": "RFC 5545 iCalendar and RFC 7529 non-Gregorian recurrence",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for zone observance structure, recurrence rule semantics, exceptions, and calendar-scaled expansion with skip behaviour.",
+        "required": false,
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "target": "RFC 8984 JSCalendar",
+        "relation": "ALIGN",
+        "purpose": "Second, structurally independent alignment target that validates format-neutrality: the same semantics must project to both the iCalendar component form and the JSCalendar object form.",
+        "required": false,
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "target": "RFC 9636 TZif",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for the binary zone projection, including local time type records, leap-second records and the leap-table expiration convention.",
+        "required": false,
+        "source_refs": [
+          "SRC-004"
+        ]
+      },
+      {
+        "target": "RFC 7808 Time Zone Data Distribution Service",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for the distribution and versioning surface: version models, truncation with a validity bound, alias handling, expansion and change detection.",
+        "required": false,
+        "source_refs": [
+          "SRC-010"
+        ]
+      },
+      {
+        "target": "W3C Time Ontology in OWL",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for the conceptual vocabulary of temporal entities, temporal reference systems via hasTRS, duration descriptions and Allen interval relations, giving the value shapes a published semantic anchor.",
+        "required": false,
+        "source_refs": [
+          "SRC-017"
+        ]
+      },
+      {
+        "target": "FpML business day convention and business centre schemes",
+        "relation": "ALIGN",
+        "purpose": "Declared alignment for the date-adjustment enumeration and centre-addressed holiday calendars used by the working-day layer.",
+        "required": false,
+        "source_refs": [
+          "SRC-021"
+        ]
+      },
+      {
+        "target": "Working-day calendar composition (internal)",
+        "relation": "COMPOSE",
+        "purpose": "The working-day calendar is not primitive: it is composed at build time from territory week data, one or more jurisdictional holiday sets and a centre combination rule, and must record every input release.",
+        "required": true,
+        "source_refs": [
+          "SRC-012",
+          "SRC-019",
+          "SRC-021"
+        ]
+      },
+      {
+        "target": "Legacy N11 Time & Calendar Reference (world.timeCalendar 0.2.0)",
+        "relation": "EXTEND",
+        "purpose": "Supersedes the previous three-bundle description by separating value shapes from reference data, adding an explicit legal-authority layer, an anomaly-resolution layer and a governance bundle, and by demoting unsupported constructs such as named commercial contracts to out-of-model concerns.",
+        "required": false,
+        "source_refs": [
+          "SRC-002",
+          "SRC-003",
+          "SRC-018"
+        ]
+      },
+      {
+        "target": "Records retention and statistics reference-period models",
+        "relation": "REFERENCE",
+        "purpose": "Those models embed this model's interval, recurrence and working-day shapes for retention triggers and reference periods; the meaning and legal force of the trigger or period remains theirs.",
+        "required": false,
+        "source_refs": [
+          "SRC-007",
+          "SRC-017"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "WM-XCT-021",
+    "version": "0.3.0-research.1",
+    "sha256": "87c8c50f6f4c2eb3478751f01a08c6c37c6a85f97f4c056505b13cdf561314e9",
+    "live_equal": true,
+    "statistics": {
+      "sources": 29,
+      "bundles": 5,
+      "layers": 12,
+      "findings": 32,
+      "questions": 128,
+      "artifacts": 26,
+      "functions": 17
+    },
+    "model": {
+      "registry_id": "vr.wm-xct-021",
+      "model_id": "WM-XCT-021",
+      "name": "Lifecycle / Status",
+      "entry_kind": "mixin",
+      "purpose": "Provide one reusable, format-neutral context package that lets any host world-model entry declare the governed state machine it obeys, its current state on each status axis, the effective validity of that state in real-world time and in system time, and the authority, evidence, succession, invalidation and disposition rules that govern movement between states.",
+      "scope_statement": "WM-XCT-021 is a cross-cutting mixin, not a standalone entity. It supplies (a) the definition of a lifecycle state machine as a governed, versioned, identified object; (b) the assertion of current state and the append-only history of transitions; (c) bitemporal effective validity, separating real-world (valid/application) time from record (transaction/ingestion) time; (d) succession, deprecation, revocation, suspension and disposition semantics including their reversibility and retroactive effect; and (e) the operational and interoperability surface needed to evaluate, apply, query, publish and map status. It deliberately carries no domain meaning: the semantics of any particular state ('active order', 'approved permit') belong to the host model that composes this mixin. It is independent of storage format and access interface; JSON, YAML, Markdown, HTML, Git, MCP and MongoDB are projections of these semantics, never their source.",
+      "in_scope": [
+        "Definition of the state space: governed state code list, state identity, initial state, terminal states, reversible states",
+        "Multiple concurrent status axes (governance/publication, operational, legal validity, quality) and their precedence rules",
+        "Transition topology: permitted source/target pairs, triggers, guard conditions, mandated effects, deterministic conflict resolution",
+        "Concurrent regions, composite states, and history (resumption) semantics where the host lifecycle needs them",
+        "Identity, versioning, ownership and change procedure of the lifecycle definition itself, including self-application of the mixin",
+        "Current-state assertion and append-only transition history, with actor, authorizer, delegation and reason code",
+        "Effective validity intervals (valid-from / valid-until), boundary inclusivity, precision, open-endedness and no-expiry conventions",
+        "Bitemporality: event time, observation time, record/ingestion time; retroactive correction, amendment and as-of/as-at reconstruction",
+        "Supersession, replacement, deprecation and sunset links, and traversal to the current item",
+        "Revocation versus suspension, invalidity dating, retroactive effect, and published status distribution to relying parties",
+        "Lifecycle end as a retention/disposition trigger, legal hold, logical deletion, tombstones and erasure reconciliation",
+        "Operational contract for evaluating and applying transitions (idempotency, concurrency, atomicity, rejection recording)",
+        "Mapping of local states to external status vocabularies, mapping strength, lossiness and recorded conflicts",
+        "Visibility and access classification of pre-publication states and of transition justifications"
+      ],
+      "out_of_scope": [
+        "Domain semantics of individual states (what 'dispensed', 'settled' or 'commissioned' means) — supplied by the host model",
+        "Version identity, content diffing, branching and merging of the subject's content — belongs to a Versioning & Change Control model",
+        "General provenance of content creation and derivation beyond lifecycle transitions — belongs to a Provenance & Lineage model",
+        "Retention schedules, appraisal methodology and the legal instruments that authorise disposition — belongs to a Records Retention & Disposition model",
+        "Authorization policy language, role engineering and enforcement — belongs to an Authorization & Access Control model",
+        "Human workflow orchestration: task assignment, queues, escalation, service levels — belongs to a Process / Workflow model",
+        "Calendars, business-day arithmetic, non-Gregorian temporal reference systems — belongs to a Temporal Reference & Calendar model",
+        "Assignment and minting of subject identifiers — belongs to an Identity & Identifier model",
+        "Governance of the state code list as a code list (publication, translation, code-list versioning) — belongs to a Classification / Code List Registry model",
+        "Cryptographic formats, proofs and key management for credentials whose revocation patterns are reused here",
+        "Physical storage, indexing, change-data-capture and database audit mechanisms — projection concerns",
+        "Formal verification of state machines (deadlock, liveness, reachability proofs)"
+      ],
+      "boundary_notes": [
+        {
+          "neighbor": "Provenance & Lineage model",
+          "distinction": "This mixin records why, by whom and under what authority a state changed, and the invalidation instant. General entity generation, derivation and attribution graphs belong to the provenance model; PROV-O generation/invalidation and FHIR Provenance.occurred vs Provenance.recorded are the shared seam, not a duplication.",
+          "source_refs": [
+            "SRC-004",
+            "SRC-014"
+          ]
+        },
+        {
+          "neighbor": "Versioning & Change Control model",
+          "distinction": "Supersession and deprecation are represented here as lifecycle states and links because they change fitness for use. The identity of a version, its content delta and its release engineering belong to the versioning model; DCAT 3 previousVersion/hasCurrentVersion and DCMI replaces/isReplacedBy are the alignment points.",
+          "source_refs": [
+            "SRC-009",
+            "SRC-015",
+            "SRC-011"
+          ]
+        },
+        {
+          "neighbor": "Records Retention & Disposition model",
+          "distinction": "Only the lifecycle-end trigger, the legal-hold flag and the resulting disposition state are modelled here. Appraisal, retention schedules and the authorising instrument are external; ISO 15489-1 requires disposition authorities to be authorised, dated, implemented and reviewed, which this mixin references rather than restates.",
+          "source_refs": [
+            "SRC-017",
+            "SRC-021"
+          ]
+        },
+        {
+          "neighbor": "Authorization & Access Control model",
+          "distinction": "This mixin records the authority basis actually exercised for a transition and the visibility class of a state; it does not define policy syntax, role hierarchies or an enforcement point.",
+          "source_refs": [
+            "SRC-017",
+            "SRC-020"
+          ]
+        },
+        {
+          "neighbor": "Process / Workflow Orchestration model",
+          "distinction": "The lifecycle here is a declarative state machine over one subject, in the sense of SCXML/UML behavioural state machines. Multi-actor task routing, work queues and durations belong to the workflow model.",
+          "source_refs": [
+            "SRC-007",
+            "SRC-019"
+          ]
+        },
+        {
+          "neighbor": "Temporal Reference & Calendar model",
+          "distinction": "Validity intervals, boundary conventions and RFC 3339/9557 timestamp rules are in scope. Temporal reference systems, non-Gregorian calendars and duration arithmetic belong to the temporal model; OWL-Time supplies the interval-relation vocabulary used across the seam.",
+          "source_refs": [
+            "SRC-008",
+            "SRC-001",
+            "SRC-002"
+          ]
+        },
+        {
+          "neighbor": "Classification / Code List Registry model",
+          "distinction": "The state code list is governed as a code list elsewhere (registration authority, registration status of each code). This mixin binds a code list to a state space and adds transition structure that a plain code list does not carry.",
+          "source_refs": [
+            "SRC-016",
+            "SRC-018"
+          ]
+        },
+        {
+          "neighbor": "Credential / Certificate model",
+          "distinction": "Revocation, suspension and status-list distribution patterns are generalised here from PKI and Verifiable Credentials. Credential formats, signature suites and key lifecycle stay in the credential model.",
+          "source_refs": [
+            "SRC-003",
+            "SRC-005",
+            "SRC-006"
+          ]
+        },
+        {
+          "neighbor": "Event Record model",
+          "distinction": "A lifecycle transition is a constrained event with a mandatory prior-state/new-state pair. General domain events, their payloads and their correlation belong to the event model.",
+          "source_refs": [
+            "SRC-004",
+            "SRC-014"
+          ]
+        }
+      ]
+    },
+    "holds": [
+      "Verify live editions and claim-level support for all accepted SCXML, W3C PROV/OWL-Time, HL7 FHIR, DCMI, ISO and records-management sources.",
+      "Validate the mixin against at least five independent profiles: publication, workflow/request, clinical interpretation, software release and records disposition."
+    ],
+    "structure": [
+      {
+        "id": "lifecycle-model-definition",
+        "layers": [
+          {
+            "id": "state-space",
+            "findings": [
+              "state-vocabulary",
+              "status-axes",
+              "terminality-and-reversibility",
+              "lifecycle-pattern-family"
+            ]
+          },
+          {
+            "id": "transition-system",
+            "findings": [
+              "transition-topology-and-guards",
+              "concurrency-and-history"
+            ]
+          },
+          {
+            "id": "machine-governance",
+            "findings": [
+              "machine-identity-and-version",
+              "machine-authority-and-conformance"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "state-assertion-and-history",
+        "layers": [
+          {
+            "id": "current-state-assertion",
+            "findings": [
+              "state-assertion-record",
+              "derived-vs-asserted-status",
+              "lifecycle-binding-identity",
+              "host-subject-and-aspect-binding",
+              "active-configuration-and-lossy-projection"
+            ]
+          },
+          {
+            "id": "transition-record",
+            "findings": [
+              "transition-event-record",
+              "reason-evidence-and-authority"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "effective-validity",
+        "layers": [
+          {
+            "id": "validity-interval",
+            "findings": [
+              "valid-time-interval",
+              "boundary-precision-and-clock",
+              "interval-relations-and-continuity"
+            ]
+          },
+          {
+            "id": "record-time-and-correction",
+            "findings": [
+              "record-time-and-observation-time",
+              "retroactive-correction-and-restatement"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "succession-invalidation-disposition",
+        "layers": [
+          {
+            "id": "succession-and-deprecation",
+            "findings": [
+              "supersession-and-replacement-links",
+              "deprecation-and-sunset",
+              "replacement-and-entered-in-error"
+            ]
+          },
+          {
+            "id": "invalidation",
+            "findings": [
+              "revocation-and-suspension",
+              "invalidity-dating-and-retroactive-effect"
+            ]
+          },
+          {
+            "id": "end-of-life",
+            "findings": [
+              "retention-trigger-and-disposition",
+              "logical-deletion-and-erasure"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "operations-and-interoperability",
+        "layers": [
+          {
+            "id": "lifecycle-operations",
+            "findings": [
+              "transition-execution-contract",
+              "temporal-state-resolution-queries",
+              "exception-and-illegal-transition-handling"
+            ]
+          },
+          {
+            "id": "status-interoperability",
+            "findings": [
+              "external-status-vocabulary-mapping",
+              "status-publication-and-visibility"
+            ]
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "resolve-effective-state",
+        "name": "Resolve effective state",
+        "description": "Return the state of a subject on a named axis for a given real-world instant, as believed at a given record instant, together with the interval and assertion that produced the answer.",
+        "inputs": [
+          "Subject reference",
+          "Status axis identifier",
+          "As-of valid instant (default: request instant)",
+          "As-at record instant (default: latest)"
+        ],
+        "outputs": [
+          "Resolved state code",
+          "Governing validity interval",
+          "Assertion and transition event references",
+          "Lifecycle definition version used"
+        ],
+        "preconditions": [
+          "The subject is bound to a lifecycle definition version",
+          "At least one state assertion exists, or an explicit indeterminate status is returned"
+        ],
+        "effects": [
+          "No state change; read-only",
+          "May emit a reproducible as-of state snapshot for audit"
+        ],
+        "source_refs": [
+          "SRC-013",
+          "SRC-024",
+          "SRC-008",
+          "SRC-001"
+        ]
+      },
+      {
+        "id": "evaluate-transition",
+        "name": "Evaluate transition legality",
+        "description": "Determine, without applying anything, whether a proposed transition is permitted: source state matches, transition is declared, guard holds, and the caller holds the required authority.",
+        "inputs": [
+          "Subject reference",
+          "Proposed target state or trigger",
+          "Caller identity and authority basis",
+          "Evaluation instant"
+        ],
+        "outputs": [
+          "Permitted or refused verdict",
+          "Failing precondition detail",
+          "Selected transition identifier when several match"
+        ],
+        "preconditions": [
+          "A lifecycle definition version is in force for the subject"
+        ],
+        "effects": [
+          "No state change",
+          "Evaluation may be logged for audit without creating a transition event"
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-019",
+          "SRC-018"
+        ]
+      },
+      {
+        "id": "apply-transition",
+        "name": "Apply transition",
+        "description": "Record a state change: append an immutable transition event, close the prior validity interval, open the new one, execute mandated effects and update any materialised current state.",
+        "inputs": [
+          "Subject reference",
+          "Selected transition identifier",
+          "Reason code and justification",
+          "Event time and expected current state",
+          "Idempotency key"
+        ],
+        "outputs": [
+          "Transition event identifier",
+          "New current state",
+          "Outcome code (applied, rejected, duplicate)"
+        ],
+        "preconditions": [
+          "Transition evaluated as permitted",
+          "Expected current state matches actual current state",
+          "Event time conforms to the temporal convention profile"
+        ],
+        "effects": [
+          "Appends to the append-only transition log",
+          "Sets record time from the system clock, not from caller input",
+          "Triggers mandated effects atomically or with declared compensation"
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-014",
+          "SRC-024"
+        ]
+      },
+      {
+        "id": "assert-validity-period",
+        "name": "Assert or adjust validity period",
+        "description": "Set or adjust the real-world validity interval of a state or assertion independently of the status value, honouring boundary and precision conventions.",
+        "inputs": [
+          "Subject reference",
+          "Status axis identifier",
+          "Valid-from and optional valid-until with explicit offset or zone annotation",
+          "Reason for adjustment"
+        ],
+        "outputs": [
+          "Updated validity interval",
+          "Continuity validation result"
+        ],
+        "preconditions": [
+          "Boundary convention and precision are declared in the temporal convention profile",
+          "Adjustment does not violate contiguity or overlap constraints unless an exception is authorised"
+        ],
+        "effects": [
+          "Creates a new assertion rather than editing the previous one",
+          "May change the derived effective status without any status transition"
+        ],
+        "source_refs": [
+          "SRC-005",
+          "SRC-003",
+          "SRC-013",
+          "SRC-015"
+        ]
+      },
+      {
+        "id": "supersede-subject",
+        "name": "Supersede subject",
+        "description": "Record that a subject has been replaced by a successor: set the superseded state, write bidirectional links and fix the effective instant, keeping the superseded item resolvable.",
+        "inputs": [
+          "Superseded subject reference",
+          "Successor reference",
+          "Supersession effective instant",
+          "Relation kind (version or replacement)"
+        ],
+        "outputs": [
+          "Supersession record identifier",
+          "Updated state on both items",
+          "Current-version pointer"
+        ],
+        "preconditions": [
+          "Successor exists and is itself in a valid state",
+          "Supersession is a declared transition for the current state"
+        ],
+        "effects": [
+          "Changes status from valid to superseded on the replaced item",
+          "Retains the replaced item for interpretation of historical data"
+        ],
+        "source_refs": [
+          "SRC-016",
+          "SRC-015",
+          "SRC-009",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "deprecate-subject",
+        "name": "Deprecate subject with sunset",
+        "description": "Mark a subject as discouraged for new use, publish the sunset date, migration target and compatibility position, without changing its formal semantics.",
+        "inputs": [
+          "Subject reference",
+          "Sunset date",
+          "Migration target reference",
+          "Compatibility assertion and version notes"
+        ],
+        "outputs": [
+          "Deprecation notice identifier",
+          "Deprecation annotation on the subject"
+        ],
+        "preconditions": [
+          "Minimum notice period satisfied by the announced sunset date",
+          "A migration target exists or its absence is explicitly justified"
+        ],
+        "effects": [
+          "Adds a non-logical deprecation annotation",
+          "Starts the notice clock leading to retirement or supersession"
+        ],
+        "source_refs": [
+          "SRC-010",
+          "SRC-011",
+          "SRC-009",
+          "SRC-016"
+        ]
+      },
+      {
+        "id": "invalidate-subject",
+        "name": "Revoke or suspend subject",
+        "description": "Apply an invalidation with an explicit reversibility class, reason code, invalidity instant and retroactivity ruling, and queue it for publication to relying parties.",
+        "inputs": [
+          "Subject reference",
+          "Invalidation kind (revocation or suspension)",
+          "Reason code",
+          "Invalidity instant and decision instant",
+          "Retroactivity ruling"
+        ],
+        "outputs": [
+          "Invalidation decision record identifier",
+          "Updated status and status-list entry",
+          "Cascade instructions for dependent subjects"
+        ],
+        "preconditions": [
+          "Caller holds the authority declared for this invalidation kind",
+          "Irreversible revocation is not applied where the governing policy requires suspension first"
+        ],
+        "effects": [
+          "Changes effective status independently of the validity interval",
+          "Schedules publication of the new status",
+          "May trigger cascading invalidation of dependent subjects"
+        ],
+        "source_refs": [
+          "SRC-003",
+          "SRC-006",
+          "SRC-005",
+          "SRC-004"
+        ]
+      },
+      {
+        "id": "reinstate-subject",
+        "name": "Reinstate subject",
+        "description": "Return a subject from a reversible non-valid state to a valid state, recording the grounds, the authority and whether a new validity interval is opened.",
+        "inputs": [
+          "Subject reference",
+          "Reinstatement grounds and evidence",
+          "Effective instant",
+          "Interval policy (reopen prior interval or open new)"
+        ],
+        "outputs": [
+          "Reinstatement decision record identifier",
+          "Updated state and validity interval"
+        ],
+        "preconditions": [
+          "Current state is declared reversible",
+          "Reinstatement is a declared transition and the caller holds the required authority"
+        ],
+        "effects": [
+          "Removes the subject from suspension listings on the next publication",
+          "Leaves the original suspension event permanently in the history"
+        ],
+        "source_refs": [
+          "SRC-003",
+          "SRC-006",
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "correct-past-record",
+        "name": "Correct or amend a past record",
+        "description": "Issue a correction, clarification, amendment or retraction of an earlier assertion without editing it in place, preserving the earlier belief for as-at reconstruction.",
+        "inputs": [
+          "Target assertion or transition reference",
+          "Correction kind",
+          "Corrected values",
+          "Grounds and authorising agent"
+        ],
+        "outputs": [
+          "Correction record identifier",
+          "Notification list for affected consumers"
+        ],
+        "preconditions": [
+          "The original record remains retrievable",
+          "The correction kind is drawn from the governed code list"
+        ],
+        "effects": [
+          "Appends a new record and closes the record-time envelope of the prior belief",
+          "Never deletes or rewrites the superseded assertion",
+          "May oblige notification of downstream consumers within a stated period"
+        ],
+        "source_refs": [
+          "SRC-004",
+          "SRC-014",
+          "SRC-016",
+          "SRC-024"
+        ]
+      },
+      {
+        "id": "validate-lifecycle-conformance",
+        "name": "Validate lifecycle conformance",
+        "description": "Check a subject's recorded state history against the governing definition version: legal transitions only, no unknown states, interval continuity respected, timestamps conforming to the temporal profile.",
+        "inputs": [
+          "Subject reference or population selector",
+          "Lifecycle definition version",
+          "Validation rule set"
+        ],
+        "outputs": [
+          "Conformance result per subject",
+          "Violation details",
+          "Conformance validation report"
+        ],
+        "preconditions": [
+          "A lifecycle definition version and constraint set are published",
+          "Subjects are bound to a definition version"
+        ],
+        "effects": [
+          "Produces retained evidence of validation",
+          "May raise lifecycle exception register entries; does not itself change state"
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-018",
+          "SRC-016",
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "evaluate-disposition-trigger",
+        "name": "Evaluate disposition trigger",
+        "description": "Compute whether a subject has reached the end of its retention period following a lifecycle trigger, and what disposition action is due, respecting any legal hold.",
+        "inputs": [
+          "Subject reference",
+          "Retention trigger event",
+          "Retention period and disposition authority reference",
+          "Legal hold state"
+        ],
+        "outputs": [
+          "Disposition due date",
+          "Eligibility verdict",
+          "Due disposition action"
+        ],
+        "preconditions": [
+          "An authorised, dated disposition instrument is referenced",
+          "The trigger event is recorded in the transition log"
+        ],
+        "effects": [
+          "No destruction occurs; the function only determines eligibility",
+          "Suspends eligibility while a legal hold is in force"
+        ],
+        "source_refs": [
+          "SRC-017",
+          "SRC-021",
+          "SRC-020"
+        ]
+      },
+      {
+        "id": "execute-disposition",
+        "name": "Execute disposition",
+        "description": "Carry out the due disposition action — destroy, transfer, retain permanently or re-appraise — and leave the required tombstone and evidence.",
+        "inputs": [
+          "Subject reference",
+          "Authorised disposition action",
+          "Authorising and witnessing agents",
+          "Tombstone specification"
+        ],
+        "outputs": [
+          "Destruction or erasure certificate",
+          "Tombstone record",
+          "Final lifecycle state"
+        ],
+        "preconditions": [
+          "Eligibility verified and no legal hold in force",
+          "Authorisation and any dual-control requirement satisfied"
+        ],
+        "effects": [
+          "Irreversibly removes content where the action is destruction",
+          "Leaves references resolvable through the tombstone",
+          "Retains destruction evidence for the period required by the governing authority"
+        ],
+        "source_refs": [
+          "SRC-017",
+          "SRC-021",
+          "SRC-020",
+          "SRC-016"
+        ]
+      },
+      {
+        "id": "publish-status-projection",
+        "name": "Publish status projection",
+        "description": "Produce and distribute the current status projection for a population of subjects, with its publication instant, maximum staleness, integrity proof and privacy sizing.",
+        "inputs": [
+          "Population selector",
+          "Publication channel",
+          "Maximum staleness policy",
+          "Privacy sizing parameters"
+        ],
+        "outputs": [
+          "Published status package",
+          "Publication instant and next expected update",
+          "Integrity proof"
+        ],
+        "preconditions": [
+          "Statuses to be published are resolved and conformant",
+          "Privacy analysis completed for the population"
+        ],
+        "effects": [
+          "Makes status externally observable; the act of publication is itself recorded",
+          "May reveal population membership if sizing is inadequate"
+        ],
+        "source_refs": [
+          "SRC-006",
+          "SRC-003",
+          "SRC-012"
+        ]
+      },
+      {
+        "id": "map-external-status",
+        "name": "Map external status",
+        "description": "Translate a state between the local vocabulary and a named external vocabulary version, returning the mapping strength and any information lost.",
+        "inputs": [
+          "Source state code and vocabulary version",
+          "Target vocabulary identifier and version",
+          "Mapping direction"
+        ],
+        "outputs": [
+          "Target code or explicit unmatched result",
+          "Mapping strength",
+          "Loss notes and recorded conflicts"
+        ],
+        "preconditions": [
+          "A mapping table exists and has been revalidated against the target version",
+          "Alignment is claimed rather than conformance unless evidence exists"
+        ],
+        "effects": [
+          "No state change",
+          "Unmatched mappings are recorded rather than silently defaulted"
+        ],
+        "source_refs": [
+          "SRC-012",
+          "SRC-016",
+          "SRC-022",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "bind-lifecycle-mixin",
+        "name": "Bind lifecycle mixin",
+        "description": "Attach a lifecycle binding to a host with a governing machine, code system, pattern family and identifiers.",
+        "inputs": [
+          "host reference",
+          "machine reference",
+          "code system reference",
+          "pattern family",
+          "identifier scheme"
+        ],
+        "outputs": [
+          "lifecycle record identifier",
+          "initial configuration",
+          "observation time"
+        ],
+        "preconditions": [
+          "Host identity exists in the identity sibling.",
+          "Machine definition is identified and has a legal initial configuration."
+        ],
+        "effects": [
+          "Creates a lifecycle record bound to the host.",
+          "Does not change host identity."
+        ],
+        "source_refs": [
+          "SRC-007",
+          "SRC-025"
+        ]
+      },
+      {
+        "id": "mark-entered-in-error",
+        "name": "Mark entered in error",
+        "description": "Set error or entered-in-error without deleting the host, record the correction, and apply any redaction or notification policy.",
+        "inputs": [
+          "lifecycle record identifier",
+          "authorising agent",
+          "reason",
+          "event time",
+          "observation time"
+        ],
+        "outputs": [
+          "error status",
+          "correction record identifier",
+          "redaction applied boolean"
+        ],
+        "preconditions": [
+          "Agent is authorised.",
+          "Deletion is not used as a substitute when integrity requires retention."
+        ],
+        "effects": [
+          "Sets modifier status so consumers ignore the host.",
+          "Retains the record.",
+          "Writes a correction artefact."
+        ],
+        "source_refs": [
+          "SRC-025",
+          "SRC-026",
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "restore-history-configuration",
+        "name": "Restore history configuration",
+        "description": "On re-entry of a compound state, apply stored shallow or deep history instead of the default child.",
+        "inputs": [
+          "lifecycle record identifier",
+          "history vertex identifier",
+          "authorising agent"
+        ],
+        "outputs": [
+          "restored configuration",
+          "current status"
+        ],
+        "preconditions": [
+          "History kind is declared.",
+          "Stored configuration is compatible with the current machine version."
+        ],
+        "effects": [
+          "Replaces default initial entry with stored configuration.",
+          "Audits the restoration."
+        ],
+        "source_refs": [
+          "SRC-007"
+        ]
+      }
+    ],
+    "composition": [
+      {
+        "target": "Host world-model entry composing this mixin (any entity, event, relationship, aggregate, registry or classifier)",
+        "relation": "MIX-IN",
+        "purpose": "Supply the host entry with a governed state machine, current-state assertion, bitemporal validity and disposition hooks without imposing any domain semantics.",
+        "required": true,
+        "source_refs": [
+          "SRC-018",
+          "SRC-016",
+          "SRC-007"
+        ]
+      },
+      {
+        "target": "Classification / Code List Registry model (sibling; not yet registered)",
+        "relation": "COMPOSE",
+        "purpose": "The state space is a governed code list administered by a registration authority; this mixin binds such a code list and adds transition structure that a plain code list does not carry.",
+        "required": true,
+        "source_refs": [
+          "SRC-016",
+          "SRC-018",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "Identity & Identifier model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Subject, artifact and authority identifiers are minted and governed there; this mixin only cites them and enforces the identity priority order for its own artifacts.",
+        "required": true,
+        "source_refs": [
+          "SRC-016",
+          "SRC-018"
+        ]
+      },
+      {
+        "target": "Provenance & Lineage model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Transition attribution, generation and invalidation timestamps extend the general provenance graph rather than duplicating it.",
+        "required": true,
+        "source_refs": [
+          "SRC-004",
+          "SRC-014"
+        ]
+      },
+      {
+        "target": "Versioning & Change Control model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Supersession and deprecation states here point at version lineage maintained there; version identity and content deltas are not modelled in this mixin.",
+        "required": false,
+        "source_refs": [
+          "SRC-009",
+          "SRC-015",
+          "SRC-011"
+        ]
+      },
+      {
+        "target": "Records Retention & Disposition model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Lifecycle end supplies the retention trigger; the authorised, dated disposition instrument and the appraisal behind it live in the retention model.",
+        "required": false,
+        "source_refs": [
+          "SRC-017",
+          "SRC-021"
+        ]
+      },
+      {
+        "target": "Authorization & Access Control model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Transition authority basis and state visibility classes are recorded here and evaluated there; no policy language is defined in this mixin.",
+        "required": false,
+        "source_refs": [
+          "SRC-017",
+          "SRC-020"
+        ]
+      },
+      {
+        "target": "Process / Workflow Orchestration model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Workflow tasks drive transitions but the declarative state machine, not the task graph, is the authority on legal states.",
+        "required": false,
+        "source_refs": [
+          "SRC-007",
+          "SRC-019"
+        ]
+      },
+      {
+        "target": "Temporal Reference & Calendar model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "Interval algebra, temporal reference systems and calendar arithmetic are supplied there; this mixin consumes them for validity intervals.",
+        "required": false,
+        "source_refs": [
+          "SRC-008",
+          "SRC-002"
+        ]
+      },
+      {
+        "target": "Event Record model (sibling; not yet registered)",
+        "relation": "REFERENCE",
+        "purpose": "A lifecycle transition is a constrained event subtype; general event payloads and correlation belong to the event model.",
+        "required": false,
+        "source_refs": [
+          "SRC-014",
+          "SRC-004"
+        ]
+      },
+      {
+        "target": "ISO 19135-1:2015 register item status (RE_ItemStatus: notValid, valid, superseded, retired) and proposal disposition",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for register-style lifecycles, including the requirement that retired, superseded and invalid items remain resolvable. Alignment only; no conformance is claimed.",
+        "required": false,
+        "source_refs": [
+          "SRC-016"
+        ]
+      },
+      {
+        "target": "ISO/IEC 11179-6:2023 registration status (lifecycle versus documentation status categories, single registration authority)",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for the separation of governance status axes and for single-authority administration of status. Alignment only; the normative text is paywalled and was not read in full.",
+        "required": false,
+        "source_refs": [
+          "SRC-018"
+        ]
+      },
+      {
+        "target": "HL7 FHIR R5 PublicationStatus value set (draft | active | retired | unknown)",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for a minimal normative governance axis, including an explicit code for indeterminate status.",
+        "required": false,
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "target": "W3C PROV-O (generation, invalidation, revision, attribution)",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for transition provenance, invalidation instants and revision links.",
+        "required": false,
+        "source_refs": [
+          "SRC-004"
+        ]
+      },
+      {
+        "target": "W3C Verifiable Credentials Data Model 2.0 and Bitstring Status List v1.0",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for the separation of validity period from status, and for reversible suspension versus irreversible revocation with published status lists.",
+        "required": false,
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "target": "IETF RFC 5280 certificate validity and CRLReason enumeration",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for validity boundaries, no-expiry conventions, reason codes with consequences, hold-and-release reversibility and invalidity dating.",
+        "required": false,
+        "source_refs": [
+          "SRC-003"
+        ]
+      },
+      {
+        "target": "IETF RFC 3339 and RFC 9557 timestamp semantics",
+        "relation": "ALIGN",
+        "purpose": "Normative alignment for every timestamp in the model: explicit offset or Z, second precision, and IANA zone annotation for future-dated boundaries.",
+        "required": true,
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "target": "W3C SCXML and OMG UML 2.5.1 behavioural state machines",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for the state-machine formalism: states, transitions, triggers, guards, effects, regions, history and deterministic conflict resolution.",
+        "required": false,
+        "source_refs": [
+          "SRC-007",
+          "SRC-019"
+        ]
+      },
+      {
+        "target": "SQL:2011-style application-time and system-versioned period tables",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for bitemporal storage and as-of/as-at querying. Evidence is drawn from an implementation; the ISO/IEC 9075-2 text itself was not read.",
+        "required": false,
+        "source_refs": [
+          "SRC-024"
+        ]
+      },
+      {
+        "target": "DCMI Metadata Terms and DCAT 3 / ADMS versioning and status properties",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for validity dates and supersession links in catalogue and metadata contexts.",
+        "required": false,
+        "source_refs": [
+          "SRC-015",
+          "SRC-009",
+          "SRC-011"
+        ]
+      },
+      {
+        "target": "ISO 15489-1:2016 disposition authorities and NARA General Records Schedules",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for lifecycle-triggered retention: authorities that are authorised, dated, implemented and reviewed, issued and versioned externally.",
+        "required": false,
+        "source_refs": [
+          "SRC-017",
+          "SRC-021"
+        ]
+      },
+      {
+        "target": "Regulation (EU) 2016/679 Articles 5(1)(e), 17 and 30",
+        "relation": "ALIGN",
+        "purpose": "Legal constraint alignment for storage limitation, erasure and processing records, which bounds the append-only history where personal data is involved.",
+        "required": false,
+        "source_refs": [
+          "SRC-020"
+        ]
+      },
+      {
+        "target": "schema.org EventStatusType",
+        "relation": "ALIGN",
+        "purpose": "Alignment target for widely deployed public status vocabularies, and a recorded counterexample of conflating lifecycle state with modality change.",
+        "required": false,
+        "source_refs": [
+          "SRC-023"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "WM-XCT-022",
+    "version": "0.3.0-research.2",
+    "sha256": "40ced88212f4c90690bdbb35bf2429fe627d11793bee5e587b5b10b99f49fe85",
+    "live_equal": true,
+    "statistics": {
+      "sources": 32,
+      "bundles": 6,
+      "layers": 12,
+      "findings": 26,
+      "questions": 119,
+      "artifacts": 24,
+      "functions": 21
+    },
+    "model": {
+      "registry_id": "vr.wm-xct-022",
+      "model_id": "WM-XCT-022",
+      "name": "Version / Change History",
+      "entry_kind": "mixin",
+      "purpose": "Give any Vercy world-model entry a composable, storage-neutral way to declare revision identity, ordered predecessor/successor lineage, the substance and authority of each change, and the migration path between versions, so an agent can identify which state it holds, reconstruct any prior state, and decide whether it must migrate.",
+      "scope_statement": "This mixin owns the semantics of a versioned record: the immutable identity of one revision of an identified host entity, the designation scheme that labels it, the predecessor/successor topology that orders it, the delta and classification that describe what changed, the agent and authority that made and approved the change, the record time and effective time of the change, the integrity evidence that makes the history verifiable, and the compatibility and migration statements that let a consumer move from one revision to another. It is mixed into host models rather than instantiated alone, and it deliberately does not model the host entity's own attributes. It is independent of storage format and access interface: JSON, YAML, Markdown, HTML, Git, OCFL, MCP and MongoDB are projections of these semantics, not the semantics themselves.",
+      "in_scope": [
+        "Revision identity: the immutable identifier of one revision and its relation to the version-independent identifier of the host entity",
+        "Version designation schemes (semantic, calendar, sequential, opaque) and the compatibility promise, if any, that an increment carries",
+        "Precedence and ordering rules over revisions, including which fields are ignored for ordering",
+        "Predecessor and successor relations, including multi-parent merge topology and branch scoping",
+        "Distinction between revision, derivation into a new entity, and format/rendition variant",
+        "Change sets: snapshot versus forward delta, patch formalisms, invertibility and verifiability of a delta",
+        "Change classification: category, breaking versus non-breaking, semantic versus presentational, correction, severity",
+        "Human-readable change notes, release notes and unreleased-change tracking",
+        "Compatibility declarations (backward, forward, incompatible) and the evidence supporting them",
+        "Migration procedures between versions, including reversibility, idempotence, expected loss and deadlines",
+        "Deprecation and sunset of a revision, endpoint or element, and the replacement pointer",
+        "Record time versus change-event time versus effective/validity period, and supersession instants",
+        "Revision lifecycle states (working copy, checked out, released, superseded, deprecated, withdrawn, deactivated) and legal transitions",
+        "Attribution of the change to a person, organisation or software agent, and the authority or approval under which it was made",
+        "Content fixity, canonicalisation profile and tamper evidence for history entries, including redaction handling",
+        "Enumeration of history, as-of retrieval and reconstruction of a prior state",
+        "Concurrency control expectations (expected-current-revision preconditions) and conflict outcomes",
+        "Retention, compaction, tombstoning and lawful disposition of history entries",
+        "Declared alignment (not conformance) to external version vocabularies and link relations"
+      ],
+      "out_of_scope": [
+        "The host entity's domain attributes; this mixin describes only how those attributes change over time",
+        "General provenance: activities, plans, usage and entity generation that are not revision events belong to the provenance sibling model",
+        "Operator audit logging of reads, failed logins, signature ceremonies and other actions that produce no new revision",
+        "Build, packaging, release engineering and deployment pipelines that produce an artefact bearing a version label",
+        "Key management, certificate issuance and signature-suite selection",
+        "Physical or logical storage layout, directory conventions, database schemas and serialisation formats",
+        "Access-control policy definition and enforcement (this model supplies classification inputs only)",
+        "Approval workflow routing, task assignment and notification mechanics",
+        "Retention schedule authoring and legal-hold adjudication (this model consumes the resulting schedule)",
+        "Identifier minting policy, namespace governance and persistence guarantees for the host entity identifier",
+        "Distributed convergence mechanics such as CRDTs, vector clocks and consensus protocols",
+        "Licensing and rights changes between versions"
+      ],
+      "boundary_notes": [
+        {
+          "neighbor": "Provenance / lineage model (PROV-style agents, activities, derivations)",
+          "distinction": "PROV-O covers activities, agents, plans and usage generally; prov:wasRevisionOf is one specialisation of prov:wasDerivedFrom. This mixin owns only the revision relation between successive states of one identified host entity plus designation, compatibility and migration. Anything about how work was performed, or about entities that are not revisions of one another, belongs to the provenance sibling.",
+          "source_refs": [
+            "SRC-001",
+            "SRC-014"
+          ]
+        },
+        {
+          "neighbor": "Audit trail / event log model",
+          "distinction": "21 CFR 11.10(e) requires audit trails that independently record operator entries and actions including those that create no new revision, and NIST SP 800-53 AU-3 governs audit-record content generally. Version history records only state-producing changes; the audit sibling records the wider action stream and read access.",
+          "source_refs": [
+            "SRC-017",
+            "SRC-022"
+          ]
+        },
+        {
+          "neighbor": "Records retention and disposition model",
+          "distinction": "Retention schedules, legal-hold adjudication and disposition authority are owned by the retention sibling. This mixin carries the retention basis, the disposition action applied to a history entry, and the tombstone that survives it.",
+          "source_refs": [
+            "SRC-026",
+            "SRC-017"
+          ]
+        },
+        {
+          "neighbor": "Release, build and deployment model",
+          "distinction": "Semantic Versioning and PEP 440 define version grammars for released packages, but the act of building, signing, publishing and deploying is a pipeline concern. This mixin records the designation, the compatibility promise and the migration path, not the pipeline that produced them.",
+          "source_refs": [
+            "SRC-002",
+            "SRC-018"
+          ]
+        },
+        {
+          "neighbor": "Access interface / protocol model",
+          "distinction": "HTTP conditional requests, ETag validators, Accept-Datetime negotiation and IANA link relations are projections of this model's concurrency and navigation semantics onto one interface. The semantics must remain expressible without HTTP.",
+          "source_refs": [
+            "SRC-005",
+            "SRC-025",
+            "SRC-004"
+          ]
+        },
+        {
+          "neighbor": "Storage layout model",
+          "distinction": "OCFL prescribes version directory naming, inventory files and content addressing. Those are a storage projection; this mixin requires that a continuous version sequence, a head pointer and a fixity record exist, not that they be stored as directories.",
+          "source_refs": [
+            "SRC-012"
+          ]
+        },
+        {
+          "neighbor": "Digital signature and integrity model",
+          "distinction": "C2PA claim signatures and NIST AU-10 non-repudiation depend on key and certificate lifecycle management owned by a signature sibling. This mixin records the signature reference, the signer, the covered digest and the declared meaning of the signature.",
+          "source_refs": [
+            "SRC-020",
+            "SRC-022"
+          ]
+        },
+        {
+          "neighbor": "Approval / change-governance workflow model",
+          "distinction": "NIST SP 800-53 CM-3 places change proposal, review and approval in a change-control process. The workflow sibling owns routing and task state; this mixin binds the approval outcome, approver and decision instant to a revision identifier.",
+          "source_refs": [
+            "SRC-022",
+            "SRC-017"
+          ]
+        },
+        {
+          "neighbor": "Identifier and namespace governance model",
+          "distinction": "OWL 2 separates the ontology IRI (series) from the version IRI (revision), and RFC 9562 governs UUID construction. Minting policy, resolution and persistence guarantees belong to the identifier sibling; this mixin only requires that a revision identifier is immutable and never re-pointed.",
+          "source_refs": [
+            "SRC-016",
+            "SRC-008",
+            "SRC-014"
+          ]
+        },
+        {
+          "neighbor": "Temporal / effective-dating model",
+          "distinction": "General valid-time modelling of business facts (dcterms:valid ranges, effective periods on domain assertions) belongs to a temporal sibling. This mixin owns record time and supersession instants and only references the effective period so that as-of queries can be disambiguated.",
+          "source_refs": [
+            "SRC-011",
+            "SRC-015"
+          ]
+        }
+      ]
+    },
+    "holds": [
+      "Live-source verification is outstanding for all 27 base sources and for the three newly admitted alternative sources (DataCite versioning, PAV 2.3.1, ADMS 2.00). Recency-sensitive pins must be re-checked at publication time: the IANA link-relations registry, the Git glossary build, the NIST SP 800-53 control release, and the DataCite guidance page, which is living documentation rather than a dated specification.",
+      "Domain-profile validation has not been performed. The pack asserts applicability across regulated manufacturing, research data, software packaging, records management and web-resource publishing, but only US FDA 21 CFR Part 11 was actually retrieved; EU GMP Annex 11 is assumed similar and uncited. At least two contrasting profiles must be exercised before publication.",
+      "Every external mapping must be rendered as declared alignment, never conformance, and the accepted DataCite, PAV and ADMS additions must carry that label explicitly along with their loss statements.",
+      "Documented evidence gaps must appear in the published draft rather than be omitted: PREMIS 3.0 and OAIS returned HTTP 403, ISO 10007 and ISO 15489 are paywalled and unverified, and no normative bitemporal source was obtained, so the effective-period finding must ship marked as partial support.",
+      "Source identifier remapping for the accepted findings and functions must be applied and re-checked before render, since the two packs use overlapping SRC identifiers for different documents."
+    ],
+    "structure": [
+      {
+        "id": "revision-identity",
+        "layers": [
+          {
+            "id": "revision-addressing",
+            "findings": [
+              "revision-identity-assignment",
+              "version-designation-scheme",
+              "series-and-abstract-entity"
+            ]
+          },
+          {
+            "id": "ordering-and-currency",
+            "findings": [
+              "ordering-precedence-and-currency"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lineage-topology",
+        "layers": [
+          {
+            "id": "predecessor-successor",
+            "findings": [
+              "predecessor-set-and-topology",
+              "replacement-supersession"
+            ]
+          },
+          {
+            "id": "derivation-semantics",
+            "findings": [
+              "revision-derivation-or-variant",
+              "upstream-version-dependency"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "change-substance",
+        "layers": [
+          {
+            "id": "change-content",
+            "findings": [
+              "change-set-representation",
+              "change-classification-and-note"
+            ]
+          },
+          {
+            "id": "compatibility-and-migration",
+            "findings": [
+              "compatibility-declaration",
+              "migration-procedure",
+              "deprecation-and-sunset"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "temporal-and-state",
+        "layers": [
+          {
+            "id": "time-model",
+            "findings": [
+              "revision-timestamps",
+              "effective-period-and-retroactivity"
+            ]
+          },
+          {
+            "id": "revision-lifecycle",
+            "findings": [
+              "revision-state-machine",
+              "withdrawal-and-tombstone"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "authority-and-integrity",
+        "layers": [
+          {
+            "id": "agency-and-authorization",
+            "findings": [
+              "change-agent-attribution",
+              "change-authorization"
+            ]
+          },
+          {
+            "id": "integrity-and-verification",
+            "findings": [
+              "content-integrity-and-fixity",
+              "history-tamper-evidence"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "access-retention-interop",
+        "layers": [
+          {
+            "id": "history-access",
+            "findings": [
+              "history-retrieval-and-reconstruction",
+              "concurrency-and-conflict",
+              "history-visibility"
+            ]
+          },
+          {
+            "id": "retention-and-exchange",
+            "findings": [
+              "history-retention-and-disposition",
+              "external-alignment-and-exchange"
+            ]
+          }
+        ]
+      }
+    ],
+    "functions": [
+      {
+        "id": "mint-revision",
+        "name": "Mint a revision",
+        "description": "Create a new immutable revision of a host entity, binding identity, designation, predecessor set, agent, instants and content digest.",
+        "inputs": [
+          "Host entity persistent identifier",
+          "Proposed content or change set",
+          "Change agent reference",
+          "Change event instant",
+          "Predecessor revision references"
+        ],
+        "outputs": [
+          "Revision identifier",
+          "Revision manifest",
+          "Content digest",
+          "Assigned version designation"
+        ],
+        "preconditions": [
+          "The declared version designation scheme and public surface are published",
+          "The predecessor references resolve and the expected current revision precondition holds",
+          "An attributable agent and a change event instant are supplied"
+        ],
+        "effects": [
+          "A new immutable revision manifest exists",
+          "The predecessor set of the new revision is fixed and the successor set of each predecessor gains an entry",
+          "The history gains an append-only entry with record instant"
+        ],
+        "source_refs": [
+          "SRC-023",
+          "SRC-012",
+          "SRC-013",
+          "SRC-002",
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "assign-designation",
+        "name": "Assign a version designation",
+        "description": "Derive or validate the version label for a revision under the declared scheme and its compatibility promise.",
+        "inputs": [
+          "Revision identifier",
+          "Declared scheme code",
+          "Breaking change flag",
+          "Predecessor designation"
+        ],
+        "outputs": [
+          "Version designation label",
+          "Validation outcome"
+        ],
+        "preconditions": [
+          "A version scheme is declared for the entity",
+          "The breaking change assessment has been completed"
+        ],
+        "effects": [
+          "The revision carries a scheme-valid designation",
+          "A breaking change is reflected in the designation where the scheme carries a compatibility promise"
+        ],
+        "source_refs": [
+          "SRC-002",
+          "SRC-018",
+          "SRC-012",
+          "SRC-010"
+        ]
+      },
+      {
+        "id": "link-predecessor",
+        "name": "Assert a predecessor link",
+        "description": "Record that a revision directly succeeds one or more identified revisions, including multi-parent merges.",
+        "inputs": [
+          "Successor revision identifier",
+          "Predecessor revision identifiers",
+          "Merge strategy where multiple predecessors are supplied"
+        ],
+        "outputs": [
+          "Predecessor set assertion",
+          "Updated successor sets",
+          "Merge record where applicable"
+        ],
+        "preconditions": [
+          "All predecessor identifiers resolve to released revisions",
+          "The resulting graph remains acyclic"
+        ],
+        "effects": [
+          "The lineage graph gains directed edges",
+          "Acyclicity is re-validated and the outcome recorded"
+        ],
+        "source_refs": [
+          "SRC-003",
+          "SRC-023",
+          "SRC-021",
+          "SRC-025"
+        ]
+      },
+      {
+        "id": "compute-change-set",
+        "name": "Compute a change set",
+        "description": "Produce the ordered, atomically applicable delta between two revisions, with the digest that a correct application must reproduce.",
+        "inputs": [
+          "Predecessor revision reference",
+          "Successor revision reference",
+          "Canonicalisation profile"
+        ],
+        "outputs": [
+          "Change set document",
+          "Expected result digest",
+          "Invertibility determination"
+        ],
+        "preconditions": [
+          "Both revisions are retrievable in canonicalised form",
+          "A patch formalism is declared"
+        ],
+        "effects": [
+          "A change set artifact is stored and bound to the revision pair",
+          "The delta becomes independently verifiable"
+        ],
+        "source_refs": [
+          "SRC-006",
+          "SRC-009",
+          "SRC-012"
+        ]
+      },
+      {
+        "id": "assess-change-impact",
+        "name": "Assess change impact",
+        "description": "Classify the change by category, semantic impact, severity and breaking status against the declared public surface, before approval.",
+        "inputs": [
+          "Change set document",
+          "Declared public surface reference",
+          "Consumer inventory"
+        ],
+        "outputs": [
+          "Change categories",
+          "Breaking change flag",
+          "Impact assessment record"
+        ],
+        "preconditions": [
+          "A public surface is declared",
+          "The change set is available"
+        ],
+        "effects": [
+          "An impact assessment is recorded and bound to the change request",
+          "The designation increment and compatibility declaration become determinable"
+        ],
+        "source_refs": [
+          "SRC-022",
+          "SRC-002",
+          "SRC-019"
+        ]
+      },
+      {
+        "id": "evaluate-compatibility",
+        "name": "Evaluate compatibility between two versions",
+        "description": "Determine whether data or consumers produced under one version can be read under another, in a stated direction, and record the supporting evidence.",
+        "inputs": [
+          "Reader version reference",
+          "Writer version reference",
+          "Direction"
+        ],
+        "outputs": [
+          "Compatibility verdict",
+          "Evidence reference",
+          "Compatibility matrix update"
+        ],
+        "preconditions": [
+          "Both version definitions are retrievable",
+          "Default and alias rules are declared for the schema in use"
+        ],
+        "effects": [
+          "A compatibility declaration is recorded with its evidence",
+          "Any incompatibility is propagated to the designation and deprecation decisions"
+        ],
+        "source_refs": [
+          "SRC-019",
+          "SRC-016",
+          "SRC-002"
+        ]
+      },
+      {
+        "id": "plan-migration",
+        "name": "Plan a migration",
+        "description": "Produce the ordered procedure that carries state or consumers from a source version to a target version, with reversibility, idempotence and accepted loss stated.",
+        "inputs": [
+          "Source revision reference",
+          "Target revision reference",
+          "Compatibility verdict",
+          "Affected instance inventory"
+        ],
+        "outputs": [
+          "Migration plan",
+          "Reversibility determination",
+          "Expected loss statement",
+          "Migration deadline"
+        ],
+        "preconditions": [
+          "A compatibility evaluation exists for the version pair",
+          "An accepting authority for any expected loss is identified"
+        ],
+        "effects": [
+          "A migration plan artifact is bound to the version pair",
+          "Consumers gain an actionable, dated upgrade path"
+        ],
+        "source_refs": [
+          "SRC-019",
+          "SRC-006",
+          "SRC-022",
+          "SRC-024"
+        ]
+      },
+      {
+        "id": "apply-migration",
+        "name": "Apply a migration",
+        "description": "Execute a migration transform against an instance or store and record the outcome, including partial failure and resume state.",
+        "inputs": [
+          "Migration plan reference",
+          "Target instance or store reference",
+          "Execution agent reference"
+        ],
+        "outputs": [
+          "Migration execution record",
+          "Resulting revision reference",
+          "Verification digest"
+        ],
+        "preconditions": [
+          "The migration plan is released and its transform digest verifies",
+          "A rollback path or an explicit acceptance of irreversibility is recorded"
+        ],
+        "effects": [
+          "Instance state is transformed to the target version",
+          "An execution record is appended to the history and the outcome is verifiable"
+        ],
+        "source_refs": [
+          "SRC-019",
+          "SRC-012",
+          "SRC-022"
+        ]
+      },
+      {
+        "id": "resolve-as-of",
+        "name": "Resolve the revision in force at an instant",
+        "description": "Return the revision that was current at a supplied instant along the declared temporal axis.",
+        "inputs": [
+          "Entity persistent identifier",
+          "Target instant",
+          "Temporal axis selector",
+          "Branch or context"
+        ],
+        "outputs": [
+          "Revision reference",
+          "Instant actually reflected",
+          "Axis used"
+        ],
+        "preconditions": [
+          "Revision instants are recorded in RFC 3339 form with explicit offsets",
+          "A resolution rule is declared for the case where record time and effective time disagree"
+        ],
+        "effects": [
+          "The consumer obtains a pinned revision rather than a moving pointer",
+          "The response states which instant and axis it reflects"
+        ],
+        "source_refs": [
+          "SRC-004",
+          "SRC-015",
+          "SRC-013",
+          "SRC-007"
+        ]
+      },
+      {
+        "id": "reconstruct-state",
+        "name": "Reconstruct a historical state",
+        "description": "Rebuild the full state of a revision from the nearest snapshot plus intervening deltas and verify it against the recorded digest.",
+        "inputs": [
+          "Target revision reference",
+          "Nearest snapshot reference",
+          "Intervening change sets"
+        ],
+        "outputs": [
+          "Reconstructed state",
+          "Verification outcome"
+        ],
+        "preconditions": [
+          "The delta chain from snapshot to target is complete",
+          "The canonicalisation profile of the target revision is known"
+        ],
+        "effects": [
+          "A prior state is materialised without mutating any stored revision",
+          "A mismatch marks the chain unverified rather than overwriting it"
+        ],
+        "source_refs": [
+          "SRC-012",
+          "SRC-006",
+          "SRC-009"
+        ]
+      },
+      {
+        "id": "enumerate-history",
+        "name": "Enumerate version history",
+        "description": "List the revisions of an entity with their identifiers, instants and states, in a stable order and with a completeness statement.",
+        "inputs": [
+          "Entity persistent identifier",
+          "Range or page token",
+          "Requester authorisation context"
+        ],
+        "outputs": [
+          "History document",
+          "Completeness statement",
+          "Next page token"
+        ],
+        "preconditions": [
+          "The requester is authorised for the history visibility class of the entries returned"
+        ],
+        "effects": [
+          "The consumer can traverse the history without reading revision content",
+          "Withheld or disposed entries are represented as tombstones rather than omitted silently"
+        ],
+        "source_refs": [
+          "SRC-004",
+          "SRC-013",
+          "SRC-014",
+          "SRC-025"
+        ]
+      },
+      {
+        "id": "enforce-update-precondition",
+        "name": "Enforce an update precondition",
+        "description": "Reject a revision attempt whose expected current revision does not match the actual head, and record the rejection.",
+        "inputs": [
+          "Target entity identifier",
+          "Expected current revision",
+          "Proposed change"
+        ],
+        "outputs": [
+          "Acceptance or precondition failure outcome",
+          "Conflict report on failure"
+        ],
+        "preconditions": [
+          "A concurrency model is declared for the entity",
+          "The head pointer is readable atomically"
+        ],
+        "effects": [
+          "Lost updates are prevented",
+          "Rejected attempts are recorded rather than silently discarded"
+        ],
+        "source_refs": [
+          "SRC-005",
+          "SRC-013",
+          "SRC-023"
+        ]
+      },
+      {
+        "id": "verify-history-integrity",
+        "name": "Verify history integrity",
+        "description": "Re-check content fixity and the entry chain across a revision range and record the verification outcome.",
+        "inputs": [
+          "Entity persistent identifier",
+          "Revision range",
+          "Digest algorithm inventory"
+        ],
+        "outputs": [
+          "Verification outcome per revision",
+          "Chain verification outcome",
+          "Unverified entry list"
+        ],
+        "preconditions": [
+          "Digest values and the canonicalisation profile are recorded for each revision in range",
+          "Superseded digest algorithms remain resolvable"
+        ],
+        "effects": [
+          "Fixity check instants are updated",
+          "Failures are marked as unverified and escalated, never resolved by deletion"
+        ],
+        "source_refs": [
+          "SRC-012",
+          "SRC-020",
+          "SRC-009",
+          "SRC-022"
+        ]
+      },
+      {
+        "id": "deprecate-revision",
+        "name": "Deprecate and schedule sunset",
+        "description": "Mark a revision, element or endpoint deprecated from a stated instant, publish the replacement and migration guidance, and schedule its sunset.",
+        "inputs": [
+          "Target revision or element reference",
+          "Deprecation effective instant",
+          "Sunset instant",
+          "Replacement reference"
+        ],
+        "outputs": [
+          "Deprecation notice",
+          "Interface deprecation signal",
+          "Updated compatibility matrix"
+        ],
+        "preconditions": [
+          "The sunset instant is not earlier than the deprecation instant",
+          "A replacement or an explicit statement that none exists is available"
+        ],
+        "effects": [
+          "Consumers receive a dated deprecation signal and migration guidance",
+          "The deprecated revision remains retrievable until its sunset instant"
+        ],
+        "source_refs": [
+          "SRC-024",
+          "SRC-025",
+          "SRC-016",
+          "SRC-015"
+        ]
+      },
+      {
+        "id": "withdraw-revision",
+        "name": "Withdraw or deactivate a revision",
+        "description": "Record a retraction, deactivation or deletion as a history entry that preserves ordering and lineage while removing content or availability as authorised.",
+        "inputs": [
+          "Target revision reference",
+          "Withdrawal kind",
+          "Authorising role reference",
+          "Reason"
+        ],
+        "outputs": [
+          "Tombstone record",
+          "Updated head pointer where the withdrawn revision was current"
+        ],
+        "preconditions": [
+          "The withdrawal is authorised and its authority is recorded",
+          "Retention and legal-hold constraints have been evaluated"
+        ],
+        "effects": [
+          "The revision ceases to be served according to the withdrawal kind",
+          "A tombstone remains so that deletion is distinguishable from never having existed"
+        ],
+        "source_refs": [
+          "SRC-013",
+          "SRC-015",
+          "SRC-026",
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "execute-disposition",
+        "name": "Execute retention disposition on history",
+        "description": "Apply the scheduled disposition action to revisions or history entries whose retention period has elapsed and no hold applies, retaining evidence of the disposition.",
+        "inputs": [
+          "Revision or range reference",
+          "Retention schedule reference",
+          "Disposition authority reference"
+        ],
+        "outputs": [
+          "Disposition record",
+          "Redaction markers or tombstones",
+          "Updated chain verification status"
+        ],
+        "preconditions": [
+          "The retention period has elapsed and no legal hold applies",
+          "The effect on digest chains and signatures has been assessed"
+        ],
+        "effects": [
+          "Content is destroyed, redacted or anonymised as authorised",
+          "Identifiers, instants and disposition evidence survive so the history gap is accountable"
+        ],
+        "source_refs": [
+          "SRC-017",
+          "SRC-026",
+          "SRC-020",
+          "SRC-022"
+        ]
+      },
+      {
+        "id": "project-alignment",
+        "name": "Project version semantics onto an external vocabulary",
+        "description": "Emit this model's version fields as the corresponding properties, link relations or headers of a target vocabulary or interface, annotating loss.",
+        "inputs": [
+          "Revision manifest",
+          "Target vocabulary identifier and version",
+          "Alignment crosswalk"
+        ],
+        "outputs": [
+          "Projected representation",
+          "Loss annotation",
+          "Claim kind statement"
+        ],
+        "preconditions": [
+          "A crosswalk exists for the target vocabulary version",
+          "Conflicts have been recorded and a handling rule chosen"
+        ],
+        "effects": [
+          "Version relations become consumable by external systems",
+          "Every projection carries an explicit alignment-not-conformance statement unless conformance evidence is attached"
+        ],
+        "source_refs": [
+          "SRC-001",
+          "SRC-010",
+          "SRC-011",
+          "SRC-025",
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "compare-version-precedence",
+        "name": "Compare version precedence",
+        "description": "Order two version indicators under SemVer precedence, or under a declared alternative scheme.",
+        "inputs": [
+          "two version indicators",
+          "declared scheme"
+        ],
+        "outputs": [
+          "ordering result",
+          "precedence keys",
+          "incomparability flag if schemes differ"
+        ],
+        "preconditions": [
+          "Both indicators use the same declared scheme, or an explicit mapping exists."
+        ],
+        "effects": [
+          "Build metadata is ignored under SemVer.",
+          "Pre-release is lower than the associated normal version."
+        ],
+        "source_refs": [
+          "SRC-002"
+        ]
+      },
+      {
+        "id": "publish-as-current",
+        "name": "Publish as current version",
+        "description": "Designate a snapshot as hasCurrentVersion / adms:last and, under OWL conventions, make it retrievable at the series IRI while leaving prior version IRIs in place.",
+        "inputs": [
+          "series identifier",
+          "snapshot revision",
+          "publisher"
+        ],
+        "outputs": [
+          "hasCurrentVersion pointer",
+          "series IRI resolution update",
+          "prior versions still listed"
+        ],
+        "preconditions": [
+          "Snapshot is a version of the series.",
+          "Publisher is authorised."
+        ],
+        "effects": [
+          "Exactly one current pointer is stored unless a documented branch exception applies.",
+          "Prior versions remain accessible at version identifiers."
+        ],
+        "source_refs": [
+          "SRC-010",
+          "SRC-016",
+          "SRC-029",
+          "SRC-031"
+        ]
+      },
+      {
+        "id": "supersede-revision",
+        "name": "Supersede revision",
+        "description": "Assert dcterms:replaces / isReplacedBy and, where DOIs are used, IsNewVersionOf / IsPreviousVersionOf, optionally minting a new identifier for a major change.",
+        "inputs": [
+          "new revision",
+          "old revision",
+          "steward major-or-minor decision",
+          "identifier policy"
+        ],
+        "outputs": [
+          "replaces links",
+          "related identifier pairs",
+          "optional new DOI or version IRI"
+        ],
+        "preconditions": [
+          "Steward has decided whether the change is major.",
+          "Identifier policy for reuse versus minting is known."
+        ],
+        "effects": [
+          "Validity and citation rules for the old identifier are updated.",
+          "Both identifiers remain recorded."
+        ],
+        "source_refs": [
+          "SRC-028",
+          "SRC-030",
+          "SRC-010"
+        ]
+      },
+      {
+        "id": "freeze-released-revision",
+        "name": "Freeze released revision",
+        "description": "Mark a revision as released so its content MUST NOT be modified; further change requires a new version.",
+        "inputs": [
+          "revision identity",
+          "content or distribution digest",
+          "release steward"
+        ],
+        "outputs": [
+          "released flag",
+          "generated or issued time",
+          "frozen release manifest"
+        ],
+        "preconditions": [
+          "Revision identity exists.",
+          "If SemVer is declared, public API is identified for 1.0.0 and later."
+        ],
+        "effects": [
+          "In-place content mutation is forbidden.",
+          "Checksum evidence is bound to the revision.",
+          "Subsequent edits must create a successor revision."
+        ],
+        "source_refs": [
+          "SRC-002",
+          "SRC-010",
+          "SRC-001"
+        ]
+      }
+    ],
+    "composition": [
+      {
+        "target": "Any Vercy world-model entry whose instances change over time (entity, event, aggregate or registry model)",
+        "relation": "MIX-IN",
+        "purpose": "This model is not instantiated alone. It is mixed into a host model to give that model revision identity, lineage, change substance, temporal framing, authority and migration semantics without duplicating the host's domain attributes.",
+        "required": true,
+        "source_refs": [
+          "SRC-016",
+          "SRC-010",
+          "SRC-014"
+        ]
+      },
+      {
+        "target": "Provenance / Lineage model (PROV-style agents, activities and derivations) — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Revision links are a specialisation of derivation. This model asserts the revision relation and references the provenance sibling for activities, plans, usage and non-revision derivations so the concepts are not duplicated.",
+        "required": true,
+        "source_refs": [
+          "SRC-001",
+          "SRC-014"
+        ]
+      },
+      {
+        "target": "Audit Trail / Event Log model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Regulated audit trails record operator actions that create no revision, including reads and failed attempts. This model contributes revision-producing events to that trail and references it for the wider action stream.",
+        "required": true,
+        "source_refs": [
+          "SRC-017",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "Party / Agent model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Change agent, on-behalf-of party, approver and signer are all references into a party model; this model records only the reference, the role and the verification method.",
+        "required": true,
+        "source_refs": [
+          "SRC-001",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "Identifier and Namespace Governance model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Revision identity depends on a governed minting, resolution and persistence policy. This model states the identity priority and immutability requirement and defers minting policy to the identifier sibling.",
+        "required": true,
+        "source_refs": [
+          "SRC-016",
+          "SRC-008",
+          "SRC-014"
+        ]
+      },
+      {
+        "target": "Retention and Disposition model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Retention schedules, legal holds and disposition authority are authored elsewhere; this model consumes them and records the disposition applied to each history entry.",
+        "required": true,
+        "source_refs": [
+          "SRC-017",
+          "SRC-026"
+        ]
+      },
+      {
+        "target": "Access Control and Classification model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "History entries carry visibility and sensitivity classifications, but policy interpretation and enforcement belong to the access sibling.",
+        "required": true,
+        "source_refs": [
+          "SRC-026",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "Change Set / Patch structure (owned by this model, projected as a nested structure)",
+        "relation": "COMPOSE",
+        "purpose": "The ordered, atomically applicable delta with its precondition operations and expected result digest is composed into each revision record rather than being an external model.",
+        "required": true,
+        "source_refs": [
+          "SRC-006",
+          "SRC-012",
+          "SRC-009"
+        ]
+      },
+      {
+        "target": "Approval / Change Governance Workflow model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Configuration change control requires proposal, impact analysis and approval. The workflow sibling owns routing and task state; this model binds the resulting decision to a revision.",
+        "required": false,
+        "source_refs": [
+          "SRC-022",
+          "SRC-017"
+        ]
+      },
+      {
+        "target": "Digital Signature and Integrity model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "Claim signatures, certificate validation and key lifecycle are owned by a signature sibling; this model records the signature reference, covered digest and declared signature meaning.",
+        "required": false,
+        "source_refs": [
+          "SRC-020",
+          "SRC-022"
+        ]
+      },
+      {
+        "target": "Temporal / Effective-Dating model — sibling identifier to be assigned by the registry",
+        "relation": "REFERENCE",
+        "purpose": "General valid-time modelling of domain assertions belongs elsewhere; this model owns record time and supersession and references effective periods only to disambiguate as-of queries.",
+        "required": false,
+        "source_refs": [
+          "SRC-011",
+          "SRC-015"
+        ]
+      },
+      {
+        "target": "W3C PROV-O revision and attribution vocabulary",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of revision, derivation, specialisation, alternate, generation, invalidation and attribution to PROV-O terms. Alignment only; no conformance is claimed without an executed validation.",
+        "required": false,
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "target": "DCAT 3 and DCMI Metadata Terms versioning properties",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of version label, series membership, previous version, current version, replacement, creation, modification, issuance and validity to dcat and dcterms properties, with the version-chain limitation recorded as a known conflict.",
+        "required": false,
+        "source_refs": [
+          "SRC-010",
+          "SRC-011"
+        ]
+      },
+      {
+        "target": "IANA Link Relation Types registry (version navigation and time-based access)",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of history enumeration, predecessor, successor, latest, working copy, memento, timegate, timemap, deprecation and sunset onto registered link relation types for interface exposure.",
+        "required": false,
+        "source_refs": [
+          "SRC-025",
+          "SRC-003",
+          "SRC-004",
+          "SRC-024"
+        ]
+      },
+      {
+        "target": "HL7 FHIR resource meta versioning and history interaction",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of revision identifier, record instant, history enumeration, as-of retrieval and update precondition onto versionId, lastUpdated, _history, vread and If-Match, noting that the FHIR ETag is a weak validator and not a content digest.",
+        "required": false,
+        "source_refs": [
+          "SRC-013",
+          "SRC-005"
+        ]
+      },
+      {
+        "target": "OCFL object versioning, inventory and fixity",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of sequential version numbering, head pointer, forward deltas, content addressing and legacy fixity onto OCFL inventory structures, treated as one storage projection among several.",
+        "required": false,
+        "source_refs": [
+          "SRC-012"
+        ]
+      },
+      {
+        "target": "Semantic Versioning 2.0.0 and PEP 440 designation grammars",
+        "relation": "ALIGN",
+        "purpose": "Declared, mutually exclusive designation grammars that a host entity may adopt; the model records which grammar is in force rather than assuming either, because their ordering rules conflict.",
+        "required": false,
+        "source_refs": [
+          "SRC-002",
+          "SRC-018"
+        ]
+      },
+      {
+        "target": "C2PA manifest, ingredient and action model for media assets",
+        "relation": "ALIGN",
+        "purpose": "Declared mapping of upstream ingredient versions, edit actions, hard bindings and redaction onto C2PA manifests where the host entity is a media asset carrying embedded provenance.",
+        "required": false,
+        "source_refs": [
+          "SRC-020"
+        ]
+      }
+    ]
+  }
+]

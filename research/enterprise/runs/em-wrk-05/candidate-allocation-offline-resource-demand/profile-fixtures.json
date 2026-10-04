@@ -1,0 +1,308 @@
+{
+  "format": "vercy-enterprise-profile-fixtures/v1",
+  "profileName": "Enterprise Capacity Planning and Allocation",
+  "cases": [
+    {
+      "id": "profile-rebase-new-release",
+      "kind": "positive",
+      "input": {
+        "oldPlanRevision": "R1",
+        "newPlanRevision": "R2",
+        "oldScenario": "S1",
+        "newScenario": "S2"
+      },
+      "expect": "New scenario release is created and S1 remains resolvable.",
+      "expectedCode": "OK_PROFILE_REBASE"
+    },
+    {
+      "id": "profile-reservation-derived-lapse",
+      "kind": "positive",
+      "input": {
+        "status": "reserved",
+        "expiresAt": "T1",
+        "evaluationInstant": "T2"
+      },
+      "expect": "Lapsed state is derived without mutating the released allocation.",
+      "expectedCode": "OK_DERIVED_LAPSE"
+    },
+    {
+      "id": "profile-allocation-creates-assignment",
+      "kind": "negative",
+      "input": {
+        "allocation": "A1",
+        "sideEffect": "create WM-ORG-016"
+      },
+      "expect": "Rejected; only an outbound request reference is permitted.",
+      "expectedCode": "E-PROFILE-ASSIGNMENT-WRITE"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "profile-specified",
+      "kind": "positive",
+      "input": "The profile declares CapacityPlanProfile on WM-ACT-008 pinning pool versions, demand versions, calendar refs, tzdbRelease, unitSchemeVersion, planning horizon and aggregation windows, plus field sets, identity keys and status enumerations for AllocationScenario and ResourceAllocation.",
+      "expect": "Accepted; every scenario-borne invariant has a field to evaluate on and no new root is introduced."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "allocation-status-outside-enum",
+      "kind": "negative",
+      "input": "An allocation carries a status outside {proposed, reserved, confirmed, lapsed, cancelled, superseded}.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-STATUS-UNDECLARED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "reservation-expiry-missing",
+      "kind": "negative",
+      "input": "A reserved allocation omits expiresAt or its zone, tzdbRelease and calendar basis.",
+      "expect": "Rejected; a reservation with no resolvable expiry is invalid, not indefinite.",
+      "expectedCode": "E-ALLOC-RESERVATION-EXPIRY-MISSING"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "expiry-is-derived",
+      "kind": "positive",
+      "input": "A released reservation passes its expiresAt without confirmation.",
+      "expect": "Effective availability recomputes to release the quantity; the released allocation record is not mutated, and any lapse is an appended derived-state assertion."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "expiry-mutates-release",
+      "kind": "negative",
+      "input": "Expiry rewrites the status field of a released, immutable allocation in place.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-RELEASED-MUTATION"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "expired-reservation-as-confirmation",
+      "kind": "negative",
+      "input": "A lapsed reservation is read as a confirmation or as consumption.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-LAPSE-NOT-CONFIRMATION"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "confirmation-emits-request",
+      "kind": "positive",
+      "input": "An allocation is confirmed and an outbound assignment request reference is emitted to WM-ORG-016, which then refuses it.",
+      "expect": "The confirmation state is unchanged by the refusal and no WM-ORG-016 record is created or amended."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "confirmation-creates-assignment",
+      "kind": "negative",
+      "input": "Confirmation creates or amends a WM-ORG-016 assignment or a WM-ACT-008 schedule entry.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-MASTER-WRITE"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "quantity-character-missing",
+      "kind": "negative",
+      "input": "An allocation quantity omits quantityCharacter.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-QUANTITY-CHARACTER-MISSING"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "stock-and-share-summed",
+      "kind": "negative",
+      "input": "100 GPU-hours and a 0.6 FTE share are added into one load figure.",
+      "expect": "Rejected; the total is undefined, neither a conflict nor a pass.",
+      "expectedCode": "E-QUANTITY-CHARACTER-MISMATCH"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "share-with-capacity-basis",
+      "kind": "positive",
+      "input": "A 0.6 share allocation records the absolute amount in the pool unit plus capacityBasis naming the pool version, interval and aggregation window.",
+      "expect": "The allocation remains evaluable and reproducible after a later pool version changes effective capacity."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "share-without-capacity-basis",
+      "kind": "negative",
+      "input": "A 0.6 share is stored with no capacityBasis and is re-evaluated against a later pool version.",
+      "expect": "Rejected.",
+      "expectedCode": "E-ALLOC-SHARE-BASIS-MISSING"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "window-aggregate-conflict",
+      "kind": "detection",
+      "input": "In S1, SPEC-1 holds 0.6 and 0.5 of effective capacity inside one declared weekly aggregation window.",
+      "expect": "A window-aggregate conflict is raised in S1 only; both allocations are retained and no master is written."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "interval-shift-within-window",
+      "kind": "negative",
+      "input": "Shifting one specialist interval inside the same weekly aggregation window is reported as clearing the 1.1 overrun.",
+      "expect": "Rejected; the window total is unchanged.",
+      "expectedCode": "E-CONFLICT-WINDOW-UNCHANGED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "s2-clears-both-conflicts",
+      "kind": "positive",
+      "input": "S2 moves the specialist interval into a different weekly aggregation window and removes the GPU-1 overlap.",
+      "expect": "The window-aggregate conflict and the exclusivity conflict both clear; S1 is unchanged; no WM-PER-001, WM-ORG-016 or WM-OBJ-001 record changes."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "member-level-evaluation-skipped",
+      "kind": "negative",
+      "input": "Conflict detection evaluates the pool aggregate only and reports the scenario clear while two exclusive confirmations overlap on GPU-1.",
+      "expect": "Rejected.",
+      "expectedCode": "E-CONFLICT-MEMBER-LEVEL-SKIPPED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "aggregate-within-member-breached",
+      "kind": "detection",
+      "input": "Aggregate GPU-hours sit within pool capacity while GPU-1's exclusivity is breached by overlapping confirmations.",
+      "expect": "A member-level exclusivity conflict is raised even though the aggregate passes."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "duration-kind-missing",
+      "kind": "negative",
+      "input": "An interval duration is used in a capacity computation with no durationKind of elapsed, working or effort.",
+      "expect": "Rejected.",
+      "expectedCode": "E-TIME-DURATION-KIND-MISSING"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "dst-gap-resolved",
+      "kind": "positive",
+      "input": "An allocation interval starts inside a DST gap.",
+      "expect": "Resolution follows the declared dstPolicy and the expanding calendar and tzdbRelease are named in the result."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "recurrence-expander-undeclared",
+      "kind": "negative",
+      "input": "Recurring capacity is expanded without naming the expanding calendar and tzdbRelease.",
+      "expect": "Rejected.",
+      "expectedCode": "E-TIME-EXPANDER-UNDECLARED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "overlap-zone-assumed",
+      "kind": "negative",
+      "input": "Non-overlap established in one time zone is assumed in another.",
+      "expect": "Rejected.",
+      "expectedCode": "E-TIME-ZONE-ASSUMED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "scenarios-summed",
+      "kind": "negative",
+      "input": "Load from S1 and S2 is added into one figure.",
+      "expect": "Rejected.",
+      "expectedCode": "E-SCENARIO-SUMMATION"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "above-100-across-scenarios",
+      "kind": "positive",
+      "input": "SPEC-1 holds 60 percent in S1 and 50 percent in S2.",
+      "expect": "No conflict; the scenarios are alternatives and are never combined."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "released-scenario-edited",
+      "kind": "negative",
+      "input": "A released scenario is edited in place to add an allocation.",
+      "expect": "Rejected; change requires a new release.",
+      "expectedCode": "E-SCENARIO-RELEASED-MUTATION"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "baseline-without-decision",
+      "kind": "negative",
+      "input": "A scenario is marked baseline with no authorized baselineDecisionRef.",
+      "expect": "Rejected.",
+      "expectedCode": "E-SCENARIO-BASELINE-DECISION-MISSING"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "plan-revision-rebase",
+      "kind": "positive",
+      "input": "WM-ACT-008 issues a new plan revision after a baseline scenario was selected.",
+      "expect": "Scenarios are rebased only by explicit new releases; prior scenarios and the prior baseline remain resolvable and correctly bound to their original revision."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "scenario-rebound-silently",
+      "kind": "negative",
+      "input": "An existing scenario is re-pointed to a new plan revision without a new release.",
+      "expect": "Rejected.",
+      "expectedCode": "E-SCENARIO-REVISION-REBIND"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "actual-rewrites-baseline",
+      "kind": "negative",
+      "input": "WM-FLW-015 actual consumption updates the baseline scenario's allocated quantities.",
+      "expect": "Rejected.",
+      "expectedCode": "E-PROFILE-ACTUAL-REWRITES-PLAN"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "variance-cites-both-revisions",
+      "kind": "positive",
+      "input": "Variance is reported between plan and actual.",
+      "expect": "The report cites the immutable scenario release and the immutable WM-FLW-015 consumption record; neither is rewritten."
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "plan-as-performance",
+      "kind": "negative",
+      "input": "A feasible scenario is treated as evidence that the work was scheduled, assigned or performed.",
+      "expect": "Rejected.",
+      "expectedCode": "E-PROFILE-PLAN-AS-FACT"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "demand-pool-linkage-undeclared",
+      "kind": "negative",
+      "input": "An allocation links a demand to a pool while the profile declares no demand-to-pool linkage rule.",
+      "expect": "Rejected.",
+      "expectedCode": "E-PROFILE-LINKAGE-UNDECLARED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "policy-coverage-gap",
+      "kind": "negative",
+      "input": "A declared invariant has no fixture, or a negative fixture carries no expectedCode, and validation still passes.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POLICY-COVERAGE-GAP"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "fixture-polarity-mislabelled",
+      "kind": "negative",
+      "input": "A case whose expectation is a successfully raised conflict is labelled kind=negative.",
+      "expect": "Rejected; successful detection is kind=detection, not negative.",
+      "expectedCode": "E-FIXTURE-POLARITY-MISLABELLED"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "undecidable-expectation",
+      "kind": "negative",
+      "input": "A fixture expectation references consolidated conflict checks or evaluated separately with no defined scope or outcome.",
+      "expect": "Rejected.",
+      "expectedCode": "E-FIXTURE-EXPECTATION-UNDECIDABLE"
+    },
+    {
+      "target": "EM-WRK-05-profile",
+      "id": "stale-holds-after-freeze",
+      "kind": "negative",
+      "input": "A bundle still holds that independent Grok review and a frozen semantic audit are pending after both are complete.",
+      "expect": "Rejected.",
+      "expectedCode": "E-HOLD-STALE"
+    }
+  ]
+}

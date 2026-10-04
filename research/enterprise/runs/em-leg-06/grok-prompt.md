@@ -1,0 +1,9 @@
+# Exact unsent Grok prompt — EM-LEG-06
+
+Independent enterprise metamodel review. Do not browse, invent identifiers, give legal advice or claim standards conformance.
+
+EM-LEG-06 covers ProcessingActivity, Purpose, DataSubjectRequest, ProcessingBasis and RetentionRule. WM-XCT-002 owns permission and consent instruments but does not adjudicate non-consent bases. WM-XCT-003 owns disclosure shape only. WM-ACT-021 owns service-case lifecycle. WM-KNW-012 and WM-XCT-029 own rules and instantiated duties; WM-DAT-001/004 and WM-REC-001 own payload/schema/record semantics.
+
+Assess this proposal: create one identifier-unassigned Processing Activity / Processing Register Entry candidate; profile WM-ACT-021 for Data Subject Request; model Purpose and Processing Basis as separate attributable activity assertions; model Retention Rule as policy/duty/assignment; treat ROPA as an activity projection. Consent is one basis, and withdrawal is forward-only and basis-scoped. Erasure is determined per location; statutory retention or legal hold can preserve only the required subset under a restricted purpose, while deletion proof retains tombstone and non-reversible digest without payload. Derived datasets preserve a purpose ceiling, and WM-XCT-003 projections can narrow shape but cannot widen purpose.
+
+Test an erasure request, lawful retention of accounting records and a minimal analytics projection. Return <=900 words with: Verdict; strongest evidence; strongest counterexample; identity/mastership; processing activity; purpose/basis/consent; DSR boundary; retention/erasure; projection/analytics; roles; scenario; at least 10 invariants; minimum completion shape; blockers. Explicitly decide whether ProcessingActivity needs independent identity and whether DataSubjectRequest is a WM-ACT-021 profile.

@@ -1,0 +1,993 @@
+PUBLIC STATIC AUDIT INPUT, PART 2 OF 4. Do not analyze yet. No tools. Reply only RECEIVED PART 2. Wait for all parts.
+
+           },
+            "context": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "subject",
+            "predicate",
+            "context"
+          ],
+          "additionalProperties": false
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "recordedAt": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                "format": "date-time"
+              },
+              "writer": {
+                "type": "string",
+                "format": "uri",
+                "minLength": 3,
+                "maxLength": 512
+              },
+              "scopeDigest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "request": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "revision": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "expectedHead": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^sha256:[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "operation": {
+                    "enum": [
+                      "record",
+                      "correct",
+                      "archive"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048
+                  },
+                  "sourceRecordedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "segments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "validFrom": {
+                          "type": "string",
+                          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                          "format": "date-time"
+                        },
+                        "validTo": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                              "format": "date-time"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "value": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uri",
+                              "minLength": 3,
+                              "maxLength": 512
+                            },
+                            "revision": {
+                              "type": "string",
+                              "format": "uri",
+                              "minLength": 3,
+                              "maxLength": 512
+                            },
+                            "digest": {
+                              "type": "string",
+                              "pattern": "^sha256:[0-9a-f]{64}$"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "revision",
+                            "digest"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uri",
+                              "minLength": 3,
+                              "maxLength": 512
+                            },
+                            "version": {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                              "maxLength": 50
+                            },
+                            "digest": {
+                              "type": "string",
+                              "pattern": "^sha256:[0-9a-f]{64}$"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "version",
+                            "digest"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "state": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "profile": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "format": "uri",
+                                      "minLength": 3,
+                                      "maxLength": 512
+                                    },
+                                    "version": {
+                                      "type": "string",
+                                      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                                      "maxLength": 50
+                                    },
+                                    "digest": {
+                                      "type": "string",
+                                      "pattern": "^sha256:[0-9a-f]{64}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "version",
+                                    "digest"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "axis": {
+                                  "type": "string",
+                                  "format": "uri",
+                                  "minLength": 3,
+                                  "maxLength": 512
+                                },
+                                "code": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 2048
+                                }
+                              },
+                              "required": [
+                                "profile",
+                                "axis",
+                                "code"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "validFrom",
+                        "validTo",
+                        "value",
+                        "schema",
+                        "state"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 0,
+                    "maxItems": 100
+                  }
+                },
+                "required": [
+                  "key",
+                  "revision",
+                  "expectedHead",
+                  "operation",
+                  "reason",
+                  "sourceRecordedAt",
+                  "segments"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "sequence",
+              "recordedAt",
+              "writer",
+              "scopeDigest",
+              "request"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "format",
+        "version",
+        "dimension",
+        "timeline",
+        "scope",
+        "commits"
+      ],
+      "additionalProperties": false
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "timeline": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "subject": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "predicate": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "context": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            }
+          },
+          "required": [
+            "subject",
+            "predicate",
+            "context"
+          ],
+          "additionalProperties": false
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+          "format": "date-time"
+        },
+        "validUntil": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+          "format": "date-time"
+        },
+        "writer": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "readers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 3,
+            "maxLength": 512
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "purposes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "acceptedSchemas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uri",
+                "minLength": 3,
+                "maxLength": 512
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                "maxLength": 50
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "id",
+              "version",
+              "digest"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "acceptedStates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "profile": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                    "maxLength": 50
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version",
+                  "digest"
+                ],
+                "additionalProperties": false
+              },
+              "axis": {
+                "type": "string",
+                "format": "uri",
+                "minLength": 3,
+                "maxLength": 512
+              },
+              "codes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "minItems": 1,
+                "maxItems": 100
+              }
+            },
+            "required": [
+              "profile",
+              "axis",
+              "codes"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "dimension",
+        "timeline",
+        "scope",
+        "validFrom",
+        "validUntil",
+        "writer",
+        "readers",
+        "purposes",
+        "acceptedSchemas",
+        "acceptedStates"
+      ],
+      "additionalProperties": false
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "revision": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "expectedHead": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "enum": [
+            "record",
+            "correct",
+            "archive"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "sourceRecordedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "validFrom": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                "format": "date-time"
+              },
+              "validTo": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "value": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "revision": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "revision",
+                  "digest"
+                ],
+                "additionalProperties": false
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                    "maxLength": 50
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version",
+                  "digest"
+                ],
+                "additionalProperties": false
+              },
+              "state": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "profile": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uri",
+                            "minLength": 3,
+                            "maxLength": 512
+                          },
+                          "version": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                            "maxLength": 50
+                          },
+                          "digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[0-9a-f]{64}$"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "version",
+                          "digest"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "axis": {
+                        "type": "string",
+                        "format": "uri",
+                        "minLength": 3,
+                        "maxLength": 512
+                      },
+                      "code": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                      }
+                    },
+                    "required": [
+                      "profile",
+                      "axis",
+                      "code"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "validFrom",
+              "validTo",
+              "value",
+              "schema",
+              "state"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "key",
+        "revision",
+        "expectedHead",
+        "operation",
+        "reason",
+        "sourceRecordedAt",
+        "segments"
+      ],
+      "additionalProperties": false
+    },
+    "segment": {
+      "type": "object",
+      "properties": {
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+          "format": "date-time"
+        },
+        "validTo": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "revision": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+              "maxLength": 50
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "profile": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uri",
+                      "minLength": 3,
+                      "maxLength": 512
+                    },
+                    "version": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+                      "maxLength": 50
+                    },
+                    "digest": {
+                      "type": "string",
+                      "pattern": "^sha256:[0-9a-f]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "version",
+                    "digest"
+                  ],
+                  "additionalProperties": false
+                },
+                "axis": {
+                  "type": "string",
+                  "format": "uri",
+                  "minLength": 3,
+                  "maxLength": 512
+                },
+                "code": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                }
+              },
+              "required": [
+                "profile",
+                "axis",
+                "code"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "validFrom",
+        "validTo",
+        "value",
+        "schema",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "SchemaBinding": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+          "maxLength": 50
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "StateReference": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uri",
+              "minLength": 3,
+              "maxLength": 512
+            },
+            "version": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+              "maxLength": 50
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "digest"
+          ],
+          "additionalProperties": false
+        },
+        "axis": {
+          "type": "string",
+          "format": "uri",
+          "minLength": 3,
+          "maxLength": 512
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      },
+      "required": [
+        "profile",
+        "axis",
+        "code"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
+
+</file-content>
+END FILE temporal.schema.json
+
+## FILE model-spec.md
+Raw SHA-256: c9e7e9eb5ed6fe0dcd573eba2c8796f79b21b993239bb1d0977d41f29fe2f86a
+
+<file-content name="model-spec.md">
+# Enterprise Temporal History 0.1.0
+
+Original bounded companion for a Company Dimension, with reviewable-draft assurance. This is a history of **recorded assertions**, not proof of what people knew, what actually happened, or whether a domain action was lawful. No SQL, SCXML, OWL-Time, ISO or complete parent-model conformance is claimed.
+
+## Boundary, identities and fields
+
+One Timeline aggregate belongs to exactly one Dimension and one fixed `(subject, predicate, context)` FactScope. All four references and the timeline ID are required scheme-bearing RFC 3986 URIs (fragments are permitted). References are opaque: no automatic fetch, normalization, alias, company identity, or master discovery. A separate scope is required for another legal entity, environment, competing master or simultaneous value. Host governance must prevent two current timelines being registered as the same scope; this single-aggregate reference cannot discover them.
+
+| Type | Identity and cardinality | Owner and lifecycle |
+|---|---|---|
+| Timeline | Independently assigned `timeline` URI; exactly one scope, 0..1000 commits | Configured host master; empty → open → archived. No reopen or erase operation |
+| TimelineCommit | Opaque revision URI and scope-local idempotency key; contiguous positive receipt sequence; exactly one complete snapshot | Host assigns receipt and writer; immutable once admitted. Not a domain event or artifact revision |
+| ValidSegment | Embedded value at a position in a commit; 0..100 per snapshot; one interval, one external value pin, one schema binding, optional state reference | Domain master asserts effective interval. No independently editable segment identity |
+| SchemaBinding | Value tuple `(id, version, digest)` | External schema publisher owns meaning; current host config accepts exact tuple for new writes. Binding is immutable within history |
+| StateReference | One profile binding, one axis URI, one code | Domain profile owner defines code. Membership only; no statechart execution, transition event or legality inference |
+| TimelineAnswer | Ephemeral derived view for one scope and explicit cutoffs | Current host reader/purpose authorization; no new master or operational permission |
+
+`temporal.schema.json` is the closed field/type/cardinality contract. All keys shown are required; optional concepts use explicit null. Unknown keys reject. External value pin requires an ID URI, a distinct-purpose opaque revision URI, and declared sha256 digest. This reference does not fetch the payload, recompute its external digest, validate its domain schema, authenticate the source, or establish the value's truth. The same external `(id,revision)` cannot be declared with different digests in one history. IDs and digests do not prove equality of real-world objects.
+
+Schema/profile `version` uses the deliberately narrow `normal-semver-triplet` grammar: three nonnegative ASCII integers separated by dots, no leading zeroes except zero, prerelease/build parts unsupported. This is only a pin grammar; version order never proves compatibility. `active` is a valid domain code only under an accepted vocabulary, never a schema version. External object revision, timeline revision, schema version and domain state occupy separate fields. A schema pin ID/version cannot silently acquire different bytes. Changing a declared schema version requires an exact accepted new tuple; old segments retain their original pins. Historical reads do not reinterpret records using the current schema. A new snapshot may explicitly bind the same opaque payload to a different accepted schema or state profile; this is a new interpretation declaration requiring the commit reason, not a payload conversion or proof of compatibility. Earlier snapshots retain the earlier interpretation.
+
+Each commit includes `sequence`, `recordedAt`, `writer`, a `scopeDigest` over the complete immutable header, and the exact request. The scope digest binds even the genesis commit to Dimension, timeline and context; transplanting an unchanged chain under a new header fails consistency validation. It is not an authentication proof. Request has `key`, `revision`, `expectedHead`, `operation`, `reason`, nullable `sourceRecordedAt`, and complete `segments`. `reason` is attributed explanatory text, not a validated classification of a domain event. It must explain removals, new future assertions and backdated corrections; mixed intent needs clear text or separate commits. A commit changes assertions about effective history, not the external domain object itself. `sourceRecordedAt` is source-declared metadata, may be null, and cannot follow receipt in this narrow profile. It never chooses knowledge order. Source events/observation times are outside this executable schema and may be linked through separately governed provenance records.
+
+## Time and querying
+
+All instants use a real Gregorian date in exact ASCII `YYYY-MM-DDTHH:MM:SSZ`, seconds 00..59. No fractions, local times, explicit numeric offsets, uncertain dates or leap seconds. Reject unsupported input; never round or infer midnight/zone. A civil-date or clock conversion needs a separately reviewed adapter and pinned rules. A future **valid** instant is allowed for a scheduled assertion; a future **recorded** instant or knowledge cutoff is rejected against trusted `now`.
+
+Intervals are half-open `[validFrom, validTo)`. `validTo:null` explicitly means no asserted upper bound, not an unknown date or eternal truth. Start is always known. Empty/reversed intervals and overlaps reject; segments must be sorted. Adjacent boundaries are legal, and an open segment must be last. Gaps and an empty snapshot are permitted and return `insufficient-context`; they are not false, absent or unassigned. Explicit negation needs a separately pinned domain value. A snapshot replaces the entire scope's current asserted timeline, so omitted periods become unknown in that new recorded view. Previous snapshots remain intact.
+
+`knownAt` selects the timeline host's recorded axis. It does not mean that the native Dimension already contained the snapshot at that instant. A trusted pre-existing timeline may later be stored in a newly bootstrapped Dimension: its inner receipts remain unchanged, while the outer native fact records the later storage receipt. The acceptance fixtures explicitly simulate such a host history, not earlier native Dimension existence or knowledge. Validation does not authenticate imported receipts.
+
+The trusted host assigns non-decreasing receipt instants and strictly increasing contiguous sequences within this one timeline. Two commits in the same second are permitted; sequence resolves them. Clock regression rejects. One mistakenly admitted forward clock excursion can make reads and writes reject as `Future receipt` until the trusted clock catches up; there is no in-place repair operation. The host must check its clock against an independent trusted reference and a locally configured skew bound before every admission. On detection, quarantine the root and freeze writes. Recover through an explicitly governed new timeline identity that preserves the original root as restricted evidence, links its provenance and records the loss of continuity, or wait for verified catch-up under a current configuration. Never rewrite receipts or silently roll back. This operational migration is not implemented here. Sequences cannot compare different timelines or Dimensions; no global consistency or synchronized-clock claim exists.
+
+`resolve(... validAt, knownAt, knownSequence=None)` first checks **current** full-timeline reader and purpose permission, then checks the governed header matches before validating history and cutoffs. Trusted configuration validation precedes the reader gate; configuration errors stay inside the host and must be converted to generic endpoint errors. It chooses the latest commit with receipt ≤ knownAt and, if supplied, sequence ≤ knownSequence; then selects the segment covering validAt. No hidden defaults to “now”. `knownSequence=0` deliberately precedes all receipts. Instant-only cutoffs include all received commits in that second; they can gain a later commit with that same second. **Pin the returned sequence for stable historical content.** A supplied sequence is an additional upper bound, not an assertion that a commit existed at the timestamp. Before first receipt and uncovered periods produce distinct missing-context explanations. Denied reads raise a denial before inspecting ledger/query contents; denied is never an unknown-fact answer.
+
+Returned value remains a `recorded-assertion`, with truth, domain validation and transition legality explicitly unevaluated. The view includes commit revision/sequence/receipt/digest, exact segment, and supplied ledger/configuration digests. `archivedAsKnown` belongs to the selected history; `archiveNow` describes the current supplied root and is expressly current context. Root/policy digests and archiveNow may change when historical content remains the same. Consequently reproducibility means the selected historical commit and segment under the pinned cutoff, not byte equality of all current-context metadata. Full-history authority is required for this view; no partial redaction or hidden contrary-evidence signal is supplied.
+
+## Writes, authority, conflicts and imports
+
+`admit(ledger, request, config, actor, now)` is a pure **trusted-host internal** function. The host authenticates actor, selects its current configuration/latest complete root/clock, and serializes durable persistence. It must enforce request size limits before parsing. Config includes exact dimension/timeline/scope, a half-open current validity interval, one writer, full-history readers, purposes and accepted schema/state pins. Claimed source authorship grants nothing. On grant rotation, old writer attribution remains; static validation does not retrospectively authenticate it. A write-only caller must receive only a receipt or generic rejection, never the function's whole returned ledger or detailed exceptions.
+
+First operation is `record`; subsequent operations are `correct` or `archive`. Host stamps every new sequence, receipt and writer; caller-supplied receipt fields are rejected. A correction must match the current head digest. Exactly unchanged segments retained from the preceding snapshot may keep retired pins for metadata maintenance or archival; a new, replaced or resegmented interval is a new use requiring currently accepted schema/state bindings. Archival itself preserves the prior snapshot exactly and remains possible after pin retirement, subject to capacity limits. Complete snapshots intentionally serialize even disjoint changes; no automatic merge, last-writer contest resolution, branch or cross-scope transaction exists. Rejected head, replay and authority attempts leave the input unchanged. **The host must durably record its own restricted conflict/rejection artifact** before reporting a conflict; this library has no conflict store or network side effect. A competing master's assertion needs a distinct governed scope and an explicit authority-resolution process. Receipt does not certify priority or correctness.
+
+Repeated key with canonically equivalent request and the same authenticated writer is a no-op, retaining the original receipt even after the head moved or archival. Current authorization/config validity is still checked. Replay compares the complete canonical request, including original expectedHead; it does not rewrite it to the new head. Same key/different request or writer rejects. Changing keys with a reused revision also rejects. Admission is not a durable transaction service.
+
+Archive appends a new commit with exactly the prior segments and freezes further new writes. It does not deactivate the subject, close business-valid periods, retract an assertion or delete retained history. An identical retry remains permitted. **Erasure, tombstones, retention schedules and legal-hold decisions are unimplemented, separate integrations.** Do not promise perpetual retention or adopt this reference where the required disposal path is absent. The host must not turn source knowledge into an earlier receipt: new admission must call admit with the actual timeline-host time and retain earlier source time only as metadata. The pure function trusts its supplied clock and cannot enforce a real-world creation floor. A structurally valid imported ledger cannot prove it was actually received then; only a trusted host archive/chain can supply that assurance.
+
+## Integrity, native binding and migration
+
+`validate_ledger` checks shape and internal temporal/identity chain consistency against explicit trusted now. `validate_extension` additionally requires exact old headers and the entire old commit prefix. They require the host's trusted latest predecessor, cannot detect an omitted newer root, and do not establish historical authorization. Export/import the complete same-version ledger losslessly; `migrate` rejects any other contract version. No automatic schema migration, SCD2/SQL/XTDB adapter, partial export or existing-Dimension upgrade is implemented.
+
+The encoding named **vercy-python-json-v1** is UTF-8 of Python `json.dumps(sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False)`. There is no Unicode normalization. Integers for sequence must use integer JSON encoding, not Boolean or `1.0`. This profile is not RFC 8785; independent language ports must reproduce fixtures exactly. Invalid Unicode, nonfinite numbers and unsupported JSON values reject. JSON objects reaching the callable must come from an input parser that rejects duplicate keys; the bundled file loader is for trusted fixture/archive files. Hashes provide consistency against a trusted predecessor, not signatures, anti-rollback storage or origin authenticity.
+
+Bounds: ≤1000 commits, ≤100 segments per snapshot and ≤8 MiB serialized root. These are structural ceilings, not measured production capacity. Full validation scans retained history and admission copies it; host limits, concurrency, availability, monitoring and rollover/migration planning are required before production growth. Overflow refuses the operation without truncation. At the commit/byte ceiling even the extra archive commit may be refused; the host must plan migration or freeze writes through current configuration before capacity exhaustion. This reference does not guarantee an always-available archive slot.
+
+Specification dependency graph has no runtime imports. Exact WM-XCT-009, 021 and 022 references are conceptual selected-pattern alignments only. Instance references and package composition are separate graphs. No universal WM ID or parent subtype is created. A native V3 fact stores one complete timeline under `temporal.timeline.snapshot` with its own companion namespace. The native outer validator permits object-shaped values and is **not** this nested semantic validator. `validate_snapshot` takes the expected native Dimension explicitly and checks it, timeline subject, asserted/null-unit/open envelope with receipt not before the latest inner receipt, snapshot digest, an immediate successor fact ID different from its predecessor, predecessor linkage and append-only extension after native envelope validation. Both current and immediate previous envelopes receive the same semantic checks, and a successor storage receipt cannot precede its predecessor. Trusted previous snapshot selection is external. Initial installation tests fresh synthetic Dimensions; existing-Dimension migration remains deferred.
+
+## Invariants and minimum use
+
+I01 scope/Dimension remain fixed; I02 opaque revision/schema version/state remain separate; I03 host receipt order differs from effective/source time; I04 positive half-open nonoverlapping sorted intervals; I05 gaps/pre-receipt are unknown; I06 full prior snapshot prefix survives correction; I07 request-bound idempotency retains first receipt; I08 expected-head conflict cannot overwrite; I09 current reader/purpose gate precedes diagnostics; I10 immutable schema/value pins across history; I11 archive preserves history and blocks new commits; I12 unsupported migration refuses loss; I13 explicit nested native validation; I14 no transition/permission/truth inferred; I15 equal-second history needs sequence for stable content; I16 new accepted bindings never reinterpret old content.
+
+A startup needs one governed scope, local config, a pinned domain value/schema and its first snapshot; state references are optional. A matrix group uses separate assignment scopes. An AI deployment uses an environment-qualified artifact binding; model-weight revision, deployment status, evaluation schema and record revision remain different references. No example is a claim about any real organization. The full question routes live in spec.json; missing artifacts remain insufficient context. Allowed actions describe operations to propose or execute under host authority, not grants from this package.
+
+</file-content>
+END FILE model-spec.md
+
+## FILE spec.json
+Raw SHA-256: 5f68da29bf40481f2303dffa8f4f48aaa051b24d35b57405d2a0b7da7b6817f7
+
+<file-content name="spec.json">
+{
+  "metaModel": {
+    "id": "enterprise-temporal-history",
+    "registryId": "vr.profile.enterprise-temporal-history",
+    "version": "0.1.0",
+    "name": "Enterprise Temporal History",
+    "kind": "companion-contract"
+  },
+  "canonicalUrl": "https://ver.cy/models/enterprise-temporal-history/versions/0.1.0/spec.json",
+  "researchAssurance": "reviewable-draft",
+  "researchContour": "EM-XCT-04",
+  "model": {
+    "purpose": "Record effective timelines, preserve earlier recorded views and bind schemas and domain states without rewriting history."
+  },
+  "composition": {
+    "runtimeImports": [],
+    "semanticReferences": [
+      {
+        "id": "WM-XCT-009",
+        "version": "0.3.0-research.1",
+        "specDigest": "sha256:060511804c09ed5992e3fdf222839f97a0d340db0a2cba3c4c08aded7767e90d",
+        "relation": "selected-pattern-alignment-not-subtype"
+      },
+      {
+        "id": "WM-XCT-021",
+        "version": "0.3.0-research.1",
+        "specDigest": "sha256:87c8c50f6f4c2eb3478751f01a08c6c37c6a85f97f4c056505b13cdf561314e9",
+        "relation": "selected-pattern-alignment-not-subtype"
+      },
+      {
+        "id": "WM-XCT-022",
+        "version": "0.3.0-research.2",
+        "specDigest": "sha256:40ced88212f4c90690bdbb35bf2429fe627d11793bee5e587b5b10b99f49fe85",
+        "relation": "selected-pattern-alignment-not-subtype"
+      }
+    ]
+  },
+  "contract": "# Enterprise Temporal History 0.1.0\n\nOriginal bounded companion for a Company Dimension, with reviewable-draft assurance. This is a history of **recorded assertions**, not proof of what people knew, what actually happened, or whether a domain action was lawful. No SQL, SCXML, OWL-Time, ISO or complete parent-model conformance is claimed.\n\n## Boundary, identities and fields\n\nOne Timeline aggregate belongs to exactly one Dimension and one fixed `(subject, predicate, context)` FactScope. All four references and the timeline ID are required scheme-bearing RFC 3986 URIs (fragments are permitted). References are opaque: no automatic fetch, normalization, alias, company identity, or master discovery. A separate scope is required for another legal entity, environment, competing master or simultaneous value. Host governance must prevent two current timelines being registered as the same scope; this single-aggregate reference cannot discover them.\n\n| Type | Identity and cardinality | Owner and lifecycle |\n|---|---|---|\n| Timeline | Independently assigned `timeline` URI; exactly one scope, 0..1000 commits | Configured host master; empty → open → archived. No reopen or erase operation |\n| TimelineCommit | Opaque revision URI and scope-local idempotency key; contiguous positive receipt sequence; exactly one complete snapshot | Host assigns receipt and writer; immutable once admitted. Not a domain event or artifact revision |\n| ValidSegment | Embedded value at a position in a commit; 0..100 per snapshot; one interval, one external value pin, one schema binding, optional state reference | Domain master asserts effective interval. No independently editable segment identity |\n| SchemaBinding | Value tuple `(id, version, digest)` | External schema publisher owns meaning; current host config accepts exact tuple for new writes. Binding is immutable within history |\n| StateReference | One profile binding, one axis URI, one code | Domain profile owner defines code. Membership only; no statechart execution, transition event or legality inference |\n| TimelineAnswer | Ephemeral derived view for one scope and explicit cutoffs | Current host reader/purpose authorization; no new master or operational permission |\n\n`temporal.schema.json` is the closed field/type/cardinality contract. All keys shown are required; optional concepts use explicit null. Unknown keys reject. External value pin requires an ID URI, a distinct-purpose opaque revision URI, and declared sha256 digest. This reference does not fetch the payload, recompute its external digest, validate its domain schema, authenticate the source, or establish the value's truth. The same external `(id,revision)` cannot be declared with different digests in one history. IDs and digests do not prove equality of real-world objects.\n\nSchema/profile `version` uses the deliberately narrow `normal-semver-triplet` grammar: three nonnegative ASCII integers separated by dots, no leading zeroes except zero, prerelease/build parts unsupported. This is only a pin grammar; version or
+
+END TRANSPORT PART 2 OF 4.

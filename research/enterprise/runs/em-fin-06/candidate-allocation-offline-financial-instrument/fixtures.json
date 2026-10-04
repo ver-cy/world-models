@@ -1,0 +1,215 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Financial Instrument",
+  "cases": [
+    {
+      "id": "transfer-survival",
+      "kind": "positive",
+      "input": "A note transfers from holder A to holder B.",
+      "expect": "Instrument identity and terms persist while positions and holder capacities change.",
+      "target": "financial-instrument",
+      "violates": null,
+      "closesDefect": 22
+    },
+    {
+      "id": "convertible-note",
+      "kind": "positive",
+      "input": "A note converts under versioned cap, discount and ratio terms.",
+      "expect": "An explicit event retires the predecessor position and creates successor positions against the resulting instrument version.",
+      "target": "financial-instrument",
+      "violates": null,
+      "closesDefect": 22
+    },
+    {
+      "id": "ticker-identity",
+      "kind": "negative",
+      "input": "A mutable ticker is used as sole instrument identity.",
+      "expect": "The identity is rejected without a governed identifier.",
+      "target": "financial-instrument",
+      "violates": "The identity is rejected without a governed identifier.",
+      "closesDefect": 22,
+      "expectedCode": "TICKER_IDENTITY"
+    },
+    {
+      "id": "future-votes",
+      "kind": "negative",
+      "input": "Contingent conversion rights are counted as current votes.",
+      "expect": "The denominator calculation is rejected.",
+      "target": "financial-instrument",
+      "violates": "The denominator calculation is rejected.",
+      "closesDefect": 22,
+      "expectedCode": "FUTURE_VOTES"
+    },
+    {
+      "id": "value-proves-control",
+      "kind": "negative",
+      "input": "A high valuation is used to establish control.",
+      "expect": "The inference is rejected.",
+      "target": "financial-instrument",
+      "violates": "The inference is rejected.",
+      "closesDefect": 22,
+      "expectedCode": "VALUE_PROVES_CONTROL"
+    },
+    {
+      "id": "term-overwrite",
+      "kind": "negative",
+      "input": "Conversion terms are edited in an issued version.",
+      "expect": "The mutation is rejected; a successor version is required.",
+      "target": "financial-instrument",
+      "violates": "The mutation is rejected; a successor version is required.",
+      "closesDefect": 22,
+      "expectedCode": "TERM_OVERWRITE"
+    },
+    {
+      "id": "eco038-as-instrument-master",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "A convertible note's cap, discount and ratio terms are recorded on the WM-ECO-038 position record, and the position identity is used as the instrument identity.",
+      "expect": "Rejected. Terms resolve only to an InstrumentVersion; WM-ECO-038 masters positions, quantities, lots, rights, restrictions and successor history only.",
+      "violates": "WM-ECO-038 owns security-backed positions only; instrument identity is independent",
+      "closesDefect": 22,
+      "expectedCode": "ECO038_AS_INSTRUMENT_MASTER"
+    },
+    {
+      "id": "share-class-subordinate",
+      "target": "financial-instrument",
+      "kind": "positive",
+      "input": "Instrument I-1 version v2 carries equity terms for share classes A and B with differing vote ratios.",
+      "expect": "Accepted. Both classes are subordinate classifications within InstrumentVersion v2; neither acquires instrument, position or holding identity.",
+      "violates": null,
+      "closesDefect": 1
+    },
+    {
+      "id": "share-class-as-rival-root",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "Share Class B is allocated an independent root and a position is bound to it instead of to an instrument version.",
+      "expect": "Rejected. Share Class never masters instrument, position, holding or investment identity.",
+      "violates": "Share Class is a subordinate classification",
+      "closesDefect": 1,
+      "expectedCode": "SHARE_CLASS_AS_RIVAL_ROOT"
+    },
+    {
+      "id": "debt-instrument-rival-master",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "A note's terms are mastered simultaneously by WM-ECO-037 and by Financial Instrument, with divergent maturity values.",
+      "expect": "Rejected. Dual term mastership is not permitted; the specialization direction is unadjudicated and no shared term model may be asserted.",
+      "violates": "WM-ECO-037 specialization undecided; no rival master",
+      "closesDefect": 2,
+      "expectedCode": "DEBT_INSTRUMENT_RIVAL_MASTER"
+    },
+    {
+      "id": "registry-issuer-term-conflict",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "An instrument registry record states a maturity differing from the issuer's InstrumentVersion, and the registry value is written over the issuer value.",
+      "expect": "Rejected. Issuer masters terms; the registry masters the governed identifier only; the divergence is retained as a recorded conflict state.",
+      "violates": "Mastership precedence; conflicts are never silently reconciled",
+      "closesDefect": 10,
+      "expectedCode": "REGISTRY_ISSUER_TERM_CONFLICT"
+    },
+    {
+      "id": "contingent-right-untyped",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "InstrumentVersion v1 records a conversion right in the same untyped rights collection as voting and dividend rights, with no contingency field.",
+      "expect": "Rejected. Every right is typed present or contingent; a contingent right requires trigger, effectTimeRule and excludedFromDenominators true.",
+      "violates": "Contingency typing on instrument-version rights",
+      "closesDefect": 5,
+      "expectedCode": "CONTINGENT_RIGHT_UNTYPED"
+    },
+    {
+      "id": "contingent-right-aggregated",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "A consumer sums present voting rights and an unexercised conversion right from InstrumentVersion v1 into one rights total.",
+      "expect": "Rejected. Contingent rights are never emitted, serialized or aggregated as present rights.",
+      "violates": "Contingent rights are not present rights",
+      "closesDefect": 5,
+      "expectedCode": "CONTINGENT_RIGHT_AGGREGATED"
+    },
+    {
+      "id": "point-in-time-version-resolution",
+      "target": "financial-instrument",
+      "kind": "positive",
+      "input": "Instrument N has v1 effective 2026-01-01 to 2026-08-15 and v2 effective from 2026-08-15; the version in force at 2026-06-30 is requested.",
+      "expect": "v1 is returned, resolved from effective intervals alone and independently of any derivedCurrentVersionRef.",
+      "violates": null,
+      "closesDefect": 7
+    },
+    {
+      "id": "current-version-pointer-authoritative",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "derivedCurrentVersionRef is treated as the authoritative source of the version in force, or is required for resolution.",
+      "expect": "Rejected. It is a non-authoritative cache; resolution is from effective intervals.",
+      "violates": "Derived cache is never authoritative",
+      "closesDefect": 7,
+      "expectedCode": "CURRENT_VERSION_POINTER_AUTHORITATIVE"
+    },
+    {
+      "id": "overlapping-version-intervals",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "Instrument N records v2 effective from 2026-06-01 while v1 remains effective to 2026-08-15.",
+      "expect": "Rejected. Effective intervals of versions of one instrument never overlap.",
+      "violates": "Non-overlapping version intervals",
+      "closesDefect": 7,
+      "expectedCode": "OVERLAPPING_VERSION_INTERVALS"
+    },
+    {
+      "id": "version-number-reuse",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "A corrected version is written back as v2 after v2 was already issued, or version numbering decreases.",
+      "expect": "Rejected. Version numbers increase monotonically and are never reused; correction creates a successor version.",
+      "violates": "Monotonic, non-reused version numbers",
+      "closesDefect": 18,
+      "expectedCode": "VERSION_NUMBER_REUSE"
+    },
+    {
+      "id": "issued-version-term-overwrite",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "The conversion cap on issued version v1 is edited in place.",
+      "expect": "Rejected. Terms are immutable after issuance; a successor version with its own effectiveFrom, recordedAt, knowledgeTime and contentDigest is required, and v1 remains resolvable.",
+      "violates": "Instrument terms are immutable and versioned",
+      "closesDefect": 22,
+      "expectedCode": "ISSUED_VERSION_TERM_OVERWRITE"
+    },
+    {
+      "id": "partial-conversion-positions",
+      "target": "financial-instrument",
+      "kind": "positive",
+      "input": "Note N v1 is held in two lots H-1a and H-1b; only H-1a converts on 2026-08-15 to preferred position H-2 against v2.",
+      "expect": "H-1a is derecognized with predecessor/successor lineage and linked postings; H-1b remains outstanding against v1; instrument state remains effective; H-1b's cost lineage and restrictions are unchanged.",
+      "violates": null,
+      "closesDefect": 8
+    },
+    {
+      "id": "partial-conversion-instrument-state",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "Instrument N is set to state converted after H-1a converts while H-1b remains outstanding.",
+      "expect": "Rejected. converted is reachable only when every outstanding position has been derecognized by a conversion event.",
+      "violates": "No unsafe inference of full conversion",
+      "closesDefect": 8,
+      "expectedCode": "PARTIAL_CONVERSION_INSTRUMENT_STATE"
+    },
+    {
+      "id": "conversion-sets-instrument-successor",
+      "target": "financial-instrument",
+      "kind": "negative",
+      "input": "Conversion of note N writes successorRef on N pointing to the preferred-share instrument.",
+      "expect": "Rejected. successorRef records corporate-action instrument replacement only; conversion creates no instrument successorRef and the participation, not the instrument, carries continuity.",
+      "violates": "Three successions are never conflated",
+      "closesDefect": 9,
+      "expectedCode": "CONVERSION_SETS_INSTRUMENT_SUCCESSOR"
+    }
+  ],
+  "canonicalPublishable": false,
+  "holds": [
+    "Expectations are reviewable-draft adjudications over non-canonical bases and assert no conformance, installability or standards alignment."
+  ]
+}

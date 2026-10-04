@@ -1,0 +1,2883 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-ai-005",
+    "model_id": "WM-AI-005",
+    "name": "Prompt / Agent Configuration",
+    "entry_kind": "entity",
+    "purpose": "Govern a versioned, pin-able operational instruction stack and tool/skill configuration used by an AI agent or generative-AI application, independent of storage format or access interface.",
+    "scope_statement": "WM-AI-005 is the configuration entity an agent uses and a run must pin: role-separated instructions, parameterized prompt templates, bound tools and skills, generation settings, output contracts, guardrail bindings, and the authority, ownership, validation, access, and retention rules that make that package reproducible. Semantics are format-neutral. JSON, YAML, Markdown, SKILL.md, MCP, A2A Agent Cards, Git, and MongoDB are projections. The model aligns to external standards without claiming conformance. It does not own the agent actor, a single execution, model weights, or knowledge corpora.",
+    "in_scope": [
+      "Master-system identity, content digest, and adopter-assigned UUID or ULID for a configuration version",
+      "Role-separated instruction text (root, provider-system, developer, user-template, guideline) and merge/override order",
+      "Parameterized templates, stored-prompt references, and variable substitution",
+      "Skill packages and progressive disclosure of instruction versus on-demand references",
+      "Tool and function definitions, JSON Schema contracts, and behavior annotations used as untrusted hints",
+      "Allowed-tool lists, approval policy, human-in-the-loop requirements, and handoff bindings",
+      "Generation hyperparameters, structured-output schema, and default input/output modalities",
+      "Guardrail and refusal-criteria bindings attached to a configuration, not evaluation results of a run",
+      "Change control, dual-control, activation, rollback, deprecation, and emergency freeze of production instructions or tool lists",
+      "Prompt-injection, jailbreak, system-prompt-leakage, and secrets-exclusion posture of the instruction text",
+      "Observability names (prompt name/version), content-capture policy, and immutable pins for run reproducibility",
+      "Alignment maps to ISO prompt terminology, MCP tools/prompts, A2A skills, OpenTelemetry GenAI attributes, and Agent Skills"
+    ],
+    "out_of_scope": [
+      "The AI agent as an actor, identity, memory state, or runtime process (WM-AI-002)",
+      "A single agent run, conversation transcript, token usage, or tool-call trace (WM-AI-004)",
+      "Foundation-model cards, weights, training data, and fine-tuning corpora",
+      "Knowledge bases, RAG source documents, and skill reference corpora as knowledge objects (WM-KNW-005)",
+      "MCP, A2A, HTTP, Git, or MongoDB as protocols or stores; they are projections of this model",
+      "Live user and tool messages except as template roles or few-shot examples inside a configuration",
+      "Organizational AI management-system policy except as referenced constraints on who may change configuration",
+      "Prompt-compiler or automatic-prompt-optimization programs (for example DSPy) as first-class objects; treat generated text as a versioned payload until a primary schema exists"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-AI-002 AI agent",
+        "distinction": "The agent is the configured actor. This model is the versioned instruction-and-tool package the agent uses. Agent discovery metadata (A2A Agent Card name, public description, advertised skills) belongs on the agent; instruction bodies do not.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "WM-AI-004 agent run",
+        "distinction": "A run references an exact configuration identity (prompt name/version, content digest, stored prompt id). Captured messages, tool arguments, and usage metrics are run evidence, not configuration semantics.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "WM-KNW-005 knowledge",
+        "distinction": "Skill references/, assets, and RAG corpora are knowledge objects. Binding a skill, selecting which references may load, and the instruction body that tells the agent when and how to use them are configuration.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-013"
+        ]
+      },
+      {
+        "neighbor": "MCP tools, resources, and prompts",
+        "distinction": "MCP is a discovery and invocation interface. Tool schema, prompt-template arguments, and annotations are configuration content. Transport, session, and JSON-RPC envelopes are out of scope.",
+        "source_refs": [
+          "SRC-004",
+          "SRC-005",
+          "SRC-014"
+        ]
+      },
+      {
+        "neighbor": "A2A Agent Card and AgentSkill",
+        "distinction": "The Agent Card is a public or authenticated discovery document for identity, skills, modalities, and security schemes. It is not the operational instruction stack. Skills advertised on the card may reference capabilities this configuration binds.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Provider model spec versus developer system message",
+        "distinction": "OpenAI Model Spec 'system' authority is provider-only and above developer instructions. Industry 'system message' often means developer instructions. This model records both layers and does not collapse them.",
+        "source_refs": [
+          "SRC-008",
+          "SRC-011"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "ISO/IEC 22989:2022/DAmd 1 Information technology — Artificial intelligence — Concepts and terminology — Amendment 1: Generative AI",
+      "organization": "ISO/IEC JTC 1/SC 42",
+      "url": "https://www.iso.org/obp/ui?iso:std:iso-iec:22989:dis:ed-1:v1:amd:1:v1:en",
+      "version_or_date": "ISO/IEC 22989:2022/DAmd 1, term 3.6.19 prompt (public excerpt)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Normative terminology for prompt as overarching generative-AI instructions, including that a prompt may be fixed or editable and may carry formatting and output controls."
+    },
+    {
+      "id": "SRC-002",
+      "title": "Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile (NIST AI 600-1)",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf",
+      "version_or_date": "NIST AI 600-1, July 2024",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "GAI risks and suggested actions for AI configuration, human-AI configuration, prompt injection, jailbreaking, documentation, roles, red-teaming, and content filters that constrain instructions and tool use."
+    },
+    {
+      "id": "SRC-003",
+      "title": "Semantic conventions for generative client AI spans",
+      "organization": "OpenTelemetry / CNCF",
+      "url": "https://raw.githubusercontent.com/open-telemetry/semantic-conventions-genai/main/docs/gen-ai/gen-ai-spans.md",
+      "version_or_date": "Development status, semantic-conventions-genai main, accessed 2026-08-26",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Observability identifiers for named prompt templates and versions, generation request parameters, conversation identifiers, and privacy-sensitive capture of instructions, inputs, and outputs."
+    },
+    {
+      "id": "SRC-004",
+      "title": "Model Context Protocol — Tools",
+      "organization": "Model Context Protocol project",
+      "url": "https://modelcontextprotocol.io/specification/2025-06-18/server/tools",
+      "version_or_date": "Protocol revision 2025-06-18",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Canonical tool definition (name, title, description, inputSchema, outputSchema, annotations), model-controlled invocation, listChanged, human-in-the-loop SHOULD, and security rules for validation, rate limits, and audit."
+    },
+    {
+      "id": "SRC-005",
+      "title": "Model Context Protocol — Prompts",
+      "organization": "Model Context Protocol project",
+      "url": "https://modelcontextprotocol.io/specification/2025-06-18/server/prompts",
+      "version_or_date": "Protocol revision 2025-06-18",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "User-controlled prompt templates with name, title, description, arguments, and role-bearing messages, plus mandatory input/output validation against injection."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Agent Skills Specification",
+      "organization": "Agent Skills (open standard originated by Anthropic)",
+      "url": "https://agentskills.io/specification",
+      "version_or_date": "Specification page accessed 2026-08-26",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Skill package identity, SKILL.md frontmatter, progressive disclosure, compatibility, experimental allowed-tools, and validation of instruction packages."
+    },
+    {
+      "id": "SRC-007",
+      "title": "Agent2Agent (A2A) Protocol Specification, Version 1.0",
+      "organization": "A2A Project, Linux Foundation",
+      "url": "https://a2a-protocol.org/latest/llms.txt",
+      "version_or_date": "A2A 1.0.0 (Protobuf normative; docs specification.md 1.0.0)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Agent Card identity, version, skills, modalities, security schemes, and extended authenticated card; distinguishes public discovery from operational instructions."
+    },
+    {
+      "id": "SRC-008",
+      "title": "OpenAI Model Spec",
+      "organization": "OpenAI",
+      "url": "https://raw.githubusercontent.com/openai/model_spec/main/model_spec.md",
+      "version_or_date": "Model Spec main branch, accessed 2026-08-26 (CC0 1.0)",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Instruction authority chain (root, system, developer, user, guideline), override rules, and the requirement to follow applicable instructions without collapsing provider and developer layers."
+    },
+    {
+      "id": "SRC-009",
+      "title": "OpenAI API — Agent definitions and stored prompts",
+      "organization": "OpenAI",
+      "url": "https://developers.openai.com/api/docs/guides/agents/define-agents",
+      "version_or_date": "Agent definitions guide, accessed 2026-08-26",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Agent configuration surface: name, instructions (static or dynamic), model and modelSettings, tools, handoffs, guardrails, MCP servers, structured outputs, and stored prompt id/version/variables with local override."
+    },
+    {
+      "id": "SRC-010",
+      "title": "OWASP Top 10 for LLM Applications 2025",
+      "organization": "OWASP Foundation",
+      "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf",
+      "version_or_date": "Version 2025, 2024-11-18",
+      "source_type": "public-authority",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "LLM01 prompt injection, LLM06 excessive agency via tools/skills/plugins, and LLM07 system prompt leakage: instructions are not secrets or security controls and must not contain credentials."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Safety system messages — Azure OpenAI in Azure AI Foundry Models",
+      "organization": "Microsoft",
+      "url": "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/system-message",
+      "version_or_date": "Azure AI Foundry documentation, accessed 2026-08-26",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "System message as scenario profile, capabilities, limitations, tone, safety guidelines, and tool-use instructions; concision because instructions consume the context window."
+    },
+    {
+      "id": "SRC-012",
+      "title": "Agent Registry JSON schemas (A2A Agent Card and MCP tool schema)",
+      "organization": "Google Cloud",
+      "url": "https://docs.cloud.google.com/agent-registry/json-schemas",
+      "version_or_date": "Documentation dated 2026-08-11; A2A Agent Card versions 0.3 and 1.0",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "Governed Agent Card and MCP tool payloads including skills, modalities, and tool annotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint)."
+    },
+    {
+      "id": "SRC-013",
+      "title": "ISO/IEC 42001:2023 Information technology — Artificial intelligence — Management system",
+      "organization": "ISO/IEC JTC 1/SC 42",
+      "url": "https://www.iso.org/standard/81230.html",
+      "version_or_date": "ISO/IEC 42001:2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "AIMS requirements to document AI system design, development, operation, roles, and continual improvement; operational instruction configuration is a documented operational artefact, not the management system itself."
+    },
+    {
+      "id": "SRC-014",
+      "title": "Model Context Protocol schema — Tool and ToolAnnotations",
+      "organization": "Model Context Protocol project",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28/schema.md",
+      "version_or_date": "Specification 2026-07-28",
+      "source_type": "schema",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-08-26T16:00:00Z",
+      "relevance": "ToolAnnotations as untrusted hints (title, readOnlyHint, destructiveHint, idempotentHint, openWorldHint) with documented defaults and the rule that clients must not trust annotations from untrusted servers."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "identity-authority-lifecycle",
+        "name": "Identity, authority and lifecycle",
+        "description": "How a prompt or agent configuration is identified, classified, authorized, versioned, activated, frozen, rolled back, and retired.",
+        "rationale": "Reproducible agent behavior requires a pin-able configuration identity, an explicit instruction-authority chain, and change control over who may alter system instructions, guardrails, and tool lists.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-003",
+          "SRC-007",
+          "SRC-008",
+          "SRC-009",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "identity-and-classification",
+            "name": "Identity and classification",
+            "description": "Master identifiers, content digests, configuration kinds, and intended-use classification.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "configuration-identity",
+                "name": "Configuration identity and pin",
+                "description": "A configuration version is a pin-able entity. Identity priority is the master-system identifier from the registry or agent platform of record, then a governed IRI, then a Dimension UUID or ULID. Dates are not identifiers. OpenTelemetry records gen_ai.prompt.name and gen_ai.prompt.version when a named template is used; OpenAI stored prompts use a prompt id plus an explicit version. A run must pin more than a floating 'latest'.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-master-system-id",
+                    "text": "What authoritative master-system identifier names this configuration in the registry or agent platform of record?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "master_system_id",
+                      "issuing_system",
+                      "id_scheme"
+                    ]
+                  },
+                  {
+                    "id": "q-content-digest",
+                    "text": "What content digest of the canonical instruction, tool, parameter, and guardrail payload must a run pin so replay does not depend on a mutable latest pointer?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "content_digest_algorithm",
+                      "content_digest_value",
+                      "canonicalization_profile"
+                    ]
+                  },
+                  {
+                    "id": "q-version-label",
+                    "text": "What non-date version label or stored-prompt version is published, and is it distinct from the master identifier?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "version_label",
+                      "stored_prompt_id",
+                      "stored_prompt_version",
+                      "is_latest_pointer"
+                    ]
+                  },
+                  {
+                    "id": "q-created-versus-ingested",
+                    "text": "When was this configuration version created or published as an event, and when was it observed or ingested if those instants differ?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "created_at_rfc3339",
+                      "published_at_rfc3339",
+                      "ingested_at_rfc3339"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "master-system-id",
+                    "name": "Master-system identifier",
+                    "description": "Identifier assigned by the configuration registry or agent platform of record.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "governed-iri",
+                    "name": "Governed IRI",
+                    "description": "Optional globally unique IRI for interoperation when the configuration is published outside the master system.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "dimension-uuid",
+                    "name": "Dimension UUID or ULID",
+                    "description": "Adopter-assigned UUID or ULID used only when no master-system identifier exists.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "prompt-name",
+                    "name": "Named prompt template",
+                    "description": "Human-stable name that uniquely identifies a prompt template in telemetry, corresponding to gen_ai.prompt.name.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "prompt-version-label",
+                    "name": "Prompt version label",
+                    "description": "Published version of the template (semver, alias such as prod, or vendor version string). Not used as the primary identifier even if a vendor permits date-like labels.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "content-digest",
+                    "name": "Canonical content digest",
+                    "description": "Hash of the canonicalized configuration payload used to pin runs.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-config-record",
+                    "name": "Versioned configuration record",
+                    "description": "Canonical serial of identity, instruction stack, tool bindings, parameters, and digest for one configuration version.",
+                    "media_or_form": [
+                      "application/json",
+                      "application/yaml",
+                      "application/protobuf"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system configuration version identifier, then content-digest IRI, then Dimension UUID or ULID",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "configuration-taxonomy",
+                "name": "Configuration kind and intended use",
+                "description": "Configurations are not one kind. ISO 22989 treats prompt as overarching generative-AI instructions that may be fixed or editable. MCP treats prompts as user-selected templates and tools as model-controlled functions. OpenAI packages instructions, tools, model settings, guardrails, and handoffs as an agent. Agent Skills packages task expertise separately from the host agent. Classification must record kind, intended task, and whether the payload is public discovery or operational instruction.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-config-kind",
+                    "text": "Is this payload an instruction stack, a user-selectable prompt template, a skill package, a tool catalog binding, a stored-prompt reference, or a composite agent configuration?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "config_kind_code",
+                      "kind_scheme",
+                      "is_composite"
+                    ]
+                  },
+                  {
+                    "id": "q-intended-use",
+                    "text": "What intended purpose, user population, and prohibited uses bound this configuration?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "intended_purpose",
+                      "user_population",
+                      "prohibited_uses",
+                      "refusal_domains"
+                    ]
+                  },
+                  {
+                    "id": "q-fixed-or-editable",
+                    "text": "Is the prompt fixed by the deployer, editable by operators, or dynamically generated per request, and who may edit it?",
+                    "kind": "state",
+                    "answer_data": [
+                      "mutability_code",
+                      "dynamic_instruction_flag",
+                      "editor_roles"
+                    ]
+                  },
+                  {
+                    "id": "q-public-versus-operational",
+                    "text": "Which fields may appear on a public discovery card versus remaining in the operational instruction body?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "public_fields",
+                      "authenticated_extended_fields",
+                      "operational_only_fields"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "config-kind-code",
+                    "name": "Configuration kind",
+                    "description": "Code for instruction-stack, prompt-template, skill-package, tool-binding, stored-prompt, or composite-agent-config.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-005",
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "intended-purpose",
+                    "name": "Intended purpose",
+                    "description": "Human-defined objective the configuration is designed to serve, aligned to ISO AI-system objectives and Agent Card description.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "mutability-code",
+                    "name": "Mutability",
+                    "description": "Whether instruction text is fixed, operator-editable, or dynamically composed at request time.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-kind-register",
+                    "name": "Configuration kind and intended-use statement",
+                    "description": "Classified kind, purpose, audience, and public-versus-operational field map for one configuration.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/markdown"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Same master-system identifier as the configuration version",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "ownership-and-lifecycle",
+            "name": "Authority, ownership and lifecycle",
+            "description": "Instruction authority levels, accountable owners, approval of production changes, and lifecycle states including freeze and rollback.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-008",
+              "SRC-010",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "instruction-authority-chain",
+                "name": "Instruction authority chain",
+                "description": "When instructions conflict, higher authority wins. OpenAI Model Spec defines root, system (provider), developer, user, and guideline, with root mostly prohibitive and guideline implicitly overridable. This chain is a configuration concern because deployers must declare which layers they supply and must not place developer text in a provider-system slot. Hidden third-party instructions in retrieved content are not legitimate configuration layers.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-authority-layers-present",
+                    "text": "Which authority layers does this configuration actually supply, and which layers are inherited from the model provider?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "layers_supplied",
+                      "layers_inherited",
+                      "provider_system_message_ref"
+                    ]
+                  },
+                  {
+                    "id": "q-override-policy",
+                    "text": "What explicit override policy applies when developer, user, skill, and retrieved-content instructions conflict?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "override_order",
+                      "implicit_override_allowed",
+                      "untrusted_content_policy"
+                    ]
+                  },
+                  {
+                    "id": "q-root-refusals",
+                    "text": "Which root-level refusals or legal-compliance rules cannot be overridden by this configuration?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "non_overridable_rules",
+                      "legal_locale_variants",
+                      "default_to_inaction_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-locale-authority",
+                    "text": "Are there locale- or age-specific provider-system rules that change applicable instructions without a developer edit?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "legal_locale",
+                      "age_gating_flag",
+                      "provider_variant_id"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "authority-order",
+                    "name": "Authority order",
+                    "description": "Ordered list of instruction layers from highest to lowest authority for this deployment.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "non-overridable-rules",
+                    "name": "Non-overridable rules",
+                    "description": "Root or legal rules this configuration cannot weaken.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "untrusted-content-policy",
+                    "name": "Untrusted content policy",
+                    "description": "How retrieved or tool-returned text is prevented from acting as a higher-authority instruction.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-authority-policy",
+                    "name": "Instruction authority policy",
+                    "description": "Declared chain of command, non-overridable rules, and treatment of untrusted retrieved text for this configuration family.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/markdown"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system policy identifier plus configuration-family identifier",
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "change-control-lifecycle",
+                "name": "Ownership, approval and lifecycle states",
+                "description": "NIST treats AI configuration and human-AI configuration as GAI risk areas and requires defined roles, documentation, and TEVV proportional to risk. ISO/IEC 42001 requires documented operation of AI systems. Production edits to instructions, guardrails, and tool lists need an accountable owner, an approval path, and states such as draft, reviewed, active, canary, frozen, deprecated, and rolled-back. Historical versions remain readable so pinned runs stay reproducible.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-009",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-accountable-owner",
+                    "text": "Who is the accountable deployer and the operational owner authorized to change this configuration?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "accountable_owner",
+                      "operational_owner",
+                      "delegated_editors"
+                    ]
+                  },
+                  {
+                    "id": "q-lifecycle-state",
+                    "text": "What lifecycle state is this version in, and which states may it legally transition to?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "lifecycle_state",
+                      "allowed_transitions",
+                      "effective_from",
+                      "effective_to"
+                    ]
+                  },
+                  {
+                    "id": "q-approval-evidence",
+                    "text": "What review, red-team, or dual-control evidence authorized activation or rollback of this version?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "approval_record_id",
+                      "reviewers",
+                      "eval_report_refs",
+                      "dual_control_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-emergency-freeze",
+                    "text": "Under what incident conditions is the configuration frozen, and who may lift the freeze or force a rollback?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "freeze_flag",
+                      "freeze_authority",
+                      "rollback_target_id",
+                      "incident_ref"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "accountable-owner",
+                    "name": "Accountable owner",
+                    "description": "Party accountable for deploying and maintaining the configuration, matching the registry owner_or_maintainer role.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "lifecycle-state",
+                    "name": "Lifecycle state",
+                    "description": "Draft, in-review, active, canary, frozen, deprecated, or rolled-back.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "approval-record-ref",
+                    "name": "Approval record",
+                    "description": "Reference to the change ticket or dual-control record that authorized this version.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "supersedes-config",
+                    "name": "Supersedes",
+                    "description": "Prior configuration version this one replaces.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-change-ticket",
+                    "name": "Configuration change and approval record",
+                    "description": "Who requested, reviewed, and activated a configuration version, with timestamps, freeze flags, and rollback target.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system change-ticket identifier",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "instruction-content",
+        "name": "Instruction content and composition",
+        "description": "Role-separated instruction text, parameterized templates, skill packages, progressive disclosure, and merge order.",
+        "rationale": "Operational behavior is determined by the composed instruction the model actually sees. Standards disagree on who controls prompts, so the model must record roles, arguments, skills, and merge rules rather than a single blob.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-005",
+          "SRC-006",
+          "SRC-008",
+          "SRC-009",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "prompt-templates",
+            "name": "Prompt templates and roles",
+            "description": "Instruction messages by role, template variables, and multimodal parts that belong to the configuration rather than a live conversation.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-005",
+              "SRC-009",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "role-separated-instructions",
+                "name": "Role-separated instruction messages",
+                "description": "ISO 22989 defines prompt as overarching instructions on how to process input, optionally including formatting and output controls. Azure documents system messages as profile, capabilities, limitations, tone, safety, and tool-use lines. MCP prompt messages use user or assistant roles. OpenAI agents treat instructions as the specialist job, constraints, and style, optionally computed dynamically. Configuration must store messages by role and purpose, not a single undifferentiated string.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-005",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-instruction-roles",
+                    "text": "Which instruction messages exist by role and purpose, and what is the verbatim or referenced body of each?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "messages",
+                      "role",
+                      "purpose_code",
+                      "body_ref_or_text",
+                      "media_type"
+                    ]
+                  },
+                  {
+                    "id": "q-profile-capabilities-limits",
+                    "text": "What role, capabilities, limitations, tone, and tool-use instructions are declared for the scenario?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "persona",
+                      "capabilities",
+                      "limitations",
+                      "tone",
+                      "tool_use_instructions"
+                    ]
+                  },
+                  {
+                    "id": "q-dynamic-instructions",
+                    "text": "If instructions are computed at request time, what function, inputs, and non-model local context are allowed to shape them?",
+                    "kind": "process",
+                    "answer_data": [
+                      "dynamic_flag",
+                      "instruction_function_ref",
+                      "allowed_context_keys",
+                      "forbidden_secret_keys"
+                    ]
+                  },
+                  {
+                    "id": "q-instruction-token-budget",
+                    "text": "What token or character budget is allocated to static instructions so they do not starve task context?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "instruction_token_budget",
+                      "measured_token_count",
+                      "truncation_policy"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "instruction-messages",
+                    "name": "Instruction messages",
+                    "description": "Ordered configuration messages with role, purpose, and content parts.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "persona-profile",
+                    "name": "Scenario profile",
+                    "description": "Declared role, task, capabilities, and limitations for the configuration.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "dynamic-instruction-flag",
+                    "name": "Dynamic instruction flag",
+                    "description": "True when instructions are a function of request context rather than a static string.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "instruction-token-budget",
+                    "name": "Instruction token budget",
+                    "description": "Maximum tokens reserved for static instructions in the context window.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-instruction-document",
+                    "name": "Instruction document",
+                    "description": "Canonical instruction body or message list for one configuration version, possibly Markdown or structured messages.",
+                    "media_or_form": [
+                      "text/markdown",
+                      "application/json",
+                      "text/plain"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Configuration version identifier plus instruction-document digest",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "parameterized-templates",
+                "name": "Parameterized templates and stored prompts",
+                "description": "MCP prompts declare named arguments and return message lists. OpenAI stored prompts use prompt_id, version, and {{variable}} substitution, and additional agent tools or instructions override stored values. A floating latest pointer is insufficient for run pinning. OpenAI has also documented migration of prompt objects into application-owned source, which this model treats as a storage projection change, not a semantics change.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-template-arguments",
+                    "text": "What named arguments or variables may be substituted, which are required, and what types and examples apply?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "arguments",
+                      "required_flag",
+                      "value_type",
+                      "examples"
+                    ]
+                  },
+                  {
+                    "id": "q-stored-prompt-ref",
+                    "text": "Does this configuration reference a vendor-stored prompt object, and which version must be sent on every turn rather than assumed from conversation state?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "stored_prompt_id",
+                      "stored_prompt_version",
+                      "must_resend_each_turn",
+                      "override_fields"
+                    ]
+                  },
+                  {
+                    "id": "q-variable-provenance",
+                    "text": "From where may variable values be supplied, and which sources are untrusted for substitution into instructions?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "value_sources",
+                      "untrusted_sources",
+                      "sanitization_rules"
+                    ]
+                  },
+                  {
+                    "id": "q-template-validation",
+                    "text": "How are missing, extra, or injection-bearing argument values rejected before messages are materialized?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "argument_schema",
+                      "validation_errors",
+                      "injection_checks"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "template-arguments",
+                    "name": "Template arguments",
+                    "description": "Named parameters for prompt customization, including required flags and descriptions.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "stored-prompt-id",
+                    "name": "Stored prompt identifier",
+                    "description": "Vendor or registry identifier of a reusable prompt object, such as a prompt_id.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "stored-prompt-version",
+                    "name": "Stored prompt version",
+                    "description": "Explicit version of the stored prompt; must not default silently to latest for pinned runs.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "override-fields",
+                    "name": "Local override fields",
+                    "description": "Agent-local instructions, tools, or model settings that override the stored prompt.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-prompt-template",
+                    "name": "Prompt template with argument schema",
+                    "description": "Named template, argument definitions, and materialized-message contract for one prompt version.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/markdown"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Prompt name plus explicit version, or stored prompt id plus version, plus content digest",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "skills-and-composition",
+            "name": "Skills and instruction merge",
+            "description": "How skill packages and layered instructions are discovered, activated, and composed into the effective instruction stack.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "skill-packages",
+                "name": "Skill packages and progressive disclosure",
+                "description": "A skill is a directory with SKILL.md frontmatter (name, description, optional license, compatibility, metadata, experimental allowed-tools) plus optional scripts, references, and assets. Agents load name and description first, then the instruction body on activation, then referenced files on demand. Name must match the directory. This is operational instruction packaging, not the knowledge corpus of the references themselves.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-skill-identity",
+                    "text": "What skill name, description, license, compatibility, and directory identity uniquely identify each bound skill version?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "skill_name",
+                      "skill_description",
+                      "license",
+                      "compatibility",
+                      "directory_name"
+                    ]
+                  },
+                  {
+                    "id": "q-skill-activation",
+                    "text": "Under what conditions is a skill activated, and which instruction body, scripts, and references may then load?",
+                    "kind": "process",
+                    "answer_data": [
+                      "activation_trigger",
+                      "instruction_body_ref",
+                      "scripts",
+                      "references",
+                      "assets"
+                    ]
+                  },
+                  {
+                    "id": "q-skill-allowed-tools",
+                    "text": "Does the skill declare experimental allowed-tools, and how is that reconciled with the host configuration allowlist?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "allowed_tools_string",
+                      "host_allowlist",
+                      "reconciliation_rule"
+                    ]
+                  },
+                  {
+                    "id": "q-skill-validation",
+                    "text": "Was the skill validated against naming and frontmatter rules, and what validator and result apply?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "validator_name",
+                      "validation_result",
+                      "violations"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "skill-name",
+                    "name": "Skill name",
+                    "description": "Lowercase hyphenated identifier matching the skill directory, max 64 characters.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "skill-description",
+                    "name": "Skill description",
+                    "description": "What the skill does and when to use it; loaded at startup for routing.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "skill-compatibility",
+                    "name": "Compatibility",
+                    "description": "Environment or product requirements for the skill.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "skill-allowed-tools",
+                    "name": "Skill allowed-tools",
+                    "description": "Experimental space-separated pre-approved tools the skill may use.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "skill-resources",
+                    "name": "Skill bundled resources",
+                    "description": "References to scripts, references, and assets loaded on demand.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-skill-package",
+                    "name": "Skill package",
+                    "description": "SKILL.md plus optional scripts, references, and assets for one skill version.",
+                    "media_or_form": [
+                      "text/markdown",
+                      "application/zip",
+                      "inode/directory"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Skill name matching directory plus package digest; metadata.version if present is a label only",
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "instruction-composition",
+                "name": "Instruction merge and effective stack",
+                "description": "The effective instruction is a composition of provider rules, deployer instructions, stored prompts, activated skills, few-shot examples, and request variables. OpenAI states that additional agent configuration overrides stored prompt values. Skills recommend keeping SKILL.md under 500 lines and one-level file references. Composition order, truncation, and whether retrieved knowledge may rewrite instructions must be explicit.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-merge-order",
+                    "text": "In what order are provider, deployer, stored-prompt, skill, example, and variable layers concatenated or overridden to produce the effective stack?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "merge_order",
+                      "override_semantics",
+                      "concatenation_rules"
+                    ]
+                  },
+                  {
+                    "id": "q-effective-stack-digest",
+                    "text": "What digest identifies the fully materialized instruction stack after substitution, distinct from the unevaluated template digest?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "effective_stack_digest",
+                      "template_digest",
+                      "substitution_map_digest"
+                    ]
+                  },
+                  {
+                    "id": "q-truncation-policy",
+                    "text": "If the composed stack exceeds the context budget, what is dropped first and is that drop recorded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "drop_order",
+                      "hard_fail_on_overflow",
+                      "truncation_event_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-few-shot-examples",
+                    "text": "Which few-shot or skill examples are part of configuration versus live conversation history?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "configured_examples",
+                      "example_source",
+                      "excluded_from_history_flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "merge-order",
+                    "name": "Merge order",
+                    "description": "Ordered list of instruction sources that produce the effective stack.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "effective-stack-digest",
+                    "name": "Effective stack digest",
+                    "description": "Digest of materialized instructions after variable substitution and skill activation.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "configured-examples",
+                    "name": "Configured examples",
+                    "description": "Few-shot or skill examples that belong to the configuration.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-effective-stack",
+                    "name": "Effective instruction-stack manifest",
+                    "description": "Ordered sources, substitution map, truncation policy, and digests for the stack a run would see.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Configuration version identifier plus effective-stack digest",
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "tools-runtime-binding",
+        "name": "Tools, outputs and runtime binding",
+        "description": "Tool definitions, permission and approval policy, generation parameters, named-prompt binding, structured outputs, modalities, and handoffs.",
+        "rationale": "Versioned operational instruction is incomplete without the tool surface and sampling contract the model is allowed to use. Excessive agency and untrusted tool annotations are first-order configuration risks.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-004",
+          "SRC-009",
+          "SRC-010",
+          "SRC-012",
+          "SRC-014"
+        ],
+        "layers": [
+          {
+            "id": "tool-surface",
+            "name": "Tool definitions and governance",
+            "description": "Function schemas, behavior hints, allowlists, and human approval requirements bound to a configuration.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-010",
+              "SRC-012",
+              "SRC-014"
+            ],
+            "findings": [
+              {
+                "id": "tool-definitions",
+                "name": "Tool and function definitions",
+                "description": "MCP tools are uniquely named, with title, description, JSON Schema input, optional output schema, and optional annotations. OTel records tool definitions available to the agent. Google Agent Registry stores MCP toolspec payloads. Configuration binds a specific catalog version; listChanged means the live server list is not automatically the pinned catalog.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-tool-catalog",
+                    "text": "Which tools are bound, with names, titles, descriptions, and input and output schemas?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "tools",
+                      "name",
+                      "title",
+                      "description",
+                      "input_schema",
+                      "output_schema"
+                    ]
+                  },
+                  {
+                    "id": "q-tool-source",
+                    "text": "From which servers, libraries, or inline functions does each tool originate, and which catalog version is pinned?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "tool_source_ref",
+                      "server_id",
+                      "catalog_version",
+                      "inline_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-list-changed",
+                    "text": "If a backing server can emit listChanged, does this configuration freeze the catalog or accept live additions?",
+                    "kind": "state",
+                    "answer_data": [
+                      "list_changed_capability",
+                      "freeze_catalog_flag",
+                      "addition_policy"
+                    ]
+                  },
+                  {
+                    "id": "q-tool-schema-validation",
+                    "text": "Are arguments and structured results validated against the declared schemas before and after invocation?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "input_validation",
+                      "output_validation",
+                      "on_violation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "bound-tools",
+                    "name": "Bound tools",
+                    "description": "Tool definitions attached to this configuration version.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "tool-input-schema",
+                    "name": "Tool input schema",
+                    "description": "JSON Schema for a tool's parameters.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "tool-output-schema",
+                    "name": "Tool output schema",
+                    "description": "Optional JSON Schema for structured tool results.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "catalog-freeze-flag",
+                    "name": "Catalog freeze flag",
+                    "description": "True when live listChanged additions are not admitted into this configuration version.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-tool-catalog",
+                    "name": "Pinned tool catalog",
+                    "description": "Complete tool definitions and schemas bound to one configuration version.",
+                    "media_or_form": [
+                      "application/json",
+                      "application/schema+json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Catalog digest plus configuration version identifier",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "tool-governance",
+                "name": "Tool permissions, annotations and human approval",
+                "description": "OWASP LLM06 covers excessive agency via tools, skills, or plugins. MCP says there SHOULD be a human in the loop able to deny invocations, and that annotations MUST be treated as untrusted unless the server is trusted. ToolAnnotations (readOnlyHint, destructiveHint, idempotentHint, openWorldHint) are hints with defaults that assume write, destructive, and open-world unless stated. Agent Skills allowed-tools is experimental. Configuration must encode allowlists, confirmation policy, rate limits, and timeouts, not rely on model-facing prose.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-010",
+                  "SRC-014"
+                ],
+                "questions": [
+                  {
+                    "id": "q-allowlist",
+                    "text": "What allowlist, denylist, and tool-choice setting constrain which tools the model may request?",
+                    "kind": "access",
+                    "answer_data": [
+                      "allowlist",
+                      "denylist",
+                      "tool_choice",
+                      "max_tool_calls"
+                    ]
+                  },
+                  {
+                    "id": "q-annotation-trust",
+                    "text": "Are tool annotations treated as untrusted hints, and what independent risk class is assigned to each tool?",
+                    "kind": "security",
+                    "answer_data": [
+                      "annotations_trusted_flag",
+                      "read_only_hint",
+                      "destructive_hint",
+                      "idempotent_hint",
+                      "open_world_hint",
+                      "independent_risk_class"
+                    ]
+                  },
+                  {
+                    "id": "q-human-approval",
+                    "text": "Which tool classes require human confirmation, and what timeout, rate limit, and audit apply?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "approval_required",
+                      "approver_role",
+                      "timeout",
+                      "rate_limit",
+                      "audit_log_ref"
+                    ]
+                  },
+                  {
+                    "id": "q-side-effect-class",
+                    "text": "Which bound tools may mutate state, exfiltrate data, or reach an open world, regardless of author hints?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "mutation_class",
+                      "exfiltration_class",
+                      "open_world_class",
+                      "network_egress"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "tool-allowlist",
+                    "name": "Tool allowlist",
+                    "description": "Names of tools the configuration permits the model to request.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "tool-annotations",
+                    "name": "Tool annotations",
+                    "description": "Author-supplied hints; never a security control by themselves.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-014"
+                    ]
+                  },
+                  {
+                    "id": "approval-policy",
+                    "name": "Human approval policy",
+                    "description": "Which invocations require confirmation and by whom.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "tool-choice",
+                    "name": "Tool choice",
+                    "description": "Whether tool use is auto, required, or none for this configuration.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-tool-policy",
+                    "name": "Tool permission and approval policy",
+                    "description": "Allowlist, independent risk classes, confirmation rules, rate limits, and timeouts for the bound catalog.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Policy identifier plus configuration version identifier",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010",
+                      "SRC-014"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "generation-and-outputs",
+            "name": "Generation settings, outputs and handoffs",
+            "description": "Model binding, sampling hyperparameters, structured outputs, modalities, and specialist handoffs that travel with the configuration.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "sampling-and-named-prompts",
+                "name": "Model binding and generation parameters",
+                "description": "OTel records request model, temperature, top_p, top_k, max_tokens, seed, stop sequences, frequency and presence penalties, streaming, reasoning level, and output type. OpenAI agents attach model and modelSettings to the agent and allow runner-level overrides. The model entity is out of scope; the binding and sampling contract on this configuration is in scope. Seed is not identity.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-model-binding",
+                    "text": "Which model identifier is requested, and may a runner override it without creating a new configuration version?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "requested_model",
+                      "runner_override_allowed",
+                      "provider_name"
+                    ]
+                  },
+                  {
+                    "id": "q-sampling-params",
+                    "text": "What temperature, top_p, top_k, max tokens, penalties, stop sequences, seed, stream flag, and reasoning level apply?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "temperature",
+                      "top_p",
+                      "top_k",
+                      "max_tokens",
+                      "frequency_penalty",
+                      "presence_penalty",
+                      "stop_sequences",
+                      "seed",
+                      "stream",
+                      "reasoning_level"
+                    ]
+                  },
+                  {
+                    "id": "q-sampling-provenance",
+                    "text": "Who set each generation parameter and whether it came from a stored prompt, agent defaults, or a runner override?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "parameter_source",
+                      "stored_prompt_values",
+                      "runner_overrides"
+                    ]
+                  },
+                  {
+                    "id": "q-determinism",
+                    "text": "Is reproducible sampling required, and if so how is seed combined with the configuration digest without treating seed as an identifier?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "reproducible_sampling_flag",
+                      "seed",
+                      "note_on_provider_nondeterminism"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "requested-model",
+                    "name": "Requested model",
+                    "description": "Model name this configuration asks the provider to use.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "generation-parameters",
+                    "name": "Generation parameters",
+                    "description": "Sampling and decoding settings attached to the configuration.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "runner-override-policy",
+                    "name": "Runner override policy",
+                    "description": "Whether run-time settings may override this configuration without a new version.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-generation-profile",
+                    "name": "Generation parameter profile",
+                    "description": "Model binding and sampling contract for one configuration version.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Configuration version identifier plus generation-profile digest",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "outputs-and-handoffs",
+                "name": "Structured outputs, modalities and handoffs",
+                "description": "A2A Agent Cards declare default input and output MIME types and skills with examples. OpenAI agents add structured outputs and handoffs with handoffDescription. Configuration must state the output contract and which specialist configurations may be delegated to, without absorbing those specialists' identities.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-009",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-output-contract",
+                    "text": "What structured-output schema or MIME types must responses satisfy, and what happens on violation?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "output_schema",
+                      "output_mime_types",
+                      "on_violation"
+                    ]
+                  },
+                  {
+                    "id": "q-modalities",
+                    "text": "Which default input and output modalities are enabled, and which are overridden per skill?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "default_input_modes",
+                      "default_output_modes",
+                      "per_skill_overrides"
+                    ]
+                  },
+                  {
+                    "id": "q-handoffs",
+                    "text": "Which other configurations or agents may be handed off to, with what descriptions and constraints?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "handoff_targets",
+                      "handoff_description",
+                      "handoff_constraints"
+                    ]
+                  },
+                  {
+                    "id": "q-advertised-skills",
+                    "text": "Which skills are advertised on a discovery card versus only available inside this operational configuration?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "advertised_skill_ids",
+                      "internal_only_skill_ids",
+                      "examples"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "output-schema",
+                    "name": "Structured output schema",
+                    "description": "Schema the model output is constrained to when structured outputs are enabled.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "default-input-modes",
+                    "name": "Default input modes",
+                    "description": "MIME types accepted as default inputs.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "default-output-modes",
+                    "name": "Default output modes",
+                    "description": "MIME types produced as default outputs.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "handoff-targets",
+                    "name": "Handoff targets",
+                    "description": "References to other agent or configuration identities this specialist may delegate to.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-output-handoff-contract",
+                    "name": "Output, modality and handoff contract",
+                    "description": "Structured-output schema, modality lists, advertised skills, and handoff bindings for one configuration version.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Configuration version identifier plus contract digest",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "safety-evidence-interop",
+        "name": "Safety, evidence and interoperability",
+        "description": "Guardrails, injection and leakage posture, access classification, pinning, telemetry, retention, and alignment to external schemas including recorded conflicts.",
+        "rationale": "NIST, OWASP, and MCP all treat prompt injection, leakage, and content capture as operational risks of the instruction-and-tool package. Interoperability requires alignment maps rather than silent conformance claims.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-010",
+          "SRC-013"
+        ],
+        "layers": [
+          {
+            "id": "safety-and-access",
+            "name": "Guardrails, injection posture and access",
+            "description": "Refusal criteria, guardrail bindings, prompt-injection defenses, secrets exclusion, and who may read or edit instruction bodies.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-004",
+              "SRC-010",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "guardrails-and-refusals",
+                "name": "Guardrails and refusal criteria",
+                "description": "NIST maps AI configuration to criteria for queries a GAI application should refuse and to content filters on inputs and outputs. OpenAI agents attach input and output guardrails to the agent. Azure safety system messages encode behavioral limits that are not a substitute for filters. Guardrail selection and thresholds belong here; measurements from a run belong to WM-AI-004.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-refusal-criteria",
+                    "text": "What query and output classes must this configuration refuse, and where is that encoded besides natural-language instructions?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "refusal_classes",
+                      "encoded_in_filters",
+                      "encoded_in_instructions_only"
+                    ]
+                  },
+                  {
+                    "id": "q-guardrail-bindings",
+                    "text": "Which input and output guardrails, content filters, and thresholds are bound to this version?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "input_guardrails",
+                      "output_guardrails",
+                      "thresholds",
+                      "fail_closed_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-guardrail-fail-mode",
+                    "text": "Do guardrail failures fail closed, fail open, or escalate to a human, and is that logged?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "fail_mode",
+                      "escalation_role",
+                      "logged_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-eval-of-config",
+                    "text": "What red-team or evaluation evidence last showed these refusals still hold after the instruction or tool-list change?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "eval_suite_id",
+                      "eval_date",
+                      "residual_risks",
+                      "related_nist_actions"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "refusal-classes",
+                    "name": "Refusal classes",
+                    "description": "Categories of requests the configuration must not fulfill.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "bound-guardrails",
+                    "name": "Bound guardrails",
+                    "description": "Input and output validators attached to the configuration.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "guardrail-fail-mode",
+                    "name": "Guardrail fail mode",
+                    "description": "Fail-closed, fail-open, or escalate.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-guardrail-set",
+                    "name": "Guardrail and refusal binding set",
+                    "description": "Bound filters, refusal classes, thresholds, fail mode, and last evaluation references.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Guardrail-set identifier plus configuration version identifier",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "injection-leakage-access",
+                "name": "Injection, leakage, secrets and access",
+                "description": "NIST describes direct and indirect prompt injection. OWASP LLM01 and LLM07 state that user content can alter behavior and that system prompts must not hold credentials or be treated as secrets or security controls. MCP requires validation of prompt and tool inputs and outputs against injection and unauthorized resource access. Access to instruction bodies is still restricted because they may contain proprietary policy, even though they are not secrets.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-injection-controls",
+                    "text": "What technical controls separate untrusted user or retrieved content from higher-authority instructions?",
+                    "kind": "security",
+                    "answer_data": [
+                      "delimiter_strategy",
+                      "tool_output_sanitization",
+                      "untrusted_labeling",
+                      "indirect_injection_controls"
+                    ]
+                  },
+                  {
+                    "id": "q-secrets-exclusion",
+                    "text": "Has the instruction body been scanned to exclude credentials, connection strings, and security-by-obscurity rules?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "secrets_scan_result",
+                      "forbidden_content_classes",
+                      "last_scan_at"
+                    ]
+                  },
+                  {
+                    "id": "q-read-access",
+                    "text": "Who may read the operational instruction body versus the public skill or Agent Card description?",
+                    "kind": "access",
+                    "answer_data": [
+                      "read_roles",
+                      "public_fields",
+                      "need_to_know_flag"
+                    ]
+                  },
+                  {
+                    "id": "q-edit-access",
+                    "text": "Who may edit system instructions, guardrails, or tool lists, and is that action audited?",
+                    "kind": "access",
+                    "answer_data": [
+                      "edit_roles",
+                      "dual_control_required",
+                      "audit_events"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "injection-controls",
+                    "name": "Injection controls",
+                    "description": "Declared technical separations between untrusted content and instructions.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "secrets-exclusion-status",
+                    "name": "Secrets exclusion status",
+                    "description": "Result of scanning instruction text for credentials and similar secrets.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "instruction-classification",
+                    "name": "Instruction classification",
+                    "description": "Confidentiality label of the instruction body, which is not a substitute for access control on tools.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "edit-roles",
+                    "name": "Edit roles",
+                    "description": "Roles permitted to modify instructions, guardrails, or tool lists.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-security-review",
+                    "name": "Instruction security and access review",
+                    "description": "Secrets scan, injection-control statement, classification, and access-control list for a configuration version.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/markdown"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Review identifier plus configuration version identifier",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "evidence-and-interop",
+            "name": "Pinning, retention and schema alignment",
+            "description": "How configurations are observed, retained, deleted, and mapped to external schemas without claiming unjustified conformance.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-007",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "pinning-observability-retention",
+                "name": "Pinning, observability, retention and deletion",
+                "description": "OTel requires prompt name and version when a named template is used and treats instruction capture as privacy-sensitive. Runs must record the configuration pin separately from when telemetry was ingested. Historical versions needed for audit and replay have a retention period; deletion of a version must not silently retarget pinned runs. Content capture of instruction bodies is opt-in.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-002",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "q-run-pin",
+                    "text": "What identifiers must an agent run record to pin this exact configuration, including digest and not only a latest alias?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "pinned_master_id",
+                      "pinned_digest",
+                      "pinned_prompt_name",
+                      "pinned_prompt_version"
+                    ]
+                  },
+                  {
+                    "id": "q-content-capture",
+                    "text": "May instruction text and tool definitions be copied into telemetry, and under what privacy policy?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "capture_mode",
+                      "redaction_rules",
+                      "privacy_policy_ref"
+                    ]
+                  },
+                  {
+                    "id": "q-retention-period",
+                    "text": "How long are inactive configuration versions retained for replay, and what legal or audit hold extends that?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retain_until",
+                      "legal_hold_flag",
+                      "replay_obligation"
+                    ]
+                  },
+                  {
+                    "id": "q-deletion-effect",
+                    "text": "What happens to already-pinned runs if this version is deleted, tombstoned, or redacted?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "deletion_mode",
+                      "tombstone_flag",
+                      "pinned_run_behavior",
+                      "redaction_of_bodies"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "pin-tuple",
+                    "name": "Pin tuple",
+                    "description": "Set of identifiers a run must persist to reproduce this configuration.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "content-capture-mode",
+                    "name": "Content capture mode",
+                    "description": "Whether instruction and tool-definition content may be copied into traces or events.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "retention-until",
+                    "name": "Retain until",
+                    "description": "RFC 3339 instant after which an inactive version may be deleted absent a hold.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "deletion-mode",
+                    "name": "Deletion mode",
+                    "description": "Tombstone, hard-delete, or body-redaction while keeping identity.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-pin-manifest",
+                    "name": "Configuration pin and retention manifest",
+                    "description": "Pin tuple, capture policy, retention clock, and deletion mode for a configuration version.",
+                    "media_or_form": [
+                      "application/json"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Configuration version identifier plus pin-manifest digest",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "schema-alignment",
+                "name": "External schema alignment and conflicts",
+                "description": "This model aligns to ISO 22989 prompt, MCP tools and prompts, A2A AgentSkill, Agent Skills, OpenTelemetry gen_ai.prompt.* and generation attributes, and vendor agent objects. Alignments are not conformance claims. Known conflicts include MCP user-controlled prompts versus developer system instructions, OpenAI provider-system versus industry system-message, OTel date-like version examples, and OpenAI migration away from hosted prompt objects.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-alignment-targets",
+                    "text": "Which external schemas is this configuration mapped to, and with what field-level mapping evidence?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "alignment_targets",
+                      "field_map",
+                      "mapping_evidence"
+                    ]
+                  },
+                  {
+                    "id": "q-conformance-claim",
+                    "text": "Is any conformance to MCP, A2A, Agent Skills, or OTel actually claimed, and what test evidence supports it?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "conformance_claims",
+                      "test_harness",
+                      "failed_constraints"
+                    ]
+                  },
+                  {
+                    "id": "q-known-conflicts",
+                    "text": "Which recorded conflicts (prompt control, system-layer meaning, version-as-date, hosted versus repo prompts) affect this instance?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "applicable_conflicts",
+                      "chosen_interpretation",
+                      "rationale"
+                    ]
+                  },
+                  {
+                    "id": "q-projection-used",
+                    "text": "Which storage or interface projection carries this instance, without treating that projection as the semantic model?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "projection_type",
+                      "interface_url",
+                      "not_semantic_flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "alignment-targets",
+                    "name": "Alignment targets",
+                    "description": "External schemas this instance is mapped to.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "conformance-claims",
+                    "name": "Conformance claims",
+                    "description": "Optional explicit conformance statements with evidence; empty means alignment only.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "recorded-conflicts",
+                    "name": "Recorded conflicts",
+                    "description": "Conflicts among aligned standards that apply to this instance.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "projection-type",
+                    "name": "Projection type",
+                    "description": "Storage or interface used, such as repo files, hosted prompt object, MCP server, or Agent Card.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-alignment-map",
+                    "name": "External schema alignment map",
+                    "description": "Field mappings, optional conformance evidence, and recorded conflicts for one configuration family.",
+                    "media_or_form": [
+                      "application/json",
+                      "text/markdown"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Alignment-map identifier plus configuration-family identifier",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "fn-register-version",
+      "name": "Register configuration version",
+      "description": "Create an immutable configuration version with master-system identity, canonical digest, owner, and initial lifecycle state.",
+      "inputs": [
+        "instruction stack or stored-prompt reference",
+        "tool catalog and skill bindings",
+        "generation profile and output contract",
+        "owner and intended purpose"
+      ],
+      "outputs": [
+        "master-system identifier",
+        "content digest",
+        "lifecycle state draft or equivalent"
+      ],
+      "preconditions": [
+        "Caller is an authorized editor",
+        "Secrets scan has not failed",
+        "Required identity fields are present"
+      ],
+      "effects": [
+        "A new pin-able version exists and does not alter the currently active version",
+        "Provenance of author and creation event time is recorded"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-009",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "fn-compose-stack",
+      "name": "Compose effective instruction stack",
+      "description": "Apply authority order, skill activation, and variable substitution to materialize the effective instruction stack and its digest.",
+      "inputs": [
+        "configuration version",
+        "activation set of skills",
+        "template variables",
+        "authority policy"
+      ],
+      "outputs": [
+        "effective instruction messages",
+        "effective stack digest",
+        "truncation report"
+      ],
+      "preconditions": [
+        "Arguments validate against the template schema",
+        "Untrusted sources are labeled and cannot raise their authority"
+      ],
+      "effects": [
+        "A materialized stack suitable for a model call is produced without writing a new version unless digest persistence is requested"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-bind-tools-skills",
+      "name": "Bind tools and skills",
+      "description": "Attach a pinned tool catalog and skill packages, reconcile experimental allowed-tools with the host allowlist, and record independent risk classes.",
+      "inputs": [
+        "configuration version",
+        "tool definitions",
+        "skill packages",
+        "host allowlist and approval policy"
+      ],
+      "outputs": [
+        "pinned catalog digest",
+        "reconciled allowlist",
+        "untrusted annotation flags"
+      ],
+      "preconditions": [
+        "Tool input schemas are valid JSON Schema objects",
+        "Skill names match directories and frontmatter"
+      ],
+      "effects": [
+        "The configuration version references a frozen or explicitly live catalog",
+        "Annotations are stored as hints only"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-006",
+        "SRC-010",
+        "SRC-014"
+      ]
+    },
+    {
+      "id": "fn-validate-config",
+      "name": "Validate and evaluate configuration",
+      "description": "Run structural validation, secrets exclusion, schema checks, and risk-proportional red-teaming or evals before activation.",
+      "inputs": [
+        "configuration version",
+        "eval suite and refusal classes",
+        "injection test cases"
+      ],
+      "outputs": [
+        "validation report",
+        "eval report references",
+        "residual risks"
+      ],
+      "preconditions": [
+        "Version is complete enough to execute in a sandbox",
+        "Eval data are separated from production user data"
+      ],
+      "effects": [
+        "Version may transition to in-review or fail back to draft",
+        "Evidence artifacts are linked to the version"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-006",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "fn-activate-rollback",
+      "name": "Activate, freeze or rollback",
+      "description": "Change lifecycle state under the configured approval path, including emergency freeze and rollback to a prior digest.",
+      "inputs": [
+        "target version identifier",
+        "approval record",
+        "optional incident reference"
+      ],
+      "outputs": [
+        "new lifecycle state",
+        "previously active version id",
+        "effective-from timestamp"
+      ],
+      "preconditions": [
+        "Caller holds activation or incident authority",
+        "Target version passed required validation for the risk tier"
+      ],
+      "effects": [
+        "New runs resolve the active pointer to the target digest unless they pin otherwise",
+        "Already-pinned runs are unchanged"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "fn-pin-for-run",
+      "name": "Pin configuration for a run",
+      "description": "Emit the pin tuple a run must store so later inspection can recover the exact instruction and tool package.",
+      "inputs": [
+        "configuration version or stored prompt reference",
+        "effective stack digest if already composed",
+        "content-capture policy"
+      ],
+      "outputs": [
+        "pin tuple",
+        "optional redacted instruction snapshot according to capture policy"
+      ],
+      "preconditions": [
+        "Version exists and is not hard-deleted",
+        "Capture policy is known"
+      ],
+      "effects": [
+        "A run can be related to WM-AI-005 without depending on a latest pointer"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "fn-redact-secrets",
+      "name": "Redact and classify instruction secrets",
+      "description": "Scan instruction bodies and tool descriptions for credentials and other excluded classes, classify remaining text, and optionally tombstone leaked versions.",
+      "inputs": [
+        "configuration version",
+        "forbidden content classes",
+        "classification policy"
+      ],
+      "outputs": [
+        "scan result",
+        "redacted body if required",
+        "classification label"
+      ],
+      "preconditions": [
+        "Scanner rules are current",
+        "Editors acknowledge that remaining instructions are not a security control"
+      ],
+      "effects": [
+        "Failed scans block activation",
+        "Confirmed leakage can freeze or redact the version without retargeting pinned identities"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-005"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-AI-002",
+      "relation": "REFERENCE",
+      "purpose": "An AI agent uses one or more prompt or agent configurations as its operational instruction and tool package.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "WM-AI-004",
+      "relation": "REFERENCE",
+      "purpose": "An agent run pins the exact configuration identity and digest for reproducibility and audit.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "WM-KNW-005",
+      "relation": "REFERENCE",
+      "purpose": "Skill reference corpora, assets, and other knowledge packs are knowledge objects; this model only binds and cites them.",
+      "required": false,
+      "source_refs": [
+        "SRC-006",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "ISO/IEC 22989 prompt (Amd 1 term 3.6.19)",
+      "relation": "ALIGN",
+      "purpose": "Align the instruction-payload concept to the ISO generative-AI definition of prompt without claiming the 2022 base edition already contains the term.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "MCP Tool and Prompt schemas",
+      "relation": "ALIGN",
+      "purpose": "Align tool definitions, prompt templates, arguments, and untrusted annotations to MCP while treating MCP transport as a projection.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-014"
+      ]
+    },
+    {
+      "target": "A2A AgentSkill and Agent Card",
+      "relation": "ALIGN",
+      "purpose": "Align advertised skills, modalities, and version fields to A2A discovery without placing instruction bodies on the public card.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-012"
+      ]
+    },
+    {
+      "target": "Agent Skills SKILL.md",
+      "relation": "ALIGN",
+      "purpose": "Align skill-package identity, progressive disclosure, and experimental allowed-tools to the Agent Skills specification.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "OpenTelemetry gen_ai.prompt and generation attributes",
+      "relation": "ALIGN",
+      "purpose": "Align named prompt, version, generation parameters, and privacy-sensitive content capture to GenAI semantic conventions still in development.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "OpenAI Model Spec chain of command",
+      "relation": "ALIGN",
+      "purpose": "Align instruction-authority layers to the published Model Spec while recording the conflict with industry system-message usage.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "Declare the configuration registry or agent platform that issues the master-system identifier",
+        "Declare the accountable deployer and the roles that may edit instructions, guardrails, and tool lists",
+        "Declare the canonicalization profile used to compute content digests",
+        "Declare whether hosted prompt objects, repository files, or both are projections of this Dimension"
+      ],
+      "namespace_guidance": "Use a Dimension namespace under NAV.INF.AI.PRM for configuration identities. Do not put years or calendar dates in local identifiers. Map vendor prompt ids (for example pmpt_*) and A2A skill ids as aliases of the master-system identifier, not as replacements for it.",
+      "registry_links": [
+        "vr.wm-ai-005",
+        "WM-AI-002 agent uses configuration",
+        "WM-AI-004 run pins configuration",
+        "WM-KNW-005 knowledge packs bound by skills"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonical form is an ordered instruction stack, pinned tool catalog, generation profile, guardrail bindings, and authority policy with stable key order and no storage-only fields",
+        "Template text is canonicalized before variable substitution; effective-stack digest is computed after substitution and recorded separately",
+        "Tool annotations are stored but do not affect the digest's security classification; independent risk class does"
+      ],
+      "patch_rules": [
+        "Edits to instruction text, tool lists, allowlists, or guardrail thresholds always mint a new version; they never rewrite a digest in place",
+        "Metadata-only patches (owner display name, documentation URL) may be recorded as a patch on the same digest only if they cannot change model behavior",
+        "Rollback is a lifecycle transition to a prior digest, not a reverse patch of the active payload"
+      ],
+      "compatibility_rules": [
+        "Adding an optional template argument or a new skill that is not auto-activated is backward compatible",
+        "Removing or renaming a tool, tightening tool-choice, or changing authority order is a breaking change and requires a new major version label",
+        "Vendor stored-prompt 'latest' is not a compatible pin; runs must store an explicit version or digest"
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier assigned by the configuration registry or agent platform of record",
+        "Governed global identifier or IRI for a published configuration version",
+        "UUID or ULID assigned by the adopting Dimension when no master-system identifier exists"
+      ],
+      "timestamp_rule": "Timestamps SHALL use RFC 3339 with required seconds and an explicit numeric offset or Z. Record the configuration-change event time (created, approved, activated, frozen, deleted) separately from observation or ingestion time whenever those instants differ.",
+      "serial_naming_rule": "Serial artifacts are named {master-system-id}--{content-digest-prefix} plus an artifact-kind suffix. Version labels may appear as metadata but must not be the only name, and calendar dates must not appear in the identifier.",
+      "integrity_rule": "Each serial artifact carries a cryptographic digest of the canonical payload. Instruction bodies, tool catalogs, and pin manifests are verified against that digest before activation and before replay."
+    },
+    "policies": [
+      "Production changes to instructions, guardrails, or tool lists require named owners, an approval record, and an audit event proportional to risk (NIST AI 600-1 AI configuration and ISO/IEC 42001 operational control).",
+      "Instruction text is not a secret and not a security control; credentials and connection strings are forbidden in prompts (OWASP LLM07).",
+      "Tool annotations are untrusted hints; destructive or open-world tools require independent risk classification and default to human confirmation (MCP tools and ToolAnnotations).",
+      "Telemetry capture of instruction content is opt-in and redacted according to the Dimension privacy policy (OpenTelemetry GenAI content capture)."
+    ],
+    "crud": {
+      "read": [
+        "Authorized readers may retrieve identity, kind, lifecycle, and public discovery fields",
+        "Operational instruction bodies and full tool schemas require need-to-know access even though they are not treated as secrets"
+      ],
+      "create": [
+        "Authorized editors may create a draft version with secrets scan and schema validation",
+        "Create never sets the active pointer"
+      ],
+      "update": [
+        "Behavioral fields are updated only by minting a new version",
+        "Lifecycle transitions (review, activate, freeze, rollback, deprecate) are updates to state, not to payload digest"
+      ],
+      "delete": [
+        "Hard-delete is forbidden while pinned runs or legal holds exist; tombstone or body-redaction is the default",
+        "Deletion must not retarget a pin tuple to another version"
+      ]
+    },
+    "roles": [
+      {
+        "name": "Accountable deployer",
+        "responsibilities": [
+          "Owns production activation and residual risk of the configuration",
+          "Appoints editors and security reviewers"
+        ]
+      },
+      {
+        "name": "Configuration author",
+        "responsibilities": [
+          "Drafts instruction stacks, skill bindings, and tool catalogs",
+          "Keeps intended purpose, limitations, and examples current"
+        ]
+      },
+      {
+        "name": "Security reviewer",
+        "responsibilities": [
+          "Reviews injection posture, secrets exclusion, tool risk classes, and approval policy",
+          "Can block activation on failed scans or missing dual control"
+        ]
+      },
+      {
+        "name": "Evaluator",
+        "responsibilities": [
+          "Runs refusal, jailbreak, and quality evals proportional to risk before activation",
+          "Links eval evidence to the version"
+        ]
+      },
+      {
+        "name": "Operator",
+        "responsibilities": [
+          "Executes freeze and rollback during incidents",
+          "Ensures runs pin digests rather than latest aliases"
+        ]
+      },
+      {
+        "name": "Agent runtime",
+        "responsibilities": [
+          "Loads only the pinned configuration",
+          "Enforces allowlists, confirmation, and capture policy"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny access to operational instruction bodies, full tool schemas, and unpublished skill packages unless the principal has an explicit need-to-know role; public discovery fields may be read more widely.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Incident responders may read frozen versions under audit",
+        "Extended A2A Agent Cards may reveal additional capability metadata after authentication without revealing instruction bodies",
+        "Redacted eval corpora may include instruction excerpts when required to reproduce a finding"
+      ],
+      "audit_requirements": [
+        "Record read of classified instruction bodies and every create, activate, freeze, rollback, and delete event with RFC 3339 event time",
+        "Record tool-policy changes and human denials of tool invocation at the configuration-policy level"
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "Specification URL",
+        "Processes URL",
+        "Interface URL",
+        "Storage type URL"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "Wide-union, falsifiable coverage of versioned operational instruction and tool configuration as used by agents, grounded in ISO prompt terminology, NIST GAI configuration risk, MCP tools/prompts, A2A skills, Agent Skills, OpenTelemetry prompt attributes, OpenAI/Microsoft agent instruction practice, and OWASP injection/leakage/agency guidance. Not a universal prompt ontology and not a claim of conformance to any one vendor or protocol.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Master-system identifier, governed IRI, Dimension UUID/ULID, named prompt, explicit version, and content digest; dates excluded as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Draft, review, active, canary, freeze, deprecate, rollback; activation does not mutate pinned runs."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Links to agent (WM-AI-002), run pin (WM-AI-004), knowledge packs (WM-KNW-005), tools, skills, handoffs, and stored prompts."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 event times for create/approve/activate/freeze/delete distinct from ingestion/observation time."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Author, tool-source, stored-prompt versus local override, and parameter-source tracking."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Accountable deployer and operational owner required; edit roles enumerated."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Template arguments, tool schemas, skill frontmatter, secrets scan, and pre-activation evals."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Need-to-know for instruction bodies; public versus operational fields; dual-control for production edits; tool allowlists."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retain-until, legal hold, tombstone versus hard-delete, and pin-preserving redaction."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "ALIGN maps to ISO, MCP, A2A, Agent Skills, OTel, and OpenAI Model Spec with explicit non-conformance default."
+      },
+      {
+        "dimension": "instruction authority",
+        "status": "covered",
+        "notes": "Root/system/developer/user/guideline chain recorded as configuration, with untrusted-content policy."
+      },
+      {
+        "dimension": "tool governance",
+        "status": "covered",
+        "notes": "Schemas, untrusted annotations, independent risk class, human approval, and catalog freeze."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Prompt injection, excessive agency, and system-prompt leakage controls; instructions not used as security controls."
+      }
+    ],
+    "known_omissions": [
+      "EU AI Act Annex IV mapping of prompts as high-risk technical documentation was not fetched as a primary source and is a likely regional omission.",
+      "Prompt A/B experimentation, canary traffic splitting, and automatic prompt optimization (DSPy and similar) lack a primary standard and are not modeled as first-class objects.",
+      "IEEE or other SDO prompt-markup languages (PromptML, POML) were not located as adopted standards in this pass.",
+      "MCP specification has moved beyond 2025-06-18 (schema 2026-07-28 observed); hosts may implement later prompt or tool fields not fully decomposed here.",
+      "Provider-specific cache breakpoints, prompt-caching billing, and multimodal system-prompt part inventories beyond MCP image/audio examples are incomplete.",
+      "National adoptions of ISO/IEC 42001 (for example documented operational-instruction lists) were seen only in translation and are not treated as ISO-canonical clause text.",
+      "LangChain Hub, PromptLayer, and other commercial prompt registries are vendor implementations, not semantic sources."
+    ],
+    "conflicts": [
+      "MCP prompts are specified as user-controlled templates; OpenAI/Azure system or developer instructions are deployer-controlled; ISO 22989 'prompt' is overarching instructions. This model keeps all three as kinds rather than forcing one control plane.",
+      "OpenAI Model Spec 'system' is provider-only and above developer; industry 'system message' is usually developer text. Collapsing those layers is a mapping error.",
+      "OWASP: system prompts are not secrets. A2A/ADK practice: public Agent Cards must not carry instruction bodies. Both stand: do not rely on obscurity; still withhold operational text from unauthenticated discovery.",
+      "OpenTelemetry examples allow date-like gen_ai.prompt.version values; this meta-model forbids dates as identifiers and treats such strings as labels only.",
+      "OpenAI documents hosted prompt objects with id/version/variables and also a migration path that moves prompts into application source. Hosted versus repo storage is a projection conflict, not two semantics.",
+      "ToolAnnotations defaults (destructiveHint true, openWorldHint true, readOnlyHint false) conflict with authors who omit annotations intending 'safe'; clients must assume the spec defaults, not author intent.",
+      "OTel GenAI conventions remain Development status; field names may change before stability."
+    ],
+    "regional_assumptions": [
+      "NIST AI 600-1 is voluntary US federal guidance; it is used for risk actions, not as a global legal duty.",
+      "ISO/IEC 22989 prompt text cited here is from Amendment 1 draft excerpt (DAmd 1), not proven as already in ISO/IEC 22989:2022 without the amendment.",
+      "OpenAI Model Spec localization and legal-compliance variants imply some deployments will have locale-specific provider-system layers.",
+      "EU, UK, and other high-risk AI documentation duties may require retaining instruction versions even when this model would otherwise allow deletion; treat as a hold overlay until a primary mapping is added."
+    ],
+    "adversarial_checks": [
+      "Checked that agent identity (WM-AI-002) and run traces (WM-AI-004) are referenced rather than duplicated as configuration fields.",
+      "Checked that MCP/A2A/Git/JSON are treated as projections, with tool and prompt payloads remaining the semantic objects.",
+      "Checked that ISO 22989:2022 is not claimed to contain the prompt term without the generative-AI amendment excerpt.",
+      "Checked that system prompts are not modeled as secrets or as access-control mechanisms, matching OWASP LLM07.",
+      "Checked that OTel date-like version examples are recorded as a conflict rather than copied into identity rules.",
+      "Checked that skill references/ knowledge files are bounded to WM-KNW-005 rather than absorbed as instruction identity.",
+      "Checked that 'latest' stored-prompt pointers cannot satisfy run pinning."
+    ]
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Resource Pool",
+  "cases": [
+    {
+      "id": "exclusive-gpu-overlap",
+      "kind": "detection",
+      "input": {
+        "memberKey": "GPU-1",
+        "exclusive": true,
+        "allocations": [
+          "A@I1",
+          "B@I1"
+        ]
+      },
+      "expect": "Exclusive overlap conflict is detected.",
+      "expectedCode": "D-POOL-EXCLUSIVE-OVERLAP"
+    },
+    {
+      "id": "shared-specialist-110",
+      "kind": "detection",
+      "input": {
+        "memberKey": "SPEC-1",
+        "shares": [
+          0.6,
+          0.5
+        ],
+        "aggregationWindow": "week-1"
+      },
+      "expect": "Window aggregate conflict or policy warning is explicit.",
+      "expectedCode": "D-POOL-WINDOW-OVERBOOK"
+    },
+    {
+      "id": "nonoverlap-s2",
+      "kind": "positive",
+      "input": {
+        "specialistWindow": "week-2",
+        "gpuIntervals": [
+          "I1",
+          "I2"
+        ]
+      },
+      "expect": "Both conflict predicates clear for their stated reasons.",
+      "expectedCode": "OK_SCENARIO_NONOVERLAP"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "pool-quantity-kind-present",
+      "kind": "positive",
+      "input": "Pool version declares quantityKind, unit, unitSchemeVersion, quantityCharacter and resourceKind from the named vocabulary.",
+      "expect": "Demand-to-pool comparison is decidable on quantityKind, unit and quantityCharacter."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "pool-quantity-kind-missing",
+      "kind": "negative",
+      "input": "Pool declares resourceKind and unit only, and a cross-kind rejection is attempted against it.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-QUANTITY-KIND-MISSING"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "class-kind-vocabulary-split",
+      "kind": "negative",
+      "input": "Demand resourceClass and pool resourceKind are matched across two undeclared vocabularies.",
+      "expect": "Rejected.",
+      "expectedCode": "E-MATCH-VOCABULARY-UNDECLARED"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "cross-kind-comparison",
+      "kind": "negative",
+      "input": "An FTE demand is evaluated against GPU-hour pool capacity.",
+      "expect": "Rejected.",
+      "expectedCode": "E-KIND-MISMATCH"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "overbooking-policy-absent",
+      "kind": "negative",
+      "input": "A pool version omits overbookingPolicy and a confirmation exceeds effective availability.",
+      "expect": "Rejected; absence is never read as tolerance.",
+      "expectedCode": "E-POOL-OVERBOOKING-POLICY-ABSENT"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "overbooking-zero-allowance",
+      "kind": "detection",
+      "input": "overbookingPolicy.allowance=0 and confirmed plus reserved load exceeds effective availability.",
+      "expect": "A conflict is raised in that scenario; both allocations are retained."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "exclusivity-undeclared",
+      "kind": "negative",
+      "input": "An indivisible GPU member is added with no exclusivity declared.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-EXCLUSIVITY-UNDECLARED"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "pool-version-covers-policy",
+      "kind": "positive",
+      "input": "overbookingPolicy is changed on an active pool.",
+      "expect": "A new PoolVersion is created whose contentDigest covers kind, unit, calendar, zone, divisibility, exclusivity, membership rules and both policies; the prior version stays resolvable."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "policy-change-without-new-version",
+      "kind": "negative",
+      "input": "unit or overbookingPolicy is edited in place with no new PoolVersion.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-UNVERSIONED-MUTATION"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "dual-supersession-conflict",
+      "kind": "negative",
+      "input": "Root successorRef and PoolVersion.supersedesVersion assert different chains.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-SUPERSESSION-CONFLICT"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "membership-effective-dated",
+      "kind": "positive",
+      "input": "GPU-1 joins on 2026-02-01 and leaves on 2026-05-01 with memberRef to WM-OBJ-001, memberKey, per-member divisibility=false and exclusivity=true.",
+      "expect": "Membership is accepted; allocations outside the effective window are not admissible against that member."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "allocation-outside-membership-window",
+      "kind": "negative",
+      "input": "A June interval is allocated to GPU-1 whose membership ended 2026-05-01.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-MEMBERSHIP-WINDOW"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "membership-derived-from-employment",
+      "kind": "negative",
+      "input": "Pool membership is derived automatically from a WM-ORG-016 standing assignment, and a conflict check writes that master.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-MEMBERSHIP-DERIVED"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "shared-member-dedup",
+      "kind": "positive",
+      "input": "SPEC-1 belongs to two pools for different planning views; both are read in one scenario.",
+      "expect": "Within the declared consolidation scope of one scenario, one memberKey, one quantityKind and one interval, the underlying capacity is counted once."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "shared-member-doubled",
+      "kind": "negative",
+      "input": "Capacity from SPEC-1's two pool memberships is summed into one availability figure.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-MEMBER-DOUBLE-COUNT"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "suspended-pool-zero-available",
+      "kind": "negative",
+      "input": "A reservation is made against a suspended pool version.",
+      "expect": "Rejected; suspension yields zero available, never unknown.",
+      "expectedCode": "E-POOL-VERSION-NOT-ALLOCATABLE"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "retired-version-read-only",
+      "kind": "positive",
+      "input": "A retired pool version is referenced by a historical released allocation and then by a new reservation.",
+      "expect": "The historical reference resolves unchanged; the new reservation is refused."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "constrained-state-undefined",
+      "kind": "negative",
+      "input": "A pool in lifecycle state constrained is treated as fully allocatable with no defined effect on availability.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-LIFECYCLE-STATE-UNDEFINED"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "effective-availability-basis",
+      "kind": "positive",
+      "input": "Effective availability is computed as nominal minus calendar-unavailable minus committed-elsewhere, where committed-elsewhere excludes every scenario of the plan under evaluation.",
+      "expect": "The overbooking threshold is effectiveAvailable plus an absolute allowance in the pool unit; no quantity is both netted and counted as load."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "committed-elsewhere-double-subtraction",
+      "kind": "negative",
+      "input": "The evaluated scenario's own confirmations are included in committed-elsewhere and again as scenario load.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-CAPACITY-DOUBLE-COUNT"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "committed-elsewhere-crosses-scenarios",
+      "kind": "negative",
+      "input": "Committed-elsewhere nets S2's confirmations out of S1's availability.",
+      "expect": "Rejected.",
+      "expectedCode": "E-SCENARIO-NETTING"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "multiplicative-overbook-formula",
+      "kind": "negative",
+      "input": "The threshold is computed as nominal capacity times one plus an overbook fraction instead of effective availability plus allowance.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-OVERBOOK-FORMULA-MISMATCH"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "overbooking-overrides-exclusivity",
+      "kind": "negative",
+      "input": "An overbooking allowance is used to admit two overlapping confirmed allocations on indivisible GPU-1.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-EXCLUSIVITY-NOT-OVERRIDABLE"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "unknown-capacity-representable",
+      "kind": "positive",
+      "input": "A pool version asserts a capacity entry with valueState=unknown and no amount or evidence.",
+      "expect": "The entry is representable and contributes zero to effective availability."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "capacity-without-evidence",
+      "kind": "negative",
+      "input": "An asserted capacity amount is recorded with no evidenceRef.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-CAPACITY-EVIDENCE-MISSING"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "unknown-treated-as-available",
+      "kind": "negative",
+      "input": "A capacity entry with valueState=unknown is counted as available supply.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-UNKNOWN-AS-AVAILABLE"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "owner-ref-target-undeclared",
+      "kind": "negative",
+      "input": "ownerRef is populated with no declared target master.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-REF-TARGET-UNDECLARED"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "currency-as-pool-unit",
+      "kind": "negative",
+      "input": "A pool asserts capacity in EUR as a resource unit.",
+      "expect": "Rejected.",
+      "expectedCode": "E-POOL-CURRENCY-NOT-CAPACITY"
+    },
+    {
+      "target": "ResourcePool",
+      "id": "time-pins-complete",
+      "kind": "positive",
+      "input": "A pool version pins calendarRef, ianaZone, offset and tzdbRelease, with offset consistent with the zone at the interval instant.",
+      "expect": "Accepted and reproducible for later conflict evaluation."
+    },
+    {
+      "target": "ResourcePool",
+      "id": "offset-zone-inconsistent",
+      "kind": "negative",
+      "input": "A declared offset contradicts the declared IANA zone at the interval instant under the pinned tzdb release.",
+      "expect": "Rejected.",
+      "expectedCode": "E-TIME-OFFSET-ZONE-INCONSISTENT"
+    }
+  ]
+}

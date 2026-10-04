@@ -1,0 +1,137 @@
+{
+  "format": "vercy-enterprise-allocation-fixtures/v1",
+  "candidateName": "Valuation profile",
+  "canonicalPublishable": false,
+  "holds": [
+    "Expectations are reviewable-draft adjudications over non-canonical bases and assert no conformance, installability or standards alignment."
+  ],
+  "cases": [
+    {
+      "id": "valuation-subject-kind-absent",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "A valuation asserts amount 1000000 EUR on 2026-06-30 with no subjectKind.",
+      "expect": "Rejected. subjectKind is mandatory.",
+      "violates": "Mandatory subject-kind discriminator",
+      "closesDefect": 3,
+      "expectedCode": "VALUATION_SUBJECT_KIND_ABSENT"
+    },
+    {
+      "id": "valuation-subject-kind-out-of-set",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "A valuation asserts subjectKind \"portfolio\".",
+      "expect": "Rejected. subjectKind is restricted to investee, instrument, holding, investment-participation, investment-carrying-amount.",
+      "violates": "Closed subject-kind enumeration",
+      "closesDefect": 3,
+      "expectedCode": "VALUATION_SUBJECT_KIND_OUT_OF_SET"
+    },
+    {
+      "id": "valuation-subject-kind-substitution",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "An investee valuation of X on 2026-06-30 is read as the investment-carrying-amount of INV-1 and posted to the ledger.",
+      "expect": "Rejected. The five subject kinds are never interchangeable; a carrying-amount assertion requires its own valuation with accounting basis.",
+      "violates": "Subject kinds are non-interchangeable",
+      "closesDefect": 3,
+      "expectedCode": "VALUATION_SUBJECT_KIND_SUBSTITUTION"
+    },
+    {
+      "id": "valuation-instrument-version-qualified",
+      "target": "valuation-profile",
+      "kind": "positive",
+      "input": "A valuation with subjectKind \"instrument\" names instrument N and subjectVersionRef v1, basis date 2026-06-30.",
+      "expect": "Accepted and resolvable only against v1.",
+      "violates": null,
+      "closesDefect": 4
+    },
+    {
+      "id": "valuation-crosses-conversion-boundary",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "The 2026-06-30 valuation of note N v1 is reused as the valuation of N v2 after conversion on 2026-08-15.",
+      "expect": "Rejected. A valuation is never resolvable across a version boundary; v2 requires its own assertion.",
+      "violates": "Version-qualified subject reference",
+      "closesDefect": 4,
+      "expectedCode": "VALUATION_CROSSES_CONVERSION_BOUNDARY"
+    },
+    {
+      "id": "valuation-holding-interval-qualified",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "A valuation with subjectKind \"holding\" names position H-1 without its effective interval, and H-1 was derecognized on 2026-08-15.",
+      "expect": "Rejected. A holding valuation requires positionRef plus the effective interval in force at the basis date.",
+      "violates": "Interval-qualified subject reference",
+      "closesDefect": 4,
+      "expectedCode": "VALUATION_HOLDING_INTERVAL_QUALIFIED"
+    },
+    {
+      "id": "same-date-divergent-valuations",
+      "target": "valuation-profile",
+      "kind": "positive",
+      "input": "For investee X, basis date 2026-06-30: V-A income approach EUR, knowledge time 2026-07-10T09:00Z; V-B market approach USD, knowledge time 2026-07-12T09:00Z.",
+      "expect": "Both persist as independently resolvable assertions with their own method, basis, inputs, model version, uncertainty, evidence digest and knowledge time. Neither supersedes the other and neither sets any voting, ownership or control value.",
+      "violates": null,
+      "closesDefect": 22
+    },
+    {
+      "id": "recency-reconciles-valuations",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "V-B is selected over V-A solely because its knowledge time is later, and V-A is marked superseded.",
+      "expect": "Rejected. Recency alone never reconciles same-date divergence; supersession requires an explicit review act.",
+      "violates": "Divergence and provenance preserved",
+      "closesDefect": 17,
+      "expectedCode": "RECENCY_RECONCILES_VALUATIONS"
+    },
+    {
+      "id": "supersession-preserves-superseded",
+      "target": "valuation-profile",
+      "kind": "positive",
+      "input": "A review on 2026-09-01 supersedes V-A, recording actor, authority, basis and knowledge time.",
+      "expect": "Accepted. V-A, its inputs, evidence, uncertainty and provenance remain resolvable at their original knowledge time.",
+      "violates": null,
+      "closesDefect": 17
+    },
+    {
+      "id": "supersession-deletes",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "Supersession removes V-A's record, inputs or evidence digest, or renders it unresolvable.",
+      "expect": "Rejected. Supersession never deletes or overwrites the superseded assertion.",
+      "violates": "Supersession never implies deletion",
+      "closesDefect": 17,
+      "expectedCode": "SUPERSESSION_DELETES"
+    },
+    {
+      "id": "currency-conversion-replaces-original",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "V-B's USD amount is replaced by its EUR equivalent with no rate source, type, date, direction or rounding retained.",
+      "expect": "Rejected. Conversion preserves the original amount and full rate provenance.",
+      "violates": "Conversions never replace originals",
+      "closesDefect": 22,
+      "expectedCode": "CURRENCY_CONVERSION_REPLACES_ORIGINAL"
+    },
+    {
+      "id": "valuation-confers-right",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "A completed valuation review is cited as the basis for a voting, ownership, control or consolidation conclusion about X.",
+      "expect": "Rejected. A valuation review may supersede a value and never confers, alters or evidences a right, vote, control relation or consolidation treatment.",
+      "violates": "Value never establishes voting, control or consolidation",
+      "closesDefect": 21,
+      "expectedCode": "VALUATION_CONFERS_RIGHT"
+    },
+    {
+      "id": "valuation-cited-as-control-basis",
+      "target": "valuation-profile",
+      "kind": "negative",
+      "input": "The most recent investee valuation of X is submitted as the evidence basis for a control assertion in WM-ORG-012.",
+      "expect": "Rejected. Control basis and scope derive only from recognized governance and effective-ownership facts.",
+      "violates": "Latest investee valuation is not evidence of voting power or control",
+      "closesDefect": 22,
+      "expectedCode": "VALUATION_CITED_AS_CONTROL_BASIS"
+    }
+  ]
+}

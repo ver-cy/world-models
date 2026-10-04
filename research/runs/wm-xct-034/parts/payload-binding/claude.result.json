@@ -1,0 +1,2174 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Provide a format-neutral mixin that lets any host record carry a digital signature or cryptographic proof: what exactly is protected, who or what asserted it, by which declared method, and what evidence of that assertion is retained for later relying parties.",
+    "scope_statement": "WM-XCT-034 is a mixin attached to a host statement, artifact version, field set, named graph or event occurrence. It declares the signature or proof as data: the protected-payload binding (which representation is protected, by direct carriage or by digest reference, over which scope, with which protected and unprotected parameters and which bound purpose, audience and expiry), the signer or asserting-party reference, the declared proof method and algorithm identifiers, and the verification evidence retained about a proof. The model is independent of storage format and access interface: CMS, JOSE, COSE, XML Signature, W3C Data Integrity and C2PA structures are alignments and projections, not the semantics. It never owns the host record, the cryptographic computation, the key material, the canonicalization algorithm, the content repository or the decision to accept a proof.",
+    "in_scope": [
+      "Declaration of the protected subject: which host statement, artifact version, field set, named graph or event occurrence is placed under protection, as a non-owning reference.",
+      "Content descriptor of the protected representation: authoritative identifier, version, master-system reference, declared content type and content length.",
+      "Binding mode: payload carried directly in the protected input versus bound indirectly by digest reference, including detached payloads and immutable external-resource pinning.",
+      "Digest evidence: digest algorithm identifier from a governed registry, digest value and its encoding, parallel digests and algorithm-strength status.",
+      "Protection scope: whole-object versus explicitly selected parts, with recorded inclusions, exclusions and the unprotected remainder.",
+      "Partition of proof parameters into protected and unprotected positions, with the critical must-be-understood set and the precedence rule between positions.",
+      "Bound semantic parameters where the chosen proof method relies on them: proof purpose, audience or domain, challenge or nonce, externally supplied authenticated data and proof expiry.",
+      "Preservation of the exact protected input or digest so dependent countersignatures and proof chains bind the identical input, and explicit failure states when a payload is missing, mutable, ambiguous or differently versioned.",
+      "Signer or asserting-party reference and the declared proof-method and algorithm identifiers carried as descriptors.",
+      "Verification evidence retained as data: what was checked, against which recorded input, with which reported outcome."
+    ],
+    "out_of_scope": [
+      "The host record itself: its content, versioning, storage, editorial lifecycle and deletion execution.",
+      "Cryptographic execution: hash computation, signature generation, signature or proof verification, and any primitive implementation.",
+      "Canonicalization and transform mechanics such as XML canonicalization, RDF dataset canonicalization or JSON canonicalization, and their parsers; only the algorithm identifier is carried.",
+      "Serialization parsers and encoders for CMS, JOSE, COSE, XML or CBOR structures.",
+      "Key material, certificates, trust anchors, revocation and status services, and identity proofing of the signer.",
+      "Runtime policy evaluation, enforcement of acceptance or rejection, and operation of an audit trail.",
+      "Approval workflow: who must sign, in which order, and what business outcome follows.",
+      "Time-stamping authority operation and trusted-time issuance.",
+      "Document repositories, content-addressed storage systems and their retention execution.",
+      "Legal effect, admissibility or regulatory qualification of a signature in any jurisdiction."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Host statement, artifact-version or event model of the adopting Dimension",
+        "distinction": "The host owns identity, versioning, storage and lifecycle of the protected content. This mixin only names the protected representation and records how it is bound. CMS makes the separation explicit by permitting the encapsulated content to be absent while the content type and signature are still computed as though it were present.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Canonicalization and transform algorithm provider",
+        "distinction": "XML Signature requires canonicalization before digesting and Data Integrity defines transformation as a distinct stage. This model records the algorithm identifier and version only; producing the canonical octet stream, and any parser behaviour, belongs to the algorithm provider.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Proof method, signer and key material model",
+        "distinction": "The proof method fixes the protected-input construction and determines whether purpose, audience and expiry parameters are relied on. Key material, signer identity, certificates and the act of computing or checking a signature stay with that model; this mixin carries the descriptors and the recorded outcome only.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-004",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Verification evaluator and enforcement model",
+        "distinction": "XML Signature separates reference validation from signature validation, and Data Integrity defines a verify-proof algorithm. Referencing those evaluators grants this model no ownership of evaluation, execution, enforcement or audit-trail semantics; it records binding descriptors and reported outcomes as evidence.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Time-stamping authority model",
+        "distinction": "A time-stamp token binds a MessageImprint, a hash of the datum, and the authority never inspects the datum itself. This model may carry the digest and a token reference; issuing, operating or trusting a time-stamping authority is external.",
+        "source_refs": [
+          "SRC-006"
+        ]
+      },
+      {
+        "neighbor": "Approval workflow and countersignature orchestration model",
+        "distinction": "COSE countersignature requires the target structure to be cryptographically finalized before countersigning, and CMS carries countersignatures as unsigned attributes. This model preserves the exact protected input a dependent proof must bind; sequencing, routing and approval outcomes belong to the workflow model.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-005"
+        ]
+      },
+      {
+        "neighbor": "Content repository and version master system",
+        "distinction": "Dereferencing a reference locator and supplying retrievable octets is a repository concern; XML Signature notes that the signature covers the digest of what was retrieved, not the retrieval itself. Storage, versioning and physical disposition remain with the repository.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-010"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 7515: JSON Web Signature (JWS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7515.html",
+      "version_or_date": "RFC 7515, May 2015 (Proposed Standard)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:15:00Z",
+      "relevance": "Defines the JWS Signing Input as ASCII(BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload)) (Sections 2 and 5.1), the payload as an arbitrary octet sequence, the protected versus unprotected header distinction (Sections 3.2 and 7.2), the crit must-be-understood parameter which MUST occur only in the protected header (Section 4.1.11), and the advisory typ and cty content-type parameters (Sections 4.1.9 and 4.1.10)."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 7797: JSON Web Signature (JWS) Unencoded Payload Option",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7797.html",
+      "version_or_date": "RFC 7797, February 2016 (Proposed Standard)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:16:00Z",
+      "relevance": "Defines the b64 header parameter that changes the exact protected input, requires it to occur only in the protected header and to be listed in crit (Sections 3 and 6), requires the same value across all signatures of one object, and addresses detached payloads and character restrictions (Sections 5.1 and 5.2). Direct evidence that payload encoding is itself a protected, must-be-understood binding parameter."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 5652: Cryptographic Message Syntax (CMS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc5652.html",
+      "version_or_date": "RFC 5652, September 2009 (Internet Standard, STD 70)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:17:00Z",
+      "relevance": "Defines EncapsulatedContentInfo with eContentType and optional eContent, external (detached) signatures computed as though eContent were present (Section 5.2), the requirement that signedAttrs contain content-type and message-digest attributes (Section 5.3), message-digest computation over the DER encoding of SignedAttrs (Section 5.4), the verification requirement that the content-type attribute match eContentType (Section 5.6), and countersignature as an unsigned attribute over the target signature value with content-type prohibited (Section 11.4)."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 9052: CBOR Object Signing and Encryption (COSE): Structures and Process",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9052.html",
+      "version_or_date": "RFC 9052, August 2022 (Internet Standard, STD 96)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:18:00Z",
+      "relevance": "Defines the Sig_structure with context, body_protected, sign_protected, external_aad and payload (Section 4.4), externally supplied authenticated data requirements (Section 4.3), the rule that attributes MUST be taken from the protected bucket first (Sections 3 and 3.7), fatal-error handling of crit labels (Section 3.1), the content-type header parameter, and detached payload representation as a nil CBOR object with the application responsible for unchanged transport (Section 4.1)."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 9338: CBOR Object Signing and Encryption (COSE): Countersignatures",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9338.html",
+      "version_or_date": "RFC 9338, December 2022 (Proposed Standard)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:19:00Z",
+      "relevance": "Defines the Countersign_structure with context, body_protected, sign_protected, external_aad, payload and other_fields (Section 3.3), where other_fields carries the target signature value, and requires the target structure's cryptographic functions to be finalized before countersigning. Primary evidence that a dependent proof must bind the exact finalized bytes of the prior protected input."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 3161: Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3161.html",
+      "version_or_date": "RFC 3161, August 2001 (Proposed Standard)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:20:00Z",
+      "relevance": "Defines MessageImprint as hashAlgorithm plus hashedMessage whose length MUST match the algorithm (Section 2.4.1), and the requirements that the authority time-stamps only a data imprint and does not examine the imprint other than to check its length (Section 2.1). Canonical example of binding by digest alone, with the payload never disclosed to the binding party."
+    },
+    {
+      "id": "SRC-007",
+      "title": "XML Signature Syntax and Processing Version 1.1",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/xmldsig-core1/",
+      "version_or_date": "W3C Recommendation, 11 April 2013",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:21:00Z",
+      "relevance": "Defines the Reference element with an optional URI attribute that may be omitted on at most one Reference, the advisory Type attribute, Transforms, DigestMethod and DigestValue (Section 4.4.3), reference generation (Section 3.1.1), core validation as two mandatory steps of reference validation and SignedInfo signature validation (Section 3.2), the enveloped, enveloping and detached topologies (Section 2), and the Manifest element (Section 5.1)."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Verifiable Credential Data Integrity 1.0: Securing the Integrity of Verifiable Credential Data",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-integrity/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T10:22:00Z",
+      "relevance": "Defines the proof property and per-proof named graphs (Section 2.1), the proofPurpose requirement and its role in preventing misuse (Sections 2.1 and 2.2), optional created, expires, domain, challenge and nonce parameters with domain implying challenge, proof sets and proof chains bound through previousProof (Sections 2.1.1 and 2.1.2), the transformation, hashing and proof serialization stages (Section 1.1), and the verify-proof algorithm (Section 4.4)."
+    },
+    {
+      "id": "SRC-009",
+      "title": "Content Credentials: C2PA Technical Specification, Version 2.1",
+      "organization": "Coalition for Content Provenance and Authenticity (C2PA)",
+      "url": "https://spec.c2pa.org/specifications/specifications/2.1/specs/C2PA_Specification.html",
+      "version_or_date": "Version 2.1, September 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:23:00Z",
+      "relevance": "Defines hard bindings to content: the data hash assertion with exclusion ranges expressed as start and length plus padding, the BMFF-based hash and general box hash assertions for selected-part scope, hashed URI references carrying url, alg and hash, the requirement that a standard manifest contain at least one hard-binding assertion, and the security requirement that changes to excluded data must not change how the asset is interpreted."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Subresource Integrity",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/SRI/",
+      "version_or_date": "W3C Working Draft, 20 March 2026",
+      "source_type": "standard",
+      "primary_source": false,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T10:24:00Z",
+      "relevance": "Defines integrity metadata as a hash function plus digest, both of which MUST be provided (Section 3.1), the match-or-block comparison of computed digest against metadata (Sections 3.3.4 and 3.7), algorithm agility with multiple hash expressions (Section 3.2.1) and strongest-metadata selection (Section 3.3.3). Cited only as the digest-pinning pattern for immutable external resources; as a Working Draft it is corroboration, never a conformance target."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-payload-protected-object",
+        "name": "Protected object and binding evidence",
+        "description": "What is placed under protection, how the protected representation is identified, whether it is bound directly or by digest, and over which scope the binding evidence was produced.",
+        "rationale": "Every cited signature standard begins by fixing an unambiguous protected input: CMS fixes an encapsulated content type with a message-digest attribute, JWS fixes a concatenated signing input, COSE fixes a Sig_structure, XML Signature fixes Reference digests inside SignedInfo, Data Integrity fixes a transformed and hashed document, and C2PA requires at least one hard binding. Grouping subject, descriptor, binding mode, digest evidence and scope reflects that shared normative core while leaving the host and the cryptography outside.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-004",
+          "SRC-007",
+          "SRC-008",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "sig-payload-subject-anchoring",
+            "name": "Protected subject anchoring",
+            "description": "Non-owning declaration of the unit placed under protection and of the specific representation, version and type that the binding pins.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "sig-payload-subject-declaration",
+                "name": "Protected subject declaration",
+                "description": "States exactly which host statement, artifact version, field set, named graph or event occurrence is placed under protection, the topology of the proof relative to it (enveloped, enveloping or detached), and which parts of the host record are deliberately outside the protected subject. The host reference is carried; the host is never owned.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-subject-unit",
+                    "text": "Which single unit - host statement, artifact version, field set, named graph or event occurrence - is placed under protection by this proof?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "protected subject kind code",
+                      "subject boundary statement",
+                      "host record reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-subject-host-link",
+                    "text": "Through which reference is the protected unit reached without this model assuming the host's storage or lifecycle?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "host model identifier",
+                      "host record reference",
+                      "reference resolution contract"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-subject-topology",
+                    "text": "Is the proof enveloped within, enveloping over, or detached from the protected unit, and where does its carrier sit?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "envelope topology code",
+                      "carrier location reference",
+                      "detachment note"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-subject-multiplicity",
+                    "text": "When more than one payload unit is covered by a single proof, how is each unit bound and enumerated separately?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "ordered reference list",
+                      "per-reference binding descriptor identifier",
+                      "aggregation rule"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-subject-exclusions",
+                    "text": "Which parts of the host record are deliberately not part of the protected subject at all?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "excluded part list",
+                      "exclusion justification",
+                      "responsible owner reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-subject-kind",
+                    "name": "Protected subject kind",
+                    "description": "Classifier for the protected unit: statement, artifact version, field set, named graph, event occurrence or opaque octet sequence.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-host-reference",
+                    "name": "Host record reference",
+                    "description": "Non-owning reference to the host record or records that carry the protected unit, resolvable through the referenced host model.",
+                    "value_kind": "reference",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-envelope-topology",
+                    "name": "Envelope topology",
+                    "description": "Whether the proof is enveloped, enveloping or detached relative to the protected unit.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-subject-boundary-note",
+                    "name": "Subject boundary note",
+                    "description": "Explicit statement of what the protected subject includes and excludes, written so a relying party can reconstruct the same unit.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-payload-art-subject-descriptor",
+                    "name": "Protected subject descriptor",
+                    "description": "Format-neutral record naming the protected unit, its topology relative to the proof and its declared boundary, cited by every binding descriptor, digest evidence entry and scope manifest for that proof.",
+                    "media_or_form": [
+                      "structured descriptor record",
+                      "envelope header block within a signature structure",
+                      "detached descriptor document accompanying the proof"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Use the authoritative master-system identifier of the host record and version where one exists; otherwise a governed IRI in the Dimension namespace; otherwise a Dimension-assigned ULID. A version label or a date is never the identifier.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-payload-content-descriptor",
+                "name": "Content identity, version and type descriptor",
+                "description": "Pins which representation of the logical content is protected: authoritative content identifier, version, master-system reference, declared content type and content length, plus whether the representation is immutable. CMS requires the signed content-type attribute to match the encapsulated content type; JWS and COSE carry content-type hints that are advisory unless made critical.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-content-identifier",
+                    "text": "Which authoritative master-system identifier and version designate the exact protected representation?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "content identifier",
+                      "content version label",
+                      "master-system reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-content-type",
+                    "text": "Which declared content type governs interpretation of the protected octets, and is that type value itself inside the protected input?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "content type code",
+                      "type registry reference",
+                      "type protection flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-content-length",
+                    "text": "What content length is recorded for the protected representation, and is it protected evidence or advisory metadata?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "content length in octets",
+                      "length protection flag",
+                      "measurement basis note"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-content-version-drift",
+                    "text": "How is the protected representation distinguished from a later revision of the same logical content?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "version discriminator",
+                      "representation immutability flag",
+                      "effective-from instant of the representation"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-content-type-registry",
+                    "text": "Which governed registry or namespace supplies the content-type and identifier vocabularies used here?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "registry reference",
+                      "registry version",
+                      "local mapping note"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-content-identifier",
+                    "name": "Content identifier",
+                    "description": "Authoritative identifier of the protected representation, taken from the system of record for that content.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-content-version",
+                    "name": "Content version label",
+                    "description": "Version or revision designation of the protected representation as issued by the master system; never used alone as the identifier.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-master-system-reference",
+                    "name": "Master-system reference",
+                    "description": "Reference to the system of record that issues the content identifier and version and can supply the retrievable octets.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-content-type-code",
+                    "name": "Declared content type",
+                    "description": "Media type, content-format identifier or content-type object identifier declared for the protected octets, with a flag stating whether the value sits inside the protected input.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-content-length",
+                    "name": "Content length in octets",
+                    "description": "Recorded octet length of the protected representation, used as a cheap mismatch check and never as a substitute for digest evidence.",
+                    "value_kind": "quantity",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-representation-immutability",
+                    "name": "Representation immutability flag",
+                    "description": "States whether the master system guarantees the identified representation is immutable, which determines whether a locator alone can be trusted.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The content identifier, version, master-system reference, type and length are reference data owned by the system of record for the protected content. Materialising them as a separate stored artifact would create a second, divergent copy of a master record that this model does not own and cannot keep current, and would invite relying parties to trust the copy instead of resolving the master. The values are therefore held inline on the binding descriptor as pointers plus advisory measurements, with the digest evidence - not this descriptor - carrying the cryptographic weight."
+              }
+            ]
+          },
+          {
+            "id": "sig-payload-binding-evidence",
+            "name": "Binding mode, digest evidence and protection scope",
+            "description": "How the protected input is constituted: carried directly or bound by digest, over the whole object or a selected part, with recorded digest algorithm and value.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-004",
+              "SRC-006",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "sig-payload-binding-mode",
+                "name": "Direct versus digest-based binding mode",
+                "description": "Records whether the protected octets are carried inside the protected input (as in a JWS payload or CMS encapsulated content) or bound indirectly through a digest reference (as in an XML Signature Reference, a C2PA hashed URI or a time-stamp MessageImprint), and how a detached payload or an immutable external resource is pinned so a verifier obtains the identical octets.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-binding-directness",
+                    "text": "Is the payload bound directly as octets inside the protected input, or indirectly through a digest over a referenced object?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "binding mode code",
+                      "protected input construction reference",
+                      "payload carriage flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-detached-retrieval",
+                    "text": "When the payload is detached, by what contract does a verifier obtain byte-for-byte the same octets that were protected?",
+                    "kind": "process",
+                    "answer_data": [
+                      "payload supply contract reference",
+                      "unchanged-transport obligation",
+                      "responsible party reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-external-pin",
+                    "text": "For an external resource, which combination of locator, digest, algorithm and declared type constitutes the immutable pin?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "resource locator",
+                      "pin digest algorithm and value",
+                      "declared media type",
+                      "pin completeness flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-binding-guarantee-limit",
+                    "text": "What does this binding explicitly not guarantee about a dereferenced resource beyond digest equality?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "guarantee limitation statement",
+                      "dereference risk note",
+                      "residual-trust assumption"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-payload-supply-ownership",
+                    "text": "Which party is accountable for supplying the detached payload at verification time?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "accountable party reference",
+                      "supply agreement reference",
+                      "escalation path on non-supply"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-binding-mode-code",
+                    "name": "Binding mode",
+                    "description": "Whether the payload is bound directly as carried octets or indirectly through digest reference, and whether it is attached or detached.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-payload-carriage-flag",
+                    "name": "Payload carriage and encoding flag",
+                    "description": "States whether the payload is present in the carrier and in which encoding it entered the protected input, since the encoding choice alters the protected bytes.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-reference-locator",
+                    "name": "Payload reference locator",
+                    "description": "Locator for a referenced or detached payload; may be absent where the receiving application is expected to know the object identity by agreement.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-external-resource-pin",
+                    "name": "External resource pin",
+                    "description": "Composite pin of locator, digest algorithm, digest value and declared type that makes an external resource reference immutable in effect.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-payload-supply-contract",
+                    "name": "Payload supply contract reference",
+                    "description": "Reference to the agreement naming who supplies detached octets, in what form and with what unchanged-transport obligation.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-payload-art-binding-descriptor",
+                    "name": "Payload binding descriptor",
+                    "description": "Format-neutral record stating the binding mode, carriage and encoding of the payload, the reference locators used and the explicit limits of what the binding guarantees.",
+                    "media_or_form": [
+                      "structured binding record",
+                      "reference element within a signature structure",
+                      "assertion entry within a provenance manifest"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Authoritative master-system identifier of the proof record where the proof registry issues one; otherwise a governed IRI derived from the subject descriptor identifier; otherwise a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-art-external-pin-record",
+                    "name": "External resource pin record",
+                    "description": "Record pinning an external resource by locator plus digest, declared type and length, retained so later dereferences can be checked against the representation that was actually protected.",
+                    "media_or_form": [
+                      "structured pin record",
+                      "integrity metadata attribute on a resource reference",
+                      "hashed URI entry"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Governed content-addressed identifier formed from the pinned digest algorithm and value where the Dimension permits content addressing; otherwise the master-system identifier of the pinned resource; otherwise a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-payload-digest-evidence",
+                "name": "Digest method and value evidence",
+                "description": "Records the digest algorithm identifier drawn from a governed registry, the digest value and its encoding, any parallel digests recorded for agility, and a precise statement of the octet stream the digest was taken over. The digest is computed by an external provider; this model retains the evidence and the description of its input.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-digest-algorithm",
+                    "text": "Which digest algorithm identifier, drawn from which governed registry and version, produced the recorded digest?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "digest algorithm identifier",
+                      "registry reference and version",
+                      "identifier form note"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-digest-value-form",
+                    "text": "What is the recorded digest value and in which encoding and length is it expressed?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "digest value",
+                      "digest encoding label",
+                      "expected digest length in octets"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-digest-input-statement",
+                    "text": "Over exactly which octet stream was this digest taken, and where is that determination recorded?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "digest input description",
+                      "canonicalization or transform algorithm identifier",
+                      "scope manifest reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-digest-multiplicity",
+                    "text": "When several digests cover the same payload, which one governs and by what selection rule?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "digest entry set",
+                      "selection rule statement",
+                      "governing digest reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-digest-strength-status",
+                    "text": "How is a weakened or superseded digest algorithm flagged without altering the historical binding evidence?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "algorithm strength status code",
+                      "status assertion source",
+                      "status observation instant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-digest-algorithm-id",
+                    "name": "Digest algorithm identifier",
+                    "description": "Registry-governed identifier of the digest algorithm, recorded verbatim in its published form as an object identifier, URI, registry integer or suite name.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-digest-value",
+                    "name": "Digest value",
+                    "description": "The digest octets as produced by the external digest provider, stored without re-encoding.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-digest-encoding",
+                    "name": "Digest value encoding label",
+                    "description": "Explicit label for how the digest value is serialized in this record, so comparison never depends on an assumed encoding.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-digest-input-description",
+                    "name": "Digest input description",
+                    "description": "Statement of the octet stream digested, including the canonicalization or transform algorithm identifier applied beforehand and the scope manifest that selected the input.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-digest-strength-status",
+                    "name": "Digest algorithm strength status",
+                    "description": "Advisory status of the algorithm as current, deprecated or broken, observed at a recorded instant; never rewrites the digest evidence itself.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-payload-art-digest-evidence-record",
+                    "name": "Digest evidence record",
+                    "description": "Immutable record of one digest over one described input: algorithm identifier, value, encoding, input description and observation instant. Multiple records may exist for the same payload under different algorithms.",
+                    "media_or_form": [
+                      "structured digest record",
+                      "message-digest attribute within a signed attribute set",
+                      "digest element within a reference structure",
+                      "integrity metadata expression"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the proof record where issued; otherwise a governed content-addressed identifier combining the algorithm identifier and digest value; otherwise a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-payload-scope-selection",
+                "name": "Whole-object versus selected-part protection scope",
+                "description": "Declares whether the whole object is protected or an explicitly selected part, and expresses the selection so any verifier reconstructs an identical input: byte ranges with exclusions, named boxes, node sets, field sets or subgraphs. Records the unprotected remainder and the requirement that excluded regions cannot change how the protected part is interpreted.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-scope-mode",
+                    "text": "Is the protection scope the entire object or an explicitly selected part of it?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "scope mode code",
+                      "scope summary statement",
+                      "selection completeness flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-scope-selection-expression",
+                    "text": "How are included and excluded regions, boxes or fields expressed so a verifier reconstructs the identical selection?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "selection expression language identifier",
+                      "included region list",
+                      "excluded region list"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-scope-structured-selection",
+                    "text": "How is a selection expressed when the payload is a field set or graph rather than a byte range?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "structured selection descriptor",
+                      "node or property path set",
+                      "graph or dataset reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-scope-remainder",
+                    "text": "Which parts of the host object remain outside the protected scope and may change without invalidating this proof?",
+                    "kind": "state",
+                    "answer_data": [
+                      "unprotected remainder description",
+                      "mutability expectation",
+                      "downstream warning text"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-scope-exclusion-safety",
+                    "text": "What prevents a change inside an excluded region from altering how the protected part is interpreted?",
+                    "kind": "security",
+                    "answer_data": [
+                      "exclusion constraint statement",
+                      "permitted excluded content rule",
+                      "padding and length constraint"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-scope-mode",
+                    "name": "Protection scope mode",
+                    "description": "Whether the binding covers the whole object or a selected part.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-selection-language",
+                    "name": "Selection expression language identifier",
+                    "description": "Identifier of the language or convention used to express the selection, such as a byte-range list, box identifier list, node-set transform or property path set.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-included-region",
+                    "name": "Included region descriptor",
+                    "description": "Ordered descriptors of the regions, boxes, nodes or properties inside the protected scope.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-excluded-region",
+                    "name": "Excluded region descriptor",
+                    "description": "Descriptors of regions deliberately outside the digest input, each with the constraint on what such a region is permitted to contain.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-unprotected-remainder",
+                    "name": "Unprotected remainder statement",
+                    "description": "Plain statement of what a relying party must not assume is protected by this binding.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-payload-art-scope-manifest",
+                    "name": "Protected scope manifest",
+                    "description": "Record enumerating the included and excluded parts of the protected object together with the selection language and the constraints on excluded content, sufficient for an independent party to rebuild the identical digest input.",
+                    "media_or_form": [
+                      "structured scope manifest",
+                      "hash assertion with exclusion ranges",
+                      "transform chain description within a reference",
+                      "manifest of sub-references"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the proof record where issued; otherwise a governed IRI derived from the subject descriptor identifier and scope ordinal; otherwise a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-payload-binding-parameters",
+        "name": "Bound parameters, dependency and failure semantics",
+        "description": "Which parameters sit inside the protected input and which do not, which of them must be understood, what purpose and context the proof is bound to, and how the exact protected input is preserved and failed on when it cannot be reproduced.",
+        "rationale": "Each cited standard treats the parameter partition as security-critical: JWS and COSE forbid critical parameters outside the protected bucket and make unknown critical parameters fatal, COSE requires protected-bucket precedence, CMS mandates specific signed attributes and forbids content-type inside a countersignature, and Data Integrity binds proof purpose, domain, challenge and expiry. COSE countersignatures and Data Integrity proof chains both require the exact finalized prior input, which makes preservation and explicit failure a distinct, testable concern.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-005",
+          "SRC-008"
+        ],
+        "layers": [
+          {
+            "id": "sig-payload-parameter-binding",
+            "name": "Parameter partition and semantic binding",
+            "description": "The split between protected and unprotected parameters with its criticality rules, and the purpose, audience and validity parameters bound into the protected input.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-004",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "sig-payload-parameter-partition",
+                "name": "Protected and unprotected parameter partition with criticality",
+                "description": "Classifies every proof parameter as inside or outside the protected input, marks the subset that must be understood or the proof rejected, and fixes the precedence rule when the same parameter appears in both positions. Records how a relying party registers that it did not understand a critical parameter.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-parameter-positions",
+                    "text": "Which proof parameters sit inside the protected input and which are carried outside it?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "protected parameter name list",
+                      "unprotected parameter name list",
+                      "position assignment rationale"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-critical-set",
+                    "text": "Which protected parameters are marked critical, so a party unable to process them must reject the proof?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "critical parameter name list",
+                      "criticality declaration location",
+                      "rejection obligation statement"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-parameter-precedence",
+                    "text": "When one parameter appears in both a protected and an unprotected position, which value governs?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "precedence rule statement",
+                      "conflict detection outcome",
+                      "duplicate parameter record"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-unknown-critical-handling",
+                    "text": "How does a relying party record that a critical parameter was not understood?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "unknown critical parameter list",
+                      "outcome code",
+                      "reporting party reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-advisory-parameters",
+                    "text": "Which parameters are advisory only and must never carry a security decision on their own?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "advisory parameter list",
+                      "advisory-use warning",
+                      "supporting standard citation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-protected-parameter-name",
+                    "name": "Protected parameter name",
+                    "description": "Name or label of a parameter inside the protected input and therefore covered by the proof.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-unprotected-parameter-name",
+                    "name": "Unprotected parameter name",
+                    "description": "Name or label of a parameter carried alongside the proof but outside the protected input.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-critical-parameter-name",
+                    "name": "Critical parameter name",
+                    "description": "Parameter declared must-be-understood; declaring it outside the protected input is invalid.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-parameter-precedence-rule",
+                    "name": "Parameter precedence rule",
+                    "description": "Recorded rule that a value found in the protected position governs and an unprotected duplicate is advisory at best.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-advisory-parameter-flag",
+                    "name": "Advisory parameter flag",
+                    "description": "Marks a parameter whose value the governing standard defines as advisory and not subject to validation.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "The partition is not a separate stored object: it is a property of the proof envelope produced by the referenced proof-method and serialization models, where the protected bucket is exactly the octet range that entered the signing computation. Emitting a standalone artifact would create a second copy of that parameter set which could drift from the envelope, and any drift would silently change what a relying party believes was covered. The partition is therefore held as inline classification metadata pointing at positions within the envelope, so the envelope remains the only authority on what was protected."
+              },
+              {
+                "id": "sig-payload-purpose-context",
+                "name": "Proof purpose, audience context and validity-window binding",
+                "description": "Binds the declared purpose of the proof, the audience or domain it is intended for, any challenge or nonce tying it to a request occurrence, externally supplied authenticated data bound without being carried, and an expiry inside the protected input - where the chosen proof method relies on these. Distinguishes proof expiry from the host content's own validity period.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-proof-purpose",
+                    "text": "For which declared purpose is this protected payload bound, and which uses are thereby excluded?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "proof purpose code",
+                      "purpose registry reference",
+                      "excluded-use statement"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-audience-domain",
+                    "text": "Which audience, domain or context value is bound so the proof cannot be replayed in another setting?",
+                    "kind": "security",
+                    "answer_data": [
+                      "audience or domain value set",
+                      "binding position",
+                      "replay limitation note"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-challenge-occurrence",
+                    "text": "Which challenge or nonce ties this protected payload to one specific request occurrence?",
+                    "kind": "event",
+                    "answer_data": [
+                      "challenge or nonce value",
+                      "issuing party reference",
+                      "occurrence reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-proof-expiry",
+                    "text": "Which expiry instant is bound inside the protected input, and how does it differ from the host content's own validity period?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "proof expiry instant",
+                      "host validity period reference",
+                      "distinction statement"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-external-authenticated-data",
+                    "text": "Which externally supplied data is authenticated by the proof without being carried inside the payload?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "external authenticated data reference",
+                      "construction rule reference",
+                      "supplying party reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-proof-purpose",
+                    "name": "Proof purpose",
+                    "description": "Declared purpose for which the proof is intended, expressed as a registry-governed value a relying party checks before use.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-audience-context",
+                    "name": "Audience or domain value",
+                    "description": "One or more context values naming where the proof is meant to be used.",
+                    "value_kind": "text",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-challenge-value",
+                    "name": "Challenge or nonce value",
+                    "description": "Value tying the proof to a specific request occurrence; expected whenever an audience or domain is bound.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-proof-expiry-instant",
+                    "name": "Bound proof expiry instant",
+                    "description": "Expiry instant carried inside the protected input, recorded as an absolute time value; evaluating whether it has passed belongs to the referenced verification model.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-external-authenticated-data",
+                    "name": "External authenticated data reference",
+                    "description": "Reference to application-supplied data authenticated by the proof but transported outside the object, with the construction rule that makes it unambiguous.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are scalar parameter values whose meaning exists only inside the protected input of a specific proof; their security property comes from being covered by that proof, not from being stored anywhere. Extracting them into a separate artifact would produce an unprotected copy that looks authoritative while carrying none of the binding, tempting consumers to read purpose or expiry from the copy rather than from the covered position. They are therefore recorded inline with an explicit note of which position each value occupies, and their evaluation is left to the referenced verification model."
+              }
+            ]
+          },
+          {
+            "id": "sig-payload-input-continuity",
+            "name": "Protected-input continuity and failure semantics",
+            "description": "Preservation of the exact protected input for dependent proofs, and the explicit failure states that replace any substitution when the payload cannot be reproduced.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-005",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "sig-payload-input-preservation-failure",
+                "name": "Protected-input preservation and binding failure states",
+                "description": "Fixes which form of the protected input - full octet sequence, canonical serialization or digest - is preserved so dependent countersignatures and proof chains bind the identical input, how a dependent proof references it, and the explicit failure states recorded when a payload is missing, mutable, ambiguous or resolves to a different version. Substituting an empty, default or nearest-match value is prohibited.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-005",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-payload-q-preserved-form",
+                    "text": "Which exact form of the protected input is preserved for dependent proofs: full octets, canonical serialization or digest alone?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "preserved form code",
+                      "preserved input reference",
+                      "sufficiency justification"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-dependent-reference",
+                    "text": "How does a dependent countersignature or chained proof reference the prior protected input or signature value?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "dependent proof reference",
+                      "reference construction rule",
+                      "chain ordinal"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-target-finality",
+                    "text": "What evidence shows the target was cryptographically finalized before a dependent proof was taken over it?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "finality assertion",
+                      "target digest at time of dependence",
+                      "observation instant"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-failure-state",
+                    "text": "What outcome is recorded when the referenced payload is unresolvable, mutable, ambiguous or of a different version?",
+                    "kind": "state",
+                    "answer_data": [
+                      "binding failure code",
+                      "failure detail text",
+                      "affected descriptor reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-q-substitution-prohibition",
+                    "text": "Which substitutions are prohibited outright rather than recorded as a degraded result?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "prohibited substitution list",
+                      "prohibition rationale",
+                      "escalation obligation"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-payload-de-preserved-form-code",
+                    "name": "Preserved protected-input form",
+                    "description": "Which form of the protected input was retained: full octet sequence, canonical serialization or digest only.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-preserved-input",
+                    "name": "Preserved protected input",
+                    "description": "Retained octets of the protected input, held only where dependent proofs require the full bytes and where the host record's classification permits retention.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-preserved-digest-reference",
+                    "name": "Preserved digest reference",
+                    "description": "Reference to the digest evidence record that stands in for the protected input when the full octets are not retained.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-dependent-proof-reference",
+                    "name": "Dependent proof reference",
+                    "description": "Reference from a countersignature or chained proof to the prior proof or protected input it binds, with its ordinal in the chain.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-binding-failure-code",
+                    "name": "Binding failure code",
+                    "description": "Explicit failure classifier: payload unresolvable, payload mutable, payload ambiguous, version mismatch, digest mismatch, scope irreproducible or critical parameter not understood.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-de-failure-observation-instant",
+                    "name": "Failure observation instant",
+                    "description": "Time at which the failure was observed, recorded separately from the time the protected input was originally fixed.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-payload-art-preserved-input-record",
+                    "name": "Preserved protected-input record",
+                    "description": "Ordered record retaining the exact protected input or its digest at the moment a dependent proof was taken, one per position in a countersignature or proof chain.",
+                    "media_or_form": [
+                      "structured preserved-input record",
+                      "retained octet blob referenced by digest",
+                      "chained proof entry referencing a prior proof"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Master-system identifier of the proof chain entry where the proof registry issues one; otherwise a governed IRI formed from the parent proof identifier plus the immutable chain ordinal; otherwise a Dimension-assigned ULID. The ordinal is a position, never a date.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-payload-art-binding-failure-record",
+                    "name": "Binding failure record",
+                    "description": "Record of an explicit binding failure with its classifier, detail, affected descriptor and observation instant, created instead of any empty or substituted payload value.",
+                    "media_or_form": [
+                      "structured failure record",
+                      "negative validation outcome entry",
+                      "annotation attached to a binding descriptor"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Master-system identifier of the observing system's incident record where one exists; otherwise a governed IRI derived from the affected descriptor identifier and failure ordinal; otherwise a Dimension-assigned ULID.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-payload-fn-declare-protected-subject",
+      "name": "Declare protected subject",
+      "description": "Create or supersede the descriptor naming the unit placed under protection, its topology relative to the proof and its declared boundary.",
+      "inputs": [
+        "host record reference",
+        "protected subject kind",
+        "envelope topology",
+        "subject boundary statement"
+      ],
+      "outputs": [
+        "protected subject descriptor",
+        "descriptor identifier",
+        "event time and observation time"
+      ],
+      "preconditions": [
+        "The host record reference resolves through the referenced host model",
+        "The subject kind is drawn from the governed classifier set"
+      ],
+      "effects": [
+        "A protected subject descriptor exists and can be cited by binding, digest and scope records",
+        "No change is made to the host record"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-record-binding-descriptor",
+      "name": "Record payload binding descriptor",
+      "description": "Record whether the payload is bound directly or by digest reference, its carriage and encoding, its locators, and any external-resource pin.",
+      "inputs": [
+        "protected subject descriptor identifier",
+        "binding mode",
+        "payload carriage and encoding flag",
+        "reference locators",
+        "external resource pin values"
+      ],
+      "outputs": [
+        "payload binding descriptor",
+        "external resource pin records",
+        "guarantee limitation statement"
+      ],
+      "preconditions": [
+        "A protected subject descriptor exists",
+        "For a detached payload, a payload supply contract reference is present"
+      ],
+      "effects": [
+        "The binding mode and its limits are recorded for relying parties",
+        "The descriptor becomes the anchor for digest evidence and scope manifests"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-004",
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-declare-protection-scope",
+      "name": "Declare protection scope",
+      "description": "Record whether the whole object or a selected part is protected and enumerate included and excluded regions in a named selection language.",
+      "inputs": [
+        "payload binding descriptor identifier",
+        "scope mode",
+        "selection expression language",
+        "included and excluded region descriptors"
+      ],
+      "outputs": [
+        "protected scope manifest",
+        "unprotected remainder statement",
+        "excluded-content constraint set"
+      ],
+      "preconditions": [
+        "A payload binding descriptor exists",
+        "Every excluded region carries a constraint on what it may contain"
+      ],
+      "effects": [
+        "An independent party can reconstruct the identical digest input selection",
+        "The unprotected remainder is stated rather than assumed"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-record-digest-evidence",
+      "name": "Record digest evidence",
+      "description": "Retain a digest produced by an external digest provider together with its algorithm identifier, encoding and a precise description of the digested input. This function never computes a digest.",
+      "inputs": [
+        "externally computed digest value",
+        "digest algorithm identifier",
+        "digest encoding label",
+        "digest input description",
+        "scope manifest reference"
+      ],
+      "outputs": [
+        "digest evidence record",
+        "governing digest selection where several exist"
+      ],
+      "preconditions": [
+        "The algorithm identifier resolves in a governed registry",
+        "The digest length is consistent with the declared algorithm",
+        "The digest input description names any canonicalization or transform algorithm applied"
+      ],
+      "effects": [
+        "Digest evidence is retained verbatim and never re-encoded on write",
+        "Parallel digests coexist without displacing one another"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-006",
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-partition-parameters",
+      "name": "Partition proof parameters",
+      "description": "Classify each proof parameter as protected or unprotected, mark the critical must-be-understood subset and record the precedence rule for duplicates.",
+      "inputs": [
+        "parameter name and position list",
+        "criticality declarations",
+        "governing standard alignment reference"
+      ],
+      "outputs": [
+        "protected parameter list",
+        "unprotected parameter list",
+        "critical parameter list",
+        "precedence rule statement"
+      ],
+      "preconditions": [
+        "Every parameter declared critical is present in a protected position",
+        "The governing standard alignment names a version and section"
+      ],
+      "effects": [
+        "Relying parties can determine exactly what the proof covers",
+        "A critical parameter outside the protected position is flagged as invalid"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-bind-purpose-context",
+      "name": "Bind purpose and context parameters",
+      "description": "Record the proof purpose, audience or domain, challenge or nonce, external authenticated data reference and bound expiry, each with the position it occupies in the protected input.",
+      "inputs": [
+        "proof purpose",
+        "audience or domain values",
+        "challenge or nonce",
+        "bound expiry instant",
+        "external authenticated data reference"
+      ],
+      "outputs": [
+        "bound parameter set with positions",
+        "excluded-use statement",
+        "replay limitation note"
+      ],
+      "preconditions": [
+        "The chosen proof method relies on the parameter being bound",
+        "A challenge is present whenever an audience or domain is bound"
+      ],
+      "effects": [
+        "The intended purpose and context of the proof are explicit",
+        "Evaluation of these values remains with the referenced verification model"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-preserve-protected-input",
+      "name": "Preserve protected input for dependent proofs",
+      "description": "Freeze the exact protected input or its digest at the moment a dependent countersignature or chained proof is taken, and record the chain ordinal.",
+      "inputs": [
+        "target proof reference",
+        "preserved form selection",
+        "protected input octets or digest reference",
+        "finality assertion"
+      ],
+      "outputs": [
+        "preserved protected-input record",
+        "chain ordinal",
+        "target digest at time of dependence"
+      ],
+      "preconditions": [
+        "The target structure's cryptographic functions are finalized",
+        "Retention of full octets is permitted by the host record's classification"
+      ],
+      "effects": [
+        "A dependent proof can be checked against the identical input later",
+        "The preserved record is immutable once a dependent proof references it"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-005",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-resolve-or-fail-payload",
+      "name": "Resolve protected payload or raise explicit failure",
+      "description": "Attempt to obtain the exact protected representation named by a binding descriptor and, where that is not possible, emit a classified failure instead of any empty, default or nearest-match value.",
+      "inputs": [
+        "payload binding descriptor identifier",
+        "resolution context",
+        "supplied payload candidate or locator"
+      ],
+      "outputs": [
+        "resolved payload handle",
+        "binding failure record",
+        "failure observation instant"
+      ],
+      "preconditions": [
+        "The descriptor records a binding mode and at least one locator, digest evidence entry or supply contract"
+      ],
+      "effects": [
+        "An unresolvable, mutable, ambiguous or version-mismatched payload is recorded as an explicit failure",
+        "No substituted value is ever returned in place of the protected representation"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "sig-payload-fn-compare-recorded-digest",
+      "name": "Compare supplied digest against recorded evidence",
+      "description": "Compare a digest supplied by an external provider with the recorded digest evidence for the same descriptor and emit match, mismatch or indeterminate. This function performs no cryptographic computation, no signature verification and no enforcement.",
+      "inputs": [
+        "digest evidence record identifier",
+        "externally computed digest value",
+        "digest algorithm identifier",
+        "digest encoding label"
+      ],
+      "outputs": [
+        "comparison outcome",
+        "comparison rationale",
+        "observation instant"
+      ],
+      "preconditions": [
+        "The algorithm identifier and encoding label of the supplied digest match those of the recorded evidence, or the outcome is indeterminate",
+        "The digest input description of the recorded evidence is available"
+      ],
+      "effects": [
+        "A comparison outcome is retained as evidence for the referenced verification model",
+        "No acceptance, rejection or enforcement decision is made or implied by this model"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-010"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006 - registered parent model of the XCT signature and proof family",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-034 is registered beneath WM-XCT-006, which holds the shared signature and proof frame; this model contributes the mixin a host record carries. The structural precedent is that signature containers hold signer information and content binding as separate parts of one enclosing structure.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "Host statement, artifact-version, field-set, graph or event model of the adopting Dimension",
+      "relation": "MIX-IN",
+      "purpose": "This model attaches to a host record to declare what is protected. The host retains identity, versioning, storage, editorial lifecycle and deletion execution; the cited standards permit the protected content to be absent from the signature structure entirely, which makes the separation explicit.",
+      "required": true,
+      "source_refs": [
+        "SRC-003",
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Canonicalization and transform algorithm provider covering XML canonicalization, RDF dataset canonicalization, JSON canonicalization and equivalents",
+      "relation": "REFERENCE",
+      "purpose": "Structured payloads must be converted to an octet stream before digesting. This model carries the algorithm identifier and version in the digest input description only; the algorithm's mechanics, parsers and edge-case behaviour stay with the provider.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Digest and proof algorithm registries including IANA JOSE and COSE registries, XML Security algorithm identifiers, cryptosuite registries and media-type registries",
+      "relation": "ALIGN",
+      "purpose": "Algorithm and content-type identifiers are taken verbatim from governed registries with a recorded registry version; this model never redefines or paraphrases an identifier or its semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-004",
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Proof method, signer and key material model covering verification method, certificates, trust anchors and cryptographic execution",
+      "relation": "REFERENCE",
+      "purpose": "The chosen proof method fixes which protected-input construction applies and whether purpose, audience and expiry parameters are relied on. Key material, signer identity and the computation of any digest or signature remain with that model; this model carries descriptors and recorded outcomes.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-004",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "IETF RFC 5652 Cryptographic Message Syntax SignedData content binding",
+      "relation": "ALIGN",
+      "purpose": "Alignment to encapsulated content type and detached content, the mandatory content-type and message-digest signed attributes, and the verification requirement that the signed content-type match the encapsulated type. Recorded with version and section; no conformance is claimed without test evidence.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "IETF RFC 7515 and RFC 7797 JWS signing input and unencoded payload option",
+      "relation": "ALIGN",
+      "purpose": "Alignment to a single concatenated signing input, the protected versus unprotected header split, the critical must-be-understood parameter, and the payload encoding flag that itself changes the protected bytes.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "IETF RFC 9052 COSE Sig_structure and RFC 9338 Countersign_structure",
+      "relation": "ALIGN",
+      "purpose": "Alignment to the explicit signing structure with body and signer protected buckets, externally supplied authenticated data, detached payload representation, and the countersignature structure that binds the finalized target's signature value.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "W3C XML Signature Syntax and Processing Version 1.1 Reference model",
+      "relation": "ALIGN",
+      "purpose": "Alignment to digest-based reference binding, the optional reference locator, the advisory type attribute, the transform chain as selection, and the two-step core validation separating reference checking from signature checking.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "W3C Verifiable Credential Data Integrity 1.0 proof binding",
+      "relation": "ALIGN",
+      "purpose": "Alignment to the transformation, hashing and proof serialization stages, the proof purpose, domain, challenge, nonce and expiry parameters, and proof chains bound through a previous-proof reference.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "C2PA Technical Specification hard-binding assertions",
+      "relation": "ALIGN",
+      "purpose": "Alignment to selected-part protection over media: byte-range hashing with exclusion ranges, box and container hashing, hashed URI references, and the constraint that excluded content must not change interpretation of the protected part.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "Time-stamping authority and trusted-time model",
+      "relation": "REFERENCE",
+      "purpose": "A time-stamp binds only a hash imprint of the protected input, and the authority never inspects the datum. This model may carry the digest and a token reference; issuing, operating, trusting or evaluating a time-stamp is external.",
+      "required": false,
+      "source_refs": [
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "Content repository and version master system",
+      "relation": "REFERENCE",
+      "purpose": "Supplies the authoritative content identifier, version and retrievable octets, and owns storage, versioning and the execution of retention and erasure. This model records the reference and pins the representation by digest.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Verification evaluator, enforcement and audit-trail model",
+      "relation": "REFERENCE",
+      "purpose": "Executes reference and signature validation, evaluates purpose, audience and expiry, enforces acceptance or rejection and operates the audit trail. This model supplies binding descriptors and comparison inputs and retains outcomes as evidence only; referencing the evaluator grants no ownership of evaluation, execution, enforcement or audit-trail semantics.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Approval workflow and countersignature orchestration model",
+      "relation": "REFERENCE",
+      "purpose": "Determines who signs, in what order and with what business consequence. This model only preserves the exact finalized protected input a dependent proof must bind and records the chain ordinal.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-005",
+        "SRC-008"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension MUST name one owner package for protected-payload binding records under WM-XCT-034 and record its maintainer, so a single party is accountable for descriptor correctness.",
+        "The owner package MUST declare which host models this mixin may attach to, and MUST NOT assume ownership of those hosts' identity, versioning, storage or deletion execution.",
+        "The owner package MUST declare the governed registries it draws from for digest algorithm identifiers, content types, proof purposes and selection expression languages, each pinned to a registry version.",
+        "The owner package MUST publish the detached-payload resolution contract, naming who supplies the octets, in what form, and under what unchanged-transport obligation.",
+        "The owner package MUST publish its binding failure vocabulary and state that no failure may be represented as an empty or default payload value."
+      ],
+      "namespace_guidance": "Mint one stable, resolvable namespace IRI per Dimension for this mixin, for example <dimension-base>/xct/sig/payload-binding/, and place all local identifiers under it with the sig-payload- prefix. Never embed a date, environment name, release tag or organizational unit in an identifier; those are attributes, not identity. External algorithm, content-type and purpose identifiers are referenced in their published form and are never re-minted in the local namespace.",
+      "registry_links": [
+        "IANA JSON Web Signature and Encryption Header Parameters registry, established by RFC 7515 Section 9, for JOSE header parameter names including crit and b64.",
+        "IANA COSE Header Parameters and COSE Algorithms registries, established by RFC 9052, for COSE label and algorithm identifiers.",
+        "W3C XML Security algorithm identifier URIs defined by XML Signature 1.1 for digest, canonicalization and transform algorithms.",
+        "W3C Verifiable Credentials cryptosuite and proof-purpose vocabularies referenced by Verifiable Credential Data Integrity 1.0.",
+        "IANA media types registry and object identifier arcs used for declared content types in CMS, JOSE and COSE bindings."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Vercy record canonicalization governs only this model's own records - attribute ordering, identifier casing and whitespace normalization for comparison and diffing. It MUST NOT be conflated with payload canonicalization, which is an external algorithm identified by reference and executed by the referenced provider.",
+        "Algorithm, content-type and purpose identifiers are stored verbatim in their published form; they are never re-cased, translated, abbreviated or normalized, because an identifier's octets can themselves be significant to a standard.",
+        "Digest values are stored with an explicit encoding label and are never re-encoded on read or write; converting between encodings is a recorded transformation, not canonicalization.",
+        "A preserved protected input is stored as opaque octets with no normalization of any kind, since normalization would destroy the property that makes it useful to a dependent proof."
+      ],
+      "patch_rules": [
+        "A recorded digest value, digest algorithm identifier, binding mode, scope manifest or preserved protected input MUST NOT be patched in place; a correction supersedes the record and the superseded version is retained with its reason and actor.",
+        "Adding a parallel digest under a different algorithm is an additive patch; removing an existing digest evidence record is a breaking patch requiring the owner package's approval.",
+        "Patches to advisory fields such as content length, declared type hints and algorithm strength status MUST NOT alter any value inside the protected input, and MUST be marked advisory in the patch record.",
+        "A binding failure record is append-only; a later successful resolution creates a new record rather than erasing the failure."
+      ],
+      "compatibility_rules": [
+        "Adding an optional descriptor field is backward compatible. Changing the meaning of a binding mode, scope mode, preserved-form or failure code is breaking and requires a new code value rather than redefinition.",
+        "A consumer that encounters a parameter listed in the critical set and cannot process it MUST reject the record rather than ignore the parameter, mirroring the fatal-error handling required by the aligned standards.",
+        "Alignments carry the external standard's version and section; a new version of an external standard creates a new alignment entry and never silently replaces an existing one.",
+        "Consumers MUST tolerate multiple digest evidence records for one payload and MUST apply the recorded selection rule rather than picking the first or the weakest entry."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the system of record for the artifact or the protected content, for example the content repository's object identifier together with its version designation, or the proof registry's own record identifier.",
+        "Governed global identifier or IRI: a resolvable namespace IRI in the Dimension's registered namespace, a registry-published algorithm identifier, or a content-addressed identifier formed from a governed digest algorithm and value.",
+        "UUID or ULID assigned by the adopting Dimension, used only where no master-system identifier and no governed global identifier exists.",
+        "A digest value may serve as a content-addressed locator but remains evidence rather than a governed identifier; a version label, chain ordinal or date is never an identifier on its own."
+      ],
+      "timestamp_rule": "All time values are recorded as RFC 3339 date-time strings with explicit seconds and an explicit numeric offset or the literal Z; a bare date or an offset-less local time is invalid. Event time - when the protected input was fixed, when the protected representation became effective, or when a dependent proof was taken - is recorded separately from observation or ingestion time, which is when this model recorded, resolved or compared the descriptor. Neither value may be derived from the other, and a bound expiry inside the protected input is stored verbatim as event-time data and never recomputed into a local zone.",
+      "serial_naming_rule": "Serial artifacts are the preserved protected-input records in a countersignature or proof chain. They are named <parent-proof-identifier>-<zero-padded chain ordinal>, where the ordinal is the immutable position in the dependency order and never a date, timestamp or clock-issued sequence. An ordinal becomes immutable as soon as a dependent proof references it; a gap in the ordinal series is itself a recorded condition and is never closed by renumbering.",
+      "integrity_rule": "Every artifact records the digest algorithm identifier and digest value of its own serialized form together with the identifier of the descriptor it protects and the observation instant of that self-digest. An artifact whose recorded self-digest cannot be matched is marked indeterminate, MUST NOT be treated as a valid binding and MUST NOT be silently repaired; the payload digest values it carries are retained as evidence but flagged unverified."
+    },
+    "policies": [
+      "No silent substitution: an unresolvable, mutable, ambiguous or version-mismatched payload is recorded as an explicit classified failure and never as an empty, default, truncated or nearest-match value.",
+      "Protected before unprotected: where the same parameter appears in both a protected and an unprotected position, only the protected value may be relied on, and the duplicate is recorded as a conflict.",
+      "Critical means fatal: a parameter declared critical that cannot be processed causes rejection of the record, and a parameter declared critical outside a protected position is invalid on its face.",
+      "Evidence without enforcement: this model records binding descriptors, digest evidence and comparison outcomes. Deciding to accept, reject or act on a proof, and operating any audit trail, belongs to the referenced verification, policy and audit models.",
+      "Cite, do not conform: external standards are recorded as alignments with version and section. Conformance is asserted only where interoperability test evidence exists and is referenced."
+    ],
+    "crud": {
+      "read": [
+        "Resolve a protected subject descriptor by its master-system identifier or governed IRI and return the binding mode, protection scope, digest evidence set, parameter partition and any recorded failure states.",
+        "Read-back returns digest values, algorithm identifiers and preserved protected inputs byte-for-byte as stored; readers MUST NOT re-encode, normalize or reformat protected values in transit.",
+        "Reads of preserved protected-input records containing host content are answered under the host record's classification, not under this model's default disclosure level."
+      ],
+      "create": [
+        "Create a descriptor only where the protected subject reference, the binding mode and either a directly carried payload or at least one digest evidence entry are present; a descriptor with none of these is not a binding and is rejected.",
+        "Record event time and observation time at creation per the timestamp rule, and record the governing standard alignment with its version and section.",
+        "Create a preserved protected-input record only against a target whose cryptographic functions are finalized, and record the finality assertion alongside it."
+      ],
+      "update": [
+        "Only advisory and classification fields may be updated in place - algorithm strength status, declared type hints, boundary notes; every other correction supersedes the record.",
+        "Every update records the acting party, the reason, the prior-record reference and the observation instant.",
+        "An update MUST NOT change any value that sat inside the protected input; an attempt to do so is recorded as a conflict and rejected."
+      ],
+      "delete": [
+        "Descriptor and digest evidence records are never hard-deleted while any dependent countersignature, proof-chain entry or verification evidence record references them. A deletion request creates a tombstone retaining the descriptor identifier, the digest algorithm identifier and value, the preserved-input reference and the deletion reason, so dependent proofs remain checkable.",
+        "Retention periods, legal holds and physical disposition of the protected content itself are owned by the adopting Dimension's records-retention policy and executed by the referenced content repository and version master system; this model owns only the tombstone shape and the obligation to preserve binding evidence, and never executes erasure of host content.",
+        "When the referenced repository executes erasure of the protected content, the descriptor is marked payload-unresolvable, a binding failure record is created with its observation instant, and the digest evidence is retained unless the Dimension retention policy that owns execution explicitly directs its disposal.",
+        "A preserved protected-input record holding full octets may be reduced to digest-only form on disposal only where no dependent proof requires the full octets; the reduction is recorded as a superseding event and the resulting record is flagged digest-only.",
+        "Binding failure records are append-only and are not deleted by correction; they expire only under the Dimension retention schedule that owns their disposition."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Payload binding steward",
+        "responsibilities": [
+          "Owns descriptor correctness: that the declared protected subject, binding mode, scope and digest evidence describe the same representation.",
+          "Maintains the alignment register with external standard versions and sections and reviews it when a standard is revised.",
+          "Approves breaking patches such as removal of a digest evidence record or redefinition of a code value."
+        ]
+      },
+      {
+        "name": "Host content custodian",
+        "responsibilities": [
+          "Issues the authoritative content identifier and version and guarantees retrievability of the identified representation.",
+          "Declares whether a representation is immutable and notifies the steward when a representation is superseded or erased.",
+          "Executes retention and disposition of the protected content under the Dimension's retention policy."
+        ]
+      },
+      {
+        "name": "Algorithm and registry curator",
+        "responsibilities": [
+          "Pins the registry versions from which digest, canonicalization, content-type and proof-purpose identifiers are drawn.",
+          "Publishes algorithm strength status changes as advisory annotations without altering historical digest evidence.",
+          "Reviews selection expression languages used for scope manifests and flags those with no governed specification."
+        ]
+      },
+      {
+        "name": "Relying-party integrator",
+        "responsibilities": [
+          "Implements the critical-parameter rejection rule and the protected-before-unprotected precedence rule in consuming systems.",
+          "Records comparison outcomes and unknown-critical-parameter conditions back as evidence rather than discarding them.",
+          "Obtains detached payloads through the published supply contract and never substitutes a similar representation."
+        ]
+      },
+      {
+        "name": "Dimension records-retention authority",
+        "responsibilities": [
+          "Owns retention schedules, legal holds and disposition decisions for descriptors, digest evidence and preserved protected inputs.",
+          "Authorises reduction of a preserved protected input to digest-only form and any disposal of digest evidence.",
+          "Resolves conflicts between erasure obligations on host content and the obligation to keep binding evidence checkable."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Descriptor metadata - binding mode, scope mode, algorithm identifiers, encoding labels, failure codes and alignment references - is readable by any party authorized to read the host record's existence. Protected payload octets, preserved protected inputs and any external authenticated data inherit the host record's classification and are never widened merely because this model references them.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Preserved protected-input records may contain the full plaintext of a restricted host record; access follows the host record's classification and requires the host custodian's authorization, not this model's default.",
+        "Digest values over low-entropy or enumerable payloads permit confirmation attacks; where the payload space is guessable, digest evidence is classified as sensitively as the payload itself.",
+        "Externally supplied authenticated data may carry private context; it is stored by reference wherever the referencing model permits, and the reference rather than the value is disclosed at the default level.",
+        "Binding failure records can reveal the existence and version drift of restricted content; failure detail text is disclosed at the host record's classification while the failure code remains readable at the default level."
+      ],
+      "audit_requirements": [
+        "Every read of a preserved protected-input record records the requesting party, stated purpose and the observation instant per the timestamp rule.",
+        "Creation of a binding failure record, and any subsequent successful resolution following it, is recorded with the acting party and reason; these are emitted as records only, and retention, correlation and operation of the audit trail belong to the referenced audit model.",
+        "Every supersession of a descriptor, digest evidence record or scope manifest records the prior-record reference so the historical binding remains reconstructable.",
+        "Access decisions on preserved protected inputs are logged by the host custodian's access system; this model records only the reference to that log entry."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner or maintainer",
+        "Alignment register URL listing each external standard with version and section",
+        "Failure-state vocabulary URL",
+        "Registry pinning URL listing governed registries and their pinned versions"
+      ],
+      "read_order": [
+        "AGENTS.md - identify the model, its type as a mixin and the location of every other contract document.",
+        "Specification URL - the model definition, scope, exclusions and boundary notes, read before any record is created or interpreted.",
+        "Alignment register URL - which external standard version and section governs a given record, so protected-input construction is never assumed.",
+        "Failure-state vocabulary URL - the classified failure codes, read before any resolution or comparison is attempted so no substitution is invented.",
+        "Storage type URL - the projection in use, whether JSON, YAML, Markdown, HTML, Git, MongoDB or MCP; treated as a projection of the semantics, never as the semantics.",
+        "Interface URL - the access interface with its scopes and exceptions.",
+        "Processes URL - the operational procedures for declaring, preserving, resolving and superseding binding records."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "The protected-payload binding surface of WM-XCT-034 - protected subject declaration, content descriptor, direct versus digest-based binding mode, digest evidence, whole-object versus selected-part scope, protected and unprotected parameter partition with criticality, bound purpose, audience and expiry parameters, and preservation of the exact protected input with explicit failure states - is grounded in primary IETF and W3C specifications and stated independently of any storage format or access interface. Signer identity, key material, canonicalization mechanics, cryptographic execution, content storage, approval workflow and verification enforcement are held at the boundary and directed to referenced models rather than modelled here.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority places the content repository's or proof registry's master-system identifier first, then a governed IRI or content-addressed identifier, then a Dimension-assigned UUID or ULID. A version label, chain ordinal or date is explicitly disqualified as an identifier."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Only the descriptor's own supersession lifecycle is modelled: immutable protected values, superseding corrections, append-only failure records and immutable chain ordinals. Proof state transitions, host editorial lifecycle and approval sequencing are directed to referenced models."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Host reference, master-system reference, external resource pins, dependent proof references and chain ordinals are modelled as non-owning links, and every composition entry states what the target retains."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Event time when the protected input was fixed is separated from observation time when it was recorded, resolved or compared. Bound proof expiry is carried verbatim as protected data; deciding whether it has passed is external."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Digest input description, canonicalization algorithm identifier, scope manifest, external authenticated data reference and preserved protected input together record exactly what was protected and from where it came."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Five roles separate descriptor stewardship, host custody, registry curation, relying-party integration and retention authority. The payload supply contract names an accountable party for detached payloads."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Comparison of a supplied digest against recorded evidence emits match, mismatch or indeterminate as evidence. Reference validation, signature validation and any enforcement remain with the referenced evaluator, mirroring the two-step separation in XML Signature."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Descriptor metadata is readable at the host record's existence level; payload octets, preserved inputs and digests over guessable payload spaces inherit host classification. Four exceptions and four audit requirements are stated."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstone shape, no hard delete while dependents exist, digest-only reduction, append-only failure records, and an explicit statement that retention schedules and physical disposition are executed by the adopting Dimension's retention policy and the referenced content repository."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Six alignment entries with version and section, registry pinning for algorithm and content-type identifiers, and a cite-do-not-conform policy. No conformance is claimed without test evidence."
+      },
+      {
+        "dimension": "classification",
+        "status": "covered",
+        "notes": "Subject kind, envelope topology, binding mode, scope mode, preserved form and failure code are governed code sets whose redefinition is a breaking change."
+      },
+      {
+        "dimension": "constraint and criticality",
+        "status": "covered",
+        "notes": "Critical parameters must be understood or the record rejected, must sit in a protected position, and the protected-before-unprotected precedence rule is recorded both as a data element and as a policy."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Digest value with explicit encoding and expected length, plus content length as an advisory cheap-mismatch check that never substitutes for digest evidence."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Protected-payload binding has no geospatial dimension. Byte ranges, box identifiers and node paths are structural positions within an object rather than locations, and are modelled under protection scope."
+      },
+      {
+        "dimension": "selection expression language",
+        "status": "gap",
+        "notes": "No single normative language spans byte ranges, container boxes, XML node sets and RDF subgraphs. The model records a selection language identifier but cannot guarantee cross-family reconstruction of a selection; adopters must pin a language per payload family."
+      },
+      {
+        "dimension": "legal signature-form equivalence",
+        "status": "gap",
+        "notes": "Whether a given binding satisfies a jurisdiction's advanced or qualified electronic signature requirements, including what-you-see-is-what-you-sign obligations, is not modelled and is not derivable from the cited sources."
+      },
+      {
+        "dimension": "privacy",
+        "status": "covered",
+        "notes": "Handled through access exceptions covering preserved plaintext inputs, digests over enumerable payload spaces and private external authenticated data. Selective-disclosure schemes that redact protected parts are recorded as an omission rather than modelled."
+      }
+    ],
+    "known_omissions": [
+      "Selective-disclosure and redactable-signature schemes, where parts of a protected payload can be withheld while the binding still verifies, are not modelled; the scope manifest expresses a fixed selection rather than a disclosure policy.",
+      "Streaming and chunked payloads, where the protected input is produced incrementally and no single length or complete octet sequence exists at signing time, are not modelled beyond the byte-range scope mechanism.",
+      "Multi-format equivalence - asserting that a payload rendered in two serializations is the same protected object - is deliberately excluded, because it depends on canonicalization semantics owned by the referenced algorithm provider.",
+      "ETSI advanced signature profiles (CAdES, XAdES, JAdES, PAdES) and their signed data object properties, commitment types and signature policy identifiers were not retrieved as live sources; commitment-type semantics are approximated here by proof purpose alone.",
+      "PDF and office-document incremental-update binding, where a later revision appends to a signed byte range, is not modelled and may not be expressible with the current scope manifest.",
+      "Post-quantum and hybrid digest or signature composition, including dual-algorithm bindings over one payload, is only partially reachable through parallel digest evidence records.",
+      "Hardware-attested or enclave-bound protected inputs, where the binding includes a platform measurement, are out of scope and would sit with the proof-method model.",
+      "W3C Verifiable Credentials Data Model 2.0 Section 5.3 on integrity of related resources could not be retrieved in full during research; external-resource pinning is therefore grounded on C2PA hashed URIs and Subresource Integrity rather than on that section."
+    ],
+    "conflicts": [
+      "Countersignature input differs materially across families: CMS binds the target signer information's signature value as an unsigned attribute and forbids the content-type attribute inside a countersignature, COSE places the target signature value in the countersignature structure's other_fields, and Data Integrity chains proofs by a previous-proof reference to a proof identifier. A record must state which construction applies; the three are not interchangeable.",
+      "Expiry has no common home. Data Integrity defines an expiry property inside the proof, while CMS, JWS and COSE define no normative protected expiry - an expiry in a JWT is a payload claim, not a header parameter. Treating a payload-level expiry as a proof-level expiry is a category error this model records rather than resolves.",
+      "Reference binding is two-layered in XML Signature, where reference validation over digests and signature validation over SignedInfo are separate mandatory steps, while JWS and COSE have a single protected input with no separate reference layer. A digest mismatch and a signature failure therefore mean different things in different families.",
+      "Digest evidence encodings are not interoperable: CMS carries an object identifier plus raw octets, XML Signature an algorithm URI plus base64, Subresource Integrity a prefixed base64 expression, Data Integrity a multibase value, and C2PA an algorithm label plus binary hash inside a hashed URI. No single encoding can be assumed, which is why an explicit encoding label is mandatory here.",
+      "XML Signature 2.0 diverges from the 1.1 Recommendation by removing the Reference URI attribute in favour of a selection element; this model aligns to 1.1 only and does not treat 2.0 as normative.",
+      "Content type is a mandatory signed attribute that must match the encapsulated type in CMS, but is explicitly advisory and ignored by implementations in JWS unless the application acts on it. The same conceptual field therefore carries different normative weight, which is why the type protection flag is required.",
+      "Subresource Integrity is a Working Draft whose details may change; it is used only as corroboration for the digest-pinning and agility pattern and is not a conformance target."
+    ],
+    "regional_assumptions": [
+      "The model assumes no jurisdiction-specific signature form. EU eIDAS advanced and qualified electronic signature requirements, and the ETSI profiles implementing them, impose additional obligations on what must be presented to and bound for the signer; those are not represented here.",
+      "United States ESIGN and UETA intent-to-sign and record-retention requirements are not modelled; the proof purpose field is a technical binding, not a legal intent declaration.",
+      "Data-protection regimes creating erasure obligations over protected content conflict with the obligation to keep binding evidence checkable. The model resolves this only by tombstoning and marking the payload unresolvable; which obligation prevails is a Dimension and jurisdiction decision.",
+      "Algorithm acceptability is regional and time-bound. National cryptographic guidance differs on which digest algorithms remain acceptable, so algorithm strength status is advisory and locally sourced rather than universal."
+    ],
+    "adversarial_checks": [
+      "Reference substitution: a locator resolves to a different representation than the one protected. Checked by requiring digest evidence for every indirect binding, an immutability flag on the representation, and an explicit statement that the binding guarantees only digest equality of what was retrieved - never that the right object was retrieved.",
+      "Unprotected-parameter injection: an attacker adds or relocates a parameter into the unprotected position to change interpretation. Checked by the protected-before-unprotected precedence rule, the requirement that critical parameters appear only in a protected position, and recording duplicates as conflicts.",
+      "Exclusion-range abuse: data hidden inside an excluded region changes how the protected region is interpreted. Checked by requiring every excluded region to carry a constraint on permitted content and by the explicit exclusion-safety question, following the C2PA security requirement.",
+      "Cross-context replay: a valid proof is reused for a different audience or purpose. Checked by binding proof purpose, audience or domain and a challenge into the protected input, and by requiring a challenge whenever an audience is bound.",
+      "Digest downgrade: several digests are recorded and a consumer selects the weakest. Checked by requiring a recorded selection rule, a governing digest reference and an advisory algorithm strength status that never rewrites historical evidence.",
+      "Encoding ambiguity: the same payload signed with a different payload encoding flag produces different protected bytes while appearing identical. Checked by making the carriage and encoding flag a mandatory recorded element and treating it as a protected, must-be-understood parameter.",
+      "Premature countersignature: a dependent proof is taken over a target not yet finalized, so the preserved input does not match what verifiers later see. Checked by requiring a finality assertion and the target digest at the time of dependence before a preserved-input record may be created.",
+      "Empty-value substitution: a resolution failure is silently rendered as an empty or default payload, producing a proof that appears to cover nothing. Checked by the no-silent-substitution policy, the classified failure vocabulary and the append-only failure record."
+    ]
+  }
+}

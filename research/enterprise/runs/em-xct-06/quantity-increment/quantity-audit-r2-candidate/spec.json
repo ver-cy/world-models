@@ -1,0 +1,973 @@
+{
+  "vercy": "1.0-draft",
+  "metaModel": {
+    "id": "enterprise-quantity-values",
+    "registryId": "vr.profile.enterprise-quantity-values",
+    "name": "Enterprise Quantity Values",
+    "version": "0.1.0",
+    "kind": "companion-contract",
+    "logicalKind": "embedded-value-profile"
+  },
+  "canonicalUrl": "https://ver.cy/models/enterprise-quantity-values/versions/0.1.0/spec.json",
+  "model": {
+    "purpose": "Embed governed scalar quantities in existing company objects, preserve accepted normalized decimal notation and reproduce exact affine unit conversions without creating a second quantity master.",
+    "scope": "# Enterprise Quantity Values\n\nVersion 0.1.0. Reviewable draft; an embedded executable profile of selected WM-XCT-008 concepts. The catalogue delivery category companion-contract identifies a shared implementation package. It does not create an independent Quantity, UnitRegistry, Observation, or ConversionReceipt entity. A host object and its field/fact retain all instance identity and lifecycle. Use an existing service estimate, route plan, resource assertion or thermal sample as the host. Those example host types are synthetic, not newly published metamodels.\n\n## Minimum adoption and trust boundary\n\nStart with one existing host, a quantity kind, a resolved unit definition, a contextual basis and a source assertion. No ERP, HRIS or registry server is required. A small host may curate an explicit versioned definition file; a large host may resolve an external governed vocabulary. Resolution, approval, signature verification and network fetching are not implemented here. Never construct an admission list simply by hashing untrusted incoming values.\n\nThe mandatory caller argument admitted contains exactly three actual sets or frozensets: definitions, sources, contexts. Each contains lowercase SHA256 hex digests under the local encoding below. A definition entry hashes the entire UnitDefinition object, while source and context entries hash the entire Pin object. Pin.sha256 is an upstream evidence digest under a host-defined byte convention; it is different from the digest of that Pin used for local admission. The host verifies the actual evidence, applicable revision, use purpose and actor before supplying sets. Shape, membership and arithmetic do not authenticate a source or prove a physical measurement. The same sets are current inspection admission; they are not credentials or write authorization. Keep historical source/definition snapshots separately and decide current read and write permissions outside this API.\n\n## Embedded values and reference snapshots\n\nQuantityDocument and ConversionDocument are versioned wire wrappers. Neither has an independent object ID. QuantityValue contains one UnitDefinition, one role, one context Pin, one source Pin and one magnitude. Quantity identity is the host's qualified subject and field/fact; a new display label or conversion does not create a second measured thing.\n\nA Pin is an opaque exact tuple uri, revision, sha256. It is case-sensitive, without URI normalization, alias resolution or Unicode equivalence. URIs are restricted ASCII urn: or https:// references; this grammar is not a network or dereferenceability check. Revision must be explicit. Hashes bind a declared snapshot to a trusted expected value only after external verification; hashes are not signatures. Synthetic fixture pins use documented deterministic synthetic preimages, not live registry evidence.\n\nUnitDefinition is a local immutable snapshot admitted by the host. reference identifies the unit-definition revision; code preserves its original case-sensitive expression. kind pins the quantity kind, dimension supplies seven integer exponents in order length, mass, time, electric current, thermodynamic temperature, amount of substance, luminous intensity, and anchor pins the common reference coordinate, fixing both origin and coordinate unit/scale. All conversions, including scalar and difference, require identical full kind, dimension and anchor pins. authority identifies the evidence/policy approving this exact transform. These are different references even when one governance system manages them. The code is opaque: no UCUM expression parser, annotation interpretation, QUDT graph resolver or universal code mapping ships. Dimension exponents are restricted to integers from -12 through 12; this is a narrower subset than the parent's rational-exponent field.\n\nroles explicitly permits scalar, point and/or difference. A scalar definition must have zero offset; points use offsets, differences suppress offsets. The host must choose meaningful kind and role together. Definitions may use a temperature-family kind and separate role, or separately governed point/difference kinds. This profile never equates different kind pins automatically. Equal physical dimension does not establish kind compatibility: energy and torque are refused when kind pins differ. A counting subject such as tests or seats belongs to kind/context, not to a UCUM annotation. Explicit unit one differs from an unresolved or missing unit; unresolved units fail closed.\n\nKnownMagnitude contains an ASCII decimal lexical string, its scale, and precisionMeaning. Scale is exactly the number of fractional digits; maximum 36 total digits, of which at most 18 are fractional. Exponents, grouping, leading plus, noncanonical leading zeros and binary floating-point input are refused. Preserve original trailing zeros and signed zero verbatim. Numerically signed zero equals zero; rational output is unsigned zero. reported-digits means only asserted representation, not measured uncertainty or exact physical truth. exact-by-definition is a host assertion and requires domain evidence. Both use exact rational arithmetic on the supplied numeral. Conversion does not infer significant figures, uncertainty, confidence or conformity.\n\nMissingMagnitude has state unknown, withheld or not-applicable plus a reason. It retains the same known unit/context/source contract and can be stored/validated. Arithmetic and comparison refuse it. Unknown unit, kind, role, context or source cannot enter this profile. Preserve such an unresolved assertion in the host; this narrow profile cannot represent it and must not substitute unit one. Blank reason strings are syntactically possible if composed of spaces; their substantive sufficiency is a host check.\n\n## Arithmetic and exact definition authority\n\nUnitDefinition uses the single explicit normal form anchor = a*x + b. a and b are reduced rational pairs n/d, at most 36 characters per component, including any minus sign, positive denominator, canonical zero 0/1; a must be positive. exactness must be definition-exact. Nonlinear/logarithmic, approximate, material-dependent, arbitrary and procedure-dependent transforms are unsupported. A host may not relabel an approximate factor as definition-exact. The validator cannot infer that an admitted rational or source assertion is physically correct.\n\nFor a point conversion between definitions with the same entire kind, dimension and anchor, output = (a_source*x + b_source - b_target)/a_target. For scalar or difference, output = a_source*x/a_target; each definition must permit the input role. Result is a reduced rational, maximum 256 characters per component, including any minus sign. The original QuantityValue and target definition are retained inline. No rounded decimal result or significant-digit policy is introduced. The accepted normalized ASCII decimal lexical form is retained. Raw external notation such as grouping, exponents, leading plus, unit glyphs and localized decimals must remain in the host source evidence; normalization into this profile is a separately governed host step. The result is a numeric coordinate in the target unit with the same role, kind and context as the retained input; it is not a new observation or independently sourced assertion. To persist a new assertion, the host must explicitly own and justify it.\n\nUCUM 2.2 sections 30 and 43 give the selected exact Celsius/Fahrenheit transforms. Fahrenheit to kelvin is (x+459.67)*5/9. Normal form therefore has a=5/9 and b=45967/180. Celsius uses a=1 and b=5463/20. A difference of 18 Fahrenheit degrees converts to a difference of 10 Celsius degrees; a point at 32 Fahrenheit converts to a point at 0 Celsius. Raw QUDT source inspected at the pinned commit contains pre-offset 459.67 and a finite decimal multiplier for Fahrenheit. Blindly reading those columns as this profile's b and exact 5/9 is invalid. An adapter must separately justify order and exactness; none is shipped.\n\ncompare validates both known quantities, requires identical context and role, then converts to the second unit and returns -1, 0 or 1. This means numeric coordinate ordering only. It does not decide business interchangeability, measurement equality within uncertainty, acceptance tolerance, aggregation permission or safety. General addition/subtraction is not implemented. Point minus point may yield a difference and point plus difference may yield a point in a governed affine space; neither operation is claimed forbidden universally or implemented here. Quantity times price, FX, currencies as units, working calendars and localized presentation remain separate research.\n\n## Executable API and encoding\n\nUse load(bytes) followed by validate(document, admitted=...). load rejects duplicate keys, JSON floating-point/exponent tokens, nonfinite tokens, malformed UTF-8 and oversized bytes. validate checks closed schema, definition/source/context admission and exact replay for conversions. convert(quantity, target, admitted=...) preserves the source and returns a validated ConversionDocument. compare has the restrictions above. These functions perform no I/O. validate is repeatable and returns a defensive copy; this is not a storage import guarantee.\n\nThe normative local digest encoding accepts only JSON objects, arrays, printable ASCII strings, integers, true, false and null. Objects have string keys sorted by ASCII code point; no spaces separate tokens. Encode using UTF-8, which is identical to ASCII for these admitted strings. Strings escape double quote as backslash-double-quote and backslash as two backslashes; no other admitted character is escaped, including slash. Integers use decimal digits with optional leading minus, no leading zero except 0; literals are lowercase true/false/null. Lists keep order. A digest is SHA256 over these bytes, rendered as 64 lowercase hex digits. Python reference and small encoding vectors are tested; independent language implementations and RFC 8785/JCS compatibility are not certified.\n\nEach wire document or native envelope is capped at 262144 bytes in this encoding (and incoming raw wire size), depth 24, 32 keys per object, 32 elements per array, 1024 ASCII characters per generic string and integer magnitude 9999. Schema fields have tighter bounds. No central quantity-history register or lifetime quantity count exists. These are per-record reference limits, not production load certification. These bounds apply to the complete quantity fact, but only to the four bound host-object fields recordType, schemaVersion, objectId and accessClass. The host object itself must pass its own V3 outer validation. Its unrelated fields, including non-ASCII name/description, are outside the companion checks. Pass the actual full object; the function inspects those four fields without claiming to validate other host properties.\n\nquantity.py pins its sibling quantity.schema.json before loading. Verify all package assets against a trusted release before execution. This pin is not a signature or hermetic dependency guarantee. Tested Python 3.12.14 and jsonschema 4.26.0; transitive supply-chain hashes and alternative runtime certification are not supplied.\n\n## Native V3 binding, correction and rights\n\nFive operational files are installed: spec.json (including this complete contract and semantic matrices), AGENTS.md, runtime-model.reference.json, quantity.schema.json and quantity.py. The pinned full ZIP contains reproduction scripts, fixtures, evidence and source limits. There is no automatic companion dispatch. First resolve the correct Dimension and host object through authenticated host state and check current access, then run the V3 outer validator, then load and validate the actual stored nested value using validate_native.\n\nStore QuantityDocument at quantity.value or ConversionDocument at quantity.conversion on an existing host object. The nested value is a closed object; outer unit must be null because unit semantics are inside it. Host objectType is intentionally not constrained: the host model owns it. validate_native checks the supplied expected subject against both stored fact.subjectId and object.objectId. Its expected master, writer and access arguments come from authenticated host context, not the incoming record. Fact masterSystem must match master; authority must exactly equal {source: writer, rank: 0}. Access must equal the supplied public/internal/restricted/confidential value on both object and fact. Fact provenance.source must equal the capture master; the nested source Pin concerns semantic input evidence and need not name that capture system. Capturing a source does not transfer semantic ownership.\n\nThis bound native subset accepts asserted facts with open-ended validTo=null and strict UTC seconds for recordedAt and validFrom. They are bitemporal host assertion times, not a computedAt or measurement timestamp inferred by this profile. The host governs applicability, clock plausibility and any measurement time in its own model. Supersession uses native immutable fact IDs. Host identity/lifecycle, current object revision, state, fact winner, full supersession graph, permissions, source authenticity and durable storage are not established by this checker. Supplying an old object record is never proof of current access.\n\nFor correction, append a new fact on the same host/path with supersedes containing the exact prior fact ID, a distinct fact ID, recordedAt no earlier than the predecessor and nonblank provenance.correctionReason. validate_correction checks these two supplied records and their nested values; it does not discover an omitted earlier record, detect a parallel head, lock storage or establish a complete history. The 0.1.0 correction function uses one expected master, writer and access value for both records, so only same-master, same-writer, same-access corrections are supported. A changed capture actor/system or disclosure class requires a separately governed workflow and is refused by this function. This is a compatibility restriction, not evidence of tampering. It also rejects a directly visible two-record supersession cycle; longer cycles and full graph closure remain host work. The host may change semantic context/definition/source under an explicit correction policy, retaining original bytes and applicability times. No chain-wide kind continuity or authorization is inferred. Inspecting both records requires current admission of their historical references. Incoming write admission is a separate host decision.\n\nThe native append tool rejects a duplicate record ID, including an identical repeat. This package does not claim idempotent native import. A future replay adapter must authenticate existing bytes, detect conflicts and decide whether to skip before append. Synthetic acceptance verifies duplicate refusal, original-byte preservation, stored correction and outer-only acceptance of an invalid nested arithmetic result that the companion rejects. Retraction, finite-ended intervals, conflict resolution, current selection, host revision migration, retention/tombstones and automatic adapters remain host work.\n\n## Versions, limits and wider composition\n\nSchema/package version, host object identity, fact record identity and external reference revision are separate. Only same-version lossless roundtrip is implemented. Unknown fields and versions fail closed. A new definition revision requires fresh trusted admission; an old snapshot is not silently upgraded. Preserve old facts and validator bytes. Upgrade/downgrade or an algorithm change needs a separately reviewed mapping and new facts, not editing old JSON or changing its version label. Rollback restores the old pinned package and retained data while reevaluating current permissions.\n\nThe published parent WM-XCT-008 0.3.0-research.1 is a semantic reference with exact source digest in composition. Ten selected findings and all fourteen function descriptions were inspected; the parent provides declarative semantics, not the code in this release. This is not whole-parent inheritance or UCUM/QUDT/ISO conformance. Parent gaps about uncertainty, domain profiles, mixed external editions and paywalled sources remain open. The wider EM-XCT-06 contour stays partial alongside the separately published monetary calculation package. No completed FX, Price, Calendar or Localization engine is implied.\n\n\n## Failure handling for adopting agents\n\nRejected reason codes describe a failed local check, never a finding of fraud or source falsity. Do not automatically retry by replacing data or widening admission. Permission and disclosure govern diagnostics as well as successful values.\n\n| Reasons | Meaning and next step |\n|---|---|\n| wire-bytes, wire-json, duplicate-key, wire-float, wire-integer | Preserve original evidence; request valid bounded JSON without duplicates or numeric coercion. |\n| depth, object-bounds, array-bounds, ascii-string, integer-bounds, unsupported-number-or-type, bytes | Outside the reference representation/resource subset. Keep raw source in the host; use a separately specified normalization or compatible profile. |\n| schema, schema-pin | Unsupported shape/version or changed sibling schema. Check trusted release bytes; never disable the schema pin or relabel a version. |\n| noncanonical-rational, positive-factor, scalar-offset, scale, decimal-bounds | Correct representation only with source/definition authority; preserve the rejected original separately. |\n| admission-shape, admission-set | Host integration supplied malformed sets. Repair the authenticated context builder, not the record. |\n| definition-not-admitted, source-not-admitted, context-not-admitted | Required snapshot is not currently admitted for inspection. Resolve its exact evidence, scope and rights with the owner; revocation does not mean the historical fact was corrupt. |\n| kind-mismatch, dimension-mismatch, anchor-mismatch, role-not-admitted, target-role, context-mismatch, role-mismatch | Local compatibility is absent. Request a governed mapping or correct contextual basis; do not equate labels or dimensions automatically. |\n| non-numeric | Missing magnitude remains explicit; no calculation until evidence exists. |\n| replay-mismatch | Retained result disagrees with supplied input/definition under this algorithm. Preserve bytes and investigate; no automatic replacement or approval. |\n| native-shape, native-context, native-id, native-version, native-subject, native-master, native-access, native-state, native-path, native-provenance, native-time | Recheck the real stored record, its outer V3 validation and authenticated expected binding. Same-writer/master/access and open-ended asserted facts are deliberate restrictions. A mismatch alone does not establish wrongdoing. |\n| correction-link, correction-cycle, correction-path, correction-time, correction-reason | Preserve both records; resolve predecessor, chronology and reason under host authority. Full history and current winner still require host checks. |\n\nBefore admitting input, the host must bind its authenticated source evidence to the asserted magnitude, role, kind and context of this exact subject/use. A Pin membership alone does not check that semantic relationship. Do not share broad admission sets across subjects or purposes without an explicit host decision. Example fixture sets are not an evidence resolver.\n"
+  },
+  "structure": {
+    "bundles": [
+      {
+        "id": "QV-B1",
+        "name": "Host and reference",
+        "description": "Decisions and evidence for host and reference.",
+        "layers": [
+          {
+            "id": "QV-B1-L1",
+            "name": "Embedding",
+            "description": "Explicit embedding contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F01",
+                "name": "What hosts this quantity?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q01",
+                    "text": "What hosts this quantity?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Existing qualified host ID and field/fact binding",
+                      "Use the host object. No independent Quantity identity or lifecycle is created."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A01",
+                    "name": "Existing qualified host ID and field/fact binding",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT01",
+                    "description": "Use the host object. No independent Quantity identity or lifecycle is created. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F02",
+                "name": "Is the host semantic source also the capture master?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q02",
+                    "text": "Is the host semantic source also the capture master?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Semantic source Pin and capture provenance",
+                      "Keep the semantic assertion owner separate from the system recording a copy."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A02",
+                    "name": "Semantic source Pin and capture provenance",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT02",
+                    "description": "Keep the semantic assertion owner separate from the system recording a copy. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "QV-B1-L2",
+            "name": "Definition",
+            "description": "Explicit definition contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F03",
+                "name": "Which exact unit definition is admitted?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q03",
+                    "text": "Which exact unit definition is admitted?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Full UnitDefinition digest and independent source evidence",
+                      "Resolve and admit the complete definition; code equality alone is insufficient."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A03",
+                    "name": "Full UnitDefinition digest and independent source evidence",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT03",
+                    "description": "Resolve and admit the complete definition; code equality alone is insufficient. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F04",
+                "name": "Does a new registry edition change this historical value?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q04",
+                    "text": "Does a new registry edition change this historical value?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Old revision snapshot and separately approved new definition",
+                      "Preserve the old value; refuse implicit upgrade and require explicit fresh admission."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A04",
+                    "name": "Old revision snapshot and separately approved new definition",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT04",
+                    "description": "Preserve the old value; refuse implicit upgrade and require explicit fresh admission. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "QV-B2",
+        "name": "Numeric meaning",
+        "description": "Decisions and evidence for numeric meaning.",
+        "layers": [
+          {
+            "id": "QV-B2-L1",
+            "name": "Magnitude",
+            "description": "Explicit magnitude contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F05",
+                "name": "Is the value known, withheld or absent?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "QV-Q05",
+                    "text": "Is the value known, withheld or absent?",
+                    "kind": "local-guidance",
+                    "answer_data": [
+                      "KnownMagnitude or explicit MissingMagnitude with reason",
+                      "Preserve absence and ask the source owner for missing evidence; do not insert zero."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A05",
+                    "name": "KnownMagnitude or explicit MissingMagnitude with reason",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT05",
+                    "description": "Preserve absence and ask the source owner for missing evidence; do not insert zero. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F06",
+                "name": "Which decimal notation was asserted?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q06",
+                    "text": "Which decimal notation was asserted?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Original lexical string, scale and precisionMeaning",
+                      "Retain trailing zeros and signed zero; do not infer uncertainty from digits."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A06",
+                    "name": "Original lexical string, scale and precisionMeaning",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT06",
+                    "description": "Retain trailing zeros and signed zero; do not infer uncertainty from digits. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F07",
+                "name": "Does unit one mean the counting subject is known?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q07",
+                    "text": "Does unit one mean the counting subject is known?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Resolved unit definition plus kind and context",
+                      "Unit one is explicit; an annotation or missing unit does not resolve the business subject."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A07",
+                    "name": "Resolved unit definition plus kind and context",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT07",
+                    "description": "Unit one is explicit; an annotation or missing unit does not resolve the business subject. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "QV-B2-L2",
+            "name": "Compatibility",
+            "description": "Explicit compatibility contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F08",
+                "name": "Do the quantities have compatible kinds?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "QV-Q08",
+                    "text": "Do the quantities have compatible kinds?",
+                    "kind": "local-guidance",
+                    "answer_data": [
+                      "Exact kind, dimension and anchor pins",
+                      "Refuse equal dimensions with different kinds, including energy versus torque."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A08",
+                    "name": "Exact kind, dimension and anchor pins",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT08",
+                    "description": "Refuse equal dimensions with different kinds, including energy versus torque. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F09",
+                "name": "Is this a point or a difference?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q09",
+                    "text": "Is this a point or a difference?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Quantity role and unit allowed roles",
+                      "Use the declared role; offsets apply only to points. Do not infer a role from a glyph."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A09",
+                    "name": "Quantity role and unit allowed roles",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT09",
+                    "description": "Use the declared role; offsets apply only to points. Do not infer a role from a glyph. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F10",
+                "name": "Do two values share a comparison basis?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q10",
+                    "text": "Do two values share a comparison basis?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Exact context pins and same role",
+                      "Require context/role equality before numeric comparison; domain permission remains external."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A10",
+                    "name": "Exact context pins and same role",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT10",
+                    "description": "Require context/role equality before numeric comparison; domain permission remains external. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "QV-B3",
+        "name": "Transformation",
+        "description": "Decisions and evidence for transformation.",
+        "layers": [
+          {
+            "id": "QV-B3-L1",
+            "name": "Formula",
+            "description": "Explicit formula contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F11",
+                "name": "In which order are multiplier and offset applied?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q11",
+                    "text": "In which order are multiplier and offset applied?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Explicit anchor=a*x+b with exact reduced rational coefficients",
+                      "Normalize only under verified authority; refuse direct copying of incompatible source columns."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A11",
+                    "name": "Explicit anchor=a*x+b with exact reduced rational coefficients",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT11",
+                    "description": "Normalize only under verified authority; refuse direct copying of incompatible source columns. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F12",
+                "name": "Is a finite catalogue coefficient exact by definition?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q12",
+                    "text": "Is a finite catalogue coefficient exact by definition?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Independent exact-definition authority and admitted snapshot",
+                      "Do not relabel a rounded coefficient. Exactness is host evidence, not decimal syntax."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A12",
+                    "name": "Independent exact-definition authority and admitted snapshot",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT12",
+                    "description": "Do not relabel a rounded coefficient. Exactness is host evidence, not decimal syntax. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F13",
+                "name": "Can a logarithmic or procedure unit be converted?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "QV-Q13",
+                    "text": "Can a logarithmic or procedure unit be converted?",
+                    "kind": "local-guidance",
+                    "answer_data": [
+                      "Unsupported-unit refusal and host escalation destination",
+                      "Refuse in this release; do not invent a linear approximation."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A13",
+                    "name": "Unsupported-unit refusal and host escalation destination",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT13",
+                    "description": "Refuse in this release; do not invent a linear approximation. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "QV-B3-L2",
+            "name": "Result",
+            "description": "Explicit result contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F14",
+                "name": "Can the converted result be reproduced?",
+                "description": "Coverage: local.",
+                "questions": [
+                  {
+                    "id": "QV-Q14",
+                    "text": "Can the converted result be reproduced?",
+                    "kind": "local-guidance",
+                    "answer_data": [
+                      "Original QuantityValue, target UnitDefinition and reduced rational result",
+                      "Run exact nested replay; schema validity alone cannot validate arithmetic."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A14",
+                    "name": "Original QuantityValue, target UnitDefinition and reduced rational result",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT14",
+                    "description": "Run exact nested replay; schema validity alone cannot validate arithmetic. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F15",
+                "name": "Does the result authorize billing or conformity?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q15",
+                    "text": "Does the result authorize billing or conformity?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Optional separate price/tolerance and domain authority evidence when such an action is requested",
+                      "Route billing or conformity requests to the respective host contract; a numeric coordinate is not an authorization."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A15",
+                    "name": "Optional separate price/tolerance and domain authority evidence when such an action is requested",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT15",
+                    "description": "Route billing or conformity requests to the respective host contract; a numeric coordinate is not an authorization. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "QV-B4",
+        "name": "Operation and evolution",
+        "description": "Decisions and evidence for operation and evolution.",
+        "layers": [
+          {
+            "id": "QV-B4-L1",
+            "name": "Storage",
+            "description": "Explicit storage contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F16",
+                "name": "Which native record carries the result?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q16",
+                    "text": "Which native record carries the result?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Existing host object and quantity.value or quantity.conversion fact",
+                      "Validate the stored binding after V3 outer checks with authenticated expected host parameters."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A16",
+                    "name": "Existing host object and quantity.value or quantity.conversion fact",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT16",
+                    "description": "Validate the stored binding after V3 outer checks with authenticated expected host parameters. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F17",
+                "name": "What changed in a correction?",
+                "description": "Coverage: mixed.",
+                "questions": [
+                  {
+                    "id": "QV-Q17",
+                    "text": "What changed in a correction?",
+                    "kind": "mixed-guidance",
+                    "answer_data": [
+                      "Two retained fact records, predecessor ID, chronology and reason",
+                      "For the same master/writer/access, append a new native fact and validate the explicit correction pair; preserve old bytes. Changed writer/master/access requires a separate governed workflow."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A17",
+                    "name": "Two retained fact records, predecessor ID, chronology and reason",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT17",
+                    "description": "For the same master/writer/access, append a new native fact and validate the explicit correction pair; preserve old bytes. Changed writer/master/access requires a separate governed workflow. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F18",
+                "name": "Is replaying an import safe?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q18",
+                    "text": "Is replaying an import safe?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Existing native ID and exact stored bytes under host authority",
+                      "Identical native append is refused. A future adapter must inspect conflicts before a governed skip."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A18",
+                    "name": "Existing native ID and exact stored bytes under host authority",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT18",
+                    "description": "Identical native append is refused. A future adapter must inspect conflicts before a governed skip. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "QV-B4-L2",
+            "name": "Adoption",
+            "description": "Explicit adoption contract and boundaries.",
+            "findings": [
+              {
+                "id": "QV-F19",
+                "name": "Who may inspect old source definitions now?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q19",
+                    "text": "Who may inspect old source definitions now?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Current access decision and historical-reference admission",
+                      "Check current inspection permission separately from incoming-write permission and source authenticity."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A19",
+                    "name": "Current access decision and historical-reference admission",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT19",
+                    "description": "Check current inspection permission separately from incoming-write permission and source authenticity. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              },
+              {
+                "id": "QV-F20",
+                "name": "Which broader enterprise functions remain missing?",
+                "description": "Coverage: host.",
+                "questions": [
+                  {
+                    "id": "QV-Q20",
+                    "text": "Which broader enterprise functions remain missing?",
+                    "kind": "host-guidance",
+                    "answer_data": [
+                      "Contour disposition, adoption limits and proposed next assignments",
+                      "Keep Price/FX, working calendars, uncertainty and localization open; do not claim EM-XCT-06 completion."
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "QV-A20",
+                    "name": "Contour disposition, adoption limits and proposed next assignments",
+                    "description": "Required evidence; external governance artifacts are supplied by the host, not automatically created."
+                  }
+                ],
+                "actions": [
+                  {
+                    "id": "QV-ACT20",
+                    "description": "Keep Price/FX, working calendars, uncertainty and localization open; do not claim EM-XCT-06 completion. Proposed action subject to authenticated host permission."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "composition": {
+    "runtimeImports": [],
+    "semanticReferences": [
+      {
+        "id": "WM-XCT-008",
+        "version": "0.3.0-research.1",
+        "url": "https://ver.cy/models/wm-xct-008-quantity-unit/spec.yaml",
+        "digest": "sha256:b315e808411d0a4f4009f057707454164ccbe5ac8bf99b5ad2864b9d1e334dde",
+        "relation": "narrow embedded semantic profile; no whole-parent inheritance or runtime import"
+      }
+    ],
+    "delivery": "Shared companion-contract package delivering an embedded value profile, not independent instance classes. Native installation toolchain is separately pinned."
+  },
+  "statistics": {
+    "bundles": 4,
+    "layers": 8,
+    "findings": 20,
+    "questions": 20,
+    "artifacts": 20,
+    "actions": 20
+  },
+  "wholeObjectFacets": {
+    "QuantityValue": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Embedded host field/fact, no independent quantity ID."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Unit, role, context, source and explicit magnitude state."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "Host assertion or measurement evidence; numerical syntax does not prove physical observation."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Validate, convert or compare within explicit scope; no domain action permission."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Source and context Pin admission under current host purpose."
+      }
+    },
+    "UnitDefinition": {
+      "identity-class": {
+        "status": "required",
+        "meaning": "External definition revision plus complete local snapshot digest; no registry master."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Code, kind, dimension, anchor, roles and exact normal-form coefficients."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "External steward evidence, independently resolved by host before local admission."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Supply affine transform only; never write an external registry from this snapshot."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Reference and authority Pins retain different governance roles; revision drift requires fresh admission."
+      }
+    },
+    "Pin": {
+      "identity-class": {
+        "status": "required",
+        "meaning": "Opaque external tuple; not a new locally governed source object."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Case-sensitive URI, revision and upstream evidence SHA256."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "Host resolves real bytes and provenance; shape and digest do not authenticate."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "not-applicable",
+        "meaning": "No fetch or resolution behavior in this package."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Local admission hashes the tuple; upstream byte convention is independently specified."
+      }
+    },
+    "KnownMagnitude": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Part of its QuantityValue; no numeric-object lifecycle."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Preserved decimal lexical string, matching scale, precisionMeaning."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "Reported digits and exact-by-definition are host assertions; no measured uncertainty."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Exact parsing; signed zero preserved in source and numerically normalized only in result."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Evidence inherited from enclosing source; sign and physical plausibility remain domain checks."
+      }
+    },
+    "MissingMagnitude": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "State of the host assertion, not an identity for absence."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Unknown, withheld or not-applicable and reason."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "Host states why evidence is unavailable; reason adequacy is reviewed by owner."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Storage and validation only; arithmetic refuses non-numeric values."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Disclosure decisions remain external; do not disclose withheld content through diagnostics."
+      }
+    },
+    "Factor": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Embedded numeric coefficient in one admitted definition snapshot."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Reduced rational with positive denominator, at most 36 characters per component, including sign."
+      },
+      "recognition-observation": {
+        "status": "not-applicable",
+        "meaning": "A factor has no observation; its definitional authority belongs to UnitDefinition."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Exact affine scaling/offset; positive multiplier required."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "A finite decimal cannot independently prove exactness."
+      }
+    },
+    "Result": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Inline computation output attached to source host fact; no receipt identity."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Reduced rational target coordinate, at most 256 characters per component, including sign."
+      },
+      "recognition-observation": {
+        "status": "required",
+        "meaning": "Reproduced from retained input, not a new independent measurement."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Compare/replay only; no automatic rounded presentation or domain acceptance."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Target definition, role and source context are retained in the containing conversion."
+      }
+    },
+    "QuantityDocument": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Versioned serialization wrapper of an embedded QuantityValue."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Fixed format/version plus exactly one quantity."
+      },
+      "recognition-observation": {
+        "status": "not-applicable",
+        "meaning": "Schema then semantic checks establish local admissibility only."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Lossless same-version roundtrip; no storage import execution."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "Host native fact supplies identity, time, capture provenance and access."
+      }
+    },
+    "ConversionDocument": {
+      "identity-class": {
+        "status": "not-applicable",
+        "meaning": "Versioned inline derivation wrapper; no independent conversion object."
+      },
+      "direct-properties": {
+        "status": "required",
+        "meaning": "Original quantity, target definition, exact result, format/version."
+      },
+      "recognition-observation": {
+        "status": "not-applicable",
+        "meaning": "Exact replay detects an inconsistent retained result."
+      },
+      "capabilities-behaviour-actions": {
+        "status": "required",
+        "meaning": "Construct and validate; no financial transaction or instrument actuation."
+      },
+      "context-evidence": {
+        "status": "required",
+        "meaning": "A derived coordinate is not a new source assertion without explicit host ownership."
+      }
+    }
+  },
+  "factMastership": [
+    {
+      "fact": "QuantityValue.magnitude / role / context",
+      "semanticOwner": "Host assertion owner",
+      "authoritativeSystem": "Host-selected source; a service contract or measurement system are candidates, not assumptions",
+      "writer": "Authenticated capture writer with explicit per-host write permission",
+      "readerPurpose": "Currently authorized planning or numeric comparison",
+      "validTime": "Outer fact validFrom/validTo; measurement time stays with source host",
+      "provenance": "Nested source Pin plus distinct outer capture provenance",
+      "conflict": "Host preserves concurrent assertions and chooses according to separately governed policy",
+      "retention": "Host retains source versions and immutable native facts; no retention executor"
+    },
+    {
+      "fact": "UnitDefinition and kind/anchor pins",
+      "semanticOwner": "External unit/kind steward or explicitly governed local definition owner",
+      "authoritativeSystem": "Pinned external vocabulary or local definition authority",
+      "writer": "Only authority may revise its definition; local capturer may retain a cited snapshot",
+      "readerPurpose": "Authorized inspection/conversion with current definition admission",
+      "validTime": "Definition revision applicability established outside numeric validator",
+      "provenance": "reference and authority Pins; full local digest binds snapshot",
+      "conflict": "Different full digests stay distinct; never overwrite by code alone",
+      "retention": "Retain every definition needed for accepted historical facts"
+    },
+    {
+      "fact": "ConversionDocument.result",
+      "semanticOwner": "Host owner of derived numeric assertion",
+      "authoritativeSystem": "Retained source and target plus this exact pinned algorithm",
+      "writer": "Authorized host computes and records; result grants no operation permission",
+      "readerPurpose": "Reproduction and numeric display planning",
+      "validTime": "Host assertion validity; no inferred observation instant",
+      "provenance": "Original input retained inline; capture master is separate",
+      "conflict": "Replay discrepancy rejected; parallel valid derivations handled by host",
+      "retention": "Preserve original records and verifier version"
+    },
+    {
+      "fact": "Native fact supersession / disclosure",
+      "semanticOwner": "Host lifecycle and access-policy owner",
+      "authoritativeSystem": "Current authenticated Dimension storage and policy",
+      "writer": "Host-authorized writer using immutable append",
+      "readerPurpose": "Current permission required even for historical facts",
+      "validTime": "Bitemporal record fields; correction chronology checked only for supplied pair",
+      "provenance": "Capture master, writer/rank, reason and predecessor ID",
+      "conflict": "No latest-head selector or global closure in this package",
+      "retention": "External deletion, tombstones and legal policies; do not erase required evidence silently"
+    }
+  ],
+  "catalogue": {
+    "alternateNames": [
+      "Quantity and unit",
+      "Scalar quantities",
+      "Unit conversion",
+      "Temperature point and difference"
+    ],
+    "domain": [
+      "Enterprise",
+      "Quantity and measurement"
+    ],
+    "tags": [
+      "quantity",
+      "unit",
+      "conversion",
+      "dimension",
+      "precision",
+      "embedded-values"
+    ],
+    "adoption": "Attach the value profile to an existing company object. Begin with an admitted definition, source and context; preserve original values and require explicit nested validation. No independent Quantity object is created.",
+    "limits": "Exact scalar/affine subset only. External-definition authority, physical truth, uncertainty, current permissions and source resolution remain with the host. No UCUM parser, price/FX, calendar or localization engine."
+  }
+}

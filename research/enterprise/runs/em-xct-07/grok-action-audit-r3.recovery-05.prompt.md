@@ -1,0 +1,94 @@
+SAME FROZEN R3 SOURCE RECOVERY 5/9. Browser paragraph rendering adds blank separator lines; all nonempty lines and indentation are verified unchanged. These are static display fragments, not raw-byte hash verification.
+Do not audit yet. Reply only ACK 5/9 if all code in this fragment is visible. No tools.
+BEGIN action_bundle.py fragment 5/9
+          return {'status':'recorded','event':self._public_event(e)}
+        except (ValueError,sqlite3.Error,KeyError,TypeError,IndexError,AttributeError,OverflowError,RecursionError): return dict(WITHHELD)
+
+    def retire_key(self,key,actor,now):
+        """TRUSTED retention administration: retain immutable intent/receipt forever here."""
+        with self._tx(now) as (c,m):
+            r=self._get(c,self._slot(actor,key)); require(r and r['state']!='pending','retire-terminal-only')
+            if not r['keyRetired']:
+                self._event(c,m,r,'key-retirement',{'retained':True},now)
+                r['keyRetired']=True; self._save(c,r)
+
+    def snapshot(self,now):
+        """Privileged evidence export. NEVER expose this method as a caller endpoint."""
+        with self._tx(now) as (c,m):
+            m['clock']=now
+            return {'format':'enterprise-action-snapshot/0.1.0','meta':m,
+                'definitions':[dict(x) for x in c.execute('SELECT * FROM definitions ORDER BY ordinal')],
+                'policies':[dict(x) for x in c.execute('SELECT * FROM policies ORDER BY revision')],
+                'resources':[dict(x) for x in c.execute('SELECT * FROM resources ORDER BY id,revision')],
+                'requests':[json.loads(x[0]) for x in c.execute('SELECT body FROM requests ORDER BY id')],
+                'events':[json.loads(x[0]) for x in c.execute('SELECT body FROM events ORDER BY sequence')]}
+
+# SOURCE: history.py
+"""Internal consistency of complete fixture snapshots; not authenticated admission.
+
+A coherent old or fabricated snapshot can pass. Trusted latest export/continuity
+roots, authentication, authority verification and disclosure remain host duties.
+"""
+import re
+from bisect import bisect_right
+
+def fields(value,names):
+    require(type(value) is dict and set(value)==set(names.split()),'snapshot-fields')
+
+def integer(value,minimum=0): require(type(value) is int and minimum<=value<=9007199254740991,'snapshot-integer')
+
+def validate_snapshot(s):
+    try: return _validate(s)
+    except (KeyError,TypeError,IndexError,ValueError,AttributeError,OverflowError,RecursionError) as e:
+        if isinstance(e,Refused): raise
+        raise Refused('snapshot-malformed') from None
+
+def _validate(s):
+    fields(s,'format meta definitions policies resources requests events')
+    for name in ('definitions','policies','resources','requests','events'):
+        require(type(s[name]) is list and len(s[name])<=MAX_ROWS,'snapshot-list-bounds')
+    require(s['format']=='enterprise-action-snapshot/0.1.0','snapshot-version')
+    m=s['meta']; fields(m,'id dimension issuer epoch clock policy_revision control_sequence')
+    require(m['id']==1 and type(m['id']) is int,'snapshot-meta')
+    Executor._time(m['clock']); integer(m['policy_revision']); integer(m['control_sequence'])
+    for k in ('dimension','issuer','epoch'):
+        require(type(m[k]) is str and re.fullmatch('[A-Za-z0-9][A-Za-z0-9._:-]{2,127}',m[k]) is not None,'snapshot-id')
+    definitions={}; ordinals=[]
+    for row in s['definitions']:
+        fields(row,'id version body digest available recorded_at control_sequence retired_sequence ordinal')
+        d=validate('ActionDefinition',parse(row['body'])); pin=definition_ref(d)
+        require(row['id']==d['definitionId'] and row['version']==d['version'] and row['digest']==pin['sha256'],'definition-digest')
+        integer(row['ordinal'],1); integer(row['control_sequence'],1); Executor._time(row['recorded_at'])
+        require(row['recorded_at']<=m['clock'] and row['control_sequence']<=m['control_sequence'],'definition-future')
+        retired=row['retired_sequence']
+        if retired is not None:
+            integer(retired,1); require(row['control_sequence']<retired<=m['control_sequence'],'retirement-sequence')
+        require(type(row['available']) is int and row['available']==int(retired is None),'definition-availability')
+        key=(d['definitionId'],d['version']); require(key not in definitions,'definition-duplicate')
+        definitions[key]=(d,row); ordinals.append(row['ordinal'])
+    require(ordinals==list(range(1,len(ordinals)+1)),'definition-order')
+    policies={}; previous_control=-1; previous_time=0
+    for row in s['policies']:
+        fields(row,'revision body recorded_at control_sequence')
+        integer(row['revision']); integer(row['control_sequence']); Executor._time(row['recorded_at'])
+        require(row['revision']==len(policies) and previous_control<row['control_sequence']<=m['control_sequence'],'policy-order')
+        require(previous_time<=row['recorded_at']<=m['clock'],'policy-time')
+        policies[row['revision']]=(validate('Policy',parse(row['body'])),row)
+        previous_control=row['control_sequence']; previous_time=row['recorded_at']
+    require(policies and m['policy_revision']==len(policies)-1 and policies[0][0]==[] and policies[0][1]['control_sequence']==0,'policy-root')
+    if len(policies)==MAX_ROWS: require(policies[MAX_ROWS-1][0]==[],'policy-revocation-reserve')
+    policy_controls=[row['control_sequence'] for _,row in policies.values()]
+    def current_policy(e):
+        rev=bisect_right(policy_controls,e['controlSequence'])-1; policy,row=policies[rev]
+        require(row['recorded_at']<=e['recordedAt'],'policy-future'); return rev,policy
+    def definition_at(intent,e):
+        pin=intent['definition']; d,row=definitions[(pin['definitionId'],pin['version'])]
+        require(definition_ref(d)==pin and row['control_sequence']<=e['controlSequence'] and row['recorded_at']<=e['recordedAt'],'definition-pin')
+        available=(row['retired_sequence'] is None or e['controlSequence']<row['retired_sequence']) and d['validFrom']<=e['recordedAt']<d['validUntil']
+        return d,available
+    requests={}; slots=set()
+    for r in s['requests']:
+        validate('ActionRequestSnapshot',r); i=r['intent']
+        require(r['requestId'] not in requests and r['keyHash'] not in slots,'request-identity')
+        require(i['dimensionId']==m['dimensi
+END fragment 5/9

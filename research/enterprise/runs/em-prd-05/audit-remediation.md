@@ -1,0 +1,3 @@
+# Audit remediation
+
+The single Claude frozen audit returned **ACCEPT WITH LIMITS** and upheld PROFILE plus `newRuntimeId=false`. Five limits were remediated deterministically without rerunning the audit: expiry/lapse/renewal were separated from held invalidation/revocation propagation; termination of a referenced right now makes grant scope indeterminate or reduced pending an authoritative effect rule; local brand/sign/invention surrogate keys are forbidden; WM-KNW-003 owns application and registration identity while WM-REC-001 owns evidence; and instrument-less sublicences are addressable contract-local UsageGrant children rather than standalone roots. Corresponding fixtures were added.

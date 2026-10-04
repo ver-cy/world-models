@@ -1,0 +1,7 @@
+# Provider comparison — EM-DAT-07
+
+Claude and Grok agree that Analytical Study is a profile of WM-ACT-036, while WM-ACT-034 provides reusable assessment mechanics but does not master inquiry identity. Both keep reusable Analysis Method outside the study as an identifier-unassigned candidate and separate method definition from one study's pinned application and execution. Both reuse WM-KNW-007 for findings and recommendations, preserve reports as presentation records, and require WM-KNW-010 plus WM-ACT-024 before a recommendation has decision effect.
+
+Grok sharpens the reconciled shape in four places. Claim mood must explicitly distinguish assertoric findings from deontic recommendations. Every finding pins study, method, sample and data versions. A causal finding cannot complete without measurand, comparator, design and competing-explanation analysis, and an undischarged sampling-frame defeater blocks causal closure. Changing any of those pins creates a successor finding instead of rewriting the issued claim.
+
+The reconciled disposition is PROFILE plus one identifier-unassigned Analysis Method allocation candidate. No runtime or model identifier is created. Publication remains held because Analysis Method has no registry allocation, relation contracts and conflict-link vocabulary are incomplete, WM-REC-002 is not canonically publishable, and all artifacts remain research candidates.

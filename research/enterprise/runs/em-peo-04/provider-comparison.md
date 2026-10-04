@@ -1,0 +1,5 @@
+# EM-PEO-04 provider comparison
+
+Claude and Grok converge on two identifier-unassigned roots, `Recruitment Requisition` and `Candidacy`; completion and narrowing of reserved `WM-ORG-008` to an asserted Opening; reuse of `WM-ACT-039`; a split Interview Assessment profile over `WM-ACT-025` and `WM-ACT-034`; and an Employment Offer profile over `WM-ECO-021`. Both prohibit allocating a new identifier, duplicating Person on rehire, treating derived vacancy as asserted Opening, collapsing score into decision, or inferring Employment from offer acceptance.
+
+Claude sharpened the standing-authorization identity, provisional Person linking, immutable stage design, employment-offer reuse constraints and data-class retention. Grok sharpened the internal-mobility counterexample, optional Opening scope for Candidacy, seat-cap arithmetic, Application and Posting as dependent artifacts, and the separation of matching and placement from Opening. The reconciled draft keeps source, relation, jurisdiction, privacy, fairness and base-publication gaps as explicit holds.

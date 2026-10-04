@@ -1,0 +1,1468 @@
+[
+  {
+    "id": "money-core-exact-decimal",
+    "name": "Exact decimal amount as sign, coefficient and scale",
+    "description": "The amount is an exact decimal value: a sign, a non-negative integer coefficient and a scale expressed as a non-positive power of ten. Binary floating point is rejected as the canonical representation because it cannot represent common decimal fractions exactly. Digit bounds on coefficient and scale are declared by the host or profile, and a value that cannot be represented exactly at the declared scale is rejected rather than rounded away.",
+    "source_refs": [
+      "SRC-004",
+      "SRC-005",
+      "SRC-006",
+      "SRC-008",
+      "SRC-010"
+    ],
+    "questions": [
+      {
+        "id": "money-core-q-decimal-triple",
+        "text": "What sign, integer coefficient and scale together represent the declared amount exactly?",
+        "kind": "measurement",
+        "answer_data": [
+          "Sign component",
+          "Non-negative integer coefficient",
+          "Scale as a non-positive power of ten"
+        ]
+      },
+      {
+        "id": "money-core-q-encoding-choice",
+        "text": "Which exact encodings are permitted for the amount, and why is binary floating point excluded from them?",
+        "kind": "constraint",
+        "answer_data": [
+          "Enumerated permitted encodings",
+          "Enumerated prohibited encodings",
+          "Reference to the exactness requirement that excludes binary floating point"
+        ]
+      },
+      {
+        "id": "money-core-q-digit-bounds",
+        "text": "What total-digit and fraction-digit bounds does the host or profile impose on this amount?",
+        "kind": "requirement",
+        "answer_data": [
+          "Total-digit bound in force",
+          "Fraction-digit bound in force",
+          "Identifier of the profile that set them"
+        ]
+      },
+      {
+        "id": "money-core-q-inexact-rejection",
+        "text": "How is a supplied value rejected when it cannot be held exactly at the declared scale?",
+        "kind": "validation",
+        "answer_data": [
+          "Rejection reason code",
+          "Offending input token retained for diagnosis",
+          "Declared scale that the input violated"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-core-de-amount-sign",
+        "name": "Amount sign",
+        "description": "The sign component of the exact decimal value, kept distinct from the coefficient so that a signed zero remains expressible.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-005"
+        ]
+      },
+      {
+        "id": "money-core-de-amount-coefficient",
+        "name": "Amount coefficient",
+        "description": "The non-negative integer coefficient of the exact decimal value, which together with the scale reconstructs the amount without loss.",
+        "value_kind": "number",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-004",
+          "SRC-005"
+        ]
+      },
+      {
+        "id": "money-core-de-amount-scale",
+        "name": "Declared amount scale",
+        "description": "The number of fraction digits carried by the declaration, declared explicitly rather than inferred from the currency code.",
+        "value_kind": "number",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-004",
+          "SRC-002"
+        ]
+      },
+      {
+        "id": "money-core-de-amount-encoding",
+        "name": "Amount encoding declaration",
+        "description": "Which exact encoding carries the amount in a given projection, for example a decimal lexical string or an explicit coefficient-and-scale pair. Binary floating point is not an admissible value.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-005",
+          "SRC-006"
+        ]
+      },
+      {
+        "id": "money-core-de-digit-bounds",
+        "name": "Declared digit bounds",
+        "description": "The total-digit and fraction-digit limits the host or profile imposes on the amount, recorded so that a validator can reject out-of-bound values deterministically.",
+        "value_kind": "object",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-004",
+          "SRC-008",
+          "SRC-010"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "The exact amount is a small set of scalar fields embedded directly in the host record; it has no independent existence, no separate retention life and no separate identity from the host object that declares it, so representing it as an artifact would fabricate an object that no source or projection recognizes."
+  },
+  {
+    "id": "money-core-lexical-canonical",
+    "name": "Canonical lexical form, trailing zeros and zero handling",
+    "description": "The canonical lexical form of the amount is fixed and distinct from any rendered display string. Because numerically equal decimal representations can differ visibly, the declaration must state whether trailing zeros are significant, and must state how zero and a signed zero are treated, so that round-tripping preserves sign, coefficient and scale.",
+    "source_refs": [
+      "SRC-004",
+      "SRC-005",
+      "SRC-007",
+      "SRC-008"
+    ],
+    "questions": [
+      {
+        "id": "money-core-q-canonical-form",
+        "text": "What is the canonical lexical form of this amount, and how does it differ from any string rendered for display?",
+        "kind": "definition",
+        "answer_data": [
+          "Canonical lexical string",
+          "Rendered display string where one exists",
+          "Locale that produced the display string"
+        ]
+      },
+      {
+        "id": "money-core-q-trailing-zeros",
+        "text": "Are trailing zeros significant here, so that a value written with two fraction digits differs from the same value written with one?",
+        "kind": "constraint",
+        "answer_data": [
+          "Declared scale",
+          "Significance rule for trailing zeros",
+          "Policy for choosing among numerically equal representations"
+        ]
+      },
+      {
+        "id": "money-core-q-zero-handling",
+        "text": "How are zero and a signed negative zero distinguished, normalized or rejected in this declaration?",
+        "kind": "state",
+        "answer_data": [
+          "Representation used for zero",
+          "Policy on accepting or normalizing a negative zero",
+          "Normalized output produced"
+        ]
+      },
+      {
+        "id": "money-core-q-round-trip",
+        "text": "Which round-trip check proves that parsing and re-serializing preserves sign, coefficient and scale?",
+        "kind": "quality",
+        "answer_data": [
+          "Input lexical token",
+          "Re-serialized output token",
+          "Component-wise equality outcome"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-core-de-canonical-amount",
+        "name": "Canonical amount string",
+        "description": "The amount in the model's canonical lexical form, with a single agreed treatment of sign, decimal point and zero padding, used for storage, hashing and equality.",
+        "value_kind": "text",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-004",
+          "SRC-005"
+        ]
+      },
+      {
+        "id": "money-core-de-display-string",
+        "name": "Rendered display string",
+        "description": "An optional human-facing rendering of the amount. Non-authoritative, locale-dependent, and never used for comparison or storage.",
+        "value_kind": "text",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-007"
+        ]
+      },
+      {
+        "id": "money-core-de-trailing-zero-significance",
+        "name": "Trailing-zero significance flag",
+        "description": "States whether the declared scale is meaningful in itself, so that numerically equal representations with different scales are not treated as identical.",
+        "value_kind": "boolean",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-005",
+          "SRC-008"
+        ]
+      },
+      {
+        "id": "money-core-de-negative-zero-policy",
+        "name": "Negative-zero policy",
+        "description": "The declared policy for a zero coefficient carrying a negative sign: accepted as given, normalized to unsigned zero, or rejected.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-005"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "Canonical form, significance and zero policy are field-level rules and small inline values on the declaration itself. They are consumed at parse and serialization time and have no retained, separately addressable representation, so an artifact would misrepresent a formatting contract as a stored object."
+  },
+  {
+    "id": "money-core-pair-integrity",
+    "name": "Amount and currency inseparability on the host object",
+    "description": "Amount, currency reference and declared scale form one indivisible declaration: published monetary datatypes bind them into a single type, and a value interchanged without a known currency code is not interpretable. The host object owns the business meaning, including what a negative amount signifies, and projections that split the parts into separate fields must still assert the binding.",
+    "source_refs": [
+      "SRC-007",
+      "SRC-008",
+      "SRC-010",
+      "SRC-011"
+    ],
+    "questions": [
+      {
+        "id": "money-core-q-declaration-unit",
+        "text": "Which fields make up the indivisible declaration, and may any of them be stored or transmitted without the others?",
+        "kind": "composition",
+        "answer_data": [
+          "Declaration identifier",
+          "Enumerated member fields",
+          "Atomicity rule and the prohibited partial forms"
+        ]
+      },
+      {
+        "id": "money-core-q-host-binding",
+        "text": "Which host object and field declares this monetary value, and what meaning does the host assign to it?",
+        "kind": "ownership",
+        "answer_data": [
+          "Host model identifier",
+          "Host field path where the mixin is embedded",
+          "Host-stated meaning of the field"
+        ]
+      },
+      {
+        "id": "money-core-q-negative-meaning",
+        "text": "What does a negative amount signify in this host context, and which signs are permitted at all?",
+        "kind": "definition",
+        "answer_data": [
+          "Host-declared sign semantics",
+          "Permitted sign set for the field",
+          "Statement that the sign meaning is not derived from the currency"
+        ]
+      },
+      {
+        "id": "money-core-q-projection-integrity",
+        "text": "How is the binding preserved when a target format splits amount and currency into separate fields?",
+        "kind": "interoperability",
+        "answer_data": [
+          "Target format identifier",
+          "Field mapping for each member",
+          "Assertion that reassembly reproduces the declaration"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-core-de-declaration-id",
+        "name": "Monetary declaration identifier",
+        "description": "Identifier of the monetary declaration instance, assigned by the adopting Dimension only where the host cannot address the declaration through its own record identity and field path.",
+        "value_kind": "identifier",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-008",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-host-ref",
+        "name": "Host object and field reference",
+        "description": "Reference to the host record and the field path at which this mixin is embedded, establishing who owns the business meaning of the value.",
+        "value_kind": "reference",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-008",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-sign-semantics",
+        "name": "Host-declared sign semantics",
+        "description": "What the host says a negative amount means in this field, for example a credit, refund or reduction. Declared, never inferred from the currency or from the model.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-008",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-allowed-sign-set",
+        "name": "Permitted sign set",
+        "description": "The signs the host field admits, used to reject a negative value where the host permits only non-negative amounts.",
+        "value_kind": "code",
+        "cardinality": "0..n",
+        "required": false,
+        "source_refs": [
+          "SRC-010"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "This finding describes an embedding contract between a mixin and its host record: the declaration lives inside the host's own persisted object and inherits the host's identity and lifecycle. There is nothing to retain independently, and creating an artifact would assert a standalone monetary record that this mixin explicitly is not."
+  },
+  {
+    "id": "money-core-value-states",
+    "name": "Declared determinacy: exact point, interval, approximate or explicitly absent",
+    "description": "A monetary field must be able to say what kind of assertion it is making. Published monetary vocabularies support a value or a bounded range, and published absent-value vocabularies distinguish unknown, masked, not-applicable, unsupported and error. The declaration therefore carries an explicit determinacy state, so an absent or unknown value is never silently expressed as zero and an interval is never collapsed to a point.",
+    "source_refs": [
+      "SRC-008",
+      "SRC-009",
+      "SRC-011"
+    ],
+    "questions": [
+      {
+        "id": "money-core-q-determinacy-state",
+        "text": "Which determinacy state does this declaration assert: exact point value, interval, approximate value, unknown, missing or not applicable?",
+        "kind": "state",
+        "answer_data": [
+          "State value from the declared vocabulary",
+          "Identifier of the vocabulary used",
+          "Evidence or source of the state assertion"
+        ]
+      },
+      {
+        "id": "money-core-q-zero-prohibition",
+        "text": "Which rule forbids expressing an absent, unknown or not-applicable monetary value as zero?",
+        "kind": "constraint",
+        "answer_data": [
+          "Prohibition rule statement",
+          "Absent-reason code carried instead of a numeric value",
+          "Validation outcome when a zero is supplied for an absent value"
+        ]
+      },
+      {
+        "id": "money-core-q-interval-endpoints",
+        "text": "When an interval is declared, which endpoints are present and is each endpoint inclusive or exclusive?",
+        "kind": "composition",
+        "answer_data": [
+          "Lower endpoint declaration or its absence",
+          "Upper endpoint declaration or its absence",
+          "Inclusivity flag for each present endpoint"
+        ]
+      },
+      {
+        "id": "money-core-q-interval-consistency",
+        "text": "How is an interval checked for a shared currency reference and a consistent scale across both endpoints?",
+        "kind": "validation",
+        "answer_data": [
+          "Currency reference of each endpoint",
+          "Declared scale of each endpoint",
+          "Consistency outcome and failure reason"
+        ]
+      },
+      {
+        "id": "money-core-q-state-unsupported",
+        "text": "What must a consumer do when it cannot honour a declared approximate or absent state?",
+        "kind": "decision",
+        "answer_data": [
+          "Consumer capability declaration",
+          "Rejection or degradation outcome chosen",
+          "Escalation path recorded for the unsupported state"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-core-de-value-state",
+        "name": "Value determinacy state",
+        "description": "The declared kind of monetary assertion: exact point value, interval, approximate value, or explicitly absent. Required so that no state is inferred from a numeric default.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-008",
+          "SRC-009",
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-absent-reason",
+        "name": "Absent-value reason",
+        "description": "When no amount is asserted, the reason for absence drawn from a declared vocabulary distinguishing unknown, masked, not applicable, unsupported and error.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "id": "money-core-de-interval-lower",
+        "name": "Interval lower endpoint",
+        "description": "The lower endpoint of a monetary interval, itself a complete monetary declaration carrying its own currency reference and scale.",
+        "value_kind": "object",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-interval-upper",
+        "name": "Interval upper endpoint",
+        "description": "The upper endpoint of a monetary interval, itself a complete monetary declaration carrying its own currency reference and scale.",
+        "value_kind": "object",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-011"
+        ]
+      },
+      {
+        "id": "money-core-de-endpoint-inclusivity",
+        "name": "Endpoint inclusivity",
+        "description": "Whether each present interval endpoint is inclusive or exclusive, declared rather than assumed.",
+        "value_kind": "code",
+        "cardinality": "0..n",
+        "required": false,
+        "source_refs": [
+          "SRC-004",
+          "SRC-011"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "Determinacy states, absent reasons and interval endpoints are inline field values plus references into a declared code vocabulary that another model or terminology authority publishes. Materializing them as an artifact would either duplicate that external vocabulary or invent a record with no counterpart in any consulted specification."
+  },
+  {
+    "id": "money-policy-quantization-rule-specification",
+    "name": "Rounding mode, increment, direction and tie handling",
+    "description": "A quantization rule is interpretable only when mode, target exponent or increment, direction and tie handling are all stated. Accounting quantization to a currency minor unit, cash quantization to a non-decimal increment such as five cents, and custom contractual quantization are distinct named rules with different authorities and channel scopes — not variants of one default.",
+    "source_refs": [
+      "SRC-005",
+      "SRC-013",
+      "SRC-014",
+      "SRC-015",
+      "SRC-016"
+    ],
+    "questions": [
+      {
+        "id": "money-policy-rounding-mode-selection",
+        "text": "Which named rounding mode applies to this value, and what authority establishes it?",
+        "kind": "authority",
+        "answer_data": [
+          "rounding mode identifier such as half-even, half-up, floor, ceiling, down, up or 05up",
+          "authority or legal instrument establishing the mode",
+          "jurisdiction or scheme scope of that authority",
+          "effective period of the rule"
+        ]
+      },
+      {
+        "id": "money-policy-quantization-target-kind",
+        "text": "Is the quantization target a power-of-ten scale or a non-decimal increment, and what exactly is that target?",
+        "kind": "classification",
+        "answer_data": [
+          "quantization kind: scale-based or increment-based",
+          "target exponent for scale-based quantization",
+          "increment value with its currency for increment-based quantization",
+          "source of the target: currency minor unit, cash regime or contract"
+        ]
+      },
+      {
+        "id": "money-policy-tie-handling",
+        "text": "How are exact half-way values resolved, and does the resolution differ by sign?",
+        "kind": "constraint",
+        "answer_data": [
+          "tie rule such as half-up, half-even, half-down or away-from-zero",
+          "sign-symmetry statement",
+          "worked example for one positive and one negative tie",
+          "citation of the establishing instrument"
+        ]
+      },
+      {
+        "id": "money-policy-rule-applicability",
+        "text": "Which payment or presentation channel does this quantization rule apply to, and which channels does it explicitly exclude?",
+        "kind": "requirement",
+        "answer_data": [
+          "applicable channel: cash, electronic, accounting entry or display",
+          "excluded channels",
+          "scope: whole total only, or per line or component",
+          "voluntary or mandatory status of the rule"
+        ]
+      },
+      {
+        "id": "money-policy-rule-versioning",
+        "text": "How is a change to the quantization rule versioned so that historic amounts remain reproducible?",
+        "kind": "provenance",
+        "answer_data": [
+          "rule version identifier",
+          "effective-from and effective-to timestamps",
+          "reference to the superseded rule version",
+          "restatement policy for values produced under the earlier version"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-policy-rounding-mode",
+        "name": "Rounding mode",
+        "description": "Named rounding mode applied, drawn from the mandatory and optional decimal rounding modes rather than from a library default.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-005",
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "money-policy-quantization-increment",
+        "name": "Quantization increment",
+        "description": "Non-decimal increment to which the amount is quantized, expressed as an amount with a currency, for example a five-cent cash step.",
+        "value_kind": "quantity",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-015",
+          "SRC-016"
+        ]
+      },
+      {
+        "id": "money-policy-target-exponent",
+        "name": "Target exponent",
+        "description": "Exponent the quantized result must carry when quantization is scale-based.",
+        "value_kind": "number",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "money-policy-tie-rule",
+        "name": "Tie resolution rule",
+        "description": "How an exact half-way value is resolved, recorded explicitly because statutory and accounting defaults differ.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-014"
+        ]
+      },
+      {
+        "id": "money-policy-rule-channel-scope",
+        "name": "Rule channel scope",
+        "description": "The channels and application points to which the rule applies and those it excludes.",
+        "value_kind": "collection",
+        "cardinality": "0..n",
+        "required": false,
+        "source_refs": [
+          "SRC-015",
+          "SRC-016"
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "money-policy-quantization-policy-record",
+        "name": "Quantization policy record",
+        "description": "A versioned, effective-dated record of one named quantization rule: mode, target exponent or increment, tie handling, channel scope, applicable currencies, and the instrument or authority that establishes it.",
+        "media_or_form": [
+          "versioned policy record",
+          "structured rule definition",
+          "human-readable rule statement"
+        ],
+        "serial": true,
+        "identity_strategy": "Identified by the issuing authority's instrument reference — a regulation, central-bank notice or scheme rule identifier — where one exists; otherwise by a governed IRI in the adopting Dimension's policy namespace; a UUID assigned by the Dimension only when neither exists. Version tokens and effective periods are attributes, never encoded into the identifier.",
+        "source_refs": [
+          "SRC-014",
+          "SRC-015",
+          "SRC-016"
+        ]
+      }
+    ],
+    "inline_only_rationale": null
+  },
+  {
+    "id": "money-policy-rounding-stage-and-precision-tiers",
+    "name": "Calculation, settlement and display precision; intermediate versus final rounding",
+    "description": "Distinct precision tiers apply at different stages. Intermediate calculation frequently requires more digits than the reporting minor unit, settlement quantizes to the payable increment, and presentation may differ again. Whether rounding is applied per component or once at the end changes the result, so the stage must be declared and results derived from already-rounded inputs must not be re-rounded silently.",
+    "source_refs": [
+      "SRC-006",
+      "SRC-014",
+      "SRC-017",
+      "SRC-018"
+    ],
+    "questions": [
+      {
+        "id": "money-policy-precision-tier-set",
+        "text": "Which precision tiers are declared for this value, and what scale does each tier carry?",
+        "kind": "composition",
+        "answer_data": [
+          "tier list: calculation, settlement, presentation, reporting",
+          "scale or increment per tier",
+          "ordering relationship between tiers",
+          "the tier to which the recorded amount belongs"
+        ]
+      },
+      {
+        "id": "money-policy-rounding-stage-point",
+        "text": "At which points in the calculation was rounding applied, and was any intermediate result rounded?",
+        "kind": "process",
+        "answer_data": [
+          "ordered calculation steps",
+          "rounding-applied flag per step",
+          "single-final-rounding assertion where applicable",
+          "handling rule for components that were already rounded"
+        ]
+      },
+      {
+        "id": "money-policy-conversion-precision",
+        "text": "When a value is derived by conversion, what precision governs the conversion factor and the intermediate result?",
+        "kind": "requirement",
+        "answer_data": [
+          "significant figures carried by the conversion factor",
+          "whether inverse or derived factors are permitted",
+          "minimum decimals retained in any intermediate amount",
+          "the single final quantization step applied to the result"
+        ]
+      },
+      {
+        "id": "money-policy-tier-mismatch-exception",
+        "text": "What is reported when a consumer requires a precision tier the producer did not declare?",
+        "kind": "exception",
+        "answer_data": [
+          "requested tier",
+          "tiers actually available",
+          "refusal or derivation decision",
+          "derivation rule reference where a tier is derived rather than refused"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-policy-precision-tier",
+        "name": "Precision tier",
+        "description": "The declared tier or tiers this amount belongs to, such as calculation, settlement, presentation or reporting.",
+        "value_kind": "code",
+        "cardinality": "1..n",
+        "required": true,
+        "source_refs": [
+          "SRC-018"
+        ]
+      },
+      {
+        "id": "money-policy-tier-scale",
+        "name": "Tier scale",
+        "description": "Scale or increment associated with each declared tier, allowing calculation precision to exceed reporting precision explicitly.",
+        "value_kind": "number",
+        "cardinality": "0..n",
+        "required": false,
+        "source_refs": [
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "money-policy-rounding-stage",
+        "name": "Rounding stage",
+        "description": "The point at which rounding was applied: per component, at a named intermediate step, or once at the final result.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-014",
+          "SRC-018"
+        ]
+      },
+      {
+        "id": "money-policy-intermediate-min-decimals",
+        "name": "Intermediate minimum decimals",
+        "description": "Minimum number of decimals that must be retained in an intermediate amount before the final quantization step.",
+        "value_kind": "number",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-014"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "Precision tiers and rounding stages are parameters of the specific calculation that produced an amount; they are carried inline with the value and with the referenced quantization policy record. Emitting a separate artefact for every calculation would duplicate the host's process record without creating any independently governed object, and would imply this model owns the calculation itself."
+  },
+  {
+    "id": "money-policy-comparison-compatibility-and-tolerance",
+    "name": "Compatibility gate and host-supplied tolerance for comparison and aggregation",
+    "description": "Equality, ordering and aggregation are defined only for values in a compatible context: identical currency binding, compatible valuation basis, and a stated rounding context. Equality must also state whether it compares numeric value alone or value and quantum together. Tolerance and materiality thresholds are supplied by the host or reporting framework; the mixin records which threshold was applied and refuses incompatible operations rather than converting implicitly.",
+    "source_refs": [
+      "SRC-013",
+      "SRC-014",
+      "SRC-010",
+      "SRC-018",
+      "SRC-019"
+    ],
+    "questions": [
+      {
+        "id": "money-policy-compatibility-predicate",
+        "text": "Which attributes must match before two monetary values may be compared or added?",
+        "kind": "constraint",
+        "answer_data": [
+          "currency code equality requirement",
+          "valuation basis compatibility rule",
+          "rounding context compatibility rule",
+          "attributes deliberately ignored by the predicate"
+        ]
+      },
+      {
+        "id": "money-policy-equality-semantics-choice",
+        "text": "Does equality compare numeric value only, or numeric value together with scale and exponent?",
+        "kind": "definition",
+        "answer_data": [
+          "numeric-equality result",
+          "same-quantum result",
+          "selected equality semantics identifier",
+          "documented consequence for sorting, deduplication and set membership"
+        ]
+      },
+      {
+        "id": "money-policy-tolerance-source",
+        "text": "What tolerance or materiality threshold applies to this comparison or reconciliation, and who set it?",
+        "kind": "ownership",
+        "answer_data": [
+          "tolerance as an absolute amount with currency or as a proportion",
+          "threshold owner: host entity, reporting framework or scheme",
+          "instrument or policy reference for the threshold",
+          "scope over which the threshold applies"
+        ]
+      },
+      {
+        "id": "money-policy-incompatible-response",
+        "text": "What is returned when values are incompatible, and what must never happen implicitly?",
+        "kind": "exception",
+        "answer_data": [
+          "explicit refusal code",
+          "named incompatible attributes",
+          "statement prohibiting implicit conversion and implicit re-quantization",
+          "the declared conversion the caller must perform and record first"
+        ]
+      },
+      {
+        "id": "money-policy-aggregation-context",
+        "text": "Under which single rounding and valuation context is an aggregate reported, and how is that context recorded with the result?",
+        "kind": "decision",
+        "answer_data": [
+          "rounding context selected for the aggregate",
+          "valuation context identifier",
+          "outcome of the member-value context check",
+          "context stamped onto the aggregate result"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-policy-comparison-context-key",
+        "name": "Comparison context key",
+        "description": "Composite key of currency binding, valuation context and rounding context under which comparison, ordering or aggregation is permitted.",
+        "value_kind": "identifier",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-010"
+        ]
+      },
+      {
+        "id": "money-policy-equality-semantics",
+        "name": "Equality semantics selection",
+        "description": "Whether equality is numeric-value equality or value-and-quantum equality, recorded because numerically equal values may carry different exponents.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-013"
+        ]
+      },
+      {
+        "id": "money-policy-tolerance-threshold",
+        "name": "Tolerance threshold",
+        "description": "Host-supplied absolute or proportional tolerance applied to a comparison or reconciliation check.",
+        "value_kind": "quantity",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-018",
+          "SRC-019"
+        ]
+      },
+      {
+        "id": "money-policy-tolerance-owner",
+        "name": "Tolerance owner reference",
+        "description": "The party, framework or instrument that set the tolerance or materiality threshold.",
+        "value_kind": "reference",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-019"
+        ]
+      },
+      {
+        "id": "money-policy-incompatibility-code",
+        "name": "Incompatibility code",
+        "description": "Typed reason returned when the compatibility predicate fails, naming which attribute prevented the operation.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-014"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "This finding states preconditions, equality semantics and refusal reasons that travel with the value and its policy reference; the comparison itself is executed by the host runtime. Producing an artefact would imply this model owns evaluation results and their retention, which belong to the adopting Dimension's processing and audit layers."
+  },
+  {
+    "id": "money-val-finding-rate-source-and-type",
+    "name": "Rate type, publishing source and applicable market session",
+    "description": "Identifies the kind of rate asserted (spot, closing, period average, fixing, estimated) from a pinned rate-type classifier, the named publisher or administrator with its published methodology identifier, the resolvable series or dataset key in the owning publication model, and the market session the rate applies to.",
+    "source_refs": [
+      "SRC-024",
+      "SRC-023",
+      "SRC-028",
+      "SRC-029",
+      "SRC-030"
+    ],
+    "questions": [
+      {
+        "id": "money-val-q-rate-source-provenance",
+        "text": "Which named publisher or administrator produced this rate, and under which published methodology identifier?",
+        "kind": "provenance",
+        "answer_data": [
+          "Publisher or administrator identifier",
+          "Methodology identifier and version",
+          "Publisher's stated purpose or usage restriction for the rate"
+        ]
+      },
+      {
+        "id": "money-val-q-rate-type-classification",
+        "text": "What rate type is asserted, drawn from which pinned rate-type code list and version?",
+        "kind": "classification",
+        "answer_data": [
+          "Rate type code, for example spot or period average",
+          "Rate-type scheme identifier and pinned version",
+          "Series variation or suffix distinguishing averages from end-of-period values"
+        ]
+      },
+      {
+        "id": "money-val-q-rate-source-authority",
+        "text": "Is this source designated as authoritative for this subject class, and by whose decision was it admitted?",
+        "kind": "authority",
+        "answer_data": [
+          "Admissibility decision reference and approver",
+          "Subject classes the designation covers",
+          "Fallback ordering when the primary source is unavailable"
+        ]
+      },
+      {
+        "id": "money-val-q-rate-series-resolution",
+        "text": "Which series or observation key in the owning publication model does this rate reference resolve to?",
+        "kind": "relationship",
+        "answer_data": [
+          "Dataflow or dataset identifier",
+          "Ordered series key dimensions such as frequency, currency, currency denominator, rate type and suffix",
+          "Observation key within the series"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-val-de-rate-source-id",
+        "name": "Rate source identifier",
+        "description": "Identifier of the publisher, administrator or contributor that determined and published the rate.",
+        "value_kind": "identifier",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-028",
+          "SRC-023"
+        ]
+      },
+      {
+        "id": "money-val-de-rate-methodology-ref",
+        "name": "Rate methodology reference",
+        "description": "Reference to the publisher's documented methodology or benchmark statement, held as a citation rather than a copy.",
+        "value_kind": "reference",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-028",
+          "SRC-030"
+        ]
+      },
+      {
+        "id": "money-val-de-rate-type-code",
+        "name": "Rate type code",
+        "description": "Coded kind of rate, for example spot, closing, period average or fixing, drawn from a pinned classifier.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-024",
+          "SRC-020"
+        ]
+      },
+      {
+        "id": "money-val-de-rate-series-key-ref",
+        "name": "Rate series and observation key reference",
+        "description": "Resolvable key into the owning publication model identifying the exact series and observation used.",
+        "value_kind": "reference",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-024"
+        ]
+      },
+      {
+        "id": "money-val-de-market-session-code",
+        "name": "Applicable market session",
+        "description": "Market, venue or fixing session the rate applies to, including the session time and its offset where the publisher defines one.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-023",
+          "SRC-029"
+        ]
+      },
+      {
+        "id": "money-val-de-source-usage-restriction",
+        "name": "Source usage restriction note",
+        "description": "The publisher's own stated limitation on use, for example that reference rates are published for information and transaction use is discouraged.",
+        "value_kind": "text",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-023"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "Source, methodology and series key are references into a publication model that owns the rate series and its determination. Holding them as attributes keeps the boundary intact; creating a local artifact would begin to mirror the publisher's record and would drift from the authoritative series."
+  },
+  {
+    "id": "money-val-finding-conversion-equation-rounding",
+    "name": "Conversion equation, rounding order and precision outcome",
+    "description": "Records the exact equation applied — including whether the rate was multiplied or divided and in which order chaining and rounding occurred — the target minor unit and rounding mode, and the tolerance within which a recomputation must reproduce the stored converted amount.",
+    "source_refs": [
+      "SRC-025",
+      "SRC-026",
+      "SRC-001",
+      "SRC-020"
+    ],
+    "questions": [
+      {
+        "id": "money-val-q-conversion-equation",
+        "text": "Which exact equation, including multiplication or division direction, produced the converted amount?",
+        "kind": "process",
+        "answer_data": [
+          "Equation expression in an unambiguous notation",
+          "Operand bindings to the original amount and each rate reference",
+          "Statement of the direction convention the equation assumes"
+        ]
+      },
+      {
+        "id": "money-val-q-rounding-order",
+        "text": "In which order were conversion, chaining and rounding applied?",
+        "kind": "constraint",
+        "answer_data": [
+          "Ordered list of computation and rounding steps",
+          "Points at which precision was reduced",
+          "Whether component amounts were rounded before or after aggregation"
+        ]
+      },
+      {
+        "id": "money-val-q-rounding-precision-outcome",
+        "text": "To which minor unit or decimal precision was the converted amount rounded, and under which rounding mode?",
+        "kind": "measurement",
+        "answer_data": [
+          "Target currency minor unit from the ISO 4217 register",
+          "Rounding mode code",
+          "Declared accuracy of the converted amount and whether it is exact or rounded"
+        ]
+      },
+      {
+        "id": "money-val-q-recomputation-tolerance",
+        "text": "What residual difference between a recomputation and the stored value is tolerated before the record is flagged?",
+        "kind": "requirement",
+        "answer_data": [
+          "Absolute or minor-unit tolerance",
+          "Tolerance owner and policy version",
+          "Flagging and escalation behaviour on breach"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-val-de-conversion-equation",
+        "name": "Conversion equation expression",
+        "description": "Unambiguous expression of the computation applied, with explicit operand roles and rate direction.",
+        "value_kind": "text",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-026",
+          "SRC-020"
+        ]
+      },
+      {
+        "id": "money-val-de-rounding-mode-code",
+        "name": "Rounding mode code",
+        "description": "Coded rounding mode applied at each reduction of precision.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-026"
+        ]
+      },
+      {
+        "id": "money-val-de-rounding-step-order",
+        "name": "Rounding step order",
+        "description": "Ordered record of computation and rounding steps, showing where precision was reduced.",
+        "value_kind": "collection",
+        "cardinality": "1..n",
+        "required": true,
+        "source_refs": [
+          "SRC-026",
+          "SRC-025"
+        ]
+      },
+      {
+        "id": "money-val-de-target-minor-unit",
+        "name": "Target currency minor unit",
+        "description": "Minor unit exponent of the target currency taken from the ISO 4217 register version applicable at the valuation instant.",
+        "value_kind": "number",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-001"
+        ]
+      },
+      {
+        "id": "money-val-de-converted-amount-value",
+        "name": "Converted amount value",
+        "description": "Exact decimal result of the conversion, stored with its declared accuracy and without any scaling multiplier.",
+        "value_kind": "quantity",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-025",
+          "SRC-026"
+        ]
+      },
+      {
+        "id": "money-val-de-recomputation-tolerance",
+        "name": "Recomputation tolerance",
+        "description": "Permitted residual difference between an independent recomputation and the stored converted amount.",
+        "value_kind": "quantity",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-026"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "The equation, rounding order and tolerance are the executable specification of the stored number and must be readable as fields by any agent attempting recomputation. They are bundled into the evidence artifact only as part of a complete reproduction package, not held separately as a document here."
+  },
+  {
+    "id": "money-govctl-finding-weak-identity",
+    "name": "Host-dependent weak identity of a monetary assertion",
+    "description": "A monetary value has no independent existence: it is identified by its host record, the role it plays on that host, its currency and its valuation context, mirroring how a reported monetary fact is identified by concept, context and unit. A valuation date is context, never an identifier.",
+    "source_refs": [
+      "SRC-017",
+      "SRC-027"
+    ],
+    "questions": [
+      {
+        "id": "money-govctl-q-identity-key",
+        "text": "Which combination of host reference, role on the host, currency and valuation context uniquely identifies this monetary assertion?",
+        "kind": "identity",
+        "answer_data": [
+          "host record reference",
+          "host role code",
+          "currency code",
+          "valuation context key"
+        ]
+      },
+      {
+        "id": "money-govctl-q-surrogate-condition",
+        "text": "Under which conditions must the adopting Dimension mint a surrogate identifier instead of relying on the host key?",
+        "kind": "requirement",
+        "answer_data": [
+          "surrogate trigger condition",
+          "surrogate identifier",
+          "identifier scheme"
+        ]
+      },
+      {
+        "id": "money-govctl-q-lookalike-discrimination",
+        "text": "How is this assertion distinguished from another that merely carries the same amount and the same currency?",
+        "kind": "validation",
+        "answer_data": [
+          "discriminating attribute list",
+          "collision test result"
+        ]
+      },
+      {
+        "id": "money-govctl-q-addressability",
+        "text": "Is the monetary assertion an inseparable component of the host record or a separately addressable record?",
+        "kind": "composition",
+        "answer_data": [
+          "addressability code",
+          "containment relation",
+          "host cardinality"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-govctl-de-host-ref",
+        "name": "Host record reference",
+        "description": "Reference to the record the monetary value is attached to; mandatory because the mixin has no standalone existence.",
+        "value_kind": "reference",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "money-govctl-de-host-role-code",
+        "name": "Role on host",
+        "description": "Code for the position the value occupies on its host (for example gross amount, tax amount, translated amount), which discriminates same-valued siblings.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "money-govctl-de-identity-component-set",
+        "name": "Identity component set",
+        "description": "Ordered list naming the attributes that jointly identify the assertion (host reference, role, currency, valuation context), used for collision checks.",
+        "value_kind": "collection",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-017"
+        ]
+      },
+      {
+        "id": "money-govctl-de-surrogate-id",
+        "name": "Dimension-assigned surrogate identifier",
+        "description": "UUID or ULID minted only when the host key is unavailable or unstable; never derived from a date.",
+        "value_kind": "identifier",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-027"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "Identity here is a key definition and a set of pointer fields evaluated at read time. Emitting an artifact would create a second, competing identity anchor for something that is deliberately dependent on its host, and would invite systems to treat the monetary value as an independent master record."
+  },
+  {
+    "id": "money-svcstate-effective-read",
+    "name": "Deterministic as-of read of a bound monetary assertion",
+    "description": "The rules that make a read reproducible: which two instants the caller supplies, which single version those instants select, what must be returned unchanged, and how an unresolvable, absent or retired result is reported. A monetary amount carries an explicit validity interval rather than an implied always-current value, so a read without an as-of pair is under-specified.",
+    "source_refs": [
+      "SRC-041",
+      "SRC-027",
+      "SRC-043",
+      "SRC-044",
+      "SRC-017",
+      "SRC-047",
+      "SRC-048",
+      "SRC-011"
+    ],
+    "questions": [
+      {
+        "id": "money-svcstate-q-asof-inputs",
+        "text": "Which effective instant and which observation cut-off instant does a read supply, and what is the declared default when either is omitted?",
+        "kind": "temporal",
+        "answer_data": [
+          "Requested effective (valuation) instant as an RFC 3339 value with seconds and an explicit offset or Z",
+          "Requested observation/ingestion cut-off instant in the same form",
+          "Declared defaults, for example effective = request instant and observation = latest recorded",
+          "Statement of whether a caller-supplied offset is preserved or normalised, and which form is used for comparison"
+        ]
+      },
+      {
+        "id": "money-svcstate-q-version-selection",
+        "text": "Which single assertion version is selected when more than one effective interval covers the requested instant, and how is a tie broken?",
+        "kind": "state",
+        "answer_data": [
+          "Ordered list of candidate versions with their effective intervals",
+          "Interval boundary convention (inclusive start, exclusive end) and the containment test applied",
+          "Deterministic tie-break key, for example latest observation instant then highest version counter",
+          "Explicit none-applicable outcome marker used instead of returning the nearest version"
+        ]
+      },
+      {
+        "id": "money-svcstate-q-read-nonderivation",
+        "text": "Which stored values must a read return verbatim, and which derivations are forbidden in the read path?",
+        "kind": "constraint",
+        "answer_data": [
+          "Amount returned as the stored canonical decimal string including trailing zeros, with the declared scale",
+          "Currency code returned as stored, plus the register list and status that applied at the effective instant",
+          "Prohibition on conversion, re-scaling, rounding or unit substitution during a read",
+          "Flag raised when the stored currency code is historic or withdrawn at the effective instant"
+        ]
+      },
+      {
+        "id": "money-svcstate-q-read-failure",
+        "text": "How does a read report an unresolvable host binding, a tombstoned assertion, or an as-of request outside the supported range?",
+        "kind": "exception",
+        "answer_data": [
+          "Structured failure descriptor with a resolvable type URI, title, status, detail and instance",
+          "Distinct codes for unknown identifier, unresolvable binding, tombstoned assertion and unsupported as-of window",
+          "Gone-style outcome for a tombstoned assertion, kept distinct from unknown-identifier",
+          "Reference to the advisory eligibility report when a value is withheld rather than absent"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-svcstate-de-effective-instant",
+        "name": "Requested effective instant",
+        "description": "The valuation instant for which the caller wants the monetary assertion resolved.",
+        "value_kind": "timestamp",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-027",
+          "SRC-017",
+          "SRC-048"
+        ]
+      },
+      {
+        "id": "money-svcstate-de-observation-instant",
+        "name": "Requested observation cut-off instant",
+        "description": "The recording-time cut-off; versions recorded after this instant are excluded, allowing a past view of what was known at a given time.",
+        "value_kind": "timestamp",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-034",
+          "SRC-027"
+        ]
+      },
+      {
+        "id": "money-svcstate-de-selection-trace",
+        "name": "Version selection trace",
+        "description": "Ordered record of candidate versions considered, the containment test result for each, and the tie-break key applied, sufficient to reproduce the selection.",
+        "value_kind": "collection",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-048",
+          "SRC-043"
+        ]
+      },
+      {
+        "id": "money-svcstate-de-resolution-outcome",
+        "name": "Resolution outcome code",
+        "description": "Coded result of the read: resolved, none-applicable, unresolvable-binding, tombstoned or withheld.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-043",
+          "SRC-047"
+        ]
+      },
+      {
+        "id": "money-svcstate-de-register-status",
+        "name": "Currency register status at effective instant",
+        "description": "Which maintenance-agency list the referenced code belonged to at the effective instant: current currency, fund code or historic/withdrawn.",
+        "value_kind": "code",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-001",
+          "SRC-044"
+        ]
+      }
+    ],
+    "artifacts": [],
+    "inline_only_rationale": "An as-of read is a deterministic projection computed over assertion versions the host already persists; it creates no new governed content. Emitting a stored artifact for every read would produce a second, divergent copy of a host-owned record and would imply ownership of persistence and of audit-trail production, both of which belong to the host and to the audit component respectively. The read therefore exists only as inline request parameters plus reference values — the selected version identifier, its validator, and the outcome code — with no artifact of its own."
+  },
+  {
+    "id": "money-svccalc-finding-quantize",
+    "name": "Quantisation, rounding policy and residual",
+    "description": "How an exact amount is brought to a target scale: the target scale (usually but not always the currency minor unit), the rounding mode and tie-breaking rule, the resulting residual, and how a residual is allocated when a total is split across components so that the parts still sum to the whole. Precision loss is an explicit, declared outcome rather than an invisible side effect.",
+    "source_refs": [
+      "SRC-001",
+      "SRC-049",
+      "SRC-026",
+      "SRC-050",
+      "SRC-051"
+    ],
+    "questions": [
+      {
+        "id": "money-svccalc-q-quantize-policy",
+        "text": "What rounding policy — target scale, rounding mode and tie-breaking rule — governs quantisation of this amount?",
+        "kind": "requirement",
+        "answer_data": [
+          "target scale",
+          "rounding mode",
+          "tie-breaking rule",
+          "policy profile identifier and version",
+          "order of quantisation relative to other operations"
+        ]
+      },
+      {
+        "id": "money-svccalc-q-quantize-residual",
+        "text": "What residual arises from quantisation, and how is it computed, reported or allocated across components?",
+        "kind": "measurement",
+        "answer_data": [
+          "residual amount and currency",
+          "residual sign",
+          "allocation method for split totals",
+          "component receiving the residual",
+          "post-allocation sum check"
+        ]
+      },
+      {
+        "id": "money-svccalc-q-quantize-scale-deviation",
+        "text": "When may the target scale differ from the currency minor unit, and which authority pins that deviation?",
+        "kind": "authority",
+        "answer_data": [
+          "declared target scale",
+          "minor unit from the register",
+          "deviation reason code",
+          "pinning authority reference",
+          "scope in which the deviation is valid"
+        ]
+      },
+      {
+        "id": "money-svccalc-q-quantize-precision-loss",
+        "text": "How is precision loss detected and expressed so that a consumer knows the value is no longer exact?",
+        "kind": "quality",
+        "answer_data": [
+          "exactness indicator",
+          "declared decimals of the result",
+          "implied value interval",
+          "precision-loss outcome code",
+          "original exact value reference"
+        ]
+      }
+    ],
+    "data_elements": [
+      {
+        "id": "money-svccalc-de-declared-scale",
+        "name": "Declared scale",
+        "description": "The number of fractional digits to which the amount is stated, which may equal the currency minor unit or a pinned deviation from it.",
+        "value_kind": "number",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-001",
+          "SRC-026"
+        ]
+      },
+      {
+        "id": "money-svccalc-de-rounding-mode",
+        "name": "Rounding mode and tie rule",
+        "description": "The rounding mode applied and the tie-breaking rule used when a value falls exactly half-way, stated explicitly because regimes differ.",
+        "value_kind": "code",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-050",
+          "SRC-051"
+        ]
+      },
+      {
+        "id": "money-svccalc-de-residual",
+        "name": "Quantisation residual",
+        "description": "The signed difference between the exact input amount and the quantised result, expressed in the same currency.",
+        "value_kind": "quantity",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-050"
+        ]
+      },
+      {
+        "id": "money-svccalc-de-value-interval",
+        "name": "Implied value interval",
+        "description": "The interval of plausible source values implied by the declared decimals and rounding mode of a quantised amount, used later for tolerance evaluation.",
+        "value_kind": "object",
+        "cardinality": "0..1",
+        "required": false,
+        "source_refs": [
+          "SRC-049",
+          "SRC-026"
+        ]
+      },
+      {
+        "id": "money-svccalc-de-exactness-indicator",
+        "name": "Exactness indicator",
+        "description": "Whether the stated amount is exact or the product of a lossy quantisation.",
+        "value_kind": "boolean",
+        "cardinality": "1",
+        "required": true,
+        "source_refs": [
+          "SRC-026"
+        ]
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "money-svccalc-artifact-rounding-policy-profile",
+        "name": "Rounding policy profile",
+        "description": "A declarative, versioned profile stating target scale rules per currency or context, rounding mode, tie-breaking rule, residual allocation method and the order of quantisation relative to conversion. It is referenced by derivations so that a historical result remains reproducible after the policy changes.",
+        "media_or_form": [
+          "structured policy record",
+          "human-readable policy document"
+        ],
+        "serial": true,
+        "identity_strategy": "Authoritative identifier issued by the adopting Dimension's policy registry plus an immutable version identifier; where no registry identifier exists, a ULID assigned by the adopting Dimension. The effective-from instant is an attribute, never the identifier.",
+        "source_refs": [
+          "SRC-050",
+          "SRC-051"
+        ]
+      },
+      {
+        "id": "money-svccalc-artifact-quantisation-record",
+        "name": "Quantisation record",
+        "description": "The reportable result of one quantisation: exact input amount and currency, target scale, applied policy profile reference, quantised output, signed residual, exactness indicator and implied value interval.",
+        "media_or_form": [
+          "structured record"
+        ],
+        "serial": false,
+        "identity_strategy": "Identifier of the operation invocation supplied by the caller if it has one; otherwise a ULID assigned by the adopting Dimension, bound to the content hash of the input amount, policy reference and output.",
+        "source_refs": [
+          "SRC-049",
+          "SRC-026"
+        ]
+      }
+    ],
+    "inline_only_rationale": null
+  }
+]

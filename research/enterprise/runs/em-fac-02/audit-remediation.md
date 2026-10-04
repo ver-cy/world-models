@@ -1,0 +1,3 @@
+# EM-FAC-02 frozen-audit remediation
+
+The sole Claude Opus high no-tools audit found 14 material artifact defects. All were remediated without rerun. The revision adds independently versioned boundary facets, factor-set containment, closed activity and result classifications, declared unallocated dependencies, comparability bridges, market evidence, cost separation, counterparty assertions, run transitions, base-year requirements, external assurance and explicit unapproved edge state. The audit narrative miscounted its exact JSON array as 36 additional fixtures; the array actually contains 38 unique fixtures and is authoritative. The final set contains 59 fixtures: 22 positive and 37 negative.

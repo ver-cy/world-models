@@ -1,0 +1,37 @@
+**Verdict.** CONDITIONAL ACCEPT. Reuse WM-PER-001 Person. Profile WM-ORG-005 Employment for employee, contractor, agency and self-employed engagement. Reuse WM-ORG-016 Work Assignment. Treat EmployeeProfile as an identifier-unassigned new candidate. Reference WM-ACT-040 for join/move/leave/rejoin and independently verified access execution; do not absorb it. Do not mint Engagement, LifecycleEvent or JoinerMoverLeaverCase as masters. Do not invent catalogue IDs. Semantic fit of the three live candidates still requires a field-level crosswalk; published status does not complete the card.
+
+**Mastership.** Person is mastered by WM-PER-001 under the EM-PEO-01 contour. Employer change never mutates Person; that is a card invariant and already out of scope for Person.
+
+Employment is mastered by WM-ORG-005. Writer is the HRIS / personnel register. ATS and LMS consume. The relationship owns identity, classification evidence, terms, continuity, separation, disagreement and assignment-realization links. Person attributes are not copied into Employment.
+
+Assignment is mastered by WM-ORG-016. Employment records only link validity and concurrency; it does not import assignment lifecycle, post, host, scope or authority. The relation ledger marks WM-ORG-005 COMPOSE WM-ORG-016 as candidate, not approved, so composition remains draft.
+
+Position, unit and legal-employer constructs stay on EM-ORG-06 / EM-ORG-04 / EM-ORG-02 by reference. EM-ORG-06 already states that person assignment is held by the work relationship.
+
+EmployeeProfile has no live-catalogue ID. Master: employing-party HRIS. It is the employer-local continuity object for one Person at one employer across successive Employment spells. It is not a second Person, not an Employment, not an Assignment and not a DigitalAccount.
+
+JML case identity and independently verified disable/revoke/verify-loss records belong to WM-ACT-040. Access, account and review masters belong to EM-RSK-03. Process definition belongs to EM-OPS-01. Identifier schemes belong to EM-XCT-01. EM-PEO-02 links these; it does not absorb them.
+
+**Parties / kinds.** Map the card question onto the existing WM-ORG-005 party topology. Do not invent a fourth party model. Employer is the employing party (legal employer of record). Work customer / labor customer is the client, and the host when the workplace party differs. Staffing supplier is the agency; paymaster and platform stay distinct when those roles are separate. In agency labor the supplier is often the legal employer and the customer is not; “the company using the labor” is not automatically the employer.
+
+Classification on 005 is asserted, evidence-bearing and purpose-qualified: employee, worker, dependent-contractor, self-employed, with control, dependence, remuneration, risk and integration indicators, a competent determination and a misclassification dispute path. Profile existence must not imply employee status. Engagement collapses into a typed profile on Employment (`relationship_kind` / classification). Parallel relationships are concurrent WM-ORG-005 instances on one Person.
+
+**Profile numbering.** EmployeeProfile is employer-scoped and spans rehires of the same Person at that employer. Employee number uniqueness is employing party + scheme + validity interval only. It is not a Person key, not the Employment relationship id, not the Assignment id and not an account id. Rehire at the same employer reuses the profile; keep versus reissue of the number is scheme policy; prior numbers remain historically valid inside their window. A new employing party creates a new profile; Person is unchanged. Parallel employers produce parallel profiles. Closing an Employment does not destroy the profile or the Person. Predecessor fields `employee_number`, `worker_category`, `employment_ref` and `person_ref` remain candidate-not-normative. Do not fold the profile into Employment aliases; that would break same-employer rehire continuity across successive 005 spells.
+
+**Assignment rules.** New Employment when the employing party changes; when legal basis or classification constitutes a new governed relationship; on rehire after a closed period of service; or on a parallel contract. Employer succession or transfer on 005 may continue one relationship when continuity is evidenced; that is not a silent rehire.
+
+New Assignment when post, host, scope or conveyed authority crosses the WM-ORG-016 material-change threshold, or when the engagement-context basis changes. Concurrent host or post bindings are concurrent assignments. One Employment may realize many concurrent or sequential Assignments; an Assignment is not an Employment.
+
+Amendment keeps the same identity with an effective-dated version: ordinary term, FTE or pattern, manager or workplace that does not change employer, basis, post, host, scope or authority. Corrections are not real-world changes and use 016 versioning.
+
+**JML / access boundary.** The card states that onboarding uses process and access as links. Offboarding creates access-verification obligations and never proves revocation. WM-ACT-040 records desired, requested, executed and verified states separately and forbids absorbing employment or access masters. EM-RSK-03 owns DigitalAccount, AccessRole and AccessReview. Closing the HR record is not entitlement cutoff. EM-PEO-02 may emit a LifecycleEvent only as a facet or link, not as a master. Assignment-end handover on 016 lists revocation tasks; completion evidence lives on the JML case and the access review, not on the HR close event.
+
+**Scenarios.** These must pass without history loss.
+
+1. Freelancer misclassification (card negative). Keep the contractor or self-employed assertion, indicators and appeal path. Automatic staff-employee label is forbidden.
+2. Dual / secondary job. Two WM-ORG-005 records on one Person; two EmployeeProfiles if two employers; concurrent assignments as required.
+3. Agency labor. Supplier, legal employer and work customer stay distinct; host assignment is agency-supplied on 016; parties are not collapsed.
+4. Rehire. Same Person and same-employer EmployeeProfile; new Employment after prior close; new Assignment; optional number reuse only under scheme policy; predecessor lineage intact.
+5. Incomplete offboarding. Employment may be inactive while the JML case and AccessReview remain open; no inferred revocation; no history wipe.
+
+**Blockers.** EmployeeProfile has no catalogue ID and must stay unassigned. WM-ORG-005 COMPOSE WM-ORG-016 is candidate only. Parent models are reviewable-drafts with waived independent review; agency, platform and jurisdiction profiles plus HR Open / ICSE / ESCO / W3C ORG crosswalks remain unverified. The card’s live-candidate list omits required neighbors WM-ACT-040, EM-RSK-03, EM-OPS-01 and EM-XCT-01. Brief blocking decisions remain open: reuse/extend/new lock after semantic crosswalk, source mastership and rights, immutable refs, and fixtures before any publication-ready claim. Engagement, LifecycleEvent and JoinerMoverLeaverCase must not be published as extra masters. EM-PEO-01 is still queued, so enterprise Person profiling is conceptually sound but not decided. No publication-ready claim until fixtures cover the five scenarios and the three card invariants.

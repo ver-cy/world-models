@@ -1,0 +1,2549 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-003",
+    "model_id": "WM-XCT-003",
+    "name": "Projection / Disclosure Policy",
+    "entry_kind": "mixin",
+    "purpose": "Govern the reusable, versioned output-shape a holder may serve: which paths leave, after which treatments, at which grain (subset, summary, or aggregate), compiled into an auditable consumer template. A grant says data may flow; this model says what the flow looks like.",
+    "scope_statement": "Covers the reusable, versioned output shape a holder may serve: grain class, path selection and graph extent, per-path treatments, the compiled consumer template and its fingerprint, and the binding parameters that attach a shape to a contract, object type, audience or request class. It is a specialised payload of a governed policy (WM-KNW-012) and stores references, not copies, of ownership, consent, audit, classification, cohort-floor, source-schema and enforcement semantics.",
+    "in_scope": [
+      "Grain class of a leaving payload: full-fidelity subset, named summary view, or aggregate-only rollup.",
+      "Path selection over a governed source schema: include lists, exclude lists, default treatment, nested/graph expansion depth, and empty fieldsets.",
+      "Per-path treatments and their parameters: suppression, masking, generalisation, bucketing, rounding, perturbation, sampling, pseudonymisation, cryptographic encoding, synthetic replacement; reversibility and technique class.",
+      "Compiled consumer shape: output template/schema fragment, omitted-path accounting, subsetted/incomplete marking, cryptographic fingerprint of the compiled shape.",
+      "Subject-specific binding parameters that attach one projection policy to a contract, object type, audience, or request class, including effective window and intersection rule with a client-requested fieldset.",
+      "Preview/dry-run of a policy against a source schema without instance data.",
+      "Alignment vocabularies to ISO/IEC 20889 techniques, HIPAA Safe Harbor / limited-data-set identifier packs, FHIR _summary/_elements, OData $select/$expand, GraphQL selection sets, and JSON:API sparse fieldsets — recorded as alignments, not claimed conformance."
+    ],
+    "out_of_scope": [
+      "Generic policy identity, issuer, approval state machine, combining/conflict algorithms, and supersession machinery (owned by WM-KNW-012; this model EXTENDs it with output-shape semantics only).",
+      "Ownership, holding, and delegation of who may author or sign off a shape (WM-XCT-001). This model may carry an owner_or_steward_ref only.",
+      "Authorization purpose, parties, consent grant lifecycle, and whether data may flow at all (WM-XCT-002). This model may carry a contract_or_grant_ref only.",
+      "Append-only access audit trail, audit-event schema, and served-output logging (WM-XCT-004). This model supplies policy version id and shape fingerprint as payload fields for that trail.",
+      "k-anonymity / l-diversity / differential-privacy budget arithmetic, cohort threshold calculation, and privacy-aggregation assurance (WM-XCT-005). Aggregate-only shapes reference a cohort_floor_ref only.",
+      "Sensitivity classification scheme membership and field assignment (WM-XCT-020). Treatments may be constrained by a classification_binding_ref.",
+      "Source schema, data-contract semantics, and instance validation (WM-DAT-004). Projection paths and compiled templates reference a source_schema_ref.",
+      "Runtime PDP evaluation, obligation execution, explanation, and enforcement (WM-XCT-038). Compiled shape and treatment rules are decision inputs; they are not the evaluator.",
+      "Storage format and access interface (JSON, YAML, Markdown, HTML, Git, MCP, MongoDB) — projections of this model, not its semantics.",
+      "Row/record filtering predicates (who is in the result set). This model shapes columns/paths and grain of records already authorised to leave.",
+      "Encryption-at-rest, transport security, and key-management lifecycle.",
+      "Legal basis, DPIA, and controller/processor designation."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "WM-XCT-020 and WM-KNW-012 (fields modelled locally in previous-version S3)",
+        "distinction": "Previous-version S3 modelled sensitivityTier, authoringAndApproval, and generic versioning locally. Those belong to WM-XCT-020 and WM-KNW-012 respectively; they are composition links, not local findings.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "WM-XCT-038 (runtime evaluation and enforcement)",
+        "distinction": "A reference to WM-XCT-038 does not grant this model ownership of Permit/Deny, obligation fulfilment, or audit-trail semantics. XACML Obligations that say 'redact field X' are treatment prescriptions here; their enforcement is XCT-038.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "WM-XCT-005 (cohort floors and re-identification risk)",
+        "distinction": "Aggregate-only grain names kept dimensions and a period; minimum-cohort and re-identification-risk numbers remain XCT-005.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Client-requested fieldsets (GraphQL selection sets, OData $select, JSON:API fields[TYPE], FHIR _elements)",
+        "distinction": "Client-requested fieldsets are not themselves the governed policy. The policy is the maximum lawful/allowed shape; intersection with a client request is a local parameter.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-010",
+          "SRC-011",
+          "SRC-012"
+        ]
+      },
+      {
+        "neighbor": "Dataset de-identification for public release (NIST SP 800-188 sharing models)",
+        "distinction": "De-identification of a dataset for public release and field-level API projection share technique vocabulary but differ in grain and audience. Both are in scope as grain classes of this mixin.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Sibling generative-privacy model (not yet defined)",
+        "distinction": "Unresolved: whether synthetic-microdata generation is a treatment on this model or a sibling generative-privacy model. Marked as a gap pending a dedicated sibling.",
+        "source_refs": [
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Binary/media-stream projection (OData stream properties, FHIR Binary)",
+        "distinction": "Unresolved: binary/media-stream projection lacks a first-class path-treatment profile in the cited API specs; recorded as an omission.",
+        "source_refs": [
+          "SRC-009",
+          "SRC-011"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "ISO/IEC 20889:2018 Privacy enhancing data de-identification terminology and classification of techniques",
+      "organization": "ISO/IEC JTC 1/SC 27",
+      "url": "https://www.iso.org/standard/69373.html",
+      "version_or_date": "2018-11; confirmed 2024-05-03 (stage 90.93)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Classifies de-identification technique families (sampling, aggregation, cryptographic tools, masking, local suppression, generalisation) used as the treatment alignment vocabulary and for aggregate rollup definition."
+    },
+    {
+      "id": "SRC-002",
+      "title": "ISO/IEC 27559:2022 Privacy enhancing data de-identification framework",
+      "organization": "ISO/IEC JTC 1/SC 27",
+      "url": "https://www.iso.org/standard/71677.html",
+      "version_or_date": "2022-11",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Requires context assessment before external release and identifiability reassessment across the de-identified-data lifecycle; grounds aggregate release conditions and compiled-template invalidation."
+    },
+    {
+      "id": "SRC-003",
+      "title": "NIST SP 800-188 De-Identifying Government Datasets: Techniques and Governance",
+      "organization": "NIST / U.S. Census Bureau",
+      "url": "https://csrc.nist.gov/pubs/sp/800/188/final",
+      "version_or_date": "2023-09; DOI 10.6028/NIST.SP.800-188",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Distinguishes data-sharing models (publish de-identified, synthetic, query interface, enclave), lists techniques, and warns that encryption or hashing of identifiers is not de-identification if a key or rainbow table remains."
+    },
+    {
+      "id": "SRC-004",
+      "title": "45 CFR 164.514 Other requirements relating to uses and disclosures of protected health information",
+      "organization": "U.S. HHS (eCFR)",
+      "url": "https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164/subpart-E/section-164.514",
+      "version_or_date": "current as of 2026-08-26",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Supplies the Safe Harbor identifier pack, expert determination, limited data set, re-identification code conditions, and minimum-necessary policy requirements used as treatment packs and binding constraints."
+    },
+    {
+      "id": "SRC-005",
+      "title": "Regulation (EU) 2016/679 (GDPR) Article 5 — Principles relating to processing of personal data",
+      "organization": "European Parliament and Council / EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679",
+      "version_or_date": "2016-04-27; OJ L 119, 4.5.2016",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Article 5(1)(b)–(c) couple purpose limitation with data minimisation, grounding grain choice and binding purpose alignment."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Regulation (EU) 2016/679 (GDPR) Article 25 — Data protection by design and by default",
+      "organization": "European Parliament and Council / EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679",
+      "version_or_date": "2016-04-27; OJ L 119, 4.5.2016",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Article 25(2) requires that by default only personal data necessary for each specific purpose are processed (amount, extent, storage, accessibility), grounding default treatment and intersection with client requests; Article 4(5) defines pseudonymisation."
+    },
+    {
+      "id": "SRC-007",
+      "title": "eXtensible Access Control Markup Language (XACML) Version 3.0 Plus Errata 01",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/xacml/3.0/errata01/os/xacml-3.0-core-spec-errata01-os-complete.html",
+      "version_or_date": "2017-07-12",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Targets, environment attributes and obligations cited for binding attachment and precedence parameters; combining algorithms and evaluation remain in sibling models."
+    },
+    {
+      "id": "SRC-008",
+      "title": "XACML v3.0 Multiple Decision Profile Version 1.0",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html",
+      "version_or_date": "Committee Draft 03, 2010-03-11 (cited by XACML 3.0 core as [Multi])",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Interprets a multiple:content-selector XPath as one decision per node, cited for hierarchical node selection in nested and graph extent."
+    },
+    {
+      "id": "SRC-009",
+      "title": "OData Version 4.01. Part 1: Protocol — §11.2.5 Specifying Properties to Return; §8.2.8.6 omit-values; §10 Context URL",
+      "organization": "OASIS",
+      "url": "https://docs.oasis-open.org/odata/odata/v4.01/os/part1-protocol/odata-v4.01-os-part1-protocol.html",
+      "version_or_date": "OASIS Standard, 2020-04-23",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "$select and $expand path selection, omit-values preference, and context URL fragments naming selected and expanded properties; source of the 'MAY return additional information' conflict."
+    },
+    {
+      "id": "SRC-010",
+      "title": "GraphQL Specification — Selection Sets, Fields, Client-specified response",
+      "organization": "GraphQL Foundation / Joint Development Foundation",
+      "url": "https://spec.graphql.org/October2021/",
+      "version_or_date": "October 2021",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Hierarchical selection sets and client-specified exact response shape, with validation of a requested shape against the type system before execution."
+    },
+    {
+      "id": "SRC-011",
+      "title": "HL7 FHIR R5 Search — _summary, _elements, SUBSETTED",
+      "organization": "HL7 International",
+      "url": "https://hl7.org/fhir/search.html",
+      "version_or_date": "FHIR v5.0.0, current published version as retrieved 2026-08-28",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Named summary modes (_summary true/text/data/count), _elements behaviour including mandatory elements, and SUBSETTED tagging of incomplete resources."
+    },
+    {
+      "id": "SRC-012",
+      "title": "JSON:API 1.1 — Sparse Fieldsets",
+      "organization": "jsonapi.org",
+      "url": "https://jsonapi.org/format/#fetching-sparse-fieldsets",
+      "version_or_date": "v1.1 (latest published as retrieved 2026-08-28)",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-28T00:00:00Z",
+      "relevance": "Sparse fieldsets: comma-separated field lists, empty value meaning no fields, and the requirement not to include additional fields when a restricted set is requested."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "xct-dsc-grain",
+        "name": "Output grain class",
+        "description": "Declare the leaving-data grain: record-level subset, named summary, or aggregate-only rollup.",
+        "rationale": "Does not compute privacy thresholds; minimum cohort size and re-identification risk remain WM-XCT-005 and are referenced, not calculated here.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-005",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "xct-dsc-grain-class",
+            "name": "Grain class vocabulary",
+            "description": "Closed vocabulary naming the one primary grain a policy allows to leave — record-level subset, named summary, or aggregate-only rollup — with alignment to NIST data-sharing models.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-grain-class-enum",
+                "name": "Leaving-shape grain class",
+                "description": "A projection policy names exactly one primary grain for what may leave: (a) record-level subset — selected paths of authorised instances; (b) named summary — a predefined reduced view such as FHIR _summary=true/text/data; (c) aggregate-only — statistical functions over a grouping, with no microdata. ISO/IEC 20889 classifies aggregation and sampling as statistical de-identification tools; NIST SP 800-188 distinguishes publishing de-identified microdata, synthetic data, query interfaces, and protected enclaves. FHIR defines discrete summary modes including count-only.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-grain-class",
+                    "text": "What grain may leave under this policy: record-level subset, named summary, aggregate-only, or a documented hybrid?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "grain_class — enum(subset|summary|aggregate_only|hybrid), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-grain-summary-mode",
+                    "text": "If grain is summary, which named summary mode applies (for example FHIR true/text/data/count, or a locally named card)?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "summary_mode — string, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-grain-microdata",
+                    "text": "Are instance-level records permitted to leave at all, or only derived statistics?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "microdata_permitted — boolean, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-grain-sharing-model",
+                    "text": "Which NIST SP 800-188 data-sharing model does this grain align to: publish de-identified data, synthetic data, query interface, or protected enclave — as alignment, not conformance?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "sharing_model_alignment — enum(publish_deidentified|synthetic|query_interface|enclave|unaligned), cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-grain-class",
+                    "name": "grain_class",
+                    "description": "The single primary grain a policy allows to leave: record-level subset, named summary, aggregate-only, or a documented hybrid.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-grain-summary-mode",
+                    "name": "summary_mode",
+                    "description": "Named summary mode when the grain is summary, such as FHIR _summary true/text/data/count or a locally named card.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-grain-sharing-model-alignment",
+                    "name": "sharing_model_alignment",
+                    "description": "NIST SP 800-188 data-sharing model this grain aligns to: publish de-identified, synthetic, query interface, enclave, or unaligned.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-grain-microdata-permitted",
+                    "name": "microdata_permitted",
+                    "description": "Whether instance-level records may leave at all, or only derived statistics.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Grain class is a closed vocabulary plus references to sibling models (XCT-005 for floors, DAT-004 for source). It is classification metadata, not a stored document."
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-grain-rollup",
+            "name": "Aggregate rollup definition",
+            "description": "Definition of an aggregate-only shape: grouping dimensions, allowed measures and temporal grain, with the privacy floor referenced rather than calculated.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-grain-rollup-dims",
+                "name": "Kept dimensions, measures and period of an aggregate-only shape",
+                "description": "When only summaries leave, the policy names grouping dimensions, allowed measures, and temporal grain. ISO/IEC 20889 describes aggregation as statistical functions that produce a represented value of a dataset; ISO/IEC 27559 requires context assessment before external release. Minimum cohort size and re-identification risk remain WM-XCT-005 and are referenced, not calculated here.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-rollup-dimensions",
+                    "text": "Which source paths (WM-DAT-004) remain as grouping dimensions in the aggregate output?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "kept_dimensions — array<path_expression>, cardinality 0..n"
+                    ]
+                  },
+                  {
+                    "id": "q-rollup-measures",
+                    "text": "Which aggregate functions and measures are permitted (count, sum, mean, histogram buckets, none)?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "allowed_measures — array<{function, path}>, cardinality 1..n"
+                    ]
+                  },
+                  {
+                    "id": "q-rollup-period",
+                    "text": "What temporal grain and inclusive period bound the rollup (RFC 3339 start/end, or calendar grain such as year/month)?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "temporal_grain — object{grain, period_start, period_end}, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-rollup-floor-ref",
+                    "text": "Which WM-XCT-005 cohort/privacy-floor identifier must hold before this aggregate may be served?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "cohort_floor_ref — iri_or_id, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-rollup-kept-dimensions",
+                    "name": "kept_dimensions",
+                    "description": "Source paths retained as grouping dimensions in the aggregate output.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-rollup-allowed-measures",
+                    "name": "allowed_measures",
+                    "description": "Permitted aggregate functions and their measure paths (count, sum, mean, histogram buckets, none).",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-rollup-temporal-grain",
+                    "name": "temporal_grain",
+                    "description": "Temporal grain of the rollup together with its inclusive period bounds.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-rollup-period-start",
+                    "name": "period_start",
+                    "description": "Inclusive start of the aggregated period, as RFC 3339 or a calendar grain.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-rollup-period-end",
+                    "name": "period_end",
+                    "description": "Inclusive end of the aggregated period, as RFC 3339 or a calendar grain.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-rollup-cohort-floor-ref",
+                    "name": "cohort_floor_ref",
+                    "description": "Cohort or privacy-floor identifier that must hold before the aggregate may be served; reference only, owned by WM-XCT-005.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-aggregation-level",
+                    "name": "Aggregation level definition",
+                    "description": "Kept dimensions, allowed measures, temporal grain, cohort_floor_ref. Does not contain threshold arithmetic.",
+                    "media_or_form": [
+                      "definition"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Dimension-assigned UUID/ULID; identified by kept dimensions, measures and temporal grain within the owning policy version.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "xct-dsc-selection",
+        "name": "Path selection and graph extent",
+        "description": "Define which property paths of an authorised instance may appear, how nested/related resources expand, and how a client-requested fieldset is intersected with the governed maximum.",
+        "rationale": "The governed policy is a maximum disclosure envelope; a local intersection rule states whether a wider client request is clipped, rejected, or (forbidden by this mixin) expanded.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-009",
+          "SRC-010",
+          "SRC-011",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "xct-dsc-selection-scope",
+            "name": "Include, exclude and default treatment",
+            "description": "Include and exclude path lists over a governed source schema, the default treatment for unnamed paths, empty-fieldset semantics, and mandatory paths that must survive selection.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-009",
+              "SRC-011",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-selection-scope-lists",
+                "name": "Field/path include-exclude lists and default-deny",
+                "description": "A policy is at minimum a selection of paths over a source schema. OData $select requests a comma-separated list of paths and MAY still return additional information. JSON:API fields[TYPE] is a comma-separated field list; an empty value means no fields; if a restricted set is requested the endpoint MUST NOT include additional fields. GDPR Article 25(2) requires that by default only personal data necessary for each specific purpose are processed, covering amount, extent, storage and accessibility. FHIR _elements is a comma-separated list of base elements; servers SHOULD still return mandatory elements and mark SUBSETTED. These conflicts are recorded; this model treats the governed list as a maximum disclosure set with an explicit default treatment (omit / redact / deny / pass-through).",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-009",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-sel-mode",
+                    "text": "Is the path list an allowlist (include), a denylist (exclude), or a mix with explicit default treatment for unspecified paths?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "selection_mode — enum(include|exclude|include_then_exclude), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-sel-paths",
+                    "text": "Which path expressions (JSON Pointer, XPath, GraphQL path, FHIR element, OData path) are included and excluded, each bound to a WM-DAT-004 source schema?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "path_lists — object{source_schema_ref, included_paths[], excluded_paths[]}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-sel-default",
+                    "text": "What happens to a source path not named in either list: omit, redact-placeholder, deny-the-whole-request, or pass-through?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "default_treatment — enum(omit|redact|deny_request|pass_through), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-sel-empty",
+                    "text": "Does an empty include list mean 'no fields' (JSON:API) or 'unspecified / server default' (OData/JSON:API when fields[TYPE] absent)?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "empty_fieldset_means — enum(no_fields|server_default|invalid), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-sel-mandatory",
+                    "text": "Which paths MUST still appear to keep the payload schema-valid (FHIR mandatory/modifier elements), even if not selected?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "mandatory_path_override — array<path_expression>, cardinality 0..n"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-sel-selection-mode",
+                    "name": "selection_mode",
+                    "description": "Whether the path list is an allowlist, a denylist, or an include-then-exclude mix.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-sel-included-paths",
+                    "name": "included_paths",
+                    "description": "Path expressions admitted by the policy, bound to a WM-DAT-004 source schema.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-sel-excluded-paths",
+                    "name": "excluded_paths",
+                    "description": "Path expressions explicitly withheld by the policy.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-sel-default-treatment",
+                    "name": "default_treatment",
+                    "description": "What happens to a source path named in neither list: omit, redact placeholder, deny the request, or pass through.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-sel-empty-fieldset-means",
+                    "name": "empty_fieldset_means",
+                    "description": "Whether an empty include list means no fields, server default, or invalid.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-sel-mandatory-path-override",
+                    "name": "mandatory_path_override",
+                    "description": "Paths that must still appear to keep the payload schema-valid, such as FHIR mandatory and modifier elements.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-field-scope",
+                    "name": "Field scope document",
+                    "description": "Include/exclude path lists, default treatment, expansion extent, hierarchical selector, nested policy refs — compiled against one source schema version.",
+                    "media_or_form": [
+                      "document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Governed IRI when published, otherwise a Dimension-assigned UUID/ULID; scoped to one policy version and one source-schema version.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-selection-graph",
+            "name": "Nested and related-resource extent",
+            "description": "Expansion of related and nested resources: allowed navigation paths, maximum depth, nested policy binding, and hierarchical node selectors.",
+            "source_refs": [
+              "SRC-008",
+              "SRC-009",
+              "SRC-010",
+              "SRC-011",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-selection-graph-expand",
+                "name": "Expansion, include, and hierarchical node selection",
+                "description": "Output shape is a graph, not only a column list. OData $expand includes related resources inline and may nest $select; context URLs describe projected+expanded entities. GraphQL selection sets are hierarchical down to scalars. FHIR _include/_revinclude add referenced resources; they cannot mix with _summary=text. JSON:API compound documents require full linkage except where sparse fieldsets exclude relationship fields. XACML Multiple Decision Profile interprets a multiple:content-selector XPath as one decision per node. This model records maximum expand depth, allowed navigation paths, and whether related resources inherit the parent policy or a nested policy.",
+                "source_refs": [
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-graph-nav",
+                    "text": "Which navigation/relationship paths may be expanded, and to what maximum depth?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "expansion_extent — array<{path, max_depth}>, cardinality 0..n"
+                    ]
+                  },
+                  {
+                    "id": "q-graph-nested-policy",
+                    "text": "Does each expanded type use this policy, a nested projection-policy reference, or inherit parent treatments?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "nested_policy_binding — array<{type_or_path, policy_ref, inherit}>, cardinality 0..n"
+                    ]
+                  },
+                  {
+                    "id": "q-graph-hierarchy",
+                    "text": "For hierarchical XML/JSON resources, is a content-selector (XPath/JSONPath) used to name the nodes whose shape is governed, analogous to XACML multiple:content-selector?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "hierarchical_selector — object{language, expression}, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-graph-allowed-navigation-paths",
+                    "name": "allowed_navigation_paths",
+                    "description": "Navigation or relationship paths that may be expanded inline.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-graph-max-expand-depth",
+                    "name": "max_expand_depth",
+                    "description": "Maximum depth to which related resources may be expanded.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-graph-nested-policy-ref",
+                    "name": "nested_policy_ref",
+                    "description": "Projection policy reference governing an expanded type or path.",
+                    "value_kind": "reference",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-graph-related-inherits-parent",
+                    "name": "related_inherits_parent",
+                    "description": "Whether expanded related resources inherit the parent policy's treatments.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-graph-hierarchical-selector",
+                    "name": "hierarchical_selector",
+                    "description": "Content-selector language and expression naming the nodes whose shape is governed, analogous to the XACML multiple:content-selector.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "xct-dsc-selection-graph-expand-art-field-scope",
+                    "name": "Field scope document",
+                    "description": "Include/exclude path lists, default treatment, expansion extent, hierarchical selector, nested policy refs — compiled against one source schema version.",
+                    "media_or_form": [
+                      "document"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Governed IRI when published, otherwise a Dimension-assigned UUID/ULID; scoped to one policy version and one source-schema version.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-selection-intersect",
+            "name": "Client request intersected with governed maximum",
+            "description": "How a client-requested fieldset is reconciled with the governed maximum disclosure envelope: narrowing, clipping, rejection, and unsolicited fields.",
+            "source_refs": [
+              "SRC-006",
+              "SRC-009",
+              "SRC-010",
+              "SRC-011",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-selection-intersect-rule",
+                "name": "Intersection rule between client-requested fieldset and policy maximum",
+                "description": "GraphQL makes the client responsible for specifying consumption at field granularity and returns exactly what is asked. OData $select is a client request; the service returns specified content if available and MAY return additional information. JSON:API MUST NOT add fields beyond a requested sparse fieldset. FHIR servers are not obliged to return only requested elements and SHOULD return mandatory ones. GDPR Article 25(2) requires default minimisation regardless of client appetite. The governed policy is a maximum disclosure envelope; a local intersection_rule states whether a wider client request is clipped, rejected, or (forbidden by this mixin) expanded.",
+                "source_refs": [
+                  "SRC-006",
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "q-ix-rule",
+                    "text": "If the client asks for less than the policy maximum, is the narrower set served (always allowed) or must the full policy shape be served?",
+                    "kind": "access",
+                    "answer_data": [
+                      "client_may_narrow — boolean, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-ix-exceed",
+                    "text": "If the client asks for more than the policy maximum, is the request clipped to the maximum, rejected, or (non-conformant) expanded?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "exceed_behaviour — enum(clip|reject|expand_forbidden), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-ix-additional",
+                    "text": "May the server add unsolicited fields (OData MAY) or is that forbidden (JSON:API MUST NOT), and is that choice recorded as an interoperability alignment?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "additional_fields_permitted — boolean, cardinality 1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-ix-intersection-rule",
+                    "name": "intersection_rule",
+                    "description": "Rule reconciling a client-requested fieldset with the governed maximum disclosure envelope.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-ix-client-may-narrow",
+                    "name": "client_may_narrow",
+                    "description": "Whether a narrower client request is served, or the full policy shape must be served.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-ix-reject-if-client-exceeds",
+                    "name": "reject_if_client_exceeds",
+                    "description": "Behaviour when the client asks for more than the policy maximum: clip, reject, or (non-conformant) expand.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "de-ix-additional-fields-permitted",
+                    "name": "additional_fields_permitted",
+                    "description": "Whether the server may add unsolicited fields (OData MAY) or must not (JSON:API MUST NOT).",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Intersection is a parameter of the policy, not a document. Runtime application is WM-XCT-038."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "xct-dsc-treatment",
+        "name": "Per-path treatments",
+        "description": "Name the transformation applied to each selected path: technique class, parameters, reversibility.",
+        "rationale": "Align to ISO/IEC 20889; do not own classification assignment or privacy-floor arithmetic.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-004",
+          "SRC-006"
+        ],
+        "layers": [
+          {
+            "id": "xct-dsc-treatment-catalog",
+            "name": "Technique classification alignment",
+            "description": "Reference vocabulary of de-identification technique classes a per-path rule may align to, recorded as alignment rather than conformance.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-treatment-catalog-iso20889",
+                "name": "Aligned de-identification technique classes",
+                "description": "ISO/IEC 20889:2018 classifies privacy-enhancing de-identification techniques (statistical: sampling, aggregation; cryptographic: deterministic, order-preserving, format-preserving encryption; suppression: masking, local suppression; plus generalisation and related families) and their applicability against re-identification risk, in accordance with ISO/IEC 29100. NIST SP 800-188 adds removing direct identifiers, transforming quasi-identifiers, synthetic data, k-anonymity, differential privacy, and warns that encryption/hashing of identifiers is not de-identification if a key or rainbow table remains. This finding is an alignment vocabulary, not a claim that a given policy is ISO-conformant.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003"
+                ],
+                "questions": [
+                  {
+                    "id": "q-tech-class",
+                    "text": "Which ISO/IEC 20889 technique class (or NIST SP 800-188 technique) does this rule align to?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "technique_class — enum(suppress|mask|local_suppress|generalise|bucket|round|sample|aggregate|perturb|pseudonymise|deterministic_encrypt|fpe|ope|hash|tokenise|synthetic|other), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tech-iso-ref",
+                    "text": "What exact ISO/IEC 20889 clause or term is cited, and is conformance claimed or only alignment recorded?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "iso20889_alignment — object{clause, conformance_claimed:boolean}, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-tech-crypto-warning",
+                    "text": "If the technique is cryptographic, is the key/secret retained such that the transform is reversible by the holder (NIST warning: not de-identification)?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "crypto_key_retained — boolean, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-tech-technique-class",
+                    "name": "technique_class",
+                    "description": "Aligned de-identification technique class for a rule (suppression, masking, generalisation, bucketing, rounding, sampling, aggregation, perturbation, pseudonymisation, cryptographic encoding, synthetic replacement, other).",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-tech-iso20889-alignment",
+                    "name": "iso20889_alignment",
+                    "description": "Cited ISO/IEC 20889 clause or term for the technique.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-tech-nist-technique-alignment",
+                    "name": "nist_technique_alignment",
+                    "description": "Cited NIST SP 800-188 technique the rule aligns to.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-tech-conformance-claimed",
+                    "name": "conformance_claimed",
+                    "description": "Whether conformance is claimed or only alignment is recorded.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "Technique classes are a reference vocabulary with URIs into ISO/IEC 20889 / NIST SP 800-188. No artifact is stored beyond the coded value on each rule."
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-treatment-rule",
+            "name": "Per-path treatment parameters and reversibility",
+            "description": "Per-path treatment records: technique, technique-specific parameters, reversibility, placeholder strategy and optional re-identification code policy.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004",
+              "SRC-006"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-treatment-rule-params",
+                "name": "Treatment rule: path, technique, parameters, reversibility, placeholder",
+                "description": "Each selected path may be transformed rather than passed through. Parameters include redaction token vs omission vs null (OData omit-values distinguishes nulls vs defaults), generalisation hierarchy (HIPAA Safe Harbor: ZIP to 3 digits when unit > 20,000; dates to year; ages ≥90 bucketed), rounding precision, bucket edges, and pseudonym format. HIPAA 164.514(c) allows a re-identification code only if it is not derived from the individual and the mechanism is not disclosed. GDPR Article 4(5) (via 2016/679) defines pseudonymisation as processing that can no longer be attributed without additional information kept separately — reversibility by the controller is expected. Reversibility is a local attribute; key custody is not.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "questions": [
+                  {
+                    "id": "q-tx-path",
+                    "text": "Which source path (WM-DAT-004) does this treatment apply to, and does a WM-XCT-020 classification binding constrain minimum strength?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "treated_path — object{path, source_schema_ref, classification_binding_ref}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tx-params",
+                    "text": "What technique-specific parameters apply (mask alphabet, generalisation hierarchy, bucket edges, rounding quantum, noise distribution, token format)?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "treatment_parameters — object, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tx-reversibility",
+                    "text": "Is the transform irreversible, reversible by the holder with separately kept secrets, or reversible by the recipient?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "reversibility — enum(irreversible|holder_reversible|recipient_reversible), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tx-placeholder",
+                    "text": "When a value is removed, is the member omitted, set null, replaced with a redaction token, or defaulted (align OData omit-values=nulls|defaults)?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "placeholder_strategy — enum(omit_member|null|redaction_token|default_value), cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tx-reid-code",
+                    "text": "If a record-level code is emitted for later re-identification by the holder (HIPAA 164.514(c)), is it stipulated as non-derived and is the mechanism forbidden from disclosure?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "reidentification_code_policy — object{permitted, non_derived, mechanism_undisclosed}, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-tx-path",
+                    "name": "path",
+                    "description": "Source path (WM-DAT-004) the treatment applies to.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-tx-technique-class",
+                    "name": "technique_class",
+                    "description": "Technique applied to this path.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "de-tx-parameters",
+                    "name": "parameters",
+                    "description": "Technique-specific parameters: mask alphabet, generalisation hierarchy, bucket edges, rounding quantum, noise distribution, token format.",
+                    "value_kind": "object",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "de-tx-reversibility",
+                    "name": "reversibility",
+                    "description": "Whether the transform is irreversible, reversible by the holder with separately kept secrets, or reversible by the recipient.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "de-tx-placeholder-strategy",
+                    "name": "placeholder_strategy",
+                    "description": "How a removed value appears: member omitted, null, redaction token, or default value, aligning OData omit-values.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-tx-reidentification-code-policy",
+                    "name": "reidentification_code_policy",
+                    "description": "Whether a record-level re-identification code is permitted, stipulated as non-derived, with the mechanism forbidden from disclosure (45 CFR 164.514(c)).",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-transformation-rule",
+                    "name": "Transformation rule set",
+                    "description": "Per-path technique, parameters, reversibility, placeholder strategy, optional re-identification-code policy.",
+                    "media_or_form": [
+                      "rule set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Dimension-assigned UUID/ULID per rule set, keyed by treated path within the owning policy version.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-treatment-packs",
+            "name": "Identifier packs and limited-data-set alignments",
+            "description": "Reusable jurisdictional identifier packs — HIPAA Safe Harbor and limited data set — applied as a bundle of per-path rules.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-treatment-packs-hipaa",
+                "name": "Safe Harbor identifier pack and limited data set as reusable treatment packs",
+                "description": "45 CFR 164.514(b)(2) lists 18 identifier classes whose removal, plus absence of actual knowledge of residual identifiability, is one implementation of de-identification (Safe Harbor). 164.514(b)(1) is expert determination. 164.514(e) defines a limited data set that still excludes a shorter direct-identifier list and requires a data-use agreement (the agreement itself is WM-XCT-002). These are reusable treatment packs that a projection policy may apply as a bundle of per-path rules. They are US-health alignments, not universal de-identification, and must not be claimed as GDPR anonymisation without evidence.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-004"
+                ],
+                "questions": [
+                  {
+                    "id": "q-pack-which",
+                    "text": "Does this policy apply a named identifier pack (HIPAA Safe Harbor 18, HIPAA limited data set 16, or a local pack), and under which jurisdiction?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "applied_identifier_pack — object{pack_id, jurisdiction, identifier_classes[]}, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-pack-expert",
+                    "text": "If Safe Harbor is not used, is an expert-determination analysis referenced (164.514(b)(1)), and where is that evidence held?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "expert_determination_ref — iri_or_id, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-pack-lds",
+                    "text": "If a limited data set is the grain, which WM-XCT-002 data-use agreement is referenced, and are residual city/state/ZIP and dates retained as specified by 164.514(e)(2)?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "limited_data_set_binding — object{contract_ref, retained_geo_and_dates}, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-pack-knowledge",
+                    "text": "Has the holder attested they do not have actual knowledge that remaining data can identify an individual (164.514(b)(2)(ii)), and at what observation time?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "actual_knowledge_attestation — object{attested_by, event_time, observation_time}, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-pack-id",
+                    "name": "pack_id",
+                    "description": "Identifier of the applied identifier pack (HIPAA Safe Harbor 18, HIPAA limited data set 16, or a local pack).",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-pack-jurisdiction",
+                    "name": "jurisdiction",
+                    "description": "Jurisdiction under which the pack is an alignment rather than universal de-identification.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-pack-identifier-classes",
+                    "name": "identifier_classes",
+                    "description": "Identifier classes removed or restricted by the pack.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-pack-expert-determination-ref",
+                    "name": "expert_determination_ref",
+                    "description": "Reference to an expert-determination analysis when Safe Harbor is not used (45 CFR 164.514(b)(1)).",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-pack-limited-data-set",
+                    "name": "limited_data_set",
+                    "description": "Limited-data-set binding: the WM-XCT-002 data-use agreement referenced and the residual geography and dates retained.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-pack-actual-knowledge-attestation",
+                    "name": "actual_knowledge_attestation",
+                    "description": "Holder attestation of no actual knowledge that remaining data can identify an individual, with attester, event time and observation time.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-treatment-pack",
+                    "name": "Identifier treatment pack",
+                    "description": "Reusable bundle of identifier-class treatments (e.g. HIPAA Safe Harbor 18, limited data set 16) as alignment, not claimed conformance.",
+                    "media_or_form": [
+                      "rule pack"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Named pack_id qualified by jurisdiction (HIPAA Safe Harbor 18, limited data set 16) or a local pack identifier.",
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "xct-dsc-compiled",
+        "name": "Compiled consumer shape",
+        "description": "The schema fragment a consumer actually receives, its fingerprint, incomplete/subsetted marking, and dry-run against the source schema.",
+        "rationale": "Serving and audit remain sibling models: the compiled shape is not the source contract (WM-DAT-004) and not the runtime decision (WM-XCT-038).",
+        "source_refs": [
+          "SRC-009",
+          "SRC-010",
+          "SRC-011",
+          "SRC-012"
+        ],
+        "layers": [
+          {
+            "id": "xct-dsc-compiled-template",
+            "name": "Output template / projected schema fragment",
+            "description": "The consumer-facing schema fragment produced from one policy version and one source-schema version, with emitted paths, omitted-path accounting, a self-describing handle and target media types.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-010",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-compiled-template-shape",
+                "name": "Compiled output template derived from a policy version and source schema",
+                "description": "OData Context URL makes a payload self-contained by pointing at metadata plus a fragment naming selected/expanded properties (e.g. $metadata#Customers(Name,Rating)/$entity). GraphQL responses are shaped exactly by the selection set. FHIR subsetted resources must remain valid FHIR. The compiled template is a reusable artifact: one policy version + one source-schema version produce one output schema fragment listing emitted paths, types, nullability, and omitted-path count. It is not the source contract (WM-DAT-004) and not the runtime decision (WM-XCT-038).",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-010",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-tpl-id",
+                    "text": "What is the compiled template's identifier (master-system id, IRI, or Dimension UUID/ULID) and which policy version and source-schema version produced it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "template_identity — object{template_id, policy_version_ref, source_schema_ref}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tpl-emitted",
+                    "text": "Which paths and types appear in the consumer schema fragment, and how many source paths were omitted?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "emitted_shape — object{emitted_paths[], omitted_path_count, nullability_map}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-tpl-context",
+                    "text": "What self-describing handle (OData context URL analogue, GraphQL type name, FHIR profile) lets a recipient interpret the projected payload without out-of-band rules?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "context_url_or_equivalent — iri_or_string, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-tpl-media",
+                    "text": "Which output media types / profiles is this template compiled for (application/json, application/fhir+json, application/vnd.api+json, application/json;odata.metadata=minimal)?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "output_media_type — array<string>, cardinality 1..n"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-tpl-template-id",
+                    "name": "template_id",
+                    "description": "Identifier of the compiled template (master-system identifier, governed IRI, or Dimension UUID/ULID).",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-policy-version-ref",
+                    "name": "policy_version_ref",
+                    "description": "Policy version that produced the template; generic version identity is owned by WM-KNW-012.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-source-schema-ref",
+                    "name": "source_schema_ref",
+                    "description": "Source schema version the template is compiled against; reference only, owned by WM-DAT-004.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-emitted-paths",
+                    "name": "emitted_paths",
+                    "description": "Paths, types and nullability that appear in the consumer schema fragment.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-omitted-path-count",
+                    "name": "omitted_path_count",
+                    "description": "How many source paths were omitted from the compiled shape.",
+                    "value_kind": "number",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-context-url-or-equivalent",
+                    "name": "context_url_or_equivalent",
+                    "description": "Self-describing handle (OData context URL analogue, GraphQL type name, FHIR profile) letting a recipient interpret the projected payload.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-tpl-output-media-type",
+                    "name": "output_media_type",
+                    "description": "Output media types or profiles the template is compiled for.",
+                    "value_kind": "code",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-output-template",
+                    "name": "Compiled output template",
+                    "description": "Consumer schema fragment, emitted paths, omitted-path count, context-URL analogue, media types, compile timestamps.",
+                    "media_or_form": [
+                      "schema fragment"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "template_id following the model identity priority (authoritative master-system identifier, else governed IRI when published, else Dimension-assigned UUID/ULID); at most one template per (policy version, source-schema version, media type) tuple.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-compiled-integrity",
+            "name": "Fingerprint and subsetted marking",
+            "description": "Cryptographic fingerprint of the compiled shape and the completeness marking that stops a subsetted payload overwriting a complete record.",
+            "source_refs": [
+              "SRC-009",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-compiled-integrity-fingerprint",
+                "name": "Shape fingerprint and incomplete-resource marking",
+                "description": "A cryptographic fingerprint of the compiled template (canonicalised emitted paths + treatments + grain + source-schema version) lets a later access-audit record (WM-XCT-004) prove which shape was authorised. FHIR requires SUBSETTED tagging so an incomplete resource is not used to overwrite a complete one. OData Prefer omit-values and return=minimal also change payload completeness and MUST be reflected in Preference-Applied / Vary. Fingerprint algorithm, canonicalisation, and the subsetted flag are local; the audit append is not.",
+                "source_refs": [
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "q-fp-alg",
+                    "text": "Which hash algorithm and canonicalisation (sorted path list, treatment params, grain, schema version) produce the shape fingerprint?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "fingerprint_spec — object{alg, canonicalisation, value}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-fp-subsetted",
+                    "text": "Must served instances carry an incomplete/SUBSETTED completeness token so they cannot overwrite full records?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "subsetted_flag — boolean, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-fp-audit-fields",
+                    "text": "Which fingerprint and policy-version fields MUST be supplied to WM-XCT-004 on each serve, without this model storing the trail?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "audit_payload_fields — object{policy_version_id, shape_fingerprint, template_id}, cardinality 1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-fp-alg",
+                    "name": "fingerprint_alg",
+                    "description": "Hash algorithm producing the shape fingerprint.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-fp-value",
+                    "name": "fingerprint_value",
+                    "description": "Digest of the canonicalised compiled shape, cited by later access-audit records in WM-XCT-004.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-fp-canonicalisation",
+                    "name": "canonicalisation",
+                    "description": "Canonicalisation applied before hashing: sorted emitted-path list, treatment parameters, grain, source-schema version.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-fp-subsetted-flag",
+                    "name": "subsetted_flag",
+                    "description": "Whether served instances must carry an incomplete/SUBSETTED completeness token so they cannot overwrite complete records.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "de-fp-completeness-token",
+                    "name": "completeness_token",
+                    "description": "Token marking payload completeness, including OData omit-values and return=minimal effects reflected in Preference-Applied and Vary.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-shape-fingerprint",
+                    "name": "Shape fingerprint record",
+                    "description": "Algorithm, canonicalisation, digest, subsetted flag; payload for WM-XCT-004.",
+                    "media_or_form": [
+                      "record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Identified by the digest value together with its algorithm and canonicalisation, bound to one template_id and policy version.",
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-compiled-preview",
+            "name": "Schema-only preview and invalidation triggers",
+            "description": "Dry-run compile of a policy against its source schema without instance data, and the referenced-version drift that makes a compiled template stale.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-009",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-compiled-preview-dryrun",
+                "name": "Dry-run compile against source schema and invalidation conditions",
+                "description": "A counterparty can obtain the compiled template without instance data (shape preview). GraphQL validation of selection sets against the type system is the analogue: validity of a requested shape is decided before execution. ISO/IEC 27559 requires identifiability reassessment across the de-identified-data lifecycle. Local invalidation triggers: source-schema version change (WM-DAT-004), classification-binding change (WM-XCT-020), or cohort-floor change (WM-XCT-005). Approval of a new policy version remains WM-KNW-012; this finding only names compile inputs and stale-template conditions.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-009",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "q-prev-valid",
+                    "text": "Does the policy compile cleanly against the referenced source schema, and which paths are unknown, type-incompatible, or under-protected versus the classification binding?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "preview_result — object{valid, errors[], warnings[]}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-prev-stale",
+                    "text": "Which referenced versions (schema, classification binding, cohort floor, policy) would invalidate this compiled template?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "invalidation_refs — array<{ref_type, ref_id, expected_version}>, cardinality 1..n"
+                    ]
+                  },
+                  {
+                    "id": "q-prev-times",
+                    "text": "When was the template compiled (event time) and when was that fact observed/ingested (RFC 3339)?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "compile_times — object{event_time, observation_time}, cardinality 1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-prev-valid",
+                    "name": "preview_valid",
+                    "description": "Whether the policy compiles cleanly against the referenced source schema.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-prev-compile-errors",
+                    "name": "compile_errors",
+                    "description": "Unknown, type-incompatible, or under-protected paths reported by the dry run, with warnings.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-prev-stale-reason",
+                    "name": "stale_reason",
+                    "description": "Referenced-version drift invalidating the compiled template: source schema, classification binding, cohort floor, or policy version.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "de-prev-compiled-at",
+                    "name": "compiled_at",
+                    "description": "Event time at which the template was compiled, RFC 3339 with seconds and explicit offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "de-prev-observed-at",
+                    "name": "observed_at",
+                    "description": "Observation/ingestion time of the compile fact, recorded separately from event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-009",
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "xct-dsc-compiled-preview-dryrun-art-output-template",
+                    "name": "Compiled output template",
+                    "description": "Consumer schema fragment, emitted paths, omitted-path count, context-URL analogue, media types, compile timestamps.",
+                    "media_or_form": [
+                      "schema fragment"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "template_id following the model identity priority (authoritative master-system identifier, else governed IRI when published, else Dimension-assigned UUID/ULID); at most one template per (policy version, source-schema version, media type) tuple.",
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-010",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "xct-dsc-binding",
+        "name": "Binding parameters",
+        "description": "Subject-specific parameters that attach a projection policy to a contract, object type, audience or request class.",
+        "rationale": "Does not own the contract, the audience directory, or conflict-combining algorithms.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-004",
+          "SRC-005",
+          "SRC-007"
+        ],
+        "layers": [
+          {
+            "id": "xct-dsc-binding-target",
+            "name": "Attachment target and purpose alignment",
+            "description": "Attachment parameters naming what a shape applies to — contract or grant, object type, audience or request class — and the purpose hint that keeps it minimum necessary.",
+            "source_refs": [
+              "SRC-004",
+              "SRC-005",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-binding-target-attach",
+                "name": "Where a shape applies: contract, object type, audience",
+                "description": "XACML Targets match subject/resource/action/environment to select applicable policy; the combining algorithm stays in WM-KNW-012 / evaluation in WM-XCT-038. HIPAA 164.514(d) requires policies that limit PHI disclosed to the amount reasonably necessary for the purpose, including workforce classes and routine-disclosure protocols. GDPR Article 5(1)(b)–(c) couple purpose limitation with data minimisation. This finding stores only the attachment parameters: target kind, target ref, optional purpose hint aligning to the WM-XCT-002 grant.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-bind-target",
+                    "text": "To what is this policy attached: a WM-XCT-002 contract/grant, a source object type (WM-DAT-004), an audience/class of recipient, or a named request protocol?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "target — object{kind, ref}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-bind-purpose",
+                    "text": "What purpose hint must be compatible with the referenced grant so the shape remains the minimum necessary for that purpose?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "purpose_hint — string_or_code, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-bind-many",
+                    "text": "Is this policy reusable across many bindings (one shape, many contracts/audiences), and which binding identifiers currently point at it?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "binding_ids — array<id>, cardinality 0..n"
+                    ]
+                  },
+                  {
+                    "id": "q-bind-owner-ref",
+                    "text": "Which WM-XCT-001 owner or steward is referenced as authorised to attach this shape (reference only)?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "owner_or_steward_ref — iri_or_id, cardinality 1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-bind-binding-id",
+                    "name": "binding_id",
+                    "description": "Identifier of the binding record, distinct from the policy it attaches.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-target-kind",
+                    "name": "target_kind",
+                    "description": "What the shape is attached to: contract or grant, source object type, audience class, or named request protocol.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-target-ref",
+                    "name": "target_ref",
+                    "description": "Reference to the attachment target.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-purpose-hint",
+                    "name": "purpose_hint",
+                    "description": "Purpose that must be compatible with the referenced grant so the shape remains the minimum necessary.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-object-type-ref",
+                    "name": "object_type_ref",
+                    "description": "Source object type the shape applies to; reference only, owned by WM-DAT-004.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-audience-ref",
+                    "name": "audience_ref",
+                    "description": "Audience or recipient class the shape applies to; the audience directory is not stored here.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-contract-or-grant-ref",
+                    "name": "contract_or_grant_ref",
+                    "description": "Access contract or consent grant the shape is bound to; reference only, owned by WM-XCT-002.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "de-bind-owner-or-steward-ref",
+                    "name": "owner_or_steward_ref",
+                    "description": "Owner or delegated steward authorised to attach this shape; reference only, owned by WM-XCT-001.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "art-policy-binding",
+                    "name": "Projection binding parameters",
+                    "description": "Target kind/ref, purpose hint, effective window, precedence hint, environment/location parameter, owner and contract references.",
+                    "media_or_form": [
+                      "parameter record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "binding_id as a governed IRI or Dimension-assigned UUID/ULID, distinct from the identity of the policy it attaches.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "xct-dsc-binding-window",
+            "name": "Effective window and precedence parameters",
+            "description": "Effective time window, precedence hint and environment or location parameter of a binding, supplied to but not evaluated by the combining machinery.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-003",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "xct-dsc-binding-window-when",
+                "name": "Effective time window and precedence hint",
+                "description": "A binding names when the shape is effective (RFC 3339). XACML environment attributes include time; combining algorithms (deny-overrides, first-applicable, only-one-applicable) are generic conflict machinery in WM-KNW-012. This model may carry a local precedence integer or specificity hint used as a parameter by that machinery, and an environment/location constraint only as a binding parameter (e.g. 'on-prem enclave' per NIST Five Safes / sharing-model). It does not evaluate those constraints.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-007"
+                ],
+                "questions": [
+                  {
+                    "id": "q-win-fromto",
+                    "text": "What is the inclusive effective window of this binding (RFC 3339 with offset or Z), and is open-ended end permitted?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "effective_window — object{from, to_or_null}, cardinality 1"
+                    ]
+                  },
+                  {
+                    "id": "q-win-prec",
+                    "text": "What precedence or specificity hint should WM-KNW-012/XCT-038 use when multiple projection policies match, without this model combining them?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "precedence_hint — integer, cardinality 0..1"
+                    ]
+                  },
+                  {
+                    "id": "q-win-env",
+                    "text": "Is this shape limited to a named environment or location (query interface, enclave, public publish), as a parameter rather than an evaluation?",
+                    "kind": "spatial",
+                    "answer_data": [
+                      "environment_or_location — object{environment, location_code}, cardinality 0..1"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "de-win-effective-from",
+                    "name": "effective_from",
+                    "description": "Inclusive start of the binding's effective window, RFC 3339 with explicit offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-win-effective-to",
+                    "name": "effective_to",
+                    "description": "End of the binding's effective window, or null when open-ended.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-win-precedence-hint",
+                    "name": "precedence_hint",
+                    "description": "Precedence or specificity hint consumed by WM-KNW-012 combining and WM-XCT-038 evaluation; not a local combiner.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-win-environment-constraint",
+                    "name": "environment_constraint",
+                    "description": "Named environment the shape is limited to (query interface, enclave, public publish), as a parameter rather than an evaluation.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "de-win-location-constraint",
+                    "name": "location_constraint",
+                    "description": "Location code the shape is limited to, carried as a binding parameter only.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "xct-dsc-binding-window-when-art-policy-binding",
+                    "name": "Projection binding parameters",
+                    "description": "Target kind/ref, purpose hint, effective window, precedence hint, environment/location parameter, owner and contract references.",
+                    "media_or_form": [
+                      "parameter record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "binding_id as a governed IRI or Dimension-assigned UUID/ULID, distinct from the identity of the policy it attaches.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "fn-compile-output-template",
+      "name": "Compile output template",
+      "description": "Given a policy version and a WM-DAT-004 source schema version, produce an output template and fingerprint. Does not serve data.",
+      "inputs": [
+        "policy version",
+        "WM-DAT-004 source-schema version",
+        "target output media type"
+      ],
+      "outputs": [
+        "compiled output template",
+        "shape fingerprint"
+      ],
+      "preconditions": [
+        "The referenced policy version and source-schema version are resolvable"
+      ],
+      "effects": [
+        "At most one output template is held per (policy version, source-schema version, media type) tuple",
+        "No instance data is served"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "fn-preview-shape",
+      "name": "Preview shape without instance data",
+      "description": "Validate paths and treatments against schema and classification-binding constraints; return template plus errors/warnings.",
+      "inputs": [
+        "policy version",
+        "source schema reference",
+        "classification binding reference"
+      ],
+      "outputs": [
+        "compiled template preview",
+        "compile errors and warnings"
+      ],
+      "preconditions": [
+        "Preview endpoints neither accept nor return instance data"
+      ],
+      "effects": [
+        "Reports whether the policy compiles cleanly against the referenced source schema",
+        "Returns no instance data"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "fn-intersect-client-fieldset",
+      "name": "Intersect client fieldset with policy maximum",
+      "description": "Apply intersection_rule (clip/reject/narrow). Runtime decision to serve remains WM-XCT-038.",
+      "inputs": [
+        "client-requested fieldset",
+        "governed maximum shape",
+        "intersection_rule"
+      ],
+      "outputs": [
+        "effective fieldset, clipped or rejected per the intersection rule"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Narrows or rejects a client request against the governed maximum",
+        "Does not make the runtime decision to serve, which remains WM-XCT-038"
+      ],
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "fn-fingerprint-shape",
+      "name": "Fingerprint compiled shape",
+      "description": "Canonicalise emitted paths, treatments, grain and schema version; hash.",
+      "inputs": [
+        "emitted paths",
+        "treatment rules",
+        "grain class",
+        "source-schema version"
+      ],
+      "outputs": [
+        "shape fingerprint with algorithm and canonicalisation"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Yields a digest that a later access-audit record in WM-XCT-004 can cite to prove which shape was authorised"
+      ],
+      "source_refs": [
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "fn-enumerate-omitted-paths",
+      "name": "Enumerate omitted paths",
+      "description": "Diff source schema paths against emitted paths for catalogue cards and reviewer views.",
+      "inputs": [
+        "source schema paths",
+        "emitted paths"
+      ],
+      "outputs": [
+        "omitted path list",
+        "omitted-path count"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Supplies omitted-path accounting to catalogue cards and reviewer views"
+      ],
+      "source_refs": [
+        "SRC-011",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "fn-apply-treatment-pack",
+      "name": "Expand identifier treatment pack",
+      "description": "Expand a named pack (e.g. Safe Harbor) into per-path rules against the source schema.",
+      "inputs": [
+        "named identifier pack",
+        "source schema"
+      ],
+      "outputs": [
+        "per-path treatment rules"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Materialises a reusable identifier pack as per-path rules on the policy, recorded as a jurisdictional alignment"
+      ],
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "fn-check-classification-floor",
+      "name": "Check treatment versus classification binding",
+      "description": "Compare each path's technique with the referenced WM-XCT-020 binding's minimum; does not assign labels.",
+      "inputs": [
+        "per-path technique class",
+        "WM-XCT-020 classification binding reference"
+      ],
+      "outputs": [
+        "under-protected path findings"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Flags paths whose technique is weaker than the referenced minimum",
+        "Does not assign or change classification labels"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "id": "fn-reference-cohort-floor",
+      "name": "Attach cohort floor reference",
+      "description": "Require a WM-XCT-005 floor id on aggregate-only shapes; does not compute k or epsilon.",
+      "inputs": [
+        "grain class",
+        "cohort_floor_ref"
+      ],
+      "outputs": [
+        "validated cohort floor reference on the aggregate-only shape"
+      ],
+      "preconditions": [
+        "grain_class is aggregate_only"
+      ],
+      "effects": [
+        "Blocks an aggregate-only shape carrying no cohort floor reference",
+        "Does not compute thresholds, k, or epsilon"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-KNW-012",
+      "relation": "EXTEND",
+      "purpose": "A projection/disclosure policy is a specialised governed policy whose payload is an output-shape rule set (paths, treatments, grain, compiled template). May carry locally: subject-specific shape payload, compiled-template identity, binding parameters, precedence hint for shape intersection. Must not reproduce: generic policy identity, issuer/authority, approval and conflict/combining algorithms, supersession state machine. Rationale: keep generic policy identity, authority, lifecycle and conflict rules in WM-KNW-012.",
+      "required": true,
+      "source_refs": [
+        "SRC-002",
+        "SRC-006",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "WM-XCT-001",
+      "relation": "REFERENCE",
+      "purpose": "The policy names the owner or delegated steward authorised to govern disclosure shape. May carry locally: owner_or_steward_ref. Must not reproduce: ownership graph, delegation instruments, holder lifecycle. Rationale: ownership and delegation remain WM-XCT-001.",
+      "required": true,
+      "source_refs": [
+        "SRC-004",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "WM-XCT-002",
+      "relation": "REFERENCE",
+      "purpose": "A projection policy may be bound to an access contract or consent grant that already says the flow is allowed. May carry locally: contract_or_grant_ref, purpose_alignment_hint. Must not reproduce: authorization purpose, parties, consent lifecycle. Rationale: authorization purpose, parties and consent lifecycle remain WM-XCT-002.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "WM-XCT-004",
+      "relation": "REFERENCE",
+      "purpose": "Every served projection contributes applied policy version id and compiled-shape fingerprint as fields on an access-audit event. May carry locally: policy_version_id, shape_fingerprint. Must not reproduce: audit event type, append-only trail, who-accessed-what log. Rationale: audit event and append-only access trail remain WM-XCT-004.",
+      "required": true,
+      "source_refs": [
+        "SRC-007",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "WM-XCT-005",
+      "relation": "REFERENCE",
+      "purpose": "Aggregate-only projections name a cohort/privacy-floor reference that XCT-005 evaluates. May carry locally: cohort_floor_ref, kept_dimensions, temporal_grain. Must not reproduce: threshold calculation, privacy-aggregation assurance, differential-privacy budget accounting. Rationale: threshold calculation and privacy aggregation assurance remain WM-XCT-005.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "WM-XCT-020",
+      "relation": "REFERENCE",
+      "purpose": "Field treatment may be constrained by a governed sensitivity classification binding. May carry locally: classification_binding_ref, minimum_treatment_strength_hint. Must not reproduce: classification scheme, membership assignment, review cadence of labels. Rationale: classification scheme membership and assignment remain WM-XCT-020.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "WM-DAT-004",
+      "relation": "REFERENCE",
+      "purpose": "Projection paths and compiled output shapes are expressed against a governed source schema or data contract. May carry locally: source_schema_ref, path_expressions, compiled_output_schema_fragment. Must not reproduce: source semantics, instance validation contract, schema evolution process. Rationale: source semantics and validation contract remain WM-DAT-004.",
+      "required": true,
+      "source_refs": [
+        "SRC-009",
+        "SRC-010",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "WM-XCT-038",
+      "relation": "REFERENCE",
+      "purpose": "Runtime enforcement evaluates this policy for a concrete request and may return treatment obligations; this model does not evaluate, execute, or explain. May carry locally: policy_id, compiled_template_id, treatment rules as decision input. Must not reproduce: decision input assembly, Permit/Deny/Indeterminate, obligation execution, explanation, enforcement. Rationale: decision input, outcome, explanation and enforcement execution remain WM-XCT-038.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The owner package SHALL publish AGENTS.md carrying Name, Type, Specification URL, Storage type URL, Interface URL and Processes URL for the projection/disclosure policy payload.",
+        "The owner package SHALL name the WM-XCT-001 owner or steward authorised to attach shapes; the ownership graph itself is not stored here.",
+        "The owner package SHALL reference, not copy, the source schema (WM-DAT-004), classification binding (WM-XCT-020), cohort floor (WM-XCT-005), grant (WM-XCT-002), audit trail (WM-XCT-004) and enforcement (WM-XCT-038) packages.",
+        "The owner package SHALL hold compiled templates and fingerprints against the specialised policy version, leaving generic policy identity, approval and supersession to WM-KNW-012."
+      ],
+      "namespace_guidance": "Specialised payload records live under the vr.wm-xct-003 registry entry and inherit generic policy identity from WM-KNW-012; compiled templates and fingerprints take a governed IRI when published, otherwise a Dimension-assigned UUID/ULID. Path expressions are namespaced by the referenced source-schema version (WM-DAT-004), never by storage format — JSON, YAML, Markdown, HTML, Git, MCP and MongoDB are projections, not semantics.",
+      "registry_links": [
+        "vr.wm-xct-003 — Projection / Disclosure Policy registry entry",
+        "WM-KNW-012 — generic governed policy entry this payload EXTENDs",
+        "WM-XCT-001, WM-XCT-002, WM-XCT-004, WM-XCT-005, WM-XCT-020, WM-XCT-038, WM-DAT-004 — referenced sibling registry entries"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Canonicalise a compiled shape as the sorted emitted-path list plus treatment parameters, grain class and source-schema version before hashing.",
+        "A projection policy compiles to at most one output template per (policy version, source-schema version, media-type) tuple.",
+        "Record alignments (ISO/IEC 20889, NIST SP 800-188, HIPAA, GDPR, XACML, OData, GraphQL, FHIR, JSON:API) as coded alignment values with an explicit conformance_claimed flag."
+      ],
+      "patch_rules": [
+        "Revise path lists, treatments, grain, intersection rule or binding parameters by creating a new specialised version payload; generic supersession remains WM-KNW-012.",
+        "Recompile templates after a referenced schema or classification-binding change rather than patching a compiled template in place.",
+        "Update effective windows and precedence hints on binding records without reissuing the shape payload."
+      ],
+      "compatibility_rules": [
+        "A compiled template is stale when the referenced source-schema version, classification binding, cohort floor or policy version drifts; stale templates are tombstoned, not silently served.",
+        "Served instances carry an incomplete/SUBSETTED completeness token so a subsetted payload cannot overwrite a complete record.",
+        "Compile-time templates cannot assume wire-level identical behaviour across protocols; per-protocol differences are recorded as interoperability alignments, not conformance claims."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "authoritative master-system identifier of the specialised policy instance inherited from WM-KNW-012",
+        "governed global IRI for a compiled output template when published",
+        "Dimension-assigned UUID/ULID for local compiled-shape and fingerprint records"
+      ],
+      "timestamp_rule": "RFC 3339 with seconds and explicit offset or Z; record event time and observation/ingestion time separately when a compile, bind, or serve event is observed.",
+      "serial_naming_rule": "No artifact in this model is serially numbered: compiled templates are keyed by the (policy version, source-schema version, media type) tuple and their fingerprint, treatment packs by pack_id and jurisdiction, and bindings by binding_id.",
+      "integrity_rule": "A projection policy SHALL compile to at most one output template per (policy version, source-schema version, media-type) tuple; the template SHALL be fingerprinted; served disclosures SHALL cite that fingerprint without this model storing the access trail. Default treatment SHALL NOT be pass-through unless grain_class is subset and a documented justification is recorded. Aggregate-only policies SHALL carry a cohort_floor_ref. Generic identity, approval, and conflict combining SHALL be inherited from WM-KNW-012, not reimplemented."
+    },
+    "policies": [
+      "Need-to-shape: the published maximum leaving shape is the least revealing grain and strongest treatments still adequate for the referenced purpose (GDPR Art 5(1)(c) and 25(2); HIPAA 164.514(d)).",
+      "Compile-before-serve: no instance payload is produced from an uncompiled or stale template; stale includes schema, classification-binding, or cohort-floor version drift.",
+      "Reference-don't-copy: owner, grant, audit, classification, threshold, schema, and PDP semantics remain in sibling models; this model stores only refs and subject-specific parameters."
+    ],
+    "crud": {
+      "read": [
+        "Read published catalogue cards (name, grain, omitted-path count, fingerprint) for prospective grantees.",
+        "Read full rule set, treatment pack, and version lineage for owner reviewers (lineage display only; state machine is WM-KNW-012).",
+        "Read compiled template and context-URL analogue for a given policy version + schema version.",
+        "Preview/dry-run compile without instance data."
+      ],
+      "create": [
+        "Create a specialised projection-policy payload (shape, treatments, grain) under a WM-KNW-012 identity.",
+        "Create field-scope, transformation-rule, treatment-pack, and aggregation-level artifacts.",
+        "Create binding-parameter records pointing at contract/object-type/audience refs.",
+        "Compile a new output template and fingerprint."
+      ],
+      "update": [
+        "Revise path lists, treatments, grain, intersection rule, or binding parameters by creating a new specialised version payload (generic supersession is WM-KNW-012).",
+        "Recompile templates after a referenced schema or classification-binding change.",
+        "Update effective windows and precedence hints on bindings."
+      ],
+      "delete": [
+        "Retire a binding parameter record when its contract ends (contract lifecycle is WM-XCT-002).",
+        "Tombstone compiled templates that are stale; do not silently serve them.",
+        "Purge preview caches. Do not delete audit citations in WM-XCT-004."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Shape author",
+        "responsibilities": [
+          "Draft path lists, treatments, grain, and intersection rule under authority delegated via WM-XCT-001.",
+          "Cite source schema, classification bindings, and cohort floors rather than copying them."
+        ]
+      },
+      {
+        "name": "Shape reviewer",
+        "responsibilities": [
+          "Inspect full rules, treatment-pack justifications, omitted-path counts, and compile errors before the generic policy is approved in WM-KNW-012.",
+          "Confirm HIPAA/GDPR alignments are labelled as alignments, not conformance claims."
+        ]
+      },
+      {
+        "name": "Shape compiler",
+        "responsibilities": [
+          "Run compile/preview, persist templates and fingerprints, mark subsetted completeness tokens.",
+          "Invalidate templates on referenced-version drift."
+        ]
+      },
+      {
+        "name": "Grantee consumer",
+        "responsibilities": [
+          "Browse catalogue cards and request a shape preview.",
+          "Submit a client fieldset no wider than the published maximum; consume only the compiled template."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny catalogue internals (per-path treatments, rationale, classification refs) to anyone except the owner/steward and designated reviewers; publish only catalogue cards and compiled consumer templates to bound grantees.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Public catalogue cards (name, grain, omitted-path count) MAY be readable without a grant when the owner so binds.",
+        "Emergency break-glass to read a full rule set is an access exception logged in WM-XCT-004, not modelled here.",
+        "Preview endpoints MUST NOT accept or return instance data."
+      ],
+      "audit_requirements": [
+        "Every compile, bind, and preview SHALL be eligible for an audit event in WM-XCT-004 carrying template_id, policy_version_id, and shape_fingerprint.",
+        "This model SHALL NOT store append-only access trails."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "Specification URL (projection/disclosure policy specialised payload)",
+        "Processes URL (compile, preview, bind, intersect, fingerprint)",
+        "Interface URL (catalogue, preview, template read)",
+        "Storage type URL (format-neutral; JSON/YAML/Mongo/MCP are projections)"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This mixin covers the output-shape decision surface — grain, path selection, treatments, compiled template/fingerprint, and binding parameters — as a specialised payload of a governed policy. It does not claim completeness of de-identification science, nor ownership of identity, consent, audit, classification, thresholds, source schema, or enforcement.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Policy instance identity inherited from WM-KNW-012; local identifiers for compiled templates and fingerprints with IRI/UUID priority. Dates are not identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Generic authoring/approval/supersession left in WM-KNW-012. Local coverage is compile, stale-template invalidation, and binding effective windows."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Explicit REFERENCE/EXTEND ledger to XCT-001/002/004/005/020/038, DAT-004, KNW-012; nested policy refs for expanded types."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "RFC 3339 effective windows; aggregate temporal grain; compile event_time vs observation_time."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Fingerprint, policy version, and template id as audit payload; actual-knowledge attestation timestamp. Trail storage is XCT-004."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "owner_or_steward_ref only; ownership graph is XCT-001."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Preview compile against source schema; mandatory-path overrides; subsetted marking; classification-floor check by reference."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default-deny internals; catalogue vs reviewer views; intersection with client fieldsets. Whether the flow is allowed is XCT-002; evaluation is XCT-038."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Tombstone stale templates; do not delete audit citations. Storage-limitation of personal data in outputs is a grain/treatment concern (GDPR Art 5(1)(e) adjacent) but retention schedules of source data are out of scope."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to ISO 20889/27559, NIST SP 800-188, HIPAA 164.514, GDPR 5/25, XACML, OData $select/$expand, GraphQL selection sets, FHIR _elements/_summary, JSON:API sparse fieldsets. Conflicts recorded; no unearned conformance."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Omitted-path count, grain, fingerprint. Privacy-risk metrics and k/epsilon remain XCT-005."
+      },
+      {
+        "dimension": "location",
+        "status": "covered",
+        "notes": "Binding environment/location parameter (enclave vs publish vs query). Geographic generalisation is a treatment parameter (HIPAA ZIP rule)."
+      }
+    ],
+    "known_omissions": [
+      "Binary/media-stream and large-object projection (OData stream properties, FHIR Binary) has no first-class treatment profile in the cited specs.",
+      "Homomorphic or encrypted-field pass-through as a treatment class is mentioned in ISO 20889 cryptographic tools via secondary ITU-T X.1148 material; primary ISO text was not fully readable (paywalled). Marked gap.",
+      "Synthetic microdata generation as a leaving grain vs a sibling generative-privacy model is unresolved.",
+      "Differential-privacy query interfaces (NIST sharing model) as a grain class need epsilon/delta parameters that belong to XCT-005; the split may be too sharp for interactive query APIs.",
+      "SCIM attribute returnability, GraphQL @skip/@include directive policies, and MongoDB/SQL view projections were not fetched as primary sources in this pass.",
+      "National regimes beyond US HIPAA and EU GDPR (e.g. LGPD, PIPL, Australian Privacy Act APPs, UK DPA 2018 ICO anonymisation guidance) were not grounded in primary text.",
+      "Re-identification attack libraries and Disclosure Review Board operating procedures (NIST SP 800-188) are process-governance of de-identification programmes, only partly overlapping this mixin.",
+      "Format-preserving encryption and tokenisation vault semantics (PCI-adjacent) lack a primary source in this research set."
+    ],
+    "conflicts": [
+      "OData 4.01 §11.2.5: service MAY return additional information beyond $select. JSON:API 1.1 Sparse Fieldsets: endpoint MUST NOT include additional fields when fields[TYPE] is restricted. Local additional_fields_permitted records the chosen alignment.",
+      "GraphQL client-specified exact shape vs GDPR Article 25(2) controller-default minimisation vs FHIR servers SHOULD return mandatory elements even if unrequested. Intersection_rule and mandatory_path_override make the conflict explicit.",
+      "HIPAA Safe Harbor is a US-health implementation specification; it is not GDPR anonymisation (Recital 26 / WP29 remaining-risk test). Treatment packs are jurisdictional alignments.",
+      "NIST SP 800-188: encryption or hashing of direct identifiers is not de-identification if keys remain. ISO/IEC 20889 still lists cryptographic tools as de-identification techniques. reversibility + crypto_key_retained capture the tension.",
+      "FHIR servers are not obliged to return only requested _elements; JSON:API is. Compile-time templates cannot assume wire-level identical behaviour across protocols."
+    ],
+    "regional_assumptions": [
+      "HIPAA 45 CFR 164.514 applies to US covered entities and business associates for PHI; it is an optional treatment-pack alignment, not a global default.",
+      "GDPR Articles 5 and 25 apply to personal data of natural persons in the Union's material/territorial scope; legal-person data are outside GDPR (Recital 14).",
+      "ISO/IEC 20889:2018 remains current after 2024 confirmation; ISO/IEC 27559:2022 is the companion framework. Full normative text is paywalled; technique lists also rely on publicly visible abstracts, ITU-T X.1148 citations, and ISO OBP fragments.",
+      "OData 4.01 (2020-04-23) is cited rather than the in-progress 4.02 CSD, which is not yet an OASIS Standard.",
+      "FHIR R5 Search is normative; earlier R4 _elements/_summary behaviour is substantially similar but not byte-identical."
+    ],
+    "adversarial_checks": [
+      "Did any finding reproduce WM-KNW-012 identity/authority/lifecycle/conflict, WM-XCT-001 ownership, WM-XCT-002 consent, WM-XCT-004 audit trail, WM-XCT-005 threshold math, WM-XCT-020 label assignment, WM-DAT-004 source semantics, or WM-XCT-038 evaluation/enforcement? Reviewed: those appear only as refs or out_of_scope.",
+      "Would a public-release statistical table, a GraphQL allowlist, and a HIPAA limited data set all instantiate this mixin without stretching grain_class? Yes: aggregate_only, subset, and subset+treatment_pack respectively.",
+      "Can a malicious client over-fetch by omitting fields[TYPE] (JSON:API MAY then send all, some, or none) or by relying on OData additional properties? Intersection_rule and default_treatment exist to close that; implementations that set default_treatment=pass_through fail the integrity_rule.",
+      "If a field is reclassified more sensitive (XCT-020) after compile, does the model notice? Yes via invalidation_refs on the compiled template; the classification change itself is not local.",
+      "Does fingerprinting the template without instance data still allow a recipient to infer omitted sensitive path names from omitted_path_count or catalogue cards? Residual metadata leakage is an acknowledged gap, not claimed solved."
+    ]
+  }
+}

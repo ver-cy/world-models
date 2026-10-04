@@ -1,0 +1,3048 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-rec-003",
+    "model_id": "WM-REC-003",
+    "name": "Message",
+    "entry_kind": "aggregate",
+    "purpose": "Govern communications between agents as exchangeable message records with parts and attachments, conversation grouping, channel endpoints, delivery and disposition evidence, and contact consent, independent of any one transport or storage format.",
+    "scope_statement": "This aggregate covers the semantics of sending, carrying, delivering, reading, failing, recalling or deleting, and retaining a unit of communication from an originator to one or more recipients, including the envelope/content split, multipart bodies, threading, addresses, hop handoff, delivery status, post-delivery disposition, and permission to contact. It is channel-neutral: email, federated social notes, clinical communication records, chat, postal and broadcast share the same exchange, transport-evidence and custody concerns even when their on-the-wire encodings differ.",
+    "in_scope": [
+      "A message as a unit of communication with origin identifiers, originator and recipient roles, origination time, subject or summary, and sensitivity or category.",
+      "Multipart content entities, media types, transfer encodings, inline parts and references to carried documents.",
+      "Conversation grouping via reply identifiers, references, threads, topics and participation.",
+      "Transport channels, providers, address schemes and reachable endpoints, including group, list, public and blind-copy audiences.",
+      "Envelope routing, responsibility handoff, relays, gateways, mailing-list expansion and alias expansion.",
+      "Delivery status evidence distinct from content, including failure, delay, success, relay into a foreign system and expansion.",
+      "Post-delivery disposition evidence, including display, deletion, processing, dispatch, retraction, tombstones and refused receipts.",
+      "Consent, preference, objection and block records that authorize or forbid contact on a channel for a purpose.",
+      "Copy ownership, access scopes, archival retention, legal hold, erasure and provenance of communication records."
+    ],
+    "out_of_scope": [
+      "Person, organization, device or agent identity masters; this model only references those actors as senders, recipients, providers or consent subjects.",
+      "The governed document or media object itself when a message merely points at it as an attachment or payload reference.",
+      "Identifier scheme registries and language/terminology systems; this model consumes scheme and language tags.",
+      "Packet, session or broker protocols as such (TCP, SMTP command sequences, MQTT topics, AMQP frames) except as a channel type and envelope fields they expose.",
+      "Real-time media sessions, presence, typing indicators and other ephemeral session state that is not a retained message record.",
+      "General-purpose consent, privacy notices or marketing preference centres beyond permission to be contacted.",
+      "Cryptographic key management, though signatures, hashes and authentication results may be recorded as evidence.",
+      "Social graph membership except where a followers or public collection is used as an addressing target."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Document record",
+        "distinction": "A message may carry or point to documents; the document model owns content persistence, versioning and format of those artifacts. This model owns only the pointer, filename, media type, checksum and the fact that they were conveyed.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Person and organization",
+        "distinction": "Authors, senders, recipients, reporting agents and consent subjects are references to actor masters. Mailbox strings, actor IRIs and display names live here as addressing and originator fields, not as identity records.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-006",
+          "SRC-007"
+        ]
+      },
+      {
+        "neighbor": "Identifier and naming",
+        "distinction": "addr-spec, actor IRI, telephone and postal schemes are registered identifier schemes. This model records the scheme, the address value and verification state, not the scheme registry.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Language and terminology",
+        "distinction": "Natural-language tagging of subject, body and Activity Streams nameMap/contentMap values is alignment to a language system; this model stores the tags and maps, not the language catalogue.",
+        "source_refs": [
+          "SRC-006",
+          "SRC-003"
+        ]
+      },
+      {
+        "neighbor": "Clinical encounter and composition",
+        "distinction": "FHIR Communication is a clinical or business record that information was shared, including failed attempts. Encounter duration, Composition sections and AuditEvent system-to-system disclosure logs are neighboring records, not this aggregate.",
+        "source_refs": [
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Activity and social object",
+        "distinction": "ActivityPub Create wraps a Note or other object for federation. This model treats the Create/Note pair as one communication unit plus delivery targeting; likes, follows and profile objects remain in the social-activity neighbor except when they are themselves the message.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-008"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "RFC 5322 Internet Message Format",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc5322.html",
+      "version_or_date": "October 2008",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:00:00Z",
+      "relevance": "Normative Internet Message Format: header fields, originator and destination semantics, Message-ID, In-Reply-To, References, Date, trace and resent fields. Companion to RFC 5321 envelope. Updated by RFC 6854."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 5321 Simple Mail Transfer Protocol",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc5321.html",
+      "version_or_date": "October 2008",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:20:00Z",
+      "relevance": "Normative mail object split into envelope and content; MAIL FROM and RCPT TO; client/server MTA roles; responsibility handoff after successful DATA; relay, gateway, alias and mailing-list behaviour."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 2045 MIME Part One: Format of Internet Message Bodies",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc2045.html",
+      "version_or_date": "November 1996",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:30:00Z",
+      "relevance": "Normative MIME entity, body part, Content-Type, Content-Transfer-Encoding, Content-ID and Content-Description. Composite multipart and message types are specified with RFC 2046."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 3464 An Extensible Message Format for Delivery Status Notifications",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc3464.html",
+      "version_or_date": "January 2003",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T17:10:00Z",
+      "relevance": "Normative DSN: per-message and per-recipient fields, action values failed/delayed/delivered/relayed/expanded, status codes, Original-Envelope-Id distinct from Message-ID, gatewaying of foreign notifications."
+    },
+    {
+      "id": "SRC-005",
+      "title": "RFC 8098 Message Disposition Notification",
+      "organization": "Internet Engineering Task Force",
+      "url": "https://www.rfc-editor.org/rfc/rfc8098.html",
+      "version_or_date": "February 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T17:20:00Z",
+      "relevance": "Internet Standard (STD 85) for post-delivery MDNs: Disposition-Notification-To request, disposition types displayed/deleted/dispatched/processed, manual versus automatic modes, privacy constraints, no MDN of an MDN."
+    },
+    {
+      "id": "SRC-006",
+      "title": "Activity Streams 2.0",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/activitystreams-core/",
+      "version_or_date": "W3C Recommendation 23 May 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:10:00Z",
+      "relevance": "Normative social object model: id IRI, attributedTo, to/bto/cc/bcc/audience, inReplyTo, published/updated, attachment, mediaType, natural-language maps, RFC 3339 timestamps, collections."
+    },
+    {
+      "id": "SRC-007",
+      "title": "ActivityPub",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/activitypub/",
+      "version_or_date": "W3C Recommendation 23 January 2018",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:40:00Z",
+      "relevance": "Normative federation: actor inbox and outbox, addressing and delivery, Create wrapping, Update, Delete/Tombstone, Undo, Block, sharedInbox, transient objects without id, inbox forwarding for ghost replies."
+    },
+    {
+      "id": "SRC-008",
+      "title": "Activity Vocabulary",
+      "organization": "World Wide Web Consortium",
+      "url": "https://www.w3.org/TR/activitystreams-vocabulary/",
+      "version_or_date": "W3C Recommendation 23 May 2017",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T17:30:00Z",
+      "relevance": "Normative activity and object types used as messages or wrappers: Create, Delete, Update, Undo, Read, View, Block, Note, Tombstone and addressing properties."
+    },
+    {
+      "id": "SRC-009",
+      "title": "FHIR Resource Communication R5",
+      "organization": "HL7 International",
+      "url": "https://www.hl7.org/fhir/communication.html",
+      "version_or_date": "FHIR v5.0.0, 26 March 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T16:50:00Z",
+      "relevance": "Clinical or business record of information being transmitted, including planned and failed attempts. Status, medium, sent/received, payload, inResponseTo, sender, recipient. Distinct from AuditEvent and Encounter."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Art. 7 GDPR Conditions for consent",
+      "organization": "European Union",
+      "url": "https://gdpr-info.eu/art-7-gdpr/",
+      "version_or_date": "Regulation (EU) 2016/679, 27 April 2016; article page retrieved 2026-08-24",
+      "source_type": "legislation",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-08-24T18:00:00Z",
+      "relevance": "Live retrieval of GDPR Article 7 text: demonstrable consent, distinguishable request, withdrawal as easy as grant, withdrawal does not undo prior lawful processing. Authentic instrument is CELEX:32016R0679. Secondary presenter is gdpr-info.eu."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "exchange",
+        "name": "Exchange",
+        "description": "What was communicated, by whom, to which audience, in which conversation, and with which content parts.",
+        "rationale": "What was communicated, by whom, to which audience, in which conversation, and with which content parts.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-003",
+          "SRC-006",
+          "SRC-008",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "message-unit",
+            "name": "Message unit and origin",
+            "description": "The atomic communication object, its identifiers, originator roles, origination time and classification.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "message-identity",
+                "name": "Origin and local message identity",
+                "description": "A message MUST be correlatable across copies, reports and replies. RFC 5322 Message-ID SHOULD be present and identifies content; RFC 3464 Original-Envelope-Id identifies the submission transaction and is not the Message-ID. ActivityPub objects distributed on the social web MUST have unique global identifiers unless intentionally transient. FHIR Communication carries business identifiers that remain constant as the resource is updated. A date is not an identifier. Local store keys are subordinate to the origin identifier.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-004",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-origin-id",
+                    "text": "What is the authoritative origin identifier of this message, which system issued it, and under which scheme?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Structured record: origin-message-id, origin-id-scheme, issuing-system-ref, issued-at RFC 3339."
+                    ]
+                  },
+                  {
+                    "id": "q-envelope-id",
+                    "text": "Is there a submission or envelope transaction identifier distinct from the content identifier, and must it be preserved for delivery reports?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "Optional string envelope-transaction-id with case-preservation flag and correlation-to-dsn boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-transient",
+                    "text": "Is this communication intentionally transient, and if so may a global identifier be omitted?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "Boolean is-transient plus expected-lifetime duration or expiry RFC 3339."
+                    ]
+                  },
+                  {
+                    "id": "q-local-key",
+                    "text": "What local store key does this Dimension assign, and how does it reference the origin identifier?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "local-store-id plus origin-message-id foreign key; never a date used as id."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "origin-message-id",
+                    "name": "origin-message-id",
+                    "description": "Authoritative identifier assigned at origination: RFC 5322 msg-id, ActivityPub object id IRI, or FHIR identifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "origin-id-scheme",
+                    "name": "origin-id-scheme",
+                    "description": "rfc5322-msg-id | activitypub-iri | fhir-identifier | matrix-event-id | xmpp-stanza-id | dimension-ulid.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "envelope-transaction-id",
+                    "name": "envelope-transaction-id",
+                    "description": "Original-Envelope-Id or equivalent submission transaction id, case-sensitive, distinct from content Message-ID.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "local-store-id",
+                    "name": "local-store-id",
+                    "description": "Dimension-assigned key for this copy when no origin id exists or as a secondary key.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "is-transient",
+                    "name": "is-transient",
+                    "description": "True when the object is intentionally short-lived and may omit a dereferenceable id.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "origin-identity-record",
+                    "name": "origin-identity-record",
+                    "description": "Immutable binding of origin identifier, scheme, issuing system and first-issuance time for this message.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "originator-and-lifecycle",
+                "name": "Originator roles and message lifecycle",
+                "description": "RFC 5322 distinguishes author (From), transmitter (Sender, required when From has multiple mailboxes), and suggested reply addresses (Reply-To). Date is the time the creator marked the message complete, not the time of transport. FHIR Communication.status is a required modifier: preparation, in-progress, not-done, on-hold, stopped, completed, entered-in-error, unknown. ActivityPub Create, Update, Delete and Undo are the corresponding social lifecycle verbs. Origination Date and FHIR sent/received are event times; ingestion into a store is a separate observation time.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-author-vs-sender",
+                    "text": "Who authored this message and, if different, which agent transmitted it?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "author-refs list, sender-agent-ref, and boolean sender-distinct-from-author."
+                    ]
+                  },
+                  {
+                    "id": "q-event-vs-ingest-time",
+                    "text": "When was the message completed, when was it sent, and when was this copy ingested, each as RFC 3339 with offset or Z?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "originated-at, sent-at, ingested-at; each datetime with seconds and explicit offset or Z."
+                    ]
+                  },
+                  {
+                    "id": "q-lifecycle-status",
+                    "text": "What is the current lifecycle status and status reason, including rare states such as preparation, not-done, entered-in-error or deleted?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "lifecycle-status enum, status-reason, recorded-at, recorder-ref."
+                    ]
+                  },
+                  {
+                    "id": "q-reply-address",
+                    "text": "Where should replies be directed if Reply-To or equivalent is present?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "reply-to-addresses list with scheme and value."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "author-refs",
+                    "name": "author-refs",
+                    "description": "Authors responsible for writing the message (From / attributedTo).",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sender-agent-ref",
+                    "name": "sender-agent-ref",
+                    "description": "Agent that transmitted the message if different from author.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "reply-to-addresses",
+                    "name": "reply-to-addresses",
+                    "description": "Addresses the author suggests for replies.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "originated-at",
+                    "name": "originated-at",
+                    "description": "RFC 3339 origination/completion time with seconds and offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sent-at",
+                    "name": "sent-at",
+                    "description": "Time the message entered a channel, if known and distinct from originated-at.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "ingested-at",
+                    "name": "ingested-at",
+                    "description": "Observation or store-ingestion time, recorded separately from event time.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "lifecycle-status",
+                    "name": "lifecycle-status",
+                    "description": "draft | queued | sent | in-progress | completed | not-done | entered-in-error | deleted | unknown, with mapping notes to FHIR EventStatus.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "status-reason",
+                    "name": "status-reason",
+                    "description": "Why the current status holds, especially for not-done or stopped.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "originator-lifecycle-record",
+                    "name": "originator-lifecycle-record",
+                    "description": "Author, sender, reply-to, originated-at, sent-at, ingested-at and current lifecycle status with reason.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "content-and-parts",
+            "name": "Body parts and attachments",
+            "description": "Structured content entities, media types, encodings, language, and pointers to carried documents.",
+            "source_refs": [
+              "SRC-003",
+              "SRC-006",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "multipart-entities",
+                "name": "MIME entities and payload parts",
+                "description": "A MIME entity is the headers plus body of a message or of a body part. Content-Type gives type/subtype and parameters such as charset and boundary. Content-Transfer-Encoding is 7bit, 8bit, binary, quoted-printable or base64. Content-ID labels a part; Content-Description is human description. Nested encodings of composite types are forbidden. Activity Streams objects carry content/contentMap, mediaType and attachment. FHIR Communication.payload may be attachment, reference or codeable concept. Default without Content-Type is text/plain; charset=us-ascii.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-part-tree",
+                    "text": "What is the ordered tree of content parts, and which media type and transfer encoding applies to each?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "List of parts: part-index, parent-part-ref, media-type, transfer-encoding, byte-size, content-id."
+                    ]
+                  },
+                  {
+                    "id": "q-language",
+                    "text": "What language tags or language maps apply to subject, summary and body, and is any language undetermined?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "language-tag and optional content-map/name-map/summary-map with BCP 47 keys."
+                    ]
+                  },
+                  {
+                    "id": "q-source-markup",
+                    "text": "If rendered content was derived from another markup, what is the source media type and source text identifier?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "source-media-type, source-content-ref, conversion-agent-ref."
+                    ]
+                  },
+                  {
+                    "id": "q-unrecognized-encoding",
+                    "text": "If transfer encoding is unrecognized, must the part be treated as application/octet-stream regardless of declared Content-Type?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "Boolean treat-as-octet-stream plus original-media-type and original-encoding."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "part-index",
+                    "name": "part-index",
+                    "description": "Order of the part within its parent entity.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "content-id",
+                    "name": "content-id",
+                    "description": "MIME Content-ID or equivalent part identifier.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "media-type",
+                    "name": "media-type",
+                    "description": "type/subtype as in Content-Type, case-insensitive type and subtype.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "media-parameters",
+                    "name": "media-parameters",
+                    "description": "charset, boundary, name and other Content-Type parameters.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "transfer-encoding",
+                    "name": "transfer-encoding",
+                    "description": "7bit | 8bit | binary | quoted-printable | base64 | identity.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "byte-size",
+                    "name": "byte-size",
+                    "description": "Decoded octet length of the part body.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "language-tag",
+                    "name": "language-tag",
+                    "description": "Language of this part, or und if unknown.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "content-map",
+                    "name": "content-map",
+                    "description": "BCP 47 language tag to localized string for name, summary or content.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "source-media-type",
+                    "name": "source-media-type",
+                    "description": "ActivityPub source.mediaType from which markup was derived.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "message-part-set",
+                    "name": "message-part-set",
+                    "description": "Ordered tree of entities with media type, encoding, language, size and Content-ID.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "attachment-pointers",
+                "name": "Attachment and payload references",
+                "description": "Attachments are pointers from a message to carried or referenced documents, not the document master. MIME uses Content-Disposition filename and Content-ID for cid: references. Activity Streams attachment is a qualified link with mediaType. FHIR payload may be a contentReference to another resource. Integrity of the pointer is a checksum on the conveyed octets, not document-model versioning.",
+                "source_refs": [
+                  "SRC-003",
+                  "SRC-006",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-attachment-list",
+                    "text": "Which documents or blobs does this message carry or point to, and is each inline, attached or reference-only?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "List of {document-ref or content-id, filename, disposition, payload-kind, media-type}."
+                    ]
+                  },
+                  {
+                    "id": "q-checksum",
+                    "text": "What digest was computed over the conveyed octets, with which algorithm, and did it match at ingest?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "checksum-alg, checksum-value, verified-at, verified-boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-cid-links",
+                    "text": "Do HTML or other parts reference sibling parts by Content-ID, and are those parts present?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "List of cid-uri to part-ref bindings and missing-part flags."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "document-ref",
+                    "name": "document-ref",
+                    "description": "Reference to the governed document or media object being carried.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "filename",
+                    "name": "filename",
+                    "description": "Suggested filename from Content-Disposition or equivalent.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "checksum-alg",
+                    "name": "checksum-alg",
+                    "description": "Hash algorithm used over conveyed octets.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "checksum-value",
+                    "name": "checksum-value",
+                    "description": "Digest of the conveyed bytes.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "disposition",
+                    "name": "disposition",
+                    "description": "inline | attachment | reference-only.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "payload-kind",
+                    "name": "payload-kind",
+                    "description": "embedded-bytes | content-id-link | document-ref | codeable-concept.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-009"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "attachment-manifest",
+                    "name": "attachment-manifest",
+                    "description": "Per-message list of payload pointers with filename, media type, checksum and document-ref.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "thread-and-audience",
+            "name": "Thread, reply and audience",
+            "description": "Conversation grouping, reply chains, participants and public versus blind addressing.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "reply-and-thread",
+                "name": "Reply correlation and conversation grouping",
+                "description": "RFC 5322 In-Reply-To and References identify parent and ancestor Message-IDs; they SHOULD appear in replies. Activity Streams inReplyTo and replies collection, and FHIR inResponseTo, are the corresponding links. A thread is a derived grouping, not an on-the-wire required object. ActivityPub inbox forwarding exists so that replies addressed to a collection the origin cannot deliver to still reach participants (ghost-reply problem). Resent fields reintroduce a message into transport and are not the same as a reply.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-parent-ids",
+                    "text": "Which parent and ancestor message identifiers does this message claim, and do they resolve in this store?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "in-reply-to-ids, references-ids, resolution-status per id."
+                    ]
+                  },
+                  {
+                    "id": "q-thread-key",
+                    "text": "What thread identifier and topic group this message, and when did the thread start?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "thread-id, topic, started-at, participant-count."
+                    ]
+                  },
+                  {
+                    "id": "q-resent-vs-reply",
+                    "text": "Is this a reply, a resend/reintroduction, a forward, or an in-response-to clinical follow-up?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "relation-kind enum reply | resent | forward | in-response-to | new-root, plus evidence fields."
+                    ]
+                  },
+                  {
+                    "id": "q-ghost-reply",
+                    "text": "Must this server forward the activity to collections it owns because the origin could not expand them?",
+                    "kind": "process",
+                    "answer_data": [
+                      "Boolean forward-inbox-required, owned-collection-refs, first-seen-activity-id."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "thread-id",
+                    "name": "thread-id",
+                    "description": "Conversation grouping key, often the root Message-ID or a provider thread id.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "in-reply-to-ids",
+                    "name": "in-reply-to-ids",
+                    "description": "Immediate parent message identifiers.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "references-ids",
+                    "name": "references-ids",
+                    "description": "Ancestor identifier chain for threading.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "topic",
+                    "name": "topic",
+                    "description": "Human topic or FHIR topic concept.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "started-at",
+                    "name": "started-at",
+                    "description": "First message originated-at in the thread.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "is-resent",
+                    "name": "is-resent",
+                    "description": "True when Resent-* fields indicate reintroduction rather than a new reply.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "forward-inbox-required",
+                    "name": "forward-inbox-required",
+                    "description": "True when the receiving server must forward to collections it owns.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "thread-index",
+                    "name": "thread-index",
+                    "description": "Thread record with root id, topic, participant count, ordered message identifiers and reply edges.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "audience-addressing",
+                "name": "Audience, copies and participation",
+                "description": "RFC 5322 To is primary recipients, Cc others who should receive, Bcc recipients not revealed to others; Bcc may be stripped or only shown to Bcc recipients. Group syntax can name a set without listing mailboxes. Activity Streams to, bto, cc, bcc and audience, plus the Public collection, are the social equivalents; bto/bcc MUST be removed before federated delivery but still used to compute recipients. ActivityPub delivery expands collections, de-duplicates, and MUST NOT deliver an actor their own activity. FHIR has sender and recipient. Blind-copy confidentiality conflicts with some delivery reports that reveal Final-Recipient.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-recipient-roles",
+                    "text": "Who are the primary, copy and blind-copy recipients on this copy of the message, and which collections were targeted?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "primary-recipients, copy-recipients, blind-copy-recipients, audience-collections, visibility-scope."
+                    ]
+                  },
+                  {
+                    "id": "q-bcc-stripped",
+                    "text": "Was Bcc/bcc/bto stripped before this copy was transmitted, and must this copy omit other Bcc identities?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "Boolean bcc-stripped, undisclosed-count, disclosure-policy."
+                    ]
+                  },
+                  {
+                    "id": "q-public-addressing",
+                    "text": "Is the message addressed to the public collection or equivalent, and must it remain readable without authentication?",
+                    "kind": "access",
+                    "answer_data": [
+                      "Boolean is-public, public-collection-iri, authentication-required-to-read."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "primary-recipients",
+                    "name": "primary-recipients",
+                    "description": "To / to recipients.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "copy-recipients",
+                    "name": "copy-recipients",
+                    "description": "Cc / cc recipients.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "blind-copy-recipients",
+                    "name": "blind-copy-recipients",
+                    "description": "Bcc / bcc / bto recipients stored only on copies that may see them.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "audience-collections",
+                    "name": "audience-collections",
+                    "description": "Followers, Public or other collection targets.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "group-display-names",
+                    "name": "group-display-names",
+                    "description": "Named groups used without enumerating mailboxes.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "participant-count",
+                    "name": "participant-count",
+                    "description": "Known participant count excluding undisclosed Bcc on this copy.",
+                    "value_kind": "number",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "audience-set",
+                    "name": "audience-set",
+                    "description": "Per-copy audience with disclosed versus undisclosed recipients and collection targets.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "transport",
+        "name": "Transport",
+        "description": "How the message travelled: channel, endpoint addresses, envelope, hop handoff, delivery status and post-delivery disposition.",
+        "rationale": "How the message travelled: channel, endpoint addresses, envelope, hop handoff, delivery status and post-delivery disposition.",
+        "source_refs": [
+          "SRC-002",
+          "SRC-004",
+          "SRC-005",
+          "SRC-007",
+          "SRC-009"
+        ],
+        "layers": [
+          {
+            "id": "channel-and-address",
+            "name": "Channel and address",
+            "description": "Transport medium, provider and reachable endpoints of agents.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-007",
+              "SRC-009"
+            ],
+            "findings": [
+              {
+                "id": "channel-provider",
+                "name": "Channel type and provider",
+                "description": "A channel is the transport medium used or intended, not the message. RFC 5321 defines SMTP client, server, relay, gateway, originating and delivery systems. ActivityPub uses inbox and outbox OrderedCollections and optional sharedInbox. FHIR Communication.medium records how the communication was conveyed. Gatewaying may transform headers and envelopes in ways forbidden to a pure relay. Channel type is classification here; credentials and live sockets are out of scope.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-007",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-channel-used",
+                    "text": "Which channel type and provider actually carried this message, and was the hop an origin, relay, gateway or delivery system?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "channel-type, provider-ref, hop-role enum origin | relay | gateway | delivery, protocol-profile."
+                    ]
+                  },
+                  {
+                    "id": "q-inbox-outbox",
+                    "text": "If federated social transport, which outbox accepted the activity and which inbox or sharedInbox was posted?",
+                    "kind": "process",
+                    "answer_data": [
+                      "outbox-iri, inbox-iri, shared-inbox-iri, posted-at."
+                    ]
+                  },
+                  {
+                    "id": "q-medium-code",
+                    "text": "If a clinical communication, what medium codes describe how information was shared?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "List of FHIR medium CodeableConcepts with system and code."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "channel-type",
+                    "name": "channel-type",
+                    "description": "smtp | submission | activitypub-inbox | fhir-medium | imap-store | xmpp | matrix | sms | postal | broadcast | other.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "provider-ref",
+                    "name": "provider-ref",
+                    "description": "Organization or service that operates the channel.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "protocol-profile",
+                    "name": "protocol-profile",
+                    "description": "EHLO extensions, ActivityPub c2s vs s2s, FHIR medium coding.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "gatewayed-from-channel",
+                    "name": "gatewayed-from-channel",
+                    "description": "Prior channel if this copy was gatewayed.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "shared-inbox-iri",
+                    "name": "shared-inbox-iri",
+                    "description": "ActivityPub sharedInbox used for public or followers delivery.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "channel-descriptor",
+                    "name": "channel-descriptor",
+                    "description": "Channel type, provider, protocol profile and whether this hop is origin, relay, gateway or delivery.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "endpoint-address",
+                "name": "Addressable endpoints",
+                "description": "An address is a reachable endpoint of an agent on a channel. RFC 5321 mailbox is local-part@domain; local-part is case-sensitive and interpreted only by the domain host; FQDNs are required on the public Internet except postmaster. RFC 5322 mailbox may include a display name or a group. ActivityPub actors are dereferenceable IRIs with inbox. Verification of an address is a custody fact, not the address value itself. Identifier scheme registration belongs to the naming sibling.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-007"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-address-value",
+                    "text": "What is the endpoint value and scheme, and which agent owns it?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "address-value, address-scheme, display-name, owner-agent-ref."
+                    ]
+                  },
+                  {
+                    "id": "q-address-verified",
+                    "text": "Has this endpoint been verified, when, by whom, and using what method?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "verified, verified-at, verifier-ref, verification-method."
+                    ]
+                  },
+                  {
+                    "id": "q-local-part-semantics",
+                    "text": "Must local-part case and exact spelling be preserved, and is the domain an FQDN?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "local-part-case-sensitive boolean, domain-is-fqdn boolean, rewrite-forbidden boolean."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "address-value",
+                    "name": "address-value",
+                    "description": "addr-spec, IRI, E.164, postal line or other scheme-specific value.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "address-scheme",
+                    "name": "address-scheme",
+                    "description": "mailto | acct | https-actor | tel | postal | xmpp | other, referencing the naming model.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "display-name",
+                    "name": "display-name",
+                    "description": "Optional human display name.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "owner-agent-ref",
+                    "name": "owner-agent-ref",
+                    "description": "Agent who owns this endpoint.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "verified",
+                    "name": "verified",
+                    "description": "Whether ownership of the endpoint has been verified.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "verified-at",
+                    "name": "verified-at",
+                    "description": "When verification last succeeded.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "local-part-case-sensitive",
+                    "name": "local-part-case-sensitive",
+                    "description": "True for SMTP local-parts that must be preserved.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "address-record",
+                    "name": "address-record",
+                    "description": "Endpoint value, scheme, owner, verification state and channel binding.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "envelope-and-delivery",
+            "name": "Envelope, handoff and delivery status",
+            "description": "Transport envelope, hop responsibility, traces, and machine-readable delivery outcomes.",
+            "source_refs": [
+              "SRC-002",
+              "SRC-004",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "envelope-and-handoff",
+                "name": "Envelope versus content and responsibility handoff",
+                "description": "SMTP transports a mail object with envelope (originator reverse-path, recipient forward-paths, optional extension material) and content (header section plus body). After the server issues a success response at end of mail data, it MUST accept responsibility to deliver or report failure. Relays add trace Received lines and MUST NOT otherwise modify message data; gateways MAY transform. Null reverse-path MAIL FROM:<> is used for DSNs and MDNs to prevent loops. ActivityPub delivery POSTs an activity to target inboxes after expanding to/bto/cc/bcc/audience.",
+                "source_refs": [
+                  "SRC-002",
+                  "SRC-004",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-envelope-paths",
+                    "text": "What reverse-path and forward-paths were on the envelope, and how do they differ from header addresses?",
+                    "kind": "process",
+                    "answer_data": [
+                      "envelope-from, envelope-recipients, header-from, header-to-cc-bcc, divergence-notes."
+                    ]
+                  },
+                  {
+                    "id": "q-handoff",
+                    "text": "When did this hop accept responsibility, and is it obligated to deliver or emit a failure report?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "responsibility-accepted-at, hop-role, obligated-to-dsn boolean, reporter-mta-name."
+                    ]
+                  },
+                  {
+                    "id": "q-trace",
+                    "text": "What ordered trace hops exist, and were they prepended without reordering?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "Ordered list of {mta-name, mta-name-type, received-at, from-mta, tls-or-auth-summary}."
+                    ]
+                  },
+                  {
+                    "id": "q-null-return",
+                    "text": "Is the reverse-path null to suppress further status notifications?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "Boolean null-return-path and notification-kind dsn | mdn | other."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "envelope-from",
+                    "name": "envelope-from",
+                    "description": "Reverse-path / SMTP MAIL FROM; may be null.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "envelope-recipients",
+                    "name": "envelope-recipients",
+                    "description": "Forward-paths actually submitted, which may differ from header To/Cc/Bcc.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "responsibility-accepted-at",
+                    "name": "responsibility-accepted-at",
+                    "description": "Time this hop accepted responsibility.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "trace-hops",
+                    "name": "trace-hops",
+                    "description": "Ordered Received or equivalent hop records.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "null-return-path",
+                    "name": "null-return-path",
+                    "description": "True for DSN/MDN or other loop-safe notifications.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "envelope-and-trace",
+                    "name": "envelope-and-trace",
+                    "description": "Envelope reverse-path, forward-paths, hop trace and responsibility timestamps.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004",
+                      "SRC-007"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "delivery-status",
+                "name": "Delivery status evidence",
+                "description": "A DSN reports per-recipient action failed, delayed, delivered, relayed or expanded, plus a transport-independent status code. Delivered includes delivery to a mailing-list exploder and does not mean the message was read. Expanded is used for multi-recipient aliases and is not terminal. Relayed means gatewaying into an environment that will not emit success DSNs. Original-Recipient versus Final-Recipient capture rewriting. Reporting-MTA, Remote-MTA, Arrival-Date, Last-Attempt-Date and Will-Retry-Until support delay and operations. FHIR status not-done with statusReason records failed clinical communications. DSN forgery and confidentiality of forwarding addresses are first-class risks.",
+                "source_refs": [
+                  "SRC-004",
+                  "SRC-002",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-per-recipient-action",
+                    "text": "For each envelope recipient, what DSN action and status code were reported, and is that state terminal?",
+                    "kind": "state",
+                    "answer_data": [
+                      "List of {final-recipient, original-recipient, dsn-action, status-code, terminal-boolean, recorded-at}."
+                    ]
+                  },
+                  {
+                    "id": "q-delay-retry",
+                    "text": "If delayed, when was the last attempt and until when will retries continue?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "last-attempt-at, will-retry-until, arrival-at-reporting-mta."
+                    ]
+                  },
+                  {
+                    "id": "q-list-vs-alias",
+                    "text": "Was successful submission to a mailing-list exploder treated as final delivery, or was an alias expanded with a non-terminal expanded action?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "expansion-kind list | alias | none, dsn-action, further-dsn-expected boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-foreign-tunnel",
+                    "text": "Did a gateway translate a foreign non-delivery notice, and which DSN-Gateway and foreign address-type apply?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "dsn-gateway-name, address-type, diagnostic-type, foreign-status-preserved boolean."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "dsn-action",
+                    "name": "dsn-action",
+                    "description": "failed | delayed | delivered | relayed | expanded.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "status-code",
+                    "name": "status-code",
+                    "description": "Class.subject.detail numeric status such as 5.1.1.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "diagnostic-type",
+                    "name": "diagnostic-type",
+                    "description": "smtp or other diagnostic-type.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "diagnostic-code",
+                    "name": "diagnostic-code",
+                    "description": "Transport-specific diagnostic text.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "original-recipient",
+                    "name": "original-recipient",
+                    "description": "Sender-specified recipient before rewriting.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "final-recipient",
+                    "name": "final-recipient",
+                    "description": "Recipient as seen by the reporting MTA.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "will-retry-until",
+                    "name": "will-retry-until",
+                    "description": "Abandon-retry time for delayed action.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004"
+                    ]
+                  },
+                  {
+                    "id": "reporting-mta",
+                    "name": "reporting-mta",
+                    "description": "MTA that attempted the delivery, relay or gateway operation.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-002"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "delivery-status-report",
+                    "name": "delivery-status-report",
+                    "description": "Per-message and per-recipient DSN fields or FHIR not-done record, stored as evidence not as a substitute for the original message.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-004",
+                      "SRC-002",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "disposition-and-recall",
+            "name": "Disposition, read and recall",
+            "description": "Post-delivery user-agent disposition, privacy-preserving receipts, and retraction or deletion.",
+            "source_refs": [
+              "SRC-005",
+              "SRC-007",
+              "SRC-008"
+            ],
+            "findings": [
+              {
+                "id": "message-disposition",
+                "name": "Read receipts and disposition notifications",
+                "description": "MDNs report post-delivery disposition: displayed, deleted, dispatched or processed, with action mode manual-action or automatic-action and sending mode MDN-sent-manually or MDN-sent-automatically. Displayed does not guarantee the content was read or understood. Recipients MAY silently ignore MDN requests. Default is not to send MDNs; user consent is strongly recommended. An MDN MUST NOT be sent automatically if Disposition-Notification-To differs from Return-Path. An MDN MUST NOT have a Disposition-Notification-To field. Activity Vocabulary Read and View are related social types. FHIR completed is not an MDN.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-mdn-request-valid",
+                    "text": "Was an MDN requested, does Disposition-Notification-To match Return-Path, and has the user consented to send one?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "mdn-requested, addresses-match boolean, user-consent-state, suppression-reason."
+                    ]
+                  },
+                  {
+                    "id": "q-disposition-type",
+                    "text": "What disposition occurred, in which mode, at what time, and which UA reported it?",
+                    "kind": "event",
+                    "answer_data": [
+                      "disposition-type, disposition-mode, disposition-at, reporting-ua, final-recipient."
+                    ]
+                  },
+                  {
+                    "id": "q-displayed-not-read",
+                    "text": "If displayed, is there any claim that the content was understood, and is that claim disallowed by the MDN semantics?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "Boolean displayed, boolean understood-claimed, policy-note that understood is not guaranteed."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "mdn-requested",
+                    "name": "mdn-requested",
+                    "description": "Whether the sender requested a disposition notification.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "mdn-request-mailbox",
+                    "name": "mdn-request-mailbox",
+                    "description": "Disposition-Notification-To mailbox.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "disposition-type",
+                    "name": "disposition-type",
+                    "description": "displayed | deleted | dispatched | processed | refused-silent.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "disposition-mode",
+                    "name": "disposition-mode",
+                    "description": "manual-action/MDN-sent-manually | automatic-action/MDN-sent-automatically and legal combinations.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "reporting-ua",
+                    "name": "reporting-ua",
+                    "description": "User agent product that performed the disposition.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "original-message-id",
+                    "name": "original-message-id",
+                    "description": "Message-ID of the message being reported.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "disposition-notification",
+                    "name": "disposition-notification",
+                    "description": "message/disposition-notification fields or equivalent social Read activity, with privacy flags.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-008"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "recall-update-delete",
+                "name": "Recall, update, delete and tombstone",
+                "description": "Internet Mail has no interoperable recall standard; retraction is channel-specific. ActivityPub Update applies partial updates client-to-server and full representation server-to-server. Delete MAY replace the object with a Tombstone and SHOULD yield HTTP 410 with Tombstone or 404. Undo reverses Like, Follow or Block but Create is inverted by Delete, not Undo. FHIR stopped, not-done and entered-in-error cover cancelled or erroneous clinical communications. Block SHOULD prevent the blocked actor interacting and SHOULD NOT be delivered to the blocked actor.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-009"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-channel-recall",
+                    "text": "Does this channel support recall or delete-propagation, and was a recall requested or completed?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "recall-supported, mutation-type, requested-at, completed-at, remaining-copies-unknown boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-tombstone",
+                    "text": "If deleted, is a Tombstone retained, with which deleted timestamp, and what HTTP semantics should a fetch return?",
+                    "kind": "state",
+                    "answer_data": [
+                      "tombstone-id, deleted-at, fetch-status 410-or-404, former-type."
+                    ]
+                  },
+                  {
+                    "id": "q-block",
+                    "text": "Has the originator blocked an actor, and must delivery of the Block activity to that actor be suppressed?",
+                    "kind": "access",
+                    "answer_data": [
+                      "block-target-ref, block-at, deliver-block-to-target boolean default false."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "mutation-type",
+                    "name": "mutation-type",
+                    "description": "update | delete | undo | recall-request | entered-in-error | stopped.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  },
+                  {
+                    "id": "tombstone-id",
+                    "name": "tombstone-id",
+                    "description": "Identifier of the Tombstone replacing a deleted object.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "deleted-at",
+                    "name": "deleted-at",
+                    "description": "Time of deletion on the origin.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "recall-supported",
+                    "name": "recall-supported",
+                    "description": "Whether the channel accepts recall.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "block-target-ref",
+                    "name": "block-target-ref",
+                    "description": "Actor the originator has blocked from interacting.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "mutation-record",
+                    "name": "mutation-record",
+                    "description": "Update, delete, undo, recall-request or FHIR entered-in-error event with before/after refs.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-009"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "custody",
+        "name": "Custody",
+        "description": "Permission to contact, ownership of copies, access, retention, erasure and integrity evidence for communication records.",
+        "rationale": "Permission to contact, ownership of copies, access, retention, erasure and integrity evidence for communication records.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-010",
+          "SRC-006",
+          "SRC-004"
+        ],
+        "layers": [
+          {
+            "id": "consent-and-preference",
+            "name": "Consent, preference and objection",
+            "description": "Lawful permission, withdrawal, channel preferences and blocks for contact.",
+            "source_refs": [
+              "SRC-010",
+              "SRC-005",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "contact-consent",
+                "name": "Consent to be contacted",
+                "description": "Where processing is based on consent, the controller must be able to demonstrate it. Consent in a written declaration that also concerns other matters must be clearly distinguishable. The data subject may withdraw at any time; withdrawal is as easy as grant and does not undo prior lawful processing. MDN sending likewise requires user consent and defaults to not sending. ActivityPub Block is a hard preference against interaction. This finding is contact-specific consent, not general-purpose privacy notices. Unsolicited-communication statutes such as CAN-SPAM, PECR and TCPA are alignments with regional gaps.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-005",
+                  "SRC-007"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-consent-scope",
+                    "text": "For this subject, channel and purpose, is contact permitted, on which lawful basis, and where is the demonstration evidence?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "subject-ref, channel-ref, purpose, lawful-basis, granted-at, evidence-ref, permitted-boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-withdraw",
+                    "text": "Has consent been withdrawn, when, through which channel, and was withdrawal as easy as grant?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "withdrawn-at, withdraw-channel, ease-equivalent-boolean, prior-processing-still-lawful boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-mdn-consent",
+                    "text": "Has the recipient consented to emit MDNs globally or per message, and is the default still suppress?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "mdn-preference never | ask | always, per-message-override, default-suppress-boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-block-or-object",
+                    "text": "Has the subject blocked the sender or objected to this category of contact?",
+                    "kind": "access",
+                    "answer_data": [
+                      "block-or-object enum none | block | object, effective-at, scope."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "subject-ref",
+                    "name": "subject-ref",
+                    "description": "Person or organization whose permission is recorded.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "channel-ref",
+                    "name": "channel-ref",
+                    "description": "Channel or address the permission applies to.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "purpose",
+                    "name": "purpose",
+                    "description": "Purpose limitation string or code, e.g. transactional | service-message | marketing | mdn | clinical-alert.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "lawful-basis",
+                    "name": "lawful-basis",
+                    "description": "consent | contract | legal-obligation | vital-interest | public-task | legitimate-interest | other.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "granted-at",
+                    "name": "granted-at",
+                    "description": "When consent was given.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "withdrawn-at",
+                    "name": "withdrawn-at",
+                    "description": "When consent was withdrawn, if ever.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "evidence-ref",
+                    "name": "evidence-ref",
+                    "description": "Demonstration artifact of the consent capture.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "withdraw-channel",
+                    "name": "withdraw-channel",
+                    "description": "How withdrawal is effected, which MUST be as easy as grant.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "consent-record",
+                    "name": "consent-record",
+                    "description": "Demonstrable contact-consent or withdrawal instrument bound to subject, channel, purpose and times.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005",
+                      "SRC-007"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "ownership-and-access",
+            "name": "Copy ownership and access",
+            "description": "Who owns which copy, who may read it, and which internals are omitted from which views.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-006",
+              "SRC-007",
+              "SRC-004"
+            ],
+            "findings": [
+              {
+                "id": "copy-ownership",
+                "name": "Sender record versus recipient copies",
+                "description": "The sender owns the origin message record; each recipient owns their received copy. Bcc and bto identities present on one copy MUST NOT leak through another copy or through a DSN that the site chooses to omit for confidentiality. ActivityPub outbox contents are filtered by the requestor's permission; unauthenticated reads see only Public posts. Inbox owners can typically read all of their inbox. AS2 privacy considerations require documenting collection of sensitive personal information and defaulting to opt-in for extra detail. Archive access is a distinct authorized view.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-006",
+                  "SRC-007",
+                  "SRC-004"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-copy-owner",
+                    "text": "Who owns this stored copy, and is it the origin, a recipient inbox, a Bcc copy or an archive hold?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "copy-owner-ref, copy-kind, created-at, custody-system-ref."
+                    ]
+                  },
+                  {
+                    "id": "q-view-redaction",
+                    "text": "Which redaction profile applies, and which fields are omitted from this view?",
+                    "kind": "access",
+                    "answer_data": [
+                      "redaction-profile, omitted-fields, includes-bodies boolean, includes-other-recipients boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-unauthenticated-read",
+                    "text": "If no authorization is presented, which messages if any are visible?",
+                    "kind": "access",
+                    "answer_data": [
+                      "public-only boolean, public-collection-membership, 403-or-404-on-private enum."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "copy-owner-ref",
+                    "name": "copy-owner-ref",
+                    "description": "Agent that owns this stored copy.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "copy-kind",
+                    "name": "copy-kind",
+                    "description": "origin-outbox | recipient-inbox | bcc-copy | archive-hold | provider-log.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "redaction-profile",
+                    "name": "redaction-profile",
+                    "description": "inbox-view | thread-summary | compliance-archive | public-outbox.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "omitted-fields",
+                    "name": "omitted-fields",
+                    "description": "Fields stripped on this view, e.g. other-bcc, routing-internals, live-credentials.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-004"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "copy-custody-record",
+                    "name": "copy-custody-record",
+                    "description": "Per-copy owner, kind, redaction profile and omitted fields.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006",
+                      "SRC-007",
+                      "SRC-004"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "retention-and-provenance",
+            "name": "Retention, erasure and provenance",
+            "description": "How long communication records are kept, when they are erased, and what evidence supports integrity.",
+            "source_refs": [
+              "SRC-010",
+              "SRC-004",
+              "SRC-006",
+              "SRC-007"
+            ],
+            "findings": [
+              {
+                "id": "retention-erasure",
+                "name": "Retention, legal hold and erasure",
+                "description": "Communication records are personal data when they identify natural persons. GDPR Article 7 withdrawal does not by itself erase historical messages that were lawfully sent. Erasure, restriction and objection rights (Articles 17 and 21) interact with legal holds, medical record retention and provider logs. ActivityPub Delete/Tombstone is origin-side deletion and does not guarantee every federated copy vanishes. DSN and MDN evidence may need a different retention than message bodies. ISO 15489-style records controls are an alignment gap unless adopted by the Dimension.",
+                "source_refs": [
+                  "SRC-010",
+                  "SRC-007",
+                  "SRC-005"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-retain-until",
+                    "text": "Until when must this communication record, its receipts and its consent evidence be retained, and under which class?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "retention-class, retain-until, policy-ref, body-retained-separately-from-evidence boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-legal-hold",
+                    "text": "Is a legal or clinical hold active, who placed it, and does it override erasure?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "legal-hold, hold-authority-ref, hold-at, overrides-erasure boolean."
+                    ]
+                  },
+                  {
+                    "id": "q-erasure",
+                    "text": "Has erasure been requested, what was done to origin and copies, and were federated copies only tombstoned locally?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "erasure-status, erasure-requested-at, origin-tombstoned boolean, federated-copies-unconfirmed boolean."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "retention-class",
+                    "name": "retention-class",
+                    "description": "Policy class such as mailbox-operational | compliance-archive | dsn-evidence | consent-evidence.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "retain-until",
+                    "name": "retain-until",
+                    "description": "Scheduled disposal time unless a hold applies.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "legal-hold",
+                    "name": "legal-hold",
+                    "description": "True when disposal is suspended.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "erasure-requested-at",
+                    "name": "erasure-requested-at",
+                    "description": "When an erasure right was exercised.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "erasure-status",
+                    "name": "erasure-status",
+                    "description": "not-requested | pending | tombstoned | purged | refused-legal-hold | refused-other.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-007"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "retention-schedule-binding",
+                    "name": "retention-schedule-binding",
+                    "description": "Binding of this record or class to retain-until, hold state and erasure status.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-010",
+                      "SRC-007",
+                      "SRC-005"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "provenance-integrity",
+                "name": "Provenance, integrity and authentication evidence",
+                "description": "RFC 5322/5321 Received traces document hops. DSN Reporting-MTA and MDN Reporting-UA identify reporters but are forgeable. ActivityPub servers SHOULD validate received content against origin and may use signatures; no single mechanism is mandated. ActivityPub source records markup provenance for later edits. AS2 documents can contain sensitive personal information and implementations MUST document collection and sharing. Checksums on parts, DKIM/SPF/DMARC authentication results and S/MIME signatures are relevant evidence; DKIM and S/MIME were not fetched as primary sources in this run and are marked as interoperability alignments with a gap.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-007"
+                ],
+                "inline_only_rationale": null,
+                "questions": [
+                  {
+                    "id": "q-content-hash",
+                    "text": "What digest identifies this stored copy, over which canonicalization, and when was it computed?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "content-hash, algorithm, canonicalization-profile, computed-at."
+                    ]
+                  },
+                  {
+                    "id": "q-origin-verify",
+                    "text": "Was the object dereferenced at its origin identifier and did it match, or was it accepted as transient?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "origin-fetch-verified, fetched-at, mismatch-flag, is-transient."
+                    ]
+                  },
+                  {
+                    "id": "q-auth-results",
+                    "text": "What authentication or signature results accompany this copy, and are they informational only?",
+                    "kind": "security",
+                    "answer_data": [
+                      "authentication-results list, signature-present, evidence-grade unverified | aligned | cryptographic."
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "content-hash",
+                    "name": "content-hash",
+                    "description": "Hash of the canonical message object as stored.",
+                    "value_kind": "text",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "authentication-results",
+                    "name": "authentication-results",
+                    "description": "SPF, DKIM, DMARC or HTTP signature outcomes if present.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "signature-present",
+                    "name": "signature-present",
+                    "description": "Whether a cryptographic signature was attached.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "origin-fetch-verified",
+                    "name": "origin-fetch-verified",
+                    "description": "Whether the object was confirmed at its origin id.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sensitive-personal-data",
+                    "name": "sensitive-personal-data",
+                    "description": "Whether this record is documented as containing sensitive personal information.",
+                    "value_kind": "boolean",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "integrity-evidence-pack",
+                    "name": "integrity-evidence-pack",
+                    "description": "Hashes, trace excerpts, origin-fetch result and optional authentication results for this copy.",
+                    "media_or_form": [
+                      "structured record"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Per the model identifier priority: authoritative origin identifier (Message-ID, ActivityPub object id IRI or FHIR identifier), else a governed global IRI, else a Dimension-assigned UUID or ULID; a date is never an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-007"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "compose-and-send",
+      "name": "Compose and send",
+      "description": "Create a message with originator fields, audience, parts and optional MDN or DSN requests, assign origin identifiers, stamp originated-at, and release it to a channel outbox or submission service.",
+      "inputs": [
+        "Originator fields: author, transmitting sender, reply-to",
+        "Audience: to, cc, bcc/bto and collection targets",
+        "Content parts and attachment pointers",
+        "Optional MDN or DSN request"
+      ],
+      "outputs": [
+        "Message record with assigned origin identifier and originated-at",
+        "Submission to a channel outbox or submission service"
+      ],
+      "preconditions": [
+        "Contact permission or lawful basis for the purpose is evaluated before send"
+      ],
+      "effects": [
+        "Origin identifier assigned and immutable after first successful send or publication",
+        "Message released to the channel"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "deliver-and-relay",
+      "name": "Deliver, relay or gateway",
+      "description": "Accept envelope responsibility, add trace, relay unmodified or gateway with allowed transformations, expand aliases or lists according to their distinct DSN rules, and POST federated activities to inboxes.",
+      "inputs": [
+        "Envelope reverse-path and forward-paths",
+        "Message content",
+        "Alias, mailing-list or collection expansion targets"
+      ],
+      "outputs": [
+        "Delivered, relayed or gatewayed copy",
+        "Trace hop record",
+        "Federated activity POSTed to target inboxes or sharedInbox"
+      ],
+      "preconditions": [
+        "Responsibility is accepted only after a success response at end of mail data"
+      ],
+      "effects": [
+        "Responsibility to deliver or report failure is accepted",
+        "Trace is added; relays do not otherwise modify message data while gateways may transform",
+        "Aliases and lists are expanded under their distinct DSN rules"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-007",
+        "SRC-004"
+      ]
+    },
+    {
+      "id": "record-delivery-status",
+      "name": "Record delivery status",
+      "description": "Emit or ingest per-recipient DSN or FHIR not-done evidence, correlate via Original-Envelope-Id and Message-ID, and mark terminal versus delayed states.",
+      "inputs": [
+        "Per-recipient delivery outcome",
+        "Original-Envelope-Id and Message-ID for correlation"
+      ],
+      "outputs": [
+        "DSN evidence record or FHIR not-done record with statusReason"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Terminal versus delayed state marked per recipient",
+        "Evidence stored as evidence, not as a substitute for the original message"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "record-disposition",
+      "name": "Record disposition",
+      "description": "On recipient action, optionally emit an MDN or Read activity after consent and Return-Path checks, at most one MDN per recipient per user agent.",
+      "inputs": [
+        "Recipient user-agent action",
+        "Disposition-Notification-To and Return-Path values"
+      ],
+      "outputs": [
+        "MDN or Read activity, or a suppressed-notification record"
+      ],
+      "preconditions": [
+        "User consent to emit the notification, defaulting to suppress",
+        "Disposition-Notification-To matches Return-Path before automatic sending"
+      ],
+      "effects": [
+        "At most one MDN per recipient per user agent",
+        "No MDN is generated for an MDN"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "reply-or-follow-up",
+      "name": "Reply or follow up",
+      "description": "Create a new message with In-Reply-To/References or inReplyTo/inResponseTo, inherit or amend addressing, and trigger inbox forwarding when the origin cannot expand owned collections.",
+      "inputs": [
+        "Parent and ancestor message identifiers",
+        "Inherited or amended addressing"
+      ],
+      "outputs": [
+        "New message carrying In-Reply-To/References or inReplyTo/inResponseTo"
+      ],
+      "preconditions": [],
+      "effects": [
+        "Thread edges extended in the conversation grouping",
+        "Inbox forwarding triggered when the origin could not expand owned collections"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-007",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "update-delete-or-recall",
+      "name": "Update, delete, undo or recall",
+      "description": "Apply Update, Delete/Tombstone, Undo or a channel-specific recall; record entered-in-error or stopped for clinical communications; do not claim universal unsend.",
+      "inputs": [
+        "Target object or message reference",
+        "Mutation type"
+      ],
+      "outputs": [
+        "Update, Delete/Tombstone, Undo or channel-specific recall record",
+        "Clinical entered-in-error or stopped status"
+      ],
+      "preconditions": [
+        "The channel supports the mutation and the actor owns the object"
+      ],
+      "effects": [
+        "Origin-side object updated, tombstoned or withdrawn",
+        "No claim of universal unsend; federated or delivered copies may remain"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "grant-or-withdraw-consent",
+      "name": "Grant or withdraw contact consent",
+      "description": "Capture demonstrable, purpose-limited, distinguishable consent, or withdraw it as easily as it was given, and evaluate Block or objection before send.",
+      "inputs": [
+        "Subject, channel and purpose",
+        "Consent or withdrawal instrument"
+      ],
+      "outputs": [
+        "Demonstrable consent record or withdrawal event",
+        "Block or objection state"
+      ],
+      "preconditions": [
+        "The consent request is clearly distinguishable from other matters"
+      ],
+      "effects": [
+        "Withdrawal is as easy as grant and sets withdrawn-at without deleting the grant evidence",
+        "Prior lawful processing is not undone",
+        "Block or objection is evaluated before send"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "archive-hold-or-erase",
+      "name": "Archive, hold or erase",
+      "description": "Bind records to a retention class, place or lift legal hold, tombstone or purge according to rights and holds, keeping DSN/MDN evidence on its own clock when required.",
+      "inputs": [
+        "Retention class",
+        "Hold instruction or erasure request"
+      ],
+      "outputs": [
+        "Retention binding, hold state or erasure outcome"
+      ],
+      "preconditions": [
+        "Retention classes and hold authority are declared by the adopting Dimension"
+      ],
+      "effects": [
+        "Tombstone or purge applied according to rights and holds",
+        "Refused erasure is recorded, not silently ignored",
+        "DSN and MDN evidence kept on its own retention clock when required"
+      ],
+      "source_refs": [
+        "SRC-010",
+        "SRC-007"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "world.person",
+      "relation": "REFERENCE",
+      "purpose": "Individual authors, senders, recipients, reporting-UA users and consent subjects are person masters referenced, not duplicated.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-006",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "world.organization",
+      "relation": "REFERENCE",
+      "purpose": "Organizational originators, channel providers, reporting MTAs and clinical senders are organization masters.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "world.document-record",
+      "relation": "REFERENCE",
+      "purpose": "Attachments and FHIR contentReference payloads resolve to governed documents; this model stores pointers, filenames and checksums only.",
+      "required": false,
+      "source_refs": [
+        "SRC-003",
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "world.identifier-naming",
+      "relation": "REFERENCE",
+      "purpose": "Address schemes (mailto, actor IRI, tel, postal) are registered identifier schemes consumed as address-scheme.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "world.language-terminology",
+      "relation": "REFERENCE",
+      "purpose": "BCP 47 tags on parts and Activity Streams language maps are language-system values.",
+      "required": false,
+      "source_refs": [
+        "SRC-006",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "ietf.rfc-5322",
+      "relation": "ALIGN",
+      "purpose": "IMF header semantics are an alignment, not a claim that every channel serializes RFC 5322. Conflicts with RFC 3339 timestamps and IRI identifiers are recorded.",
+      "required": false,
+      "source_refs": [
+        "SRC-001"
+      ]
+    },
+    {
+      "target": "ietf.rfc-2045",
+      "relation": "ALIGN",
+      "purpose": "MIME entity, media type and transfer-encoding semantics align multipart content; RFC 2046 composite types are implied companions.",
+      "required": false,
+      "source_refs": [
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "w3c.activitystreams-2",
+      "relation": "ALIGN",
+      "purpose": "Actor-to-actor object and activity semantics, addressing properties and collections align social and chat-like channels.",
+      "required": false,
+      "source_refs": [
+        "SRC-006",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "w3c.activitypub",
+      "relation": "ALIGN",
+      "purpose": "Inbox/outbox delivery, Create wrapping, Delete/Tombstone, Block and inbox forwarding align federated delivery behaviour.",
+      "required": false,
+      "source_refs": [
+        "SRC-007"
+      ]
+    },
+    {
+      "target": "hl7.fhir.communication",
+      "relation": "ALIGN",
+      "purpose": "Clinical communication records, including failed attempts, status and payload, align health-industry use; they are not a substitute for transport payloads.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "eu.gdpr-2016-679",
+      "relation": "ALIGN",
+      "purpose": "Article 7 conditions for consent align contact-permission records in the EEA; other jurisdictions need separate unsolicited-communication alignments.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "ietf.rfc-3464-and-rfc-8098",
+      "relation": "ALIGN",
+      "purpose": "DSN and MDN are aligned evidence formats; delivered is not displayed, and neither is a non-repudiation service.",
+      "required": false,
+      "source_refs": [
+        "SRC-004",
+        "SRC-005"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension assigns local store keys and MUST bind each stored copy key to the origin identifier.",
+        "The adopting Dimension must resolve the referenced masters: person, organization, document record, identifier scheme and language system.",
+        "The adopting Dimension must declare retention classes, legal-hold authority and consent-evidence storage; ISO 15489-style records controls apply only where the Dimension adopts them.",
+        "The adopting Dimension must register the channel and provider records for each channel type it operates."
+      ],
+      "namespace_guidance": "Registry entry vr.wm-rec-003 / WM-REC-003. Sibling world models are referenced under the world.* namespace (world.person, world.organization, world.document-record, world.identifier-naming, world.language-terminology); external alignments retain their standards-body namespaces (ietf.*, w3c.*, hl7.*, eu.*).",
+      "registry_links": [
+        "vr.wm-rec-003",
+        "world.person",
+        "world.organization",
+        "world.document-record",
+        "world.identifier-naming",
+        "world.language-terminology"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Timestamps are stored as RFC 3339 date-times with seconds and an explicit offset or Z; RFC 5322 IMF Date is treated as an alignment, not identical syntax.",
+        "SMTP local-part case and exact spelling are preserved; rewriting is recorded as original-recipient versus final-recipient rather than applied silently.",
+        "Content hashes are computed over a declared canonicalization profile that is recorded with the digest."
+      ],
+      "patch_rules": [
+        "Lifecycle, delivery and disposition fields are append-mostly: corrections are new evidence rows, not silent rewrites.",
+        "Content updates are permitted only where the channel supports Update and the actor owns the object; ActivityPub applies partial updates client-to-server and a full representation server-to-server.",
+        "Consent withdrawal is a timestamped update that sets withdrawn-at without deleting the grant evidence."
+      ],
+      "compatibility_rules": [
+        "DSN delivered, MDN displayed and FHIR completed are not unified into one code; each keeps its own semantics.",
+        "Alignment to a standard is not a claim that a channel serializes that standard; claiming universal unsend or non-repudiation would be false conformance.",
+        "Origin identifier, envelope transaction identifier and local store key remain distinct layers and must not be merged."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: RFC 5322 Message-ID, ActivityPub object id IRI, or FHIR Communication.identifier",
+        "A governed global IRI",
+        "A UUID or ULID assigned by the adopting Dimension",
+        "A date is not an identifier"
+      ],
+      "timestamp_rule": "Event times (originated-at, sent-at, delivered-at, disposed-at) and observation or ingestion time are recorded separately as RFC 3339 date-times with seconds and an explicit offset or Z.",
+      "serial_naming_rule": "No serial name is asserted by this model; ordered series such as trace hops and OrderedCollection positions are recorded by order plus event time, and the origin identifier remains the naming key for each artifact.",
+      "integrity_rule": "Origin identifiers are immutable after first successful send or publication. Each stored copy may have a distinct local key that MUST reference the origin identifier. Envelope-transaction-id, if present, is preserved for DSN correlation and MUST NOT be confused with Message-ID."
+    },
+    "policies": [
+      "Sender owns the origin message record; each recipient owns their received copy; consent subjects own their consent records.",
+      "Contact for a non-transactional purpose requires a recorded lawful basis or demonstrable consent; withdrawal is as easy as grant and is evaluated before send.",
+      "Bcc, bto and confidential forwarding addresses MUST NOT leak through other copies, public views or optional DSN fields.",
+      "MDNs and similar receipts are opt-in, at most one per recipient per user agent, and MUST NOT be generated for an MDN.",
+      "Relays accept responsibility to deliver or report failure; archives and legal holds override routine deletion but not the duty to record erasure requests."
+    ],
+    "crud": {
+      "read": [
+        "Owner of a copy, an authorized delegate, or an archive reviewer under an audited compliance view.",
+        "Unauthenticated readers receive only Public or equivalent disclosed messages.",
+        "Thread summaries may omit bodies and other-recipient receipts."
+      ],
+      "create": [
+        "Authenticated originator or client acting on an outbox MAY create a message, part set and send event.",
+        "MTAs and federated servers MAY create DSN, MDN or inbox items as side effects of delivery.",
+        "Consent subjects or controllers MAY create consent-grant records."
+      ],
+      "update": [
+        "Originator MAY update content only where the channel supports Update and the actor owns the object.",
+        "Lifecycle, delivery and disposition fields are append-mostly; they are corrected with new evidence rows, not silent rewrites.",
+        "Consent MAY be withdrawn; withdrawal is an update that sets withdrawn-at without deleting the grant evidence."
+      ],
+      "delete": [
+        "Originator MAY delete or tombstone where the channel supports it; federated copies may remain.",
+        "Erasure of personal data follows retention class and legal hold; refused erasure is recorded, not silently ignored.",
+        "Operational mailbox deletion does not delete compliance-archive or DSN evidence until those classes expire."
+      ]
+    },
+    "roles": [
+      {
+        "name": "originator-author",
+        "responsibilities": [
+          "Compose content, set audience, request receipts only with awareness of privacy costs, and own the origin record."
+        ]
+      },
+      {
+        "name": "transmitting-sender",
+        "responsibilities": [
+          "Submit the envelope, accept or transfer responsibility, and keep Sender distinct from From when they differ."
+        ]
+      },
+      {
+        "name": "recipient",
+        "responsibilities": [
+          "Own the received copy, decide MDN emission, and exercise access, objection and erasure rights on that copy."
+        ]
+      },
+      {
+        "name": "channel-provider-mta",
+        "responsibilities": [
+          "Relay or deliver, emit accurate DSNs, preserve traces, and not modify content except as a documented gateway."
+        ]
+      },
+      {
+        "name": "consent-subject",
+        "responsibilities": [
+          "Grant, refuse or withdraw contact permission and block unwanted actors."
+        ]
+      },
+      {
+        "name": "archive-steward",
+        "responsibilities": [
+          "Apply retention, holds and audited compliance views without exposing live channel credentials."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny all reads except to the copy owner and processes acting for that owner; Public addressing is an explicit exception.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Public or equivalent audience makes the message readable without authentication.",
+        "Authorized compliance-archive reviewers may read full bodies, delivery evidence and consent state under audit.",
+        "Bcc identities are visible only on copies that the Bcc policy allows.",
+        "Reporting-MTA operators may read DSN diagnostic fields required to repair delivery, omitting confidential forward paths when policy requires."
+      ],
+      "audit_requirements": [
+        "Record who read a compliance-archive view, when, and under which mandate.",
+        "Record send, delivery-status, disposition, consent-grant, consent-withdraw, block, delete and erasure-request events with event time and ingestion time.",
+        "Do not treat DSN or MDN as non-repudiation; log that they are forgeable."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL"
+      ],
+      "read_order": [
+        "AGENTS.md",
+        "Specification URL",
+        "Processes URL",
+        "Storage type URL",
+        "Interface URL"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This research defines a channel-neutral Message aggregate covering identity, content parts, threading, addressing, envelope handoff, DSN-class delivery evidence, MDN-class disposition, contact consent, copy ownership, retention and provenance, grounded in IETF RFC 5322/5321/2045/3464/8098, W3C Activity Streams 2.0, Activity Vocabulary and ActivityPub, HL7 FHIR Communication R5, and GDPR Article 7. It is not a claim of universal completeness across postal, SMS, Matrix, XMPP, JMAP or records-management standards that were not fetched as primary sources in this run.",
+    "confidence": "high",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Origin Message-ID, ActivityPub object id, FHIR identifier, envelope-transaction-id and Dimension ULID are modelled with immutability and scheme."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Draft through sent, FHIR EventStatus including not-done and entered-in-error, Update/Delete/Tombstone/Undo, delayed DSN and expansion."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Author/sender/recipient, part-of, in-reply-to, attachment pointers, channel, address owner, DSN confirms, consent authorizes."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "originated-at, sent-at, ingested-at, arrival, last-attempt, will-retry-until, disposed-at, granted-at, withdrawn-at as RFC 3339."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Trace hops, Reporting-MTA/UA, origin-fetch verification, hashes; DKIM/S/MIME noted as alignment gaps."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Sender origin record, recipient copies, consent-subject ownership, Bcc copy isolation."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Required From/Date in IMF, required FHIR status, DSN required fields, MDN Return-Path match, MIME encoding rules."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default deny, Public exception, inbox/outbox permission filtering, compliance-archive exception, MDN privacy."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Retention classes, legal hold, GDPR withdrawal versus erasure, Tombstone versus purge, federated copy uncertainty."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignments to IMF, MIME, SMTP, DSN, MDN, AS2, ActivityPub, FHIR Communication and GDPR; conflicts recorded."
+      },
+      {
+        "dimension": "consent",
+        "status": "covered",
+        "notes": "Article 7 demonstration, distinguishable request, easy withdrawal, MDN opt-in, Block."
+      },
+      {
+        "dimension": "delivery-evidence",
+        "status": "covered",
+        "notes": "DSN actions including delayed, relayed, expanded; FHIR not-done; delivered is not displayed."
+      },
+      {
+        "dimension": "channel-addressing",
+        "status": "covered",
+        "notes": "Channel types, mailbox and actor IRI endpoints, group and Public collections, FQDN and local-part rules."
+      },
+      {
+        "dimension": "threading",
+        "status": "covered",
+        "notes": "In-Reply-To, References, inReplyTo, inResponseTo, ghost-reply forwarding, resent versus reply."
+      },
+      {
+        "dimension": "sensitivity-classification",
+        "status": "gap",
+        "notes": "Subject and FHIR category/priority are present; a dedicated sensitivity/classification code system was not taken from a primary information-security standard in this run."
+      }
+    ],
+    "known_omissions": [
+      "Universal Postal Union addressing and physical delivery evidence were not fetched.",
+      "Matrix Client-Server event IDs, XMPP stanza IDs, JMAP, IMAP flags and RFC 8621 were not fetched as primary sources.",
+      "S/MIME, OpenPGP, DKIM, SPF and DMARC are relevant integrity evidence but were not primary-fetched; treated as alignment gaps.",
+      "ISO 15489 / MoReq records-management schedules are not primary-supported.",
+      "CAN-SPAM, ePrivacy/PECR and TCPA unsolicited-communication rules are region-specific and not fully sourced here.",
+      "RFC 4865 future-release, RFC 6530-6533 internationalized email, and RFC 8058 one-click unsubscribe were not fetched.",
+      "SMS, RCS, mobile push and proprietary chat receipts lack a single primary mapping.",
+      "End-to-end encrypted envelopes (MLS, server-side fanout of ciphertext) are out of evidence for this run."
+    ],
+    "conflicts": [
+      "RFC 5322 Date uses IMF date-time; Activity Streams requires RFC 3339 with optional omitted seconds. This model stores RFC 3339 and treats IMF Date as an alignment, not identical syntax.",
+      "SMTP envelope reverse-path need not equal header From; using header From as the responsible sender is a known error.",
+      "DSN action delivered is terminal and does not mean read; MDN displayed does not mean understood; FHIR completed is a clinical-record status. Do not unify these codes.",
+      "Message-ID identifies content; Original-Envelope-Id identifies submission; ActivityPub Create id and object id are distinct; local store keys are another layer.",
+      "ActivityPub Delete does not retract every federated copy; email has no standard recall. Claiming unsend would be a false conformance.",
+      "Bcc confidentiality versus DSN Final-Recipient and mailing-list MDN leakage are unresolved operational tensions; sites MAY omit fields.",
+      "GDPR erasure rights conflict with legal hold and medical-record retention; both must be representable without implying a single global outcome.",
+      "FHIR Communication is a record that sharing occurred, including failures, and is not the on-the-wire message object."
+    ],
+    "regional_assumptions": [
+      "GDPR Article 7 is assumed for EEA-relevant contact consent; other regions may rely on contract, legitimate interest or sectoral anti-spam law instead.",
+      "SMTP FQDN and DNS MX routing assume Internet mail; isolated intranets and non-TCP transports are allowed by RFC 5321 but not detailed here.",
+      "ActivityPub HTTPS-dereferencable actor and object ids assume a web-origin server namespace.",
+      "FHIR Communication is typical of HL7-adopting health systems and is not a global clinical mandate.",
+      "Default MDN suppression reflects RFC 8098 privacy guidance, which some enterprise mail systems override by policy."
+    ],
+    "adversarial_checks": [
+      "Could a forged DSN or MDN be treated as non-repudiation? No; RFC 3464 and RFC 8098 document forgery; evidence-grade remains unverified unless independently corroborated.",
+      "Could Bcc or confidential autoforward addresses leak via DSN Remote-MTA, Final-Recipient or propagated MDN requests? Yes; optional fields MUST be omissible and list exploders SHOULD NOT propagate MDN requests.",
+      "Could this model claim email recall because ActivityPub has Delete? No; recall-supported is per channel and defaults false for IMF/SMTP.",
+      "Could a date or sent-at be used as a message identifier? Forbidden by identity priority.",
+      "Could consent withdrawal be modelled as deleting the grant evidence? Forbidden; withdrawal is a timestamped event and prior lawful sends remain explicable.",
+      "Could FHIR AuditEvent replace Communication for clinician-to-clinician letters? No; HL7 distinguishes reviewable Communication in the patient record from system audit.",
+      "Could likes, follows or presence pings be stored as messages? Only if they are themselves the communication unit; otherwise they belong to social-activity or session neighbors."
+    ]
+  }
+}

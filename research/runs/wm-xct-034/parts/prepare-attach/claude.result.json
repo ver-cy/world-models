@@ -1,0 +1,2044 @@
+{
+  "schema_version": "1.0.0",
+  "model": {
+    "registry_id": "vr.wm-xct-034",
+    "model_id": "WM-XCT-034",
+    "name": "Digital Signature / Proof",
+    "entry_kind": "mixin",
+    "purpose": "Signature, signer, method and verification evidence: a reusable attachment binding a cryptographic signature or proof, its pinned parameters, its signer and verification-method reference, and its verification evidence to a host record, without owning key custody or primitive execution.",
+    "scope_statement": "WM-XCT-034 is a mixin any host record type can adopt to carry cryptographic integrity and authenticity context. It owns the descriptor of a signature or proof (type, cryptosuite or algorithm identifier and parameters, proof value encoding, proof purpose, context bindings, proof sets and chains), the exact protected input the proof commits to, the pinned reference to the verification method or credential that will validate it, the correlated request-and-attachment lifecycle by which proof bytes are obtained from an external executor and appended to a host-bound version, the temporal context of the proof (creation, expiry, timestamp-token references, event time versus observation time), the verification evidence recorded as historical observation, and the read projections distinguishing current from as-of state. It holds no key material, executes no cryptographic primitive, and asserts no legal or business validity.",
+    "in_scope": [
+      "Proof descriptor context attached to a host record: proof type, cryptosuite or algorithm identifier and parameters, proof value encoding, proof purpose, and membership of an unordered proof set or an ordered proof chain.",
+      "The exact protected input a proof commits to: pinned immutable payload version, named and versioned transformation profile, digest algorithm and digest, covered components and externally supplied context.",
+      "Pinned reference to the signer's verification method, key identifier or credential identifier, together with the context bindings (security domain or audience, challenge, nonce, presentation header) that scope the proof.",
+      "Correlated request and attachment operations: preparation of the protected signing input, dispatch of a correlated request to an external executor, admission checks on the returned proof, and append-only host-bound attachment.",
+      "Verification evidence records: which pinned inputs were checked, by which party, at which observation instant, with which outcome, retained as historical observation rather than as current validity.",
+      "Temporal context: proof creation and expiry instants, timestamp-token references, request validity windows, and separate recording of event time and observation or ingestion time.",
+      "Read projections over host records: current attached-proof state and explicit as-of or historical state, each carrying completeness and filtering flags."
+    ],
+    "out_of_scope": [
+      "Private key generation, custody, activation, backup, rotation, revocation and destruction.",
+      "Signer or prover authorization, identity proofing, sole-control enforcement and workflow approval decisions.",
+      "Execution of cryptographic primitives: signing, proving, proof derivation and signature verification computation.",
+      "Trust-anchor selection, certificate path building, revocation status evaluation and signature-policy enforcement.",
+      "Construction, storage, querying and retention execution of audit trails and event logs.",
+      "Host record identity minting, host business content and the host record's own lifecycle.",
+      "Storage and interface projections: JOSE, COSE, JSON-LD, HTTP, Git, MCP and MongoDB serialisations are renderings of this model, not its semantics.",
+      "Long-term preservation, evidence-record syntax, archive timestamping and hash renewal ahead of algorithm obsolescence."
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Key and credential custody model (hardware token, cryptographic module or remote signing service)",
+        "distinction": "Private keys are marked non-extractable and never revealed in plaintext by the module holding them, and remote signing services hold the key without releasing it to the client. This model therefore carries only a pinned, dereferenceable verification-method or credential reference and never key material, activation secrets or module internals.",
+        "source_refs": [
+          "SRC-005",
+          "SRC-009",
+          "SRC-011"
+        ]
+      },
+      {
+        "neighbor": "Verification and validation model",
+        "distinction": "Verification establishes that a proof is an authentic and current statement of its issuer; validation establishes that a claim satisfies a relying party's business requirements, and verification of a credential does not imply evaluation of the truth of its claims. This model records verification evidence as an observation bound to its instant and does not own the evaluation, the policy or the reliance decision.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Adopting-Dimension audit and event-log model",
+        "distinction": "The specifications this model aligns to define secured documents and protocol messages, not audit records. This model emits the minimum fields describing its own preparation, dispatch, admission and attachment operations and does not construct, store, query, seal or retain any audit trail.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Time-stamping authority model",
+        "distinction": "A time-stamping authority receives only a message imprint and must not examine the imprinted data; issuance, authority policy and authority trust are external. This model may pin a timestamp-token reference and its corresponding imprint, but does not issue, evaluate or trust timestamp tokens on its own authority.",
+        "source_refs": [
+          "SRC-008"
+        ]
+      },
+      {
+        "neighbor": "Host record model",
+        "distinction": "Attaching a proof produces a secured document by adding a proof to an unsecured input document; it does not mint host identity, change host business content or confer approval. Host identity, host state transitions and host access control remain owned by the host record's own model.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-010"
+        ]
+      },
+      {
+        "neighbor": "Holder-side selective disclosure and derived-proof model",
+        "distinction": "Derived, unlinkable proofs are generated by a holder from a base proof without the issuer's private key, using selective pointers and a presentation header. That derivation is an executor operation; this model pins the base-proof reference and the derivation parameters carried in the request and admits the returned derived proof.",
+        "source_refs": [
+          "SRC-013"
+        ]
+      }
+    ]
+  },
+  "sources": [
+    {
+      "id": "SRC-001",
+      "title": "Verifiable Credential Data Integrity 1.0 — Securing the Integrity of Verifiable Credential Data",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/2025/REC-vc-data-integrity-20250515/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Normative structure of a proof (type, cryptosuite, verificationMethod, proofPurpose, created, expires, domain, challenge, nonce, previousProof, proofValue), the Add Proof algorithm, transformation/hashing/proof-serialization stages, unsecured versus secured documents, and proof sets versus proof chains."
+    },
+    {
+      "id": "SRC-002",
+      "title": "RFC 9421: HTTP Message Signatures",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9421.html",
+      "version_or_date": "Standards Track, February 2024",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Signature base construction from declared covered components, the requirement that signer and verifier independently reconstruct an identical signature base, and the created, expires, nonce, alg, keyid and tag parameters used for context binding and replay control."
+    },
+    {
+      "id": "SRC-003",
+      "title": "RFC 7515: JSON Web Signature (JWS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc7515.html",
+      "version_or_date": "Standards Track, May 2015",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Definition of the JWS Signing Input as a fixed octet sequence, the protected versus unprotected header distinction, the requirement that parameters used in trust decisions be integrity protected, algorithm-substitution defences, detached payloads and multi-signature JSON serialization."
+    },
+    {
+      "id": "SRC-004",
+      "title": "RFC 9052: CBOR Object Signing and Encryption (COSE): Structures and Process",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9052.html",
+      "version_or_date": "Standards Track, August 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "The Sig_structure canonical signing input with its context string, protected buckets, external_aad and payload; the rule that the algorithm identifier must be authenticated where possible; and the rule that unprotected header parameters carry no cryptographic assurance."
+    },
+    {
+      "id": "SRC-005",
+      "title": "FIPS 186-5: Digital Signature Standard (DSS)",
+      "organization": "National Institute of Standards and Technology (NIST)",
+      "url": "https://csrc.nist.gov/pubs/fips/186-5/final",
+      "version_or_date": "FIPS 186-5, 3 February 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Authoritative suite of approved digital signature algorithms used to detect unauthorised modification and authenticate the signatory, and the basis for constraining an adopting Dimension's algorithm and parameter allow-list."
+    },
+    {
+      "id": "SRC-006",
+      "title": "RFC 8785: JSON Canonicalization Scheme (JCS)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.html",
+      "version_or_date": "Informational, June 2020",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "States that cryptographic operations require an invariant, reliably repeatable representation, specifies deterministic property ordering, number serialization and string escaping, and requires that any verification failure abort the operation."
+    },
+    {
+      "id": "SRC-007",
+      "title": "RFC 9110: HTTP Semantics",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.html",
+      "version_or_date": "Internet Standard (STD 97), June 2022",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Definition of idempotency and safe retry, entity-tags as strong versus weak validators, the If-Match precondition for lost-update prevention, and 412 Precondition Failed semantics — the basis for the optimistic-concurrency and idempotency preconditions on every mutation here."
+    },
+    {
+      "id": "SRC-008",
+      "title": "RFC 3161: Internet X.509 Public Key Infrastructure Time-Stamp Protocol (TSP)",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3161.html",
+      "version_or_date": "Standards Track, August 2001",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Canonical digest-only handoff to an external cryptographic service: the messageImprint pins the hash, the nonce must be echoed or the response rejected, the response imprint must equal the request imprint, and the authority must not examine the imprinted data."
+    },
+    {
+      "id": "SRC-009",
+      "title": "PKCS #11 Specification Version 3.1",
+      "organization": "OASIS Open",
+      "url": "https://docs.oasis-open.org/pkcs11/pkcs11-spec/v3.1/os/pkcs11-spec-v3.1-os.html",
+      "version_or_date": "OASIS Standard, 23 July 2023",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Signing operation sequence in which the mechanism and its parameters are fixed at initialisation, and the CKA_SENSITIVE, CKA_EXTRACTABLE and CKA_ALWAYS_AUTHENTICATE attributes that keep private keys inside the token and require authentication before key use."
+    },
+    {
+      "id": "SRC-010",
+      "title": "Verifiable Credentials Data Model v2.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version_or_date": "W3C Recommendation, 15 May 2025",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Distinguishes enveloping from embedding securing mechanisms and separates verification from validation, stating that verification does not imply evaluation of the truth of claims and that reliance follows only from the relying party's own policies."
+    },
+    {
+      "id": "SRC-011",
+      "title": "Architectures and protocols for remote signature applications (CSC API v2.0)",
+      "organization": "Cloud Signature Consortium",
+      "url": "https://cloudsignatureconsortium.org/wp-content/uploads/2023/04/csc-api-v2.0.0.2.pdf",
+      "version_or_date": "Version 2.0.0.2, October 2022",
+      "source_type": "first-party-doc",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Remote signing request surface: credentialID, signature activation data, the hashes array with hashAlgorithmOID, signAlgo and signAlgoParams, operationMode with asynchronous response correlation, validity_period, response_uri and clientData, with the private key held by the service and never released."
+    },
+    {
+      "id": "SRC-012",
+      "title": "RFC 3339: Date and Time on the Internet: Timestamps",
+      "organization": "Internet Engineering Task Force (IETF)",
+      "url": "https://www.rfc-editor.org/rfc/rfc3339.html",
+      "version_or_date": "Standards Track, July 2002",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 1,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Required date-time form with seconds and an explicit numeric offset or Z, rejection of unqualified local time as unacceptable for interoperability, and leap-second handling relevant to instants recorded around proof creation and expiry."
+    },
+    {
+      "id": "SRC-013",
+      "title": "Data Integrity BBS Cryptosuites v1.0",
+      "organization": "World Wide Web Consortium (W3C)",
+      "url": "https://www.w3.org/TR/vc-di-bbs/",
+      "version_or_date": "W3C Candidate Recommendation Draft, 2 September 2026",
+      "source_type": "standard",
+      "primary_source": true,
+      "authority_tier": 2,
+      "accessed_at": "2026-09-04T12:00:00Z",
+      "relevance": "Separates base proof creation by the issuer from derived proof creation by the holder, with mandatoryPointers, selectivePointers, presentationHeader and featureOption inputs, showing a proof can be produced without the issuer's private key — the reason sign and prove are modelled as one externalised executor operation."
+    }
+  ],
+  "structure": {
+    "bundles": [
+      {
+        "id": "sig-prep-request-construction",
+        "name": "Proof Request Construction and Executor Handoff",
+        "description": "Everything needed to read the current or historical proof state of a host record, build an exact and immutable protected signing input, pin the proof configuration and context, and hand a correlated, expiring request to an external signing or proving executor without exposing anything mutable or secret.",
+        "rationale": "Signature and proof specifications converge on one requirement: signer and verifier must independently arrive at byte-identical protected input, and that input must fix the algorithm, the key reference and the context before any private key is touched. RFC 7515 fixes the JWS Signing Input, RFC 9052 fixes the Sig_structure, RFC 9421 fixes the signature base, and W3C Data Integrity fixes the proof configuration before proof serialization. Remote-signing and time-stamping protocols show the correct handoff shape: pin a digest, correlate the request, bound its validity, and let the key stay where it is.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-003",
+          "SRC-004",
+          "SRC-006",
+          "SRC-008",
+          "SRC-011"
+        ],
+        "layers": [
+          {
+            "id": "sig-prep-read-surface",
+            "name": "Proof State Read and As-Of Projection",
+            "description": "How callers observe which proofs are attached to a host record, how an explicit historical projection differs from the current one, and the rule that neither proof presence nor a stored verification observation is a statement of current validity.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-010",
+              "SRC-012"
+            ],
+            "findings": [
+              {
+                "id": "sig-prep-state-projection",
+                "name": "Current and as-of projections of attached proof state",
+                "description": "A read returns the proof descriptors attached to a host record, either as at the read instant or as at an explicitly supplied historical point. The projection states which host version each proof commits to, whether the set is complete or access-filtered, and — for chains — the asserted order. The as-of basis (event time or observation time) is supplied by the caller and never inferred, because a proof's asserted creation instant and the instant the system observed it can differ.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-current-set",
+                    "text": "Which proofs are attached to the host record version that is current at read time, and which host version does each proof commit to?",
+                    "kind": "state",
+                    "answer_data": [
+                      "current host version identifier",
+                      "ordered list of attached proof descriptor identifiers",
+                      "per-proof pinned payload digest and digest algorithm",
+                      "per-proof securing mechanism code"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-asof-basis",
+                    "text": "What as-of instant does a historical projection use, and is it evaluated against event time or against observation time?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "as-of instant as RFC 3339 with seconds and explicit offset",
+                      "as-of basis code (event time or observation time)",
+                      "resolved host version identifier at that point",
+                      "clock source reference and permitted skew"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-projection-completeness",
+                    "text": "Does the returned projection represent the complete proof set or an access-filtered subset?",
+                    "kind": "access",
+                    "answer_data": [
+                      "completeness flag",
+                      "applied scope or filter identifier",
+                      "count of withheld proof descriptors",
+                      "withholding reason code"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-chain-order",
+                    "text": "For a proof chain, what ordering does the projection assert and which proof does each entry name as its predecessor?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "previous-proof reference per entry",
+                      "chain position ordinal",
+                      "set-or-chain code",
+                      "chain continuity flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-read-determinism",
+                    "text": "Is the projection reproducible for the same as-of input, and what marker makes it reproducible?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "read consistency token or entity-tag",
+                      "projection snapshot identifier",
+                      "reproducibility flag"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-host-version-ref",
+                    "name": "Host version reference",
+                    "description": "Immutable, digest-addressable reference to the exact host record version the projection resolved to.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-asof-instant",
+                    "name": "As-of instant",
+                    "description": "Caller-supplied historical point for the projection, expressed as an RFC 3339 date-time with seconds and an explicit offset or Z.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-asof-basis",
+                    "name": "As-of basis code",
+                    "description": "Explicit statement of whether the as-of instant is evaluated against asserted event time or against system observation time. Never defaulted silently.",
+                    "value_kind": "code",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-read-consistency-token",
+                    "name": "Read consistency token",
+                    "description": "Opaque validator identifying the exact represented state, usable as the expected-version precondition on a subsequent mutation.",
+                    "value_kind": "identifier",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-projection-completeness",
+                    "name": "Projection completeness flag",
+                    "description": "Indicates whether the returned proof set is complete or was reduced by the caller's access scope, with a count of withheld entries.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "A projection is a derived read view computed over host versions and already-stored proof descriptors. It holds no octets of its own and is never persisted as a signed or addressable object, so materialising it as an artifact would create a second, drift-prone copy of state whose authority is unclear. It is therefore expressed purely as inline reference data: host version reference, as-of instant and basis, consistency token and completeness flags."
+              },
+              {
+                "id": "sig-prep-non-inference",
+                "name": "Proof presence and prior verification are not current validity",
+                "description": "The rule set preventing the most common misuse of this mixin. An attached proof asserts only that some party produced a proof over a specific protected input using a specific method; it asserts nothing about the truth of the host content, the current standing of the signer, or the acceptability of the record to any relying party. A stored verification result is an observation bound to the instant and inputs at which it was taken, and is invalidated for reuse when any pinned input changes.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-010"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-presence-meaning",
+                    "text": "What exactly does the presence of an attached proof assert, and what does it deliberately not assert?",
+                    "kind": "definition",
+                    "answer_data": [
+                      "assertion scope statement",
+                      "explicit list of excluded assertions",
+                      "securing mechanism reference",
+                      "proof purpose value"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-prior-result-status",
+                    "text": "Is a stored verification result an assertion about the present or an observation bound to the instant and inputs at which it was made?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "observation instant as RFC 3339 with offset",
+                      "inputs pinned at observation",
+                      "observing party reference",
+                      "explicit not-current marker"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-revalidation-trigger",
+                    "text": "Which changes to pinned inputs invalidate reuse of a prior verification observation?",
+                    "kind": "constraint",
+                    "answer_data": [
+                      "list of pins whose change forces revalidation",
+                      "changed pin identifiers",
+                      "revalidation-required flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-consumer-obligation",
+                    "text": "What must a consumer independently evaluate before relying on a proof-bearing record?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "relying-party policy reference",
+                      "required independent check list",
+                      "reliance decision owner reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-assertion-scope",
+                    "name": "Proof assertion scope statement",
+                    "description": "Machine-readable statement of what the attached proof covers and what it explicitly does not cover, carried alongside the descriptor.",
+                    "value_kind": "text",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-observation-instant",
+                    "name": "Verification observation instant",
+                    "description": "The instant at which a verification result was observed and recorded, distinct from the proof's asserted creation instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-not-current-marker",
+                    "name": "Non-current evidence marker",
+                    "description": "Flag forcing consumers to treat a stored verification result as historical evidence rather than as present-tense validity.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-revalidation-trigger-set",
+                    "name": "Revalidation trigger set",
+                    "description": "Enumerated pins (payload version, algorithm, verification method, context bindings, expiry) whose change makes a prior observation unusable.",
+                    "value_kind": "collection",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-003"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "This finding is a normative interpretation rule attached to every read and to every stored verification observation. It produces no object of its own: it constrains how existing descriptors and observations are labelled and consumed. Expressing it as inline flags and scope statements keeps the rule inseparable from the data it governs, whereas a separate artifact could be fetched, cached or ignored independently of the proof it qualifies."
+              }
+            ]
+          },
+          {
+            "id": "sig-prep-protected-input",
+            "name": "Protected Signing Input and Pinned Proof Configuration",
+            "description": "Construction of the exact octets or digest the executor will operate on, and the pinned configuration — algorithm, parameters, verification method, purpose, context and policy — that the protected input must itself cover.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-003",
+              "SRC-004",
+              "SRC-006",
+              "SRC-013"
+            ],
+            "findings": [
+              {
+                "id": "sig-prep-payload-pin",
+                "name": "Exact payload version pin and protected input construction",
+                "description": "Preparation resolves the host payload to one immutable, content-addressed version, applies a named and versioned deterministic transformation, and records the resulting protected input octets or their digest with the digest algorithm and length. The recorded value is the sole thing the executor may operate on. At attachment the protected input is recomputed from the same pinned version and must be byte-identical, which is what detects time-of-check-to-time-of-use drift.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-006",
+                  "SRC-008"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-input-bytes",
+                    "text": "What exact octet sequence or digest constitutes the protected signing input handed to the executor?",
+                    "kind": "measurement",
+                    "answer_data": [
+                      "protected input octets or digest value",
+                      "digest algorithm identifier or OID",
+                      "digest length in octets",
+                      "encoding of the transmitted value"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-transform",
+                    "text": "Which canonicalization or transformation profile produced the protected input, and can an independent verifier reproduce it?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "transformation profile identifier",
+                      "profile version",
+                      "determinism assertion",
+                      "reproduction procedure reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-payload-version",
+                    "text": "Which immutable host payload version does the protected input pin, and how is that version identified?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "payload version identifier",
+                      "content digest of that version",
+                      "immutability assertion",
+                      "master system of record reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-detached-scope",
+                    "text": "Is the payload detached, enveloped or embedded, and what externally supplied context is folded into the protected input?",
+                    "kind": "classification",
+                    "answer_data": [
+                      "payload attachment mode code",
+                      "external additional authenticated data value",
+                      "covered component list",
+                      "digest-only disclosure flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-input-drift",
+                    "text": "How is drift between the prepared protected input and the host record at attachment time detected and handled?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "recomputed protected input digest at attachment",
+                      "byte-identity comparison outcome",
+                      "drift refusal reason code"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-protected-input",
+                    "name": "Protected signing input",
+                    "description": "The exact octet sequence the proof commits to, constructed once at preparation and never regenerated by a different path.",
+                    "value_kind": "binary",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-input-digest",
+                    "name": "Protected input digest",
+                    "description": "Digest of the protected signing input, used as the value transmitted when only a digest is disclosed and as the comparison value at attachment.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-digest-algorithm",
+                    "name": "Digest algorithm identifier",
+                    "description": "Identifier or OID of the hash function producing the protected input digest, pinned so the executor cannot substitute another.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-transform-profile",
+                    "name": "Transformation profile identifier and version",
+                    "description": "Named, versioned canonicalization or signature-base construction profile; unnamed or unversioned profiles are refused at preparation.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-006",
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-covered-components",
+                    "name": "Covered component list",
+                    "description": "Ordered enumeration of the components or pointers included in the protected input, including any externally supplied context.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-004",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-prep-signing-input-manifest",
+                    "name": "Protected Signing Input Manifest",
+                    "description": "Immutable record produced by preparation holding the protected input or its digest, the digest algorithm and length, the transformation profile and version, the pinned host payload version, the covered component list and any external additional authenticated data. It is re-read and recomputed against at attachment; never edited after creation, only superseded.",
+                    "media_or_form": [
+                      "structured record",
+                      "octet string or digest value",
+                      "ordered covered-component list"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Primary identifier is the authoritative master-system identifier assigned by the adopting Dimension's proof-request store; where that store is not the master, the executor's own request identifier is used. Failing both, a UUID or ULID is minted at preparation. The protected input digest is recorded as an integrity check value and correlation aid and is never the primary identifier; no instant or version label is used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-prep-proof-options",
+                "name": "Pinned proof configuration: algorithm, method, purpose, context and policy",
+                "description": "The configuration the request fixes before any key is touched: the algorithm or cryptosuite and its parameters, the verification-method or credential reference that will validate the result, the proof purpose and the verification relationship it must match, the context bindings scoping the proof to one audience and occasion, and the policy and profile versions in force. Wherever the securing mechanism allows, this configuration is itself covered by the protected input, so a returned proof cannot silently claim a different algorithm or key.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-003",
+                  "SRC-004",
+                  "SRC-011",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-algorithm-pin",
+                    "text": "Which algorithm or cryptosuite and which parameter set are pinned, and are they covered by the protected input?",
+                    "kind": "requirement",
+                    "answer_data": [
+                      "algorithm or cryptosuite identifier",
+                      "algorithm parameter set",
+                      "protected-coverage flag",
+                      "allow-list entry reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-verification-method",
+                    "text": "Which verification-method, key identifier or credential identifier is pinned, and does it resolve to exactly one key?",
+                    "kind": "relationship",
+                    "answer_data": [
+                      "verification method URL or opaque key identifier",
+                      "credential identifier",
+                      "identifier scheme reference",
+                      "unique-resolution flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-proof-purpose",
+                    "text": "What proof purpose is asserted, and does it match the verification relationship the pinned method is authorised for?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "proof purpose value",
+                      "expected verification relationship",
+                      "match assertion",
+                      "controller reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-context-audience",
+                    "text": "Which security domain, audience, challenge or presentation header binds this proof to its intended context and occasion?",
+                    "kind": "security",
+                    "answer_data": [
+                      "domain or audience value",
+                      "challenge or nonce value",
+                      "presentation header octets",
+                      "context binding coverage flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-policy-pins",
+                    "text": "Which policy and profile versions are pinned so that executor and verifier evaluate the same rules?",
+                    "kind": "provenance",
+                    "answer_data": [
+                      "policy identifier and version",
+                      "signature profile or level identifier",
+                      "allow-list snapshot reference",
+                      "pin capture instant"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-algorithm-id",
+                    "name": "Algorithm or cryptosuite identifier",
+                    "description": "Governed identifier of the signature or proof suite to be used, drawn unchanged from the registry that governs it.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-algorithm-params",
+                    "name": "Algorithm parameter set",
+                    "description": "Parameters accompanying the algorithm (curve, padding scheme, hash pairing, feature option), fixed at preparation and immutable thereafter.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-005",
+                      "SRC-011",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-verification-method-ref",
+                    "name": "Verification method reference",
+                    "description": "Pinned reference to the verification method, key identifier or credential identifier a verifier will use, carrying the scheme that governs it. Never accompanied by key material.",
+                    "value_kind": "reference",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-proof-purpose",
+                    "name": "Proof purpose",
+                    "description": "The declared purpose of the proof, which must match the verification relationship the pinned method is authorised for.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-context-binding",
+                    "name": "Context binding set",
+                    "description": "Domain or audience, challenge or nonce, tag and presentation header values that scope the proof to one context and occasion.",
+                    "value_kind": "object",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-004",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-policy-pin",
+                    "name": "Policy and profile pin",
+                    "description": "Identifier and version of the signature policy, profile or level in force at preparation, captured so later evaluation uses the same rules.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-011",
+                      "SRC-001"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-prep-proof-configuration",
+                    "name": "Pinned Proof Configuration",
+                    "description": "The canonical, immutable set of proof options — algorithm and parameters, verification-method reference, proof purpose, context bindings and policy pins — assembled at preparation and, where the securing mechanism supports it, itself covered by the protected input. Compared field-by-field against the returned proof's declared values at admission.",
+                    "media_or_form": [
+                      "structured record",
+                      "canonical serialised option set"
+                    ],
+                    "serial": false,
+                    "identity_strategy": "Primary identifier is the authoritative master-system identifier assigned by the proof-request store that owns it; the governed external identifiers it contains (verification-method URL, cryptosuite identifier, proof purpose) are carried unchanged and never re-minted. Where no master-system identifier exists, a UUID or ULID is minted; the configuration digest is an integrity check value, not an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-003",
+                      "SRC-004",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          },
+          {
+            "id": "sig-prep-executor-handoff",
+            "name": "Correlated Request and Executor Boundary",
+            "description": "The request record correlating one preparation to exactly one executor response within a bounded validity window, and the refusal constraints keeping secrets, mutable references and authorization decisions on the far side of the boundary.",
+            "source_refs": [
+              "SRC-007",
+              "SRC-008",
+              "SRC-009",
+              "SRC-011"
+            ],
+            "findings": [
+              {
+                "id": "sig-prep-request-record",
+                "name": "Correlated, expiring request to an external signing or proving executor",
+                "description": "A request record binds one signing input manifest and one pinned proof configuration to one correlation identifier, one creation instant and one expiry instant. Dispatch is guarded by an expected-revision precondition and an idempotency key so retries after a network failure cannot produce a second signing operation or extend the validity window. Asynchronous operation requires an explicit response delivery reference and the same correlation identifier echoed back.",
+                "source_refs": [
+                  "SRC-007",
+                  "SRC-008",
+                  "SRC-011",
+                  "SRC-012"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-correlation-id",
+                    "text": "What request correlation identifier is issued, and how does the executor echo it so a response matches exactly one request?",
+                    "kind": "identity",
+                    "answer_data": [
+                      "request correlation identifier",
+                      "echo or response identifier",
+                      "one-to-one binding assertion",
+                      "echo verification outcome"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-request-expiry",
+                    "text": "When was the request created and when does it expire, and what clock and skew govern those instants?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "creation instant as RFC 3339 with seconds and offset",
+                      "expiry instant as RFC 3339 with seconds and offset",
+                      "clock source reference",
+                      "maximum permitted skew"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-idempotency",
+                    "text": "Which idempotency key makes a retried dispatch safe, and what is the defined result of replaying that key?",
+                    "kind": "process",
+                    "answer_data": [
+                      "idempotency key",
+                      "replay outcome code",
+                      "retry window",
+                      "existing request reference returned on replay"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-concurrency",
+                    "text": "Which request lifecycle states permit dispatch, and which expected-version preconditions must hold for the transition to be accepted?",
+                    "kind": "lifecycle",
+                    "answer_data": [
+                      "current request state",
+                      "permitted transition set",
+                      "expected host version or entity-tag",
+                      "expected request revision",
+                      "precondition failure code"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-request-mode",
+                    "text": "Is the operation synchronous or asynchronous, and where and over which authenticated channel is the response delivered?",
+                    "kind": "interoperability",
+                    "answer_data": [
+                      "operation mode code",
+                      "response delivery endpoint reference",
+                      "channel authentication method reference",
+                      "expected response media form"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-correlation-id",
+                    "name": "Request correlation identifier",
+                    "description": "Identifier minted at preparation and required to be echoed by the executor; a response whose correlation identifier matches no open request is refused.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-request-created",
+                    "name": "Request creation instant",
+                    "description": "Instant the request record was created, as RFC 3339 with seconds and an explicit offset or Z. Distinct from the proof's asserted creation instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-request-expiry",
+                    "name": "Request expiry instant",
+                    "description": "Instant after which a returned proof is refused regardless of its cryptographic correctness. Never extended by a retry.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-idempotency-key",
+                    "name": "Idempotency key",
+                    "description": "Caller-supplied key making preparation, dispatch and attachment safely retryable; replay returns the existing outcome rather than creating a new one.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-expected-revision",
+                    "name": "Expected revision precondition",
+                    "description": "Entity-tag or revision value the caller believes current; a mismatch fails the mutation with a precondition failure rather than merging concurrent writes.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-007"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-operation-mode",
+                    "name": "Operation mode code",
+                    "description": "Synchronous or asynchronous execution mode, with the response delivery reference required when asynchronous.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-prep-proof-request-record",
+                    "name": "Proof Request Record",
+                    "description": "The correlated, state-bearing record for one signing or proving request: references to the signing input manifest and pinned proof configuration, correlation identifier, idempotency key, creation and expiry instants, operation mode, response delivery reference, executor reference, current lifecycle state and revision. Transitions forward only and is closed by admission, refusal or expiry.",
+                    "media_or_form": [
+                      "structured record",
+                      "state-machine instance"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Primary identifier is the authoritative master-system identifier assigned by the adopting Dimension's proof-request store; where the executor is the system of record for the operation, its request identifier is carried as an additional governed reference. A UUID or ULID is minted only when neither exists. The correlation identifier is a matching value, never the record's primary identifier.",
+                    "source_refs": [
+                      "SRC-007",
+                      "SRC-008",
+                      "SRC-011",
+                      "SRC-012"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-prep-executor-limits",
+                "name": "Executor boundary constraints and minimum disclosure",
+                "description": "The refusal rules applied at dispatch. Private key access, signer or prover authorization and cryptographic primitive execution stay wholly with the executor, whose module keeps keys non-extractable and may require authentication before each key use. Every reference in the outgoing payload must resolve to immutable, digest-pinned content: a mutable reference lets content change between the executor's fetch and the model's own pin, which is precisely the substitution the protected input exists to prevent. Disclosure is minimised to the digest wherever a digest suffices.",
+                "source_refs": [
+                  "SRC-005",
+                  "SRC-008",
+                  "SRC-009",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-no-key-access",
+                    "text": "Which operations are asserted to remain wholly inside the executor's cryptographic module, and what records that assertion?",
+                    "kind": "ownership",
+                    "answer_data": [
+                      "externalised operation list",
+                      "module or token reference",
+                      "non-extractability assertion reference",
+                      "attestation reference held externally"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-no-mutable-refs",
+                    "text": "Does every reference sent to the executor resolve to immutable content, and how is that immutability demonstrated?",
+                    "kind": "security",
+                    "answer_data": [
+                      "per-reference immutability flag",
+                      "per-reference content digest",
+                      "list of references refused as mutable",
+                      "dispatch refusal reason code"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-authorization-owner",
+                    "text": "Who authorises the signer or prover to use the pinned key, and which system holds that decision?",
+                    "kind": "authority",
+                    "answer_data": [
+                      "authorisation decision owner reference",
+                      "activation data reference held externally",
+                      "authorisation outcome reference",
+                      "sole-control assertion reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-minimum-disclosure",
+                    "text": "What is the minimum data set the executor requires, and which host content is deliberately withheld?",
+                    "kind": "privacy",
+                    "answer_data": [
+                      "disclosed field list",
+                      "withheld field list",
+                      "digest-only flag",
+                      "disclosure justification reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-externalised-operations",
+                    "name": "Externalised operation list",
+                    "description": "Enumeration of operations this model never performs locally: key access, activation, signing, proving, derivation and verification computation.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011",
+                      "SRC-005"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-reference-pin",
+                    "name": "Outgoing reference pin",
+                    "description": "For each reference in the outgoing payload, the resolved content digest and an immutability flag; an unpinned reference fails dispatch.",
+                    "value_kind": "object",
+                    "cardinality": "0..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-003"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-digest-only-flag",
+                    "name": "Digest-only disclosure flag",
+                    "description": "Records that only a digest, never host content, crossed the boundary — mirroring a time-stamping authority that never examines the imprinted data.",
+                    "value_kind": "boolean",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-011"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-authorization-decision-ref",
+                    "name": "Authorisation decision reference",
+                    "description": "Reference to the external decision authorising key use. A reference only: activation data values are never stored or relayed by this model.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-009",
+                      "SRC-011"
+                    ]
+                  }
+                ],
+                "artifacts": [],
+                "inline_only_rationale": "These are refusal and minimisation constraints evaluated at dispatch time, not a stored object. They are carried as inline flags and references on the request record owned by an adjacent finding, and every assertion they point at — module attestations, non-extractability guarantees, signer authorisation outcomes — is held and evidenced by external models. Creating a local artifact here would imply this model holds custody evidence it must never hold."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "sig-prep-proof-admission",
+        "name": "Returned Proof Admission and Host-Bound Attachment",
+        "description": "The gate every returned proof passes before it may touch a host record, and the append-only attachment binding admitted proof octets to a new host version without altering payload, identity, approval state or trust standing.",
+        "rationale": "Every specification consulted makes admission a comparison against something fixed earlier: the time-stamp response imprint must equal the request imprint or be rejected, the echoed nonce must match, a conforming Data Integrity processor must produce an error on a non-conforming document, and JCS requires any verification failure to abort the operation. Attachment then follows the secured-document model in which a proof is added to an unsecured input document, with proof sets unordered and proof chains ordered by an explicit previous-proof reference.",
+        "source_refs": [
+          "SRC-001",
+          "SRC-002",
+          "SRC-006",
+          "SRC-007",
+          "SRC-008",
+          "SRC-010"
+        ],
+        "layers": [
+          {
+            "id": "sig-prep-admission-control",
+            "name": "Admission Checks and Append-Only Attachment",
+            "description": "The complete check set applied to a returned proof, the disposition of refused material, and the semantics of appending an admitted proof as an immutable, host-bound version.",
+            "source_refs": [
+              "SRC-001",
+              "SRC-002",
+              "SRC-007",
+              "SRC-008",
+              "SRC-010"
+            ],
+            "findings": [
+              {
+                "id": "sig-prep-admission-gate",
+                "name": "Admission checks on a returned proof",
+                "description": "Before a returned proof may be attached, all of the following must hold: a dispatched, unexpired request record exists for the claimed correlation identifier; the recomputed protected input or digest equals the manifest value byte-for-byte; the declared algorithm, parameters and verification-method reference equal the pinned configuration; the context bindings equal the pinned values; the response arrived inside the validity window; and the nonce or challenge has not been seen before for this host and purpose. Any single failure refuses the whole proof. These are structural comparisons against recorded pins — cryptographic verification itself is executed elsewhere, and a passing admission is not a verification result.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-002",
+                  "SRC-006",
+                  "SRC-008",
+                  "SRC-011"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-check-set",
+                    "text": "Which checks must all pass before a returned proof is admitted, and what happens if any single check fails?",
+                    "kind": "validation",
+                    "answer_data": [
+                      "ordered check identifier list",
+                      "per-check outcome",
+                      "aggregate admission decision",
+                      "abort-on-first-failure flag"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-unsolicited",
+                    "text": "How is an unsolicited or duplicate proof detected and refused?",
+                    "kind": "exception",
+                    "answer_data": [
+                      "matching request record reference or explicit null",
+                      "duplicate detection key",
+                      "refusal reason code",
+                      "quarantine reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-parameter-match",
+                    "text": "Do the algorithm, parameters and verification-method reference in the returned proof match exactly what was pinned?",
+                    "kind": "evidence",
+                    "answer_data": [
+                      "pinned versus returned algorithm comparison",
+                      "pinned versus returned parameter comparison",
+                      "pinned versus returned verification method comparison",
+                      "mismatched field list"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-expiry-replay",
+                    "text": "Did the response arrive inside the validity window, and does the nonce or challenge prevent replay onto another host version?",
+                    "kind": "temporal",
+                    "answer_data": [
+                      "response receipt instant as RFC 3339 with offset",
+                      "request expiry instant",
+                      "nonce or challenge reuse check outcome",
+                      "replay scope key"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-refusal-record",
+                    "text": "What is recorded when a proof is refused, and where does the refused material go?",
+                    "kind": "retention",
+                    "answer_data": [
+                      "refusal reason code set",
+                      "quarantine location reference",
+                      "disposition rule reference",
+                      "refused-material retention period"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-admission-decision",
+                    "name": "Admission decision",
+                    "description": "Accepted or refused, with the ordered per-check outcomes producing it. A refusal is terminal for that response.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-006"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-refusal-reason",
+                    "name": "Refusal reason code set",
+                    "description": "Enumerated causes: no matching request, correlation mismatch, digest mismatch, algorithm mismatch, method mismatch, context mismatch, expired, replayed, duplicate.",
+                    "value_kind": "code",
+                    "cardinality": "0..n",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-008",
+                      "SRC-002",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-response-receipt-instant",
+                    "name": "Response receipt instant",
+                    "description": "Observation instant at which the response was received, recorded separately from the proof's asserted creation instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-002"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-replay-scope-key",
+                    "name": "Replay scope key",
+                    "description": "Composite of nonce or challenge, host record, proof purpose and audience, checked for prior use to block cross-context replay.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-002",
+                      "SRC-001",
+                      "SRC-008"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-quarantine-ref",
+                    "name": "Quarantine reference",
+                    "description": "Location of refused proof material, held separately from attachments under its own shorter disposition rule and never promoted.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-006"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-prep-admission-outcome-record",
+                    "name": "Admission Outcome Record",
+                    "description": "The outcome of running the admission check set against one returned proof: ordered per-check results, aggregate decision, any refusal reason codes, the response receipt instant and the replay scope key. It closes the request record it belongs to. It is operational state of this model's own request, not an audit-trail entry: it is not the audit model's record format, is not sealed or retained by this model, and is not a verification result.",
+                    "media_or_form": [
+                      "structured record",
+                      "ordered check-result list"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Primary identifier is the authoritative master-system identifier assigned by the adopting Dimension's proof-request store, scoped to the request record it closes; failing that, a UUID or ULID minted at admission. The correlation identifier and the response digest are matching and integrity values, never the primary identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-002",
+                      "SRC-006",
+                      "SRC-008"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              },
+              {
+                "id": "sig-prep-attachment-append",
+                "name": "Append-only, host-bound attachment of an admitted proof",
+                "description": "Attachment copies the pinned host payload version, adds the admitted proof to it and yields a new host-bound version; the payload itself is unchanged and no previously attached proof is altered. Proof octets are stored byte-exact and never re-encoded, re-indented or normalised in storage. The new proof joins either an unordered proof set or an ordered proof chain, where chain position is asserted by an explicit previous-proof reference rather than by storage order. Attaching the same admitted proof twice under the same idempotency key yields no second version.",
+                "source_refs": [
+                  "SRC-001",
+                  "SRC-007",
+                  "SRC-010",
+                  "SRC-013"
+                ],
+                "questions": [
+                  {
+                    "id": "sig-prep-q-append-semantics",
+                    "text": "How does attachment append a new host-bound version without mutating the host payload or any previously attached proof?",
+                    "kind": "process",
+                    "answer_data": [
+                      "new host version identifier",
+                      "predecessor host version identifier",
+                      "payload-unchanged assertion",
+                      "prior-proof-unaltered assertion"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-proof-immutability",
+                    "text": "Are the proof octets stored byte-exact and immutable after attachment, and what detects later alteration?",
+                    "kind": "quality",
+                    "answer_data": [
+                      "proof value encoding",
+                      "stored octet digest and algorithm",
+                      "re-encoding prohibition flag",
+                      "alteration detection procedure reference"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-attach-idempotency",
+                    "text": "If the same admitted proof is attached twice, how many host versions result?",
+                    "kind": "state",
+                    "answer_data": [
+                      "idempotency key",
+                      "existing attachment reference",
+                      "no-op outcome flag",
+                      "resulting version count"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-set-or-chain",
+                    "text": "Is the new proof joining an unordered proof set or an ordered proof chain, and which existing proof does it follow?",
+                    "kind": "composition",
+                    "answer_data": [
+                      "set-or-chain code",
+                      "previous proof reference",
+                      "resulting chain position ordinal",
+                      "serial ordinal recorded separately"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-q-attach-nonclaims",
+                    "text": "What does attachment explicitly not do to the host record's identity, approval state or trust standing?",
+                    "kind": "decision",
+                    "answer_data": [
+                      "excluded effect list",
+                      "owning model reference for approval workflow",
+                      "owning model reference for host identity",
+                      "reliance decision owner reference"
+                    ]
+                  }
+                ],
+                "data_elements": [
+                  {
+                    "id": "sig-prep-de-attached-version-id",
+                    "name": "Attached host version identifier",
+                    "description": "Identifier of the new host-bound version produced by attachment, naming its predecessor.",
+                    "value_kind": "identifier",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-010"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-proof-value",
+                    "name": "Proof value octets",
+                    "description": "The returned proof bytes stored exactly as received, with their declared encoding recorded; never re-encoded by storage or transport layers.",
+                    "value_kind": "binary",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-013"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-set-or-chain",
+                    "name": "Set or chain membership code",
+                    "description": "Whether the proof belongs to an unordered proof set or an ordered proof chain.",
+                    "value_kind": "code",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-previous-proof-ref",
+                    "name": "Previous proof reference",
+                    "description": "For chain membership, the proof that must be verified before this one; absent for set membership.",
+                    "value_kind": "reference",
+                    "cardinality": "0..1",
+                    "required": false,
+                    "source_refs": [
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-attachment-instant",
+                    "name": "Attachment instant",
+                    "description": "Observation instant at which the proof was appended, recorded separately from the proof's asserted creation instant.",
+                    "value_kind": "timestamp",
+                    "cardinality": "1",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-012",
+                      "SRC-001"
+                    ]
+                  },
+                  {
+                    "id": "sig-prep-de-excluded-effects",
+                    "name": "Excluded effect list",
+                    "description": "Explicit enumeration of what attachment does not do: mint host identity, grant approval, assert trust standing or write an audit trail.",
+                    "value_kind": "collection",
+                    "cardinality": "1..n",
+                    "required": true,
+                    "source_refs": [
+                      "SRC-010"
+                    ]
+                  }
+                ],
+                "artifacts": [
+                  {
+                    "id": "sig-prep-attached-proof-version",
+                    "name": "Attached Proof Version",
+                    "description": "The immutable host-bound record produced by a successful attachment: proof descriptor, byte-exact proof octets and their encoding, references to the signing input manifest and pinned proof configuration, set-or-chain membership with any previous-proof reference, the new and predecessor host version identifiers, and the attachment instant. Superseded only by appending a further version, never by editing.",
+                    "media_or_form": [
+                      "structured record",
+                      "byte-exact proof octet string",
+                      "host version link"
+                    ],
+                    "serial": true,
+                    "identity_strategy": "Primary identifier is the authoritative master-system identifier assigned by the attachment store that owns host versions; where the host record's own master system assigns version identifiers, that identifier governs. A UUID or ULID is minted only where neither exists. The proof-value digest and the serial ordinal are integrity and ordering values, not identifiers, and no instant is used as an identifier.",
+                    "source_refs": [
+                      "SRC-001",
+                      "SRC-007",
+                      "SRC-010",
+                      "SRC-013"
+                    ]
+                  }
+                ],
+                "inline_only_rationale": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "sig-prep-fn-read-current",
+      "name": "Read current proof state of a host record",
+      "description": "Returns the proof descriptors attached to the host record version current at read time, with a consistency token usable as a later precondition, and explicit completeness and filtering flags. Performs no cryptographic operation and makes no validity assertion.",
+      "inputs": [
+        "Host record reference",
+        "Requested proof detail level",
+        "Caller access scope"
+      ],
+      "outputs": [
+        "Current host version identifier",
+        "Attached proof descriptors with pinned payload digests and securing mechanism codes",
+        "Read consistency token",
+        "Completeness flag, applied filter identifier and withheld count"
+      ],
+      "preconditions": [
+        "Host record reference resolves to exactly one record",
+        "Caller holds read scope for the host record and for the requested detail level; protected input octets require an elevated scope"
+      ],
+      "effects": [
+        "No state change; the operation is read-only and idempotent by construction",
+        "Returns a projection labelled current-at-token, carrying no assertion of cryptographic validity, signer standing or business acceptability",
+        "Triggers no verification and mutates no request state"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-007",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "sig-prep-fn-read-as-of",
+      "name": "Read as-of proof state of a host record",
+      "description": "Returns the proof state as at an explicitly supplied historical instant, evaluated against a caller-stated basis. Verification observations recorded at or before that point are returned as historical evidence bound to their observation instant.",
+      "inputs": [
+        "Host record reference",
+        "As-of instant as RFC 3339 with seconds and an explicit offset or Z",
+        "As-of basis code (event time or observation time)",
+        "Caller access scope"
+      ],
+      "outputs": [
+        "Host version resolved at the as-of point",
+        "Proof descriptors attached as at that point",
+        "Verification observations at or before that point, each marked non-current with its observation instant",
+        "Completeness flag and withheld count"
+      ],
+      "preconditions": [
+        "The as-of instant is a complete RFC 3339 timestamp with seconds and an explicit offset or Z; unqualified local time is rejected",
+        "The as-of basis is stated explicitly by the caller and is never inferred or defaulted silently",
+        "Caller access scope permits reading the underlying historical host version"
+      ],
+      "effects": [
+        "No state change; read-only",
+        "Historical verification observations are returned as evidence bound to their observation instant and never as current validity",
+        "Where event time and observation time differ, both are returned rather than reconciled"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-010",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "sig-prep-fn-prepare-input",
+      "name": "Prepare protected signing input and pin proof configuration",
+      "description": "Resolves the host payload to one immutable version, applies a named and versioned deterministic transformation, and records the exact protected input or its digest together with the pinned proof configuration, correlation identifier and expiry. Touches no key and executes no cryptographic primitive.",
+      "inputs": [
+        "Pinned immutable host payload version reference",
+        "Transformation profile identifier and version",
+        "Proof options: algorithm or cryptosuite, parameters, verification-method reference, proof purpose",
+        "Context bindings: domain or audience, challenge or nonce, presentation header, external additional authenticated data",
+        "Policy and profile pins",
+        "Idempotency key",
+        "Expected host version or entity-tag"
+      ],
+      "outputs": [
+        "Protected signing input octets or digest, with digest algorithm identifier and length",
+        "Signing input manifest reference",
+        "Pinned proof configuration reference",
+        "Request correlation identifier",
+        "Preparation instant and expiry instant as RFC 3339 with seconds and explicit offset"
+      ],
+      "preconditions": [
+        "The expected host version precondition matches the current host version; a mismatch fails the call with a precondition failure rather than preparing against drifted content",
+        "A repeat call with the same idempotency key returns the previously prepared manifest and configuration unchanged and creates nothing new",
+        "The payload version is immutable and content-addressed; a mutable payload reference is refused",
+        "The transformation profile is named, versioned, deterministic and independently reproducible; unnamed or unversioned profiles are refused",
+        "The algorithm, cryptosuite and parameters appear on the adopting Dimension's allow-list"
+      ],
+      "effects": [
+        "Creates exactly one immutable signing input manifest and one pinned proof configuration",
+        "Opens one request record in the prepared state with its correlation identifier and expiry window",
+        "Accesses no key material and executes no signing, proving or verification primitive"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-003",
+        "SRC-004",
+        "SRC-006",
+        "SRC-007"
+      ]
+    },
+    {
+      "id": "sig-prep-fn-request-external-proof",
+      "name": "Request a signature or proof from an external executor",
+      "description": "Dispatches the pinned protected input and configuration to the designated external executor and records the correlation, dispatch instant and acknowledgement. Signer authorization and primitive execution are performed by the executor; this function records only the handoff and its outcome.",
+      "inputs": [
+        "Signing input manifest reference",
+        "Pinned proof configuration reference",
+        "Executor endpoint reference from the Dimension's executor registry",
+        "Operation mode (synchronous or asynchronous)",
+        "Response delivery reference where asynchronous",
+        "Idempotency key",
+        "Expected request revision"
+      ],
+      "outputs": [
+        "Dispatched request record with correlation identifier and current revision",
+        "Dispatch instant and unchanged expiry instant",
+        "Executor acknowledgement reference",
+        "Dispatch outcome code"
+      ],
+      "preconditions": [
+        "The request record is in a state permitting dispatch and the expected request revision matches; a mismatch refuses the dispatch with a precondition failure",
+        "Re-dispatch under the same idempotency key returns the existing dispatch, creates no second request and does not extend the expiry window",
+        "Every reference in the outgoing payload resolves to immutable content pinned by digest; any mutable reference fails the dispatch",
+        "No private key material, key-activation secret or authorization credential value is included in the payload",
+        "The executor endpoint is registered by the adopting Dimension and the channel is authenticated"
+      ],
+      "effects": [
+        "Transitions the request record from prepared to dispatched and starts the expiry window",
+        "Delegates key access, signer or prover authorization and cryptographic primitive execution wholly to the executor",
+        "Records the correlation and acknowledgement only; asserts nothing about whether the executor will or should produce a proof"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-009",
+        "SRC-011"
+      ]
+    },
+    {
+      "id": "sig-prep-fn-attach-proof",
+      "name": "Admit and attach a returned proof",
+      "description": "Runs the full admission check set against a returned proof and, only on a complete pass, appends it as an immutable host-bound version. Refuses mismatched, expired, replayed, duplicate and unsolicited proofs.",
+      "inputs": [
+        "Returned proof octets and declared proof metadata",
+        "Claimed request correlation identifier",
+        "Idempotency key",
+        "Expected host version or entity-tag",
+        "Expected request revision"
+      ],
+      "outputs": [
+        "Admission outcome record: accepted, or refused with reason codes",
+        "On acceptance, a new host-bound attached proof version",
+        "Resulting proof set membership or chain position with previous-proof reference",
+        "Response receipt instant and attachment instant as RFC 3339 with seconds and explicit offset"
+      ],
+      "preconditions": [
+        "A dispatched, unexpired request record exists for the claimed correlation identifier; an unsolicited or already-closed correlation is refused",
+        "The protected input recomputed from the pinned payload version is byte-identical to the manifest value",
+        "The returned algorithm, parameters and verification-method reference equal the pinned proof configuration exactly",
+        "The returned context bindings — domain or audience, challenge or nonce, presentation header — equal the pinned values",
+        "The replay scope key of nonce, host record, proof purpose and audience has not been used before",
+        "The response was received at or before the request expiry instant",
+        "The expected host version and expected request revision both match; a mismatch fails attachment with a precondition failure",
+        "Replaying the same idempotency key returns the existing attachment and produces no additional host version"
+      ],
+      "effects": [
+        "On acceptance, appends exactly one immutable host-bound proof version with proof octets stored byte-exact and never re-encoded",
+        "Closes the request record; on refusal the material is quarantined under its disposition rule and is never attached",
+        "Alters no host payload and no previously attached proof",
+        "Creates no host identity, grants no approval, asserts no trust standing, performs no cryptographic verification and constructs no audit trail"
+      ],
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-006",
+        "SRC-007",
+        "SRC-010"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "WM-XCT-006",
+      "relation": "CHILD",
+      "purpose": "WM-XCT-034 is a contained specialisation within its parent's cross-cutting attachment container, matching the embedded-proof pattern in which a proof graph is held by the secured document rather than standing alone. The parent owns container semantics; this model owns only the proof attachment itself.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Host record model adopting this mixin",
+      "relation": "MIX-IN",
+      "purpose": "Applied to any host record type needing integrity or authenticity attachment, exactly as a securing mechanism is applied to an arbitrary conforming document, an HTTP message or a CBOR payload. The host retains its identity, content and lifecycle; the mixin adds only proof context and the pinned bindings it commits to.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-004",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "External signing and proving executor (remote signing service, cryptographic module or holder-side prover)",
+      "relation": "REFERENCE",
+      "purpose": "Carries the executor endpoint reference, the pinned request parameters and the correlation binding only. Key custody, signer authorization, sole-control enforcement, primitive execution and proof derivation are owned entirely by the target; this model reproduces none of the executor's lifecycle or operational functions and must never send it an unpinned mutable reference or a key value.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-009",
+        "SRC-011",
+        "SRC-013"
+      ]
+    },
+    {
+      "target": "Verification method and key material resolution model",
+      "relation": "REFERENCE",
+      "purpose": "Carries the pinned verification-method URL, key identifier or credential identifier and the scheme governing it. Dereferencing, key lifecycle, controller relationships, trust-anchor selection and revocation evaluation stay with the target.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003",
+        "SRC-011"
+      ]
+    },
+    {
+      "target": "Verification and validation model",
+      "relation": "REFERENCE",
+      "purpose": "Supplies the pinned inputs a verifier needs and stores the verification observations a verifier returns, as historical evidence. Evaluation of authenticity, application of relying-party policy and the reliance decision are executed and owned by the target; this model never infers validity from proof presence or from a prior observation.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "Time-stamping authority and trusted time model",
+      "relation": "REFERENCE",
+      "purpose": "Pins a timestamp-token reference and the message imprint it corresponds to, where the adopting Dimension requires trusted time. Token issuance, authority policy and authority trust evaluation are owned by the target.",
+      "required": false,
+      "source_refs": [
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "Adopting-Dimension retention, records-management and audit models",
+      "relation": "REFERENCE",
+      "purpose": "Receives the minimum fields this model emits about its own preparation, dispatch, admission and attachment operations, and owns disposition execution, legal hold, archival preservation and all audit-record format, storage, sealing and retention. This model states only what must survive disposition and never performs or authorises deletion or audit-trail construction.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "W3C Data Integrity DataIntegrityProof, IETF JOSE (RFC 7515), IETF COSE (RFC 9052) and HTTP Message Signatures (RFC 9421)",
+      "relation": "ALIGN",
+      "purpose": "Field-level alignment of the local proof descriptor, protected input and context bindings to external securing mechanisms so a projection into any of them is lossless in the fields those mechanisms define. Alignment only: no conformance is claimed, and the identifier and time-representation conflicts between these mechanisms are recorded rather than normalised away.",
+      "required": false,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003",
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "NIST FIPS 186-5 approved algorithm set and the adopting Dimension's algorithm allow-list",
+      "relation": "ALIGN",
+      "purpose": "Constrains which algorithm and parameter values may be pinned at preparation. The approved-suite definition and any national or sectoral restriction are owned externally; this model refuses values absent from the Dimension's registered allow-list but does not define, assess or certify algorithms.",
+      "required": false,
+      "source_refs": [
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "Selective-disclosure derived-proof model",
+      "relation": "EXTEND",
+      "purpose": "Specialises only this model's own request surface for derived proofs: the base-proof reference, mandatory and selective pointers, presentation header and feature option become pinned request parameters, and the returned derived proof passes the same admission gate. Generic proof identity, authority, lifecycle and conflict handling are not duplicated, and derivation itself remains an executor operation.",
+      "required": false,
+      "source_refs": [
+        "SRC-013"
+      ]
+    }
+  ],
+  "service_layers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension names one accountable owner for the proof-request store and one for the attachment store, and records both, with contact and escalation path, in the model package.",
+        "The Dimension registers, as versioned lists, the executor endpoints it will dispatch to, the algorithm and cryptosuite allow-list with permitted parameters, and the transformation profiles it accepts as deterministic. Values absent from these lists are refused at preparation rather than warned about.",
+        "The Dimension declares, with a resolvable reference for each, which external models own key custody, signer authorization, verification and validation execution, audit trails and retention execution, so no operator can mistake a boundary reference for a local capability.",
+        "The Dimension declares its clock source, maximum permitted skew, default request expiry and the disposition rule for quarantined refused proof material."
+      ],
+      "namespace_guidance": "Local identifiers are namespaced under the Dimension's own authority, for example `<dimension-authority>/xct/sig/request/<id>` and `<dimension-authority>/xct/sig/attachment/<id>`. Externally governed values — cryptosuite and algorithm identifiers, proof purposes, verification-method URLs, credential identifiers and hash algorithm OIDs — are carried unchanged from the registry or specification governing them, together with a record of which scheme governs each; they are never re-minted, case-folded, abbreviated or mapped into a local vocabulary, because executor and verifier compare them literally.",
+      "registry_links": [
+        "Cryptosuite identifiers governed by the W3C Data Integrity cryptosuite specifications, including the BBS base and derived proof suites.",
+        "COSE header parameter and algorithm identifiers governed by the IANA registries that RFC 9052 references.",
+        "JOSE `alg` and header parameter values governed by the IANA registries that RFC 7515 references.",
+        "HTTP signature algorithm and signature parameter names established by RFC 9421.",
+        "Approved digital signature algorithms and parameter sets published in NIST FIPS 186-5.",
+        "Hash algorithm OIDs used to pin the digest algorithm in remote-signing and time-stamping requests."
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Preparation names the transformation profile and its version explicitly. A profile is admissible only if it is deterministic and independently reproducible by a verifier; unnamed, unversioned or implementation-defined profiles are refused, because signer and verifier must independently construct byte-identical protected input.",
+        "Profile selection follows the securing mechanism: RFC 8785 JCS for plain JSON without a domain-specific profile; the canonicalization named by the pinned cryptosuite for JSON-LD and RDF; the RFC 9421 signature base for HTTP messages; the COSE Sig_structure for CBOR; the JWS Signing Input for JOSE. These transforms are mutually incompatible and are never substituted for one another.",
+        "The canonical form is computed once at preparation and recorded in the manifest, then recomputed from the same pinned payload version at attachment. The two must be byte-identical; any difference is a refusal.",
+        "Instants embedded in content that will be canonicalized are serialised as RFC 3339 with seconds and an explicit offset or Z before the transform runs, so canonicalization never has to normalise a time value."
+      ],
+      "patch_rules": [
+        "Attached proof octets are never patched. A correction is a new preparation, a new request and a new appended version; the superseded attachment is marked superseded and retained, not edited.",
+        "Request records accept forward-only transitions only: prepared to dispatched, then to admitted, refused or expired. A patch that would reopen a closed request or re-enter an earlier state is rejected.",
+        "Every patch carries an expected-revision precondition and an idempotency key. A revision mismatch fails the patch with a precondition failure; concurrent writes are never merged.",
+        "Correcting a mis-pinned configuration before dispatch supersedes the manifest and configuration with new identifiers under a new correlation identifier. After dispatch, pinned values are immutable and the only remedy is expiry followed by a fresh preparation."
+      ],
+      "compatibility_rules": [
+        "Adding an optional proof-configuration field, an additional admission check or a new refusal reason code is compatible. Removing a pinned field, changing the meaning of one, or weakening or reordering an admission check so a previously refused proof would now be admitted is breaking.",
+        "Changing a transformation profile, digest algorithm or the algorithm allow-list is breaking for pending requests. Pending requests are expired and re-prepared rather than re-interpreted under the new rules.",
+        "Unknown fields covered by the protected input are not ignorable: a consumer that cannot interpret a covered field refuses rather than proceeds, following the rule that protected parameters an application is required to understand must be authenticated and that verification failure aborts the operation.",
+        "Projections into JSON, YAML, Markdown, Git, MCP or MongoDB may change freely provided proof octets, the protected input and every pinned identifier survive the round trip byte-exact; a projection that re-encodes or reorders any of these is not a valid projection of this model."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier: the identifier assigned by the system of record that owns the artefact — the adopting Dimension's proof-request store, its attachment store, the host record's own master system for host versions, or the executor's request identifier where the executor is the system of record for that operation.",
+        "Governed global identifier or IRI: a verification-method URL, credential identifier, cryptosuite or algorithm identifier, proof purpose or hash algorithm OID issued by a recognised registry or specification, carried unchanged from its governing scheme.",
+        "UUID or ULID minted by the adopting Dimension, used only where neither an authoritative master-system identifier nor a governed global identifier exists.",
+        "Content digests — protected input digest, configuration digest, proof-value digest — and serial ordinals are integrity check values and correlation aids, never primary identifiers. A date, instant, expiry or version label is never an identifier."
+      ],
+      "timestamp_rule": "All instants are recorded as RFC 3339 date-time values with explicit seconds and an explicit numeric offset or `Z`; unqualified local time is rejected as non-interoperable. Event time and observation or ingestion time are recorded as separate values and are never merged or back-filled from one another: event time covers the proof's asserted creation instant, its asserted expiry and any timestamp-token time, while observation or ingestion time covers the preparation, dispatch, response receipt and attachment instants recorded by this model. Where the two differ, both are stored together with the clock source reference and the permitted skew, and any comparison states which of the two it used. Sub-second precision and leap-second values are preserved as received rather than truncated, and a wire representation that is not RFC 3339 (integer UNIX seconds, XML Schema dateTimeStamp, generalised time) is stored alongside the RFC 3339 value rather than replacing it.",
+      "serial_naming_rule": "Serial artefacts are named `<artifact-id>#<ordinal>`, where the ordinal is a monotonic integer assigned by the master system at append time, scoped to the host record and proof purpose, and never reused. Ordinals contain no date component; gaps arise from refused or expired requests and are recorded as gaps rather than back-filled or renumbered. Proof-chain position is a separate ordered attribute derived from the explicit previous-proof reference and must never be inferred from the serial ordinal or from storage order, because proof sets are unordered by definition.",
+      "integrity_rule": "Every artefact records the digest algorithm and digest of its own protected content. Proof octets are stored byte-exact: re-encoding, re-indentation, whitespace normalisation, character-set conversion and transport-encoding changes are forbidden on stored proof values and on the protected input. Attachment recomputes the protected input from the pinned immutable payload version and compares it byte-for-byte with the manifest; any difference is a refusal, never a warning or a tolerated variance. Where an artefact is superseded, the superseding artefact records the digest of the one it supersedes so the chain of pins remains checkable."
+    },
+    "policies": [
+      "Fail closed. Preparation, dispatch and attachment refuse on any unmatched pin, unresolvable reference, unlisted algorithm, non-deterministic transform, expired window or replayed nonce. No operation proceeds on a best-effort or partially-satisfied basis, and no check failure is downgraded to a warning.",
+      "Minimum disclosure to the executor. Send the digest, or the exact protected input, plus the pinned configuration, and nothing else. Where a digest suffices the host content never crosses the boundary, mirroring a time-stamping authority that must not examine the imprinted data.",
+      "No local cryptography. This model never holds, derives, unwraps, imports or uses private key material, never handles key-activation secrets, and never executes a signing, proving, derivation or verification primitive. Any implementation adding such capability locally has left this model's boundary.",
+      "Immutable pins only. Every reference sent to an executor resolves to immutable, digest-pinned content; mutable references are refused at dispatch because content behind them can change between the executor's fetch and this model's pin.",
+      "No inference of validity. Neither the presence of an attached proof nor a stored successful verification observation is treated by any read, admission or attachment path as a current statement of validity, signer standing or business acceptability.",
+      "Separation of concerns at attachment. Appending a proof creates a host-bound version and nothing more: it mints no host identity, grants no approval, advances no workflow, confers no trust standing and writes no audit trail."
+    ],
+    "crud": {
+      "read": [
+        "Read the current proof state of a host record, returning a read consistency token, the attached proof descriptors with their pinned digests, and explicit completeness and filtering flags.",
+        "Read an explicit as-of projection given a complete RFC 3339 instant with seconds and offset and a caller-stated basis (event time or observation time); the basis is never inferred or silently defaulted.",
+        "Read a signing input manifest, pinned proof configuration, request record, admission outcome or attached proof version by its master-system identifier; protected input octets, external additional authenticated data and presentation headers require an elevated scope.",
+        "Reads never trigger verification, never mutate request state and never extend a validity window."
+      ],
+      "create": [
+        "Create a signing input manifest and pinned proof configuration through preparation, keyed by an idempotency key and guarded by an expected-host-version precondition; a replayed key returns the existing pair unchanged.",
+        "Create a request record with a correlation identifier, creation instant and expiry instant, in the prepared state at revision one.",
+        "Create an admission outcome record on every returned proof, whether accepted or refused, and on acceptance an appended host-bound attached proof version.",
+        "Creation never mints host record identity and never creates key material, credentials or authorization decisions."
+      ],
+      "update": [
+        "Update is limited to forward-only request-state transitions — prepared to dispatched, then to admitted, refused or expired — each carrying an expected-revision precondition and an idempotency key.",
+        "Pinned values (protected input and digest, digest algorithm, transformation profile, algorithm and parameters, verification-method reference, proof purpose, context bindings, expiry) are immutable once the request is dispatched; changing any of them requires expiry and a fresh preparation.",
+        "Attached proof octets are never updated. Supersession is expressed by appending a new version and marking the prior one superseded, preserving both.",
+        "A precondition mismatch fails the update with an explicit precondition-failure outcome rather than merging or last-writer-wins."
+      ],
+      "delete": [
+        "Default is no destructive delete. Closed request records, signing input manifests, pinned configurations, admission outcome records and attached proof versions are retained for the retention period the adopting Dimension declares, because a proof becomes permanently unverifiable once the protected input, transformation profile or pinned configuration it commits to has been destroyed.",
+        "Logical deletion is a tombstone: it preserves the artefact identifier, the digest algorithm and digest, the host version reference, the securing-mechanism code and the disposition reason and instant, while releasing the payload octets, protected input octets and any presentation header it names. The tombstone records that verification is no longer possible rather than implying the proof was invalid.",
+        "Refused and quarantined proof material is governed by a separate, shorter disposition rule declared by the adopting Dimension, is never promoted to an attachment, and is disposed of independently of admitted proofs.",
+        "Execution of erasure, legal hold, cryptographic erasure, archival preservation and any statutory or contractual retention obligation is owned by the adopting Dimension's retention and records-management policy and by the host record's own model, which also owns disposition of the host payload. This model defines only what must survive disposition and what a tombstone must carry; it never performs, schedules, authorises or overrides a deletion, and a deletion request that would orphan a pinned input is reported to the owning policy rather than executed here."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Proof request preparer",
+        "responsibilities": [
+          "Resolve the host payload to one immutable, content-addressed version and pin it.",
+          "Select and record a named, versioned, deterministic transformation profile; refuse unnamed or non-reproducible profiles.",
+          "Assemble and pin the proof configuration — algorithm and parameters, verification-method reference, proof purpose, context bindings, policy pins — and refuse values absent from the Dimension's allow-list.",
+          "Mint the correlation identifier and set the creation and expiry instants as RFC 3339 with seconds and explicit offset."
+        ]
+      },
+      {
+        "name": "Executor liaison",
+        "responsibilities": [
+          "Dispatch requests to registered executor endpoints over authenticated channels, carrying the idempotency key and expected-revision precondition.",
+          "Verify before every dispatch that each outgoing reference resolves to immutable, digest-pinned content, and refuse the dispatch otherwise.",
+          "Ensure no key material, activation secret or authorization credential value is included, and that disclosure is reduced to a digest wherever a digest suffices.",
+          "Record acknowledgements, dispatch outcomes and asynchronous response delivery references without asserting anything about the executor's internal decisions."
+        ]
+      },
+      {
+        "name": "Admission controller",
+        "responsibilities": [
+          "Run the complete admission check set against every returned proof and abort on the first failure.",
+          "Refuse unsolicited, duplicate, correlation-mismatched, digest-mismatched, algorithm-mismatched, method-mismatched, context-mismatched, expired and replayed proofs, recording explicit reason codes.",
+          "Quarantine refused material under its disposition rule and ensure it is never promoted to an attachment.",
+          "Maintain the replay scope key index and never treat a passing admission as a verification result."
+        ]
+      },
+      {
+        "name": "Attachment custodian",
+        "responsibilities": [
+          "Append admitted proofs as immutable host-bound versions with proof octets stored byte-exact and never re-encoded.",
+          "Maintain proof-set membership and proof-chain ordering from explicit previous-proof references, keeping chain position distinct from serial ordinal.",
+          "Enforce that attachment alters no host payload, no prior proof, no host identity and no approval state.",
+          "Serve current and as-of read projections with correct completeness, filtering and non-current markers."
+        ]
+      },
+      {
+        "name": "Model owner designated by the adopting Dimension",
+        "responsibilities": [
+          "Maintain the versioned algorithm allow-list, executor registry, transformation-profile registry, clock source, permitted skew and default expiry.",
+          "Declare and keep resolvable the external models owning key custody, signer authorization, verification and validation execution, audit trails and retention execution.",
+          "Own the AGENTS.md bootstrap record and keep its Specification, Storage type, Interface and Processes URLs resolvable.",
+          "Approve compatibility-breaking changes and ensure pending requests are expired rather than reinterpreted when pins change."
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Deny by default. Reading proof descriptors, admission outcomes and attachment metadata requires an explicit read scope on the host record. Reading protected input octets, external additional authenticated data and presentation headers requires an additional elevated scope, because those values reveal covered content and context bindings. Preparation, dispatch and attachment each require a separate write scope; no read scope implies any write scope, and no write scope implies another. No scope at any level grants key access, authorization authority or the ability to execute a cryptographic primitive, since those capabilities do not exist within this model.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Break-glass read of protected input octets or quarantined material for incident investigation is time-boxed, requires two-party approval by the adopting Dimension, and expires automatically; the approving parties and expiry are recorded.",
+        "The external executor receives the pinned protected input or digest and the pinned configuration for the lifetime of one request only. This is a scoped, expiring, single-purpose disclosure and never a standing grant, and it is withdrawn when the request is admitted, refused or expired.",
+        "Refused and quarantined proof material is readable only by the admission controller and the model owner, and is excluded from ordinary host-record read projections.",
+        "An as-of projection is withheld in full where the host record's own access model denies the caller the underlying historical version; a partial projection is never substituted silently, and the completeness flag and withheld count are always returned."
+      ],
+      "audit_requirements": [
+        "Each preparation, dispatch, admission decision and attachment emits the acting principal, the event and observation instants, the correlation identifier, the pins evaluated and the expected-version preconditions checked, to the adopting Dimension's audit model.",
+        "Elevated and break-glass reads of protected input, external additional authenticated data, presentation headers and quarantined material are emitted as distinct events carrying the approving parties and the grant expiry.",
+        "This model does not construct, store, seal, query or retain audit trails. The adopting Dimension's audit model owns record format, storage, immutability, access and retention; this model specifies only the minimum field set it must emit and never asserts that an emitted event constitutes an audit record."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Owner",
+        "Model ID"
+      ],
+      "read_order": [
+        "Read AGENTS.md first and resolve Specification URL, Storage type URL, Interface URL and Processes URL before making any call; a bootstrap record with an unresolvable URL blocks all operations.",
+        "Read the model specification, scope statement and boundary notes to confirm which operations are external before attempting anything resembling signing, proving or verification.",
+        "Read the adopting Dimension's algorithm allow-list, transformation-profile registry, executor registry, clock source and expiry defaults.",
+        "Perform read or as-of projections freely; then perform preparation, dispatch and attachment strictly in that order, each carrying an idempotency key and an expected-version precondition, and stop at the first precondition failure rather than retrying with relaxed inputs."
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "This model states the identity, pinning, correlation, admission and attachment surface for digital signatures and proofs bound to a host record, grounded in W3C Data Integrity and Verifiable Credentials, IETF JOSE, COSE, HTTP Message Signatures, time-stamping and HTTP-semantics specifications, NIST FIPS 186-5 and OASIS PKCS #11, plus the Cloud Signature Consortium remote-signing surface. It claims alignment with those specifications, not conformance to any of them. It deliberately places key custody, signer authorization, cryptographic primitive execution, verification and validation evaluation, trust-anchor and revocation policy, audit-trail construction and retention execution outside its boundary, and makes no claim of completeness for long-term preservation, post-quantum migration or any jurisdiction's legal effect.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority runs authoritative master-system identifier, then governed global identifier or IRI, then minted UUID or ULID. Digests, correlation identifiers, serial ordinals and instants are explicitly demoted to check or matching values. Externally governed identifiers are carried unchanged rather than re-minted."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "The request record has an explicit forward-only lifecycle (prepared, dispatched, admitted or refused or expired) with expected-revision preconditions on every transition. Attachment is append-only. Key lifecycle and host record lifecycle are deliberately external and named in the boundary notes."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Relationships are pinned references only: host version, verification method or credential, executor, timestamp token, previous proof. Proof set versus proof chain membership is modelled explicitly, with chain position kept separate from serial ordinal because proof sets are unordered by definition."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "All instants are RFC 3339 with seconds and explicit offset or Z. Event time (asserted proof creation, asserted expiry, timestamp-token time) is stored separately from observation time (preparation, dispatch, receipt, attachment), and as-of reads require the caller to state which basis applies. Non-RFC-3339 wire forms are stored alongside rather than replacing the canonical value."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every artefact records what it was derived from: pinned payload version, transformation profile and version, policy and profile pins, executor reference, correlation identifier and acting principal. Superseding artefacts record the digest of what they supersede, keeping the chain of pins checkable."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "The adopting Dimension must name accountable owners for the request and attachment stores and declare, with resolvable references, the external models owning key custody, authorization, verification execution, audit and retention. Five operational roles are defined with non-overlapping responsibilities."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "Admission is a complete, abort-on-first-failure comparison against recorded pins: correlation, byte-identical protected input, algorithm and parameters, verification-method reference, context bindings, expiry window and replay scope. It is explicitly structural matching and explicitly not cryptographic verification, which is executed by an external model."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Deny by default across bundle, layer, finding and artifact scopes, with a separate elevated scope for protected input octets, additional authenticated data and presentation headers, and separate write scopes for preparation, dispatch and attachment. Executor disclosure is scoped to one request and expires with it."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "No destructive delete by default; tombstones preserve identifier, digest algorithm and digest, host version reference and disposition reason while releasing octets. Quarantined refused material has a separate shorter rule. Execution of erasure, legal hold and preservation is explicitly owned by the adopting Dimension's retention policy and by the host model, not here."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Alignment to Data Integrity, JOSE, COSE and HTTP Message Signatures is declared as alignment without conformance, with identifier-style, time-representation, canonicalization and ordering conflicts recorded rather than normalised. Storage and interface forms are treated as projections that must round-trip proof octets and pins byte-exact."
+      },
+      {
+        "dimension": "replay and idempotency",
+        "status": "covered",
+        "notes": "Every mutation carries an idempotency key with a defined replay outcome, and a replay never creates a second operation or extends a validity window. A replay scope key composed of nonce, host record, proof purpose and audience blocks cross-context reuse of a genuine proof."
+      },
+      {
+        "dimension": "concurrency",
+        "status": "covered",
+        "notes": "Every mutation carries an expected-version or expected-revision precondition; a mismatch fails with an explicit precondition failure rather than merging. Read projections return a consistency token usable as the precondition for a subsequent write."
+      },
+      {
+        "dimension": "key custody and primitive execution",
+        "status": "not-applicable",
+        "notes": "Deliberately outside the boundary. Only the pinned verification-method reference, the externalised-operation list and the dispatch refusal rules are modelled. No local capability to hold, derive or use key material exists, and none may be added without leaving this model."
+      },
+      {
+        "dimension": "long-term proof preservation",
+        "status": "gap",
+        "notes": "Evidence-record syntax, archive timestamping, hash and signature renewal ahead of algorithm obsolescence, and preservation-grade validation data collection are not modelled. An adopting Dimension needing long-term validity must compose a preservation model; the retention rules here only prevent premature destruction of the pinned inputs such a model would require."
+      },
+      {
+        "dimension": "spatial",
+        "status": "not-applicable",
+        "notes": "Signature and proof context has no intrinsic spatial dimension. Where jurisdiction or data residency constrains where protected input may be transmitted, that constraint belongs to the adopting Dimension's policy and to the executor registry, not to the proof descriptor."
+      }
+    ],
+    "known_omissions": [
+      "Long-term validation and preservation — evidence-record syntax, archive timestamps and hash renewal before algorithm obsolescence — is not modelled.",
+      "Post-quantum migration, hybrid and composite signature composition are not modelled; the versioned algorithm allow-list is the only lever provided.",
+      "Multi-signer countersignature workflows, threshold signing and multi-party computation signing are treated as single opaque executor operations, so intra-executor quorum state is invisible here.",
+      "Human-facing 'what you see is what you sign' presentation assurance is reduced to a pinned immutable payload version; rendering, display fidelity and signer comprehension are not modelled.",
+      "Batch preparation and batched executor calls are not separately modelled; each request is one correlated unit, which may be operationally costly for high-volume signing.",
+      "Non-cryptographic proofs — witnessed, notarial, biometric or attestation-based — fall outside the modelled surface even where an adopting Dimension would call them proofs.",
+      "Executor failure modes short of a returned proof (partial responses, silent drops, duplicate asynchronous deliveries beyond duplicate detection) are handled only by expiry and idempotency, not by a reconciliation protocol."
+    ],
+    "conflicts": [
+      "Identifier style: W3C Data Integrity requires `verificationMethod` to be a URL, JOSE and COSE use an opaque `kid`, RFC 9421 uses `keyid`, and remote-signing APIs use an opaque `credentialID`. The model pins whichever form the executor requires and records the governing scheme rather than normalising them into one, because verifiers compare these values literally.",
+      "Time representation: Data Integrity uses XML Schema dateTimeStamp for `created` and `expires`, RFC 9421 uses integer UNIX timestamps, and time-stamping uses generalised time. The model stores RFC 3339 internally and keeps the wire representation alongside; round-tripping is lossy for sub-second precision and leap-second values, which is recorded rather than hidden.",
+      "Canonicalization: RFC 8785 JCS, JSON-LD and RDF canonicalization, the RFC 9421 signature base and the COSE Sig_structure are mutually incompatible transforms over superficially similar data. Choosing the wrong profile yields a proof that verifies nowhere, which is why unnamed or unversioned profiles are refused outright.",
+      "Ordering: Data Integrity proof sets are explicitly unordered while proof chains are ordered by an explicit previous-proof reference, yet most storage imposes an array order that can be mistaken for chain order. The model keeps serial ordinal and chain position as separate attributes and forbids inferring one from the other.",
+      "Digest-only handoff versus signer awareness: JOSE detached payloads and time-stamping message imprints mean the executor may never see the content, while some signature levels presuppose the signer saw the document. The model records the digest-only flag and makes no claim of signer awareness in that case.",
+      "Protected coverage varies by mechanism: COSE and JOSE can cover the algorithm and key reference in a protected bucket, whereas some deployments carry them unprotected. The model records a protected-coverage flag per pinned field rather than assuming coverage, because an unprotected field cannot be relied on for the admission comparison it appears to support."
+    ],
+    "regional_assumptions": [
+      "The remote-signing request and response shape — credential identifier, activation data, hash array with algorithm OID, operation mode, validity period and response URI — is drawn from the European remote-signing ecosystem. Other jurisdictions use different remote-signing protocols with different field names, so the executor registry, not the model, carries the mapping.",
+      "No assumption is made that an attached proof meets any jurisdiction's legal threshold for an electronic signature. Legal effect, qualified status, evidentiary weight and admissibility are determined by the adopting Dimension's jurisdiction and are never asserted by this model.",
+      "Clock authority, time source accreditation and permitted skew are jurisdiction- and operator-specific; the model requires them to be declared explicitly rather than assuming UTC-synchronised infrastructure or a trusted time source.",
+      "Data-protection and data-residency constraints on transmitting host content to an external executor vary by region. The model defaults to digest-only disclosure precisely so it does not depend on a permissive regime.",
+      "National algorithm restrictions may be narrower or broader than the NIST-approved set; the allow-list is therefore a Dimension-owned registry rather than a value fixed by this model."
+    ],
+    "adversarial_checks": [
+      "Algorithm substitution: a returned proof declares an algorithm or parameter set other than the one pinned. Refused, because admission compares the returned algorithm and parameters field-by-field against the pinned configuration, and because unprotected metadata is never accepted as evidence for that comparison — a protected-coverage flag records whether the field was actually covered.",
+      "Time-of-check-to-time-of-use drift: the host payload changes between preparation and attachment, so the proof commits to content no longer there. Detected, because the protected input is recomputed from the pinned immutable payload version and must be byte-identical to the manifest, and because attachment carries an expected-host-version precondition that fails on drift.",
+      "Unsolicited proof injection: a well-formed, cryptographically genuine proof arrives with no matching open request. Refused, because admission requires a dispatched, unexpired request record for the claimed correlation identifier and treats a missing or already-closed correlation as terminal.",
+      "Cross-context replay: a genuine proof is replayed against a different host version, audience or purpose. Refused, because domain or audience, challenge or nonce, presentation header and proof purpose are pinned and compared, and because the replay scope key composed of nonce, host record, purpose and audience is checked for prior use.",
+      "Validity by presence: a consumer treats an attached proof, or a stored successful verification observation, as current validity. Blocked at the read surface, which marks every observation as bound to its observation instant and pinned inputs, enumerates what a proof does not assert, and states that verification does not imply evaluation of the truth of the claims.",
+      "Mutable reference leakage: a request payload includes a reference whose content can change after dispatch, letting an attacker choose what the executor actually operates on. Refused at dispatch, because every outgoing reference must resolve to digest-pinned immutable content and an unpinned reference fails the dispatch precondition.",
+      "Retry amplification: a client retries a dispatch after a timeout and obtains two signatures, or extends its own validity window by re-dispatching. Blocked, because dispatch is idempotent under its key, a replay returns the existing dispatch, and the expiry instant is fixed at preparation and never extended by a retry.",
+      "Boundary creep: an implementer adds local key unwrapping, a local verification engine, a local approval step or a local audit log to make the flow feel complete. Rejected, because those capabilities are named as externally owned in the boundary notes and composition links, no function's effects include them, and attachment explicitly enumerates the effects it does not have.",
+      "Silent partial read: a caller with restricted scope receives a filtered proof set and treats it as complete, concluding a record is unsigned. Blocked, because every projection returns a completeness flag, an applied-filter identifier and a withheld count, and an as-of projection is withheld in full rather than silently reduced."
+    ]
+  }
+}

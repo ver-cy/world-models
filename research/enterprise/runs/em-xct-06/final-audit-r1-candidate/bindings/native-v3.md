@@ -1,0 +1,5 @@
+# Native V3 binding
+
+One MonetaryCalculationReceipt identity is one V3 object of type vr.profile.enterprise-monetary-calculation:MonetaryCalculationReceipt. One immutable receipt is one restricted fact at monetary.calculation.receipt. factId binds Dimension, receipt ID and digest. Native fact validFrom equals recordedAt (receipt storage time); validTo is null, supersedes is empty. The nested receipt records the calculation's own predecessor and valuation/computation clocks. A correction is another object, leaving old evidence intact.
+
+Use the exact pinned toolchain, bootstrap three fresh synthetic company Dimensions, install code/schema/spec/AGENTS/runtime path assets, append through the V3 writer, validate outer records, then explicitly call installed validate_native and import_receipts. Outer schema acceptance does not establish nested arithmetic. No automatic dispatch, operational adapter or existing-Dimension migration is implemented. The five installed files are not a substitute for reading the complete pinned package and adoption-limits.md.

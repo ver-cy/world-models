@@ -1,0 +1,7 @@
+# Fields and ownership
+
+monetary.schema.json is the closed cardinality/type contract; all listed properties are required, including explicit null supersedes/correctionReason for an initial receipt. model-spec.md gives semantic rules beyond JSON Schema. All fields are restricted under the native binding; no automatic field projection exists.
+
+Request ID/Dimension/subject/issuer/time/purpose are host-owned declarations. Inputs are 1..256 exact money snapshots, each with a unique key, unique source slot pin, original amount/scale, currency and valuation context. Source owners master their amounts; the receipt owner masters the captured evidence. Currency catalogue/edition/digest/code and resolution assertion form a complete embedded reference. Context basis pin, amount role and valuation instant must match. Policy authority pin owns mode, increment and stage; the code applies those declarations without verifying authority.
+
+Result fields and digest are computed only. Rational numerator/denominator encode exact totals and signed residuals; roundedTotal scale follows increment lexical form. Derived values do not overwrite inputs. Supersedes is 0..1 exact prior receipt pin; one predecessor may have multiple successors, with current selection external. Source and policy references may be shared by many receipts. Deletion of a referenced predecessor is refused by complete-register import; no tombstone contract exists.

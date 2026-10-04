@@ -1,0 +1,5 @@
+# Audit remediation
+
+The single Claude frozen audit returned **ACCEPT WITH LIMITS** and confirmed the profile-only disposition. CandidateRevision 3 closes the audit findings without rerunning it: the mastership rule now includes external-subject binding authority; cross-scheme mappings have one declared source-release master and pin both releases; concept-level designation acceptability remains available without a scheme while scheme preference stays release-owned; Knowledge Article uses a governed documentary-form value rather than terminology designation semantics; definitions require context discriminators and precedence and receive no independent identifier here; and migration wording separates location changes from fixing events.
+
+Nine additional fixtures cover merge/split, two-release mappings, re-entry, licensed definitions, digest mismatch, release repointing, dispute/deprecation confusion, destructive supersession and contradictory scope notes. Base canonical status, reciprocal relationship contracts, optional scheme binding, parentage, WM-XCT-020 status, exact semantic pins and executable runtime behavior remain publication holds.

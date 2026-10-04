@@ -1,0 +1,1067 @@
+{
+  "model": {
+    "registry_id": "vr.wm-xct-009",
+    "model_id": "WM-XCT-009",
+    "name": "Time / Calendar",
+    "entry_kind": "mixin",
+    "purpose": "Provide a format-neutral, authority-grounded reference model for temporal reference data (time scales, civil time zones, calendar systems, recurrence, holidays and observances) together with the embeddable temporal value shapes that every other model needs to express instants, intervals, durations, schedules and deadlines unambiguously.",
+    "scope_statement": "WM-XCT-009 is a mix-in plus reference model. It defines (a) the governed reference data that determines what a civil date-time means — time scales and leap adjustments, time zone identifiers and their offset-transition history, calendar systems, eras and week rules, and jurisdictional holidays and observances; and (b) the reusable temporal value shapes (instant, interval, duration, recurrence, precision, binding mode) that sibling models embed. It is storage- and interface-neutral: TZif, iCalendar, JSCalendar, JSON, XML, Git or MongoDB are projections of the same semantics. It records external standards as alignments, never as claimed conformance, and treats the IANA tz database and CLDR as mirrors of civil decisions rather than as the legal authority for them.",
+    "in_scope": [
+      "Time scales, epochs and their mutual offsets (UTC, TAI, UT1, GPS time, POSIX/Unix time), and the governance of leap adjustments",
+      "Civil time zone identity, canonical/alias relationships, standard and daylight offsets, and the complete transition history of a zone",
+      "Legal instruments and decision processes by which a jurisdiction sets or changes standard time and daylight saving arrangements",
+      "Calendar systems and their identifiers, eras and year numbering, intercalation and leap-month structure, and territory week rules",
+      "Reusable temporal value shapes: instant, interval, duration, period, granularity/precision, and the floating/zoned/absolute binding contract",
+      "Recurrence rule semantics, exceptions and overrides, and calendar-scale-aware recurrence expansion",
+      "Public holidays as proclaimed by an authority, cultural and religious observances and their computation methods",
+      "Working-day and business-day calendars, weekend rules and date-adjustment (business day) conventions",
+      "Reference-data lifecycle: release versioning, signing, distribution, expiry, freshness and correction of temporal reference data"
+    ],
+    "out_of_scope": [
+      "Clock synchronisation and time transfer protocols and their engineering (NTP, PTP, GNSS timing, UTC(k) traceability chains) — a distinct time-dissemination model",
+      "Calendaring and scheduling application semantics such as attendees, invitations, free/busy, alarms and iTIP scheduling workflows",
+      "The definition and geometry of jurisdictions and territories themselves — held by the place/jurisdiction model and only referenced here",
+      "General identifier-scheme governance — held by the identifier and naming model; this model only consumes registered temporal identifier schemes",
+      "Astronomical ephemeris computation and the physics of Earth rotation; only the published results (leap-second decisions, DUT1 limits) are consumed",
+      "Labour-law entitlements, pay premiums and leave accrual arising from holidays; only the day-off status of a holiday is modelled",
+      "Domain deadline policy (SLA targets, statutory limitation periods); this model supplies the calculus, not the policy",
+      "Localisation and formatting of dates for presentation, beyond the identifiers and week/calendar preference data needed to compute correct values"
+    ],
+    "boundary_notes": [
+      {
+        "neighbor": "Place / jurisdiction reference model",
+        "distinction": "Time zones and holidays are scoped to jurisdictions and sub-jurisdictional divisions (for example the UK bank-holiday divisions england-and-wales, scotland, northern-ireland, or US county-level zone boundaries in 49 CFR Part 71). This model references those jurisdiction identities; it does not define territories, boundaries or their geometry. tz zone names are deliberately not country-based and must not be treated as jurisdiction identifiers.",
+        "source_refs": [
+          "SRC-003",
+          "SRC-019",
+          "SRC-020"
+        ]
+      },
+      {
+        "neighbor": "Identifier and naming model",
+        "distinction": "tzids, CLDR BCP47 timezone keys and u-ca calendar keys are governed identifier schemes maintained elsewhere. This model records which scheme an identifier belongs to, its canonical form and its alias relations; scheme registration policy itself belongs to the identifier model.",
+        "source_refs": [
+          "SRC-011",
+          "SRC-013",
+          "SRC-002"
+        ]
+      },
+      {
+        "neighbor": "Time dissemination and clock synchronisation model",
+        "distinction": "BIPM Circular T and IERS bulletins are consumed here as authoritative statements about the scale (leap seconds, UTC-TAI, UTC(k) deviations). How a device acquires and steers to that scale, and traceability of a local clock, is a separate engineering model.",
+        "source_refs": [
+          "SRC-014",
+          "SRC-015",
+          "SRC-023"
+        ]
+      },
+      {
+        "neighbor": "Calendaring and scheduling application model",
+        "distinction": "RFC 5545 and RFC 8984 are alignments for recurrence and time-zone value semantics only. Event participation, scheduling negotiation and calendar-store synchronisation belong to an application model that embeds this mix-in.",
+        "source_refs": [
+          "SRC-007",
+          "SRC-009"
+        ]
+      },
+      {
+        "neighbor": "Financial settlement and instrument models",
+        "distinction": "Business day conventions and business-centre holiday calendars are defined here as reusable date arithmetic. Which convention a given contract or instrument elects is a fact of that instrument, held by the financial model.",
+        "source_refs": [
+          "SRC-021"
+        ]
+      },
+      {
+        "neighbor": "Statistics and records models",
+        "distinction": "Reference periods, retention triggers and reporting cut-offs embed this model's interval and recurrence shapes. The meaning of a reference period for a statistic, or of a retention trigger for a record, stays with those models.",
+        "source_refs": [
+          "SRC-017",
+          "SRC-007"
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "id": "resolve-local-to-instant",
+      "name": "Resolve local time to instant",
+      "description": "Convert a wall-clock local date-time in a named zone to an instant on the reference scale, applying the declared gap and overlap policy and recording the resolved offset.",
+      "inputs": [
+        "local date-time value",
+        "zone identifier",
+        "gap policy",
+        "overlap policy",
+        "pinned zone data release"
+      ],
+      "outputs": [
+        "instant with explicit offset",
+        "resolved offset",
+        "anomaly classification (none, gap, overlap)"
+      ],
+      "preconditions": [
+        "Zone identifier resolves to a canonical zone in the pinned release",
+        "Requested instant lies within the release's asserted validity bound or a projection rule is available"
+      ],
+      "effects": [
+        "Resolved offset and the zone data release identifier are persisted with the value so the resolution is reproducible",
+        "Anomalies are surfaced rather than silently defaulted"
+      ],
+      "source_refs": [
+        "SRC-003",
+        "SRC-004",
+        "SRC-007",
+        "SRC-006"
+      ]
+    },
+    {
+      "id": "resolve-instant-to-local",
+      "name": "Render instant as local civil time",
+      "description": "Project an instant onto a named zone and calendar to obtain the civil date-time, era and designation in force at that instant.",
+      "inputs": [
+        "instant",
+        "zone identifier",
+        "calendar key",
+        "week data territory"
+      ],
+      "outputs": [
+        "local date-time",
+        "offset in force",
+        "daylight indicator",
+        "era and year-in-era",
+        "designation"
+      ],
+      "preconditions": [
+        "Calendar key is current and not deprecated in the pinned registry extract",
+        "Zone data covers the requested instant"
+      ],
+      "effects": [
+        "Emits the calendar and zone annotations alongside the value when crossing a system boundary"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-006",
+        "SRC-011",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "expand-recurrence",
+      "name": "Expand recurrence set",
+      "description": "Generate the occurrence set for a recurrence rule over a bounded window, applying by-part filters in specified order, week start, calendar scale, skip behaviour, exclusions, additions and overrides.",
+      "inputs": [
+        "recurrence rule expression",
+        "anchor value and binding mode",
+        "expansion window",
+        "recurrence scale",
+        "skip behaviour",
+        "exclusion and addition lists",
+        "override map"
+      ],
+      "outputs": [
+        "ordered occurrence list",
+        "per-occurrence keys",
+        "list of skipped or shifted dates with reason"
+      ],
+      "preconditions": [
+        "Anchor value is present and its binding mode is declared",
+        "Count and until bounds are not both present",
+        "Window is bounded when the rule is otherwise infinite"
+      ],
+      "effects": [
+        "Produces a materialised occurrence set stamped with the reference-data releases used",
+        "Reports override keys that matched no generated occurrence"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-008",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "convert-calendar-date",
+      "name": "Convert between calendar systems",
+      "description": "Convert a date between registered calendar systems, resolving eras, leap months and intercalation, and reporting any loss.",
+      "inputs": [
+        "source calendar key",
+        "source date with era",
+        "target calendar key"
+      ],
+      "outputs": [
+        "target calendar date with era",
+        "leap month marker where applicable",
+        "loss report"
+      ],
+      "preconditions": [
+        "Both calendar keys exist in the pinned registry extract",
+        "Determination method is declared for observational calendars"
+      ],
+      "effects": [
+        "Records the determination method and registry release used for the conversion"
+      ],
+      "source_refs": [
+        "SRC-011",
+        "SRC-013",
+        "SRC-008"
+      ]
+    },
+    {
+      "id": "compute-holiday-set",
+      "name": "Compute holiday set for jurisdiction and period",
+      "description": "Assemble the authoritative holiday set for a jurisdictional division over a period from proclamations, published feeds and observance determinations, marking substitutions and confirmation status.",
+      "inputs": [
+        "division identifier",
+        "period bounds",
+        "holiday feed snapshots",
+        "observance determination records"
+      ],
+      "outputs": [
+        "dated holiday list with day-off status",
+        "substitution annotations",
+        "beyond-horizon marker for uncovered dates"
+      ],
+      "preconditions": [
+        "At least one authoritative feed or instrument covers the division",
+        "Period start and end are declared with inclusivity"
+      ],
+      "effects": [
+        "Marks dates beyond the authority's published horizon as unconfirmed rather than absent",
+        "Retains the feed snapshot as evidence"
+      ],
+      "source_refs": [
+        "SRC-019",
+        "SRC-020",
+        "SRC-018",
+        "SRC-013"
+      ]
+    },
+    {
+      "id": "build-working-day-calendar",
+      "name": "Build working-day calendar",
+      "description": "Compose a territory weekend rule with one or more holiday sets to produce the working and non-working days for a named centre over a period.",
+      "inputs": [
+        "business centre code",
+        "territory week data",
+        "holiday sets",
+        "centre combination rule",
+        "period bounds"
+      ],
+      "outputs": [
+        "working day list",
+        "non-working day list with reason per date",
+        "input release manifest"
+      ],
+      "preconditions": [
+        "Week data exists for the territory or an explicit override is declared",
+        "Holiday sets cover the whole period or the shortfall is reported"
+      ],
+      "effects": [
+        "Emits a serial projection artifact retained alongside its predecessors for reproducibility"
+      ],
+      "source_refs": [
+        "SRC-012",
+        "SRC-019",
+        "SRC-021"
+      ]
+    },
+    {
+      "id": "adjust-date-to-business-day",
+      "name": "Adjust date to a business day",
+      "description": "Move a date that falls on a non-working day according to a named adjustment convention, respecting month-boundary behaviour where the convention requires it.",
+      "inputs": [
+        "unadjusted date",
+        "working-day calendar",
+        "adjustment convention code"
+      ],
+      "outputs": [
+        "adjusted date",
+        "adjustment applied (none, forward, backward)",
+        "month-boundary reversal flag"
+      ],
+      "preconditions": [
+        "Convention code is drawn from the governed enumeration",
+        "Working-day calendar covers the candidate dates in both directions"
+      ],
+      "effects": [
+        "Records the convention and calendar release used so the adjustment can be re-derived"
+      ],
+      "source_refs": [
+        "SRC-021",
+        "SRC-019",
+        "SRC-012"
+      ]
+    },
+    {
+      "id": "compute-elapsed-and-deadline",
+      "name": "Compute elapsed time and deadline",
+      "description": "Compute an elapsed duration or a deadline instant using a declared counting basis, cut-off time and endpoint inclusivity, distinguishing exact from nominal duration arithmetic.",
+      "inputs": [
+        "start value",
+        "duration or target count",
+        "counting basis",
+        "working-day calendar",
+        "cut-off time and binding mode",
+        "endpoint inclusivity"
+      ],
+      "outputs": [
+        "result instant or date",
+        "counting trace",
+        "clamping or transition adjustments applied"
+      ],
+      "preconditions": [
+        "Duration kind is declared as exact or nominal",
+        "Start value binding mode is declared"
+      ],
+      "effects": [
+        "Nominal arithmetic across zone transitions and short months is applied by the declared algorithm rather than by implementation default"
+      ],
+      "source_refs": [
+        "SRC-007",
+        "SRC-009",
+        "SRC-017",
+        "SRC-021"
+      ]
+    },
+    {
+      "id": "validate-temporal-value",
+      "name": "Validate temporal value against profile",
+      "description": "Check a temporal value against the Dimension's timestamp, precision and binding profiles, rejecting unqualified local times and unsupported granularities.",
+      "inputs": [
+        "temporal value",
+        "field binding declaration",
+        "timestamp conformance profile",
+        "temporal precision profile"
+      ],
+      "outputs": [
+        "validation verdict",
+        "violation list with error codes",
+        "normalised value where normalisation is permitted"
+      ],
+      "preconditions": [
+        "The field has an entry in the binding declaration register"
+      ],
+      "effects": [
+        "Blocks ingestion of values lacking a required offset, zone, calendar key or granularity"
+      ],
+      "source_refs": [
+        "SRC-005",
+        "SRC-006",
+        "SRC-024",
+        "SRC-009"
+      ]
+    },
+    {
+      "id": "detect-reference-data-change",
+      "name": "Detect and classify reference data change",
+      "description": "Compare a newly published reference-data release with the pinned release, classify each change, and identify affected stored values and computations.",
+      "inputs": [
+        "pinned release identifiers",
+        "candidate release identifiers",
+        "synchronisation token or entity tags",
+        "inventory of stored temporal values"
+      ],
+      "outputs": [
+        "change list classified by type (new zone, relink, offset rule change, holiday added or moved, era added, leap decision)",
+        "impact set",
+        "recommended adoption window"
+      ],
+      "preconditions": [
+        "Both releases are retained and verifiable",
+        "Stored values record the release they were computed against"
+      ],
+      "effects": [
+        "Raises a change notice for jurisdictional rule changes with short lead time",
+        "Triggers re-expansion of affected recurrence sets under the declared policy"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-010",
+        "SRC-001",
+        "SRC-015"
+      ]
+    },
+    {
+      "id": "verify-release-integrity-and-freshness",
+      "name": "Verify release integrity and freshness",
+      "description": "Verify signature or checksum of each pinned reference dataset, confirm it is unexpired, and record an attestation.",
+      "inputs": [
+        "release manifest",
+        "publisher signatures or checksums",
+        "current instant"
+      ],
+      "outputs": [
+        "per-dataset verification result",
+        "expiry status",
+        "freshness attestation record"
+      ],
+      "preconditions": [
+        "Publisher key material or checksum reference is available",
+        "Each dataset entry declares an expiry or an explicit statement that none applies"
+      ],
+      "effects": [
+        "Emits a serial attestation and raises an alert when any dataset is expired or beyond the permitted adoption lag"
+      ],
+      "source_refs": [
+        "SRC-002",
+        "SRC-016",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "project-to-interchange-format",
+      "name": "Project temporal data to an interchange format",
+      "description": "Render zone, recurrence, calendar and holiday content into a target interchange projection and report which semantics the projection cannot carry.",
+      "inputs": [
+        "source model records",
+        "target projection identifier",
+        "truncation bounds"
+      ],
+      "outputs": [
+        "projected artifact",
+        "loss report listing dropped fields and annotations",
+        "validity upper bound where truncated"
+      ],
+      "preconditions": [
+        "Target projection is declared in the composition alignments",
+        "Truncation bounds are stated when the target supports them"
+      ],
+      "effects": [
+        "Never silently drops binding mode, calendar key or provenance; unrepresentable semantics are reported",
+        "Records the alias under which a zone was requested when it differs from the canonical identifier"
+      ],
+      "source_refs": [
+        "SRC-004",
+        "SRC-007",
+        "SRC-009",
+        "SRC-010"
+      ]
+    },
+    {
+      "id": "record-authority-decision",
+      "name": "Record a civil time or holiday authority decision",
+      "description": "Capture a legal instrument or proclamation that sets, changes or rescinds civil time arrangements or a public holiday, with announcement and effective instants recorded separately.",
+      "inputs": [
+        "instrument identifier and citation",
+        "competent authority",
+        "territory or division references",
+        "announcement instant",
+        "effective instant",
+        "decision content"
+      ],
+      "outputs": [
+        "authority decision record",
+        "derived change notice",
+        "mirroring task for reference data"
+      ],
+      "preconditions": [
+        "The issuing authority is competent for the stated territory",
+        "Official publication reference is available or the gap is recorded"
+      ],
+      "effects": [
+        "Creates the authoritative record that the mirrored dataset is later reconciled against",
+        "Starts the divergence clock when the mirrored dataset does not yet reflect the decision"
+      ],
+      "source_refs": [
+        "SRC-018",
+        "SRC-020",
+        "SRC-002",
+        "SRC-019"
+      ]
+    }
+  ],
+  "composition": [
+    {
+      "target": "Any model with temporal fields (universal mix-in surface)",
+      "relation": "MIX-IN",
+      "purpose": "Supplies the instant, interval, duration, granularity, recurrence and binding-mode value shapes so that sibling models express temporal facts once, consistently, with a declared binding rather than an implicit one.",
+      "required": true,
+      "source_refs": [
+        "SRC-017",
+        "SRC-007",
+        "SRC-009",
+        "SRC-005"
+      ]
+    },
+    {
+      "target": "world.place (jurisdiction and territory model)",
+      "relation": "REFERENCE",
+      "purpose": "Zones, week data, holidays and business centres are all scoped to jurisdictions and sub-jurisdictional divisions defined and maintained there; this model holds only references, never territory definitions or geometry.",
+      "required": true,
+      "source_refs": [
+        "SRC-019",
+        "SRC-020",
+        "SRC-012",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "world.identifierNaming (identifier and naming model)",
+      "relation": "REFERENCE",
+      "purpose": "tz identifiers, CLDR BCP47 timezone keys and calendar keys are governed schemes whose registration, canonicalisation and deprecation policy is held by the identifier model; this model records scheme membership, canonical form and alias relations.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-013",
+        "SRC-002"
+      ]
+    },
+    {
+      "target": "IANA Time Zone Database (tzdb)",
+      "relation": "REFERENCE",
+      "purpose": "Authoritative mirror of civil zone identifiers, offsets and transition history, consumed by pinned release identifier; treated as a record of civil decisions, not as the legal authority for them.",
+      "required": true,
+      "source_refs": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003"
+      ]
+    },
+    {
+      "target": "Unicode CLDR supplemental and BCP47 registries",
+      "relation": "REFERENCE",
+      "purpose": "Source of stable timezone keys, metazones, calendar keys, era tables, week data and territory calendar preference, pinned by CLDR release version alongside the zone data release.",
+      "required": true,
+      "source_refs": [
+        "SRC-011",
+        "SRC-012",
+        "SRC-013",
+        "SRC-022"
+      ]
+    },
+    {
+      "target": "IERS and BIPM leap-second and UTC publications",
+      "relation": "REFERENCE",
+      "purpose": "Authoritative, serial statements of leap-second decisions, cumulative TAI-UTC offsets and UTC realisation that the time-base bundle consumes and re-publishes with expiry.",
+      "required": true,
+      "source_refs": [
+        "SRC-014",
+        "SRC-015",
+        "SRC-016",
+        "SRC-023"
+      ]
+    },
+    {
+      "target": "RFC 3339 and RFC 9557 timestamp profile",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for instant serialisation, offset semantics and time zone or calendar annotation with criticality. Alignment only: conformance is claimed per interface after profile testing, not model-wide.",
+      "required": true,
+      "source_refs": [
+        "SRC-005",
+        "SRC-006"
+      ]
+    },
+    {
+      "target": "RFC 5545 iCalendar and RFC 7529 non-Gregorian recurrence",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for zone observance structure, recurrence rule semantics, exceptions, and calendar-scaled expansion with skip behaviour.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-008"
+      ]
+    },
+    {
+      "target": "RFC 8984 JSCalendar",
+      "relation": "ALIGN",
+      "purpose": "Second, structurally independent alignment target that validates format-neutrality: the same semantics must project to both the iCalendar component form and the JSCalendar object form.",
+      "required": false,
+      "source_refs": [
+        "SRC-009"
+      ]
+    },
+    {
+      "target": "RFC 9636 TZif",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for the binary zone projection, including local time type records, leap-second records and the leap-table expiration convention.",
+      "required": false,
+      "source_refs": [
+        "SRC-004"
+      ]
+    },
+    {
+      "target": "RFC 7808 Time Zone Data Distribution Service",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for the distribution and versioning surface: version models, truncation with a validity bound, alias handling, expansion and change detection.",
+      "required": false,
+      "source_refs": [
+        "SRC-010"
+      ]
+    },
+    {
+      "target": "W3C Time Ontology in OWL",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for the conceptual vocabulary of temporal entities, temporal reference systems via hasTRS, duration descriptions and Allen interval relations, giving the value shapes a published semantic anchor.",
+      "required": false,
+      "source_refs": [
+        "SRC-017"
+      ]
+    },
+    {
+      "target": "FpML business day convention and business centre schemes",
+      "relation": "ALIGN",
+      "purpose": "Declared alignment for the date-adjustment enumeration and centre-addressed holiday calendars used by the working-day layer.",
+      "required": false,
+      "source_refs": [
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "Working-day calendar composition (internal)",
+      "relation": "COMPOSE",
+      "purpose": "The working-day calendar is not primitive: it is composed at build time from territory week data, one or more jurisdictional holiday sets and a centre combination rule, and must record every input release.",
+      "required": true,
+      "source_refs": [
+        "SRC-012",
+        "SRC-019",
+        "SRC-021"
+      ]
+    },
+    {
+      "target": "Legacy N11 Time & Calendar Reference (world.timeCalendar 0.2.0)",
+      "relation": "EXTEND",
+      "purpose": "Supersedes the previous three-bundle description by separating value shapes from reference data, adding an explicit legal-authority layer, an anomaly-resolution layer and a governance bundle, and by demoting unsupported constructs such as named commercial contracts to out-of-model concerns.",
+      "required": false,
+      "source_refs": [
+        "SRC-002",
+        "SRC-003",
+        "SRC-018"
+      ]
+    },
+    {
+      "target": "Records retention and statistics reference-period models",
+      "relation": "REFERENCE",
+      "purpose": "Those models embed this model's interval, recurrence and working-day shapes for retention triggers and reference periods; the meaning and legal force of the trigger or period remains theirs.",
+      "required": false,
+      "source_refs": [
+        "SRC-007",
+        "SRC-017"
+      ]
+    }
+  ],
+  "serviceLayers": {
+    "dimension": {
+      "owner_package_requirements": [
+        "The adopting Dimension must publish a temporal reference package that pins, at minimum, a zone data release identifier, a locale data release identifier, a leap-second table with its expiry, and a holiday feed snapshot per jurisdiction it serves.",
+        "The package must contain the field binding declaration register, the timestamp conformance profile, the temporal precision profile and the disambiguation policy statement; a Dimension that consumes the mix-in without publishing these four artifacts is non-conformant.",
+        "The package must nominate an accountable steward per fact class (time scale, zone, calendar, holiday, observance, working-day calendar) and a review cadence for each, with jurisdictional facts attributed to the declaring authority rather than to the steward.",
+        "The package must retain superseded releases for the full retention period of any computation derived from them, so historical results remain reproducible.",
+        "The package must declare its regional coverage explicitly and mark jurisdictions for which no authoritative holiday or civil-time source has been identified as gaps rather than as having no holidays."
+      ],
+      "namespace_guidance": "Use a stable model namespace such as world.timeCalendar with bundle-level sub-namespaces (timeBase, civilTimeZone, calendarSystem, temporalValue, recurrence, observance, referenceGovernance). Never mint local identifiers for concepts that already carry a governed identifier: reuse tz canonical identifiers, CLDR BCP47 timezone and calendar keys, official legal instrument citations and business centre codes verbatim, and namespace only the crosswalk entries, profiles, policies and Dimension-local overrides. Presentation names and zone abbreviations must never enter the identifier namespace.",
+      "registry_links": [
+        "IANA Time Zone Database releases and the tz mailing list change record",
+        "Unicode CLDR release index and the BCP47 calendar and timezone key registries",
+        "IERS Bulletin C series and the IANA-distributed leap-seconds table",
+        "National and supranational legal publication channels for civil-time instruments and holiday proclamations (for example EUR-Lex, the Federal Register and CFR, and national gazettes)",
+        "Business centre code schemes used by the financial working-day calendars the Dimension serves"
+      ]
+    },
+    "canon_and_patch": {
+      "canonicalization_rules": [
+        "Resolve every zone identifier to its canonical form before comparison or storage, retaining the alias actually supplied as separate provenance rather than overwriting it.",
+        "Store instants as RFC 3339 date-time with an explicit numeric offset or Z; use -00:00 only to mean that the local offset is genuinely unknown, and never emit an unqualified local time across a boundary.",
+        "Normalise deprecated calendar keys to their preferred replacement while retaining the supplied key in provenance.",
+        "Serialise durations with a declared kind (exact or nominal) and a fixed unit order; do not silently normalise nominal months into days.",
+        "Order transition series, leap records and era tables strictly by their start instant, and treat any out-of-order input as a validation failure requiring review.",
+        "Record all timestamps in this model, including announcement, effective, observation, adoption, build and expiry instants, in RFC 3339 with seconds and an explicit offset or Z."
+      ],
+      "patch_rules": [
+        "Reference data is patched by adopting a new upstream release, never by hand-editing a mirrored value; a local divergence from upstream must be expressed as an explicit, owned, time-bounded override record with a documented reason and review date.",
+        "Every patch records event time (when the change takes effect in the world) separately from observation time (when the Dimension learned of it) and adoption time (when it took effect in the Dimension).",
+        "Corrections to historical values are additive: the prior value, the corrected value, the correcting instrument and the instant of correction are all retained, and derived outputs are either reissued or annotated according to the declared policy.",
+        "A patch that changes a field's binding mode, a disambiguation policy, an adjustment convention or a granularity profile is breaking and requires a new profile version rather than an in-place edit.",
+        "Patches arriving with short lead time from a jurisdictional decree follow an expedited path that still records the legal instrument before the mirrored data is changed."
+      ],
+      "compatibility_rules": [
+        "Adding a zone, calendar key, era, holiday or observance is compatible; removing, relinking or narrowing one is breaking for any consumer holding stored references.",
+        "Changing the default calendar, default week data territory, default disambiguation choice or default adjustment convention is breaking, because it silently changes computed results.",
+        "A projection may omit semantics it cannot express only if it emits a loss report; silent omission of binding mode, calendar key, criticality or provenance is a compatibility violation.",
+        "Consumers must tolerate both monolithic and per-item versioning of upstream reference data and must not assume that an unchanged version identifier implies unchanged content without verifying integrity evidence.",
+        "Claims of conformance to an external standard are made per interface, with test evidence recorded; the model itself claims alignment only."
+      ]
+    },
+    "artifact_rules": {
+      "identity_priority": [
+        "Authoritative master-system identifier issued by the governing authority: legal instrument citations, IERS bulletin numbers, BIPM Circular T issue numbers, publisher release identifiers such as a tz database release.",
+        "Governed global identifier or IRI: tz canonical zone identifiers, CLDR BCP47 timezone and calendar keys, ontology IRIs, business centre codes.",
+        "UUID or ULID assigned by the adopting Dimension, used only for artifacts that no external authority identifies, such as crosswalks, profiles, policy statements, attestations and override records."
+      ],
+      "timestamp_rule": "All instants recorded by this model use RFC 3339 with seconds and an explicit offset or Z; event time, announcement time, effective time, observation or ingestion time, adoption time and expiry are recorded as separate fields and are never conflated. A date alone is never used as an identifier or as a version.",
+      "serial_naming_rule": "Serial artifacts are named by issuing authority or Dimension, artifact class, and the issuer's own sequence number where one exists, with the issue instant recorded as a separate field rather than embedded as the identifier — for example an IERS bulletin is identified by its series and number, a working-day calendar projection by centre plus period plus build instant, and a freshness attestation by its monotonically increasing sequence number.",
+      "integrity_rule": "Every ingested reference artifact records the integrity evidence it arrived with (publisher signature, checksum or entity tag) plus a locally computed content hash, the retrieval instant and the retrieving actor. Releases that should be signed but arrive unsigned are quarantined and adopted only under a recorded, time-bounded exception. Artifacts carrying an expiry are refused for computation after that instant."
+    },
+    "policies": [
+      "Temporal reference data is treated as authority-derived: the legal instrument or authority publication is the record of truth and any mirrored dataset is evidence of it, so the two are reconciled and divergence is tracked rather than hidden.",
+      "No temporal value is accepted or emitted without a declared binding mode; unqualified local times are rejected at every boundary.",
+      "Every computed temporal result records the reference-data releases used, so that any past result can be reproduced exactly.",
+      "Perishable data must not be used past its stated expiry; expiry breaches raise an operational alert rather than degrading silently.",
+      "Known upstream inaccuracies, especially for pre-1970 and future timestamps, are propagated to consumers as explicit warnings and are never presented as settled fact.",
+      "Where communities or authorities legitimately differ on an observance date, the model records the plurality with its determining bodies instead of forcing a single canonical value.",
+      "Conformance to an external standard is asserted only with recorded test evidence; otherwise the relationship is recorded as an alignment.",
+      "Time-scale names, tzdb identifiers and CLDR calendar types are open reference data by default, granted through the catalogue access model rather than informal scraping.",
+      "Agents MUST NOT invent leap seconds, zone transitions or holidays; they may only ingest artefacts from the relevant authority and must mark completeness unknown when the artefact is missing.",
+      "Redistribution of tzdb MUST preserve public-domain status, cryptographic signatures where present, and version stamps as required by BCP 175.",
+      "Derived working-day calendars are not master data; they MUST cite the holiday instruments and weekend rule used and MUST NOT be presented as a global standard."
+    ],
+    "crud": {
+      "read": [
+        "Reference data reads are open by default within the Dimension, subject to the catalogue's ownership and access controls and to redistribution terms attached to third-party datasets.",
+        "Every read of a reference dataset resolves against a pinned release; reads that would resolve against an expired dataset fail closed.",
+        "Reads of holiday and observance data return the confirmation status and the publication horizon alongside the values."
+      ],
+      "create": [
+        "New zones, calendars, eras, holidays and observances are created only from an identified authority publication or legal instrument, or as an explicitly owned Dimension-local override.",
+        "Creation records the announcement instant, the effective instant and the observation instant separately, and cites the creating instrument.",
+        "Dimension-local overrides require a named owner, a documented reason, a review date and an expiry."
+      ],
+      "update": [
+        "Reference values are updated by adopting a new upstream release or by recording a correction event; direct mutation of a mirrored value without a linked instrument or release is prohibited.",
+        "Updates that change historical values trigger the declared recomputation or annotation policy for derived outputs and notify subscribers.",
+        "Profile, policy and binding changes are versioned rather than edited in place."
+      ],
+      "delete": [
+        "Reference records are superseded, retired or rescinded rather than deleted; a rescinded holiday, a retired zone and a corrected transition all remain retrievable with their end instants and superseding references.",
+        "Physical deletion is permitted only for genuinely erroneous local entries that were never published or relied upon, and requires an audited deletion record naming the approver.",
+        "Retention of superseded releases is bounded by the longest retention obligation of any computation derived from them; expiry of that obligation is the only trigger for disposal."
+      ]
+    },
+    "roles": [
+      {
+        "name": "Temporal reference data steward",
+        "responsibilities": [
+          "Owns the release manifest and the pinning of zone, locale, leap and holiday datasets",
+          "Runs change detection against upstream publishers and drives adoption within the declared lag",
+          "Maintains the identifier crosswalk and the data quality caveat register"
+        ]
+      },
+      {
+        "name": "Civil time and holiday authority liaison",
+        "responsibilities": [
+          "Tracks legal instruments, proclamations and administrative decisions affecting civil time and holidays in covered jurisdictions",
+          "Records announcement and effective instants and opens divergence records when mirrored data lags the instrument",
+          "Escalates short-lead-time changes for expedited adoption"
+        ]
+      },
+      {
+        "name": "Temporal semantics owner",
+        "responsibilities": [
+          "Owns the field binding declaration register, the timestamp conformance profile, the temporal precision profile and the disambiguation policy statement",
+          "Reviews new temporal fields in sibling models for correct binding and companion fields",
+          "Approves breaking changes to defaults and profiles"
+        ]
+      },
+      {
+        "name": "Calendar and observance curator",
+        "responsibilities": [
+          "Maintains the adopted calendar registry extract, era tables and observance determination records",
+          "Records determination method, determining community and confirmation status, including legitimate plural determinations",
+          "Reconciles provisional observance dates when they are confirmed or corrected"
+        ]
+      },
+      {
+        "name": "Interoperability and projection engineer",
+        "responsibilities": [
+          "Maintains projections to binary zone, calendaring, JSON calendar and distribution-service formats",
+          "Produces and reviews loss reports and cross-implementation recurrence test vectors",
+          "Verifies round-trip fidelity before a projection is published"
+        ]
+      },
+      {
+        "name": "Reference data assurance and audit",
+        "responsibilities": [
+          "Verifies release signatures and checksums and issues freshness attestations",
+          "Audits that computed results carry the release identifiers needed to reproduce them",
+          "Reviews override records, exceptions and quarantined unsigned releases against their expiry"
+        ]
+      }
+    ],
+    "access": {
+      "default_rule": "Temporal reference data is open for read within the Dimension by default because it describes public civil facts; write access is restricted to the named stewarding roles, and every read resolves against a pinned, unexpired release. Openness is a default for reference content only and is always granted formally through the catalogue's ownership and access models rather than assumed.",
+      "scopes": [
+        "bundle",
+        "layer",
+        "finding",
+        "artifact"
+      ],
+      "exceptions": [
+        "Third-party datasets carrying redistribution or licensing terms are restricted to the scopes those terms permit, and onward republication requires an explicit, audited grant.",
+        "Embargoed authority decisions — announced to the Dimension before public publication — are restricted until the announcement instant recorded on the decision record.",
+        "Dimension-local overrides that reveal internal operating arrangements, such as non-public cut-off times or internal business centres, are restricted to the owning function.",
+        "Working-day calendar projections used for contractual or regulatory deadline computation are write-protected once published and may be corrected only through an audited reissue.",
+        "Observance determination records that identify a specific religious community are treated as sensitive context and are released at the granularity needed, not by default at full detail.",
+        "Unpublished draft tz patches and embargoed forthcoming proclamations are write-once steward-only until the authority publishes them.",
+        "Commercial or scraped holiday feeds are not substitutes for gazettes and MUST NOT be loaded as master holiday records.",
+        "High-resolution UT1-UTC series used for scientific work may be licensed separately from the civil leap-second table."
+      ],
+      "audit_requirements": [
+        "Every adoption of a new reference-data release records the actor, the instant, the previous and new release identifiers and the verification result.",
+        "Every override, exception grant and quarantine of an unsigned release is logged with owner, reason, approver, review date and expiry.",
+        "Every redistribution of third-party reference data is logged against the governing terms.",
+        "Every correction to a historical temporal value logs the affected derived outputs and the reissue or annotation action taken.",
+        "Freshness attestations are retained as an unbroken serial record so that any past computation can be shown to have used unexpired data.",
+        "Every conversion or working-day answer MUST record tzdb version, leap-second bulletin identifier, calendar type and holiday-calendar version used, plus conversion time in RFC 3339.",
+        "Redistribution events MUST be attributable to a redistributor role.",
+        "Tombstones and supersessions remain visible to auditors."
+      ]
+    },
+    "agents_bootstrap": {
+      "filename": "AGENTS.md",
+      "required_fields": [
+        "Name",
+        "Type",
+        "Specification URL",
+        "Storage type URL",
+        "Interface URL",
+        "Processes URL",
+        "Pinned reference data releases (zone data, locale data, leap table with expiry, holiday snapshots)",
+        "Default binding mode, default calendar key, default week data territory and disambiguation policy",
+        "Owner and steward contacts per fact class",
+        "Known gaps, conflicts and regional coverage limits"
+      ],
+      "read_order": [
+        "AGENTS.md — identify the model, its type as a mix-in plus reference model, and the four URLs plus the pinned reference-data releases before any temporal computation",
+        "Specification URL — read the scope statement, boundary notes and the bundle, layer and finding structure to establish what this model does and does not answer",
+        "Storage type URL — learn the concrete projection in use (document store, files in version control, binary zone data, or a distribution service) and confirm it is a projection, not the semantics",
+        "Interface URL — learn the read, create, update and supersede operations, the access scopes and the required release-pinning parameters",
+        "Processes URL — learn change detection, adoption, override, correction, attestation and reissue procedures, including the expedited path for short-lead-time jurisdictional changes",
+        "Field binding declaration register and conformance profiles — before writing or reading any temporal field, confirm its binding mode and required companion fields",
+        "Data quality caveat register and coverage gaps — before presenting any historical or forward-dated result, confirm whether it falls in a declared unreliable range or an uncovered jurisdiction"
+      ]
+    }
+  },
+  "coverage": {
+    "claim": "Dual-provider research synthesis for a format-independent Time / Calendar mixin and governed reference model. It covers time scales, leap adjustment, civil time zones, calendar systems, temporal value shapes, recurrence, observances, working-day rules and reference-data governance. It does not claim exhaustive historical timezone or holiday coverage for every jurisdiction.",
+    "confidence": "medium",
+    "checklist": [
+      {
+        "dimension": "identity",
+        "status": "covered",
+        "notes": "Identity priority is applied concretely: legal instrument citations and publisher release identifiers first, then governed identifiers (tz canonical ids, CLDR BCP47 timezone and calendar keys, ontology IRIs, business centre codes), then Dimension UUIDs for crosswalks, profiles and attestations. The model explicitly forbids identifying zones by abbreviation, offset or country code, and forbids dates as identifiers."
+      },
+      {
+        "dimension": "lifecycle",
+        "status": "covered",
+        "notes": "Covered at three levels: the authority decision lifecycle (announcement, effect, rescission) in the zone-legal-authority and public-holiday layers; the reference-data release lifecycle (release, verify, adopt, expire, supersede) in the governance bundle; and the derived-artifact lifecycle (expansion, reissue, freeze) in recurrence and working-day layers."
+      },
+      {
+        "dimension": "relationships",
+        "status": "covered",
+        "notes": "Zone-to-scale, transition-to-zone, era-to-calendar, observance-to-calendar, holiday-to-instrument, recurrence-to-calendar-scale, and working-day-calendar-to-inputs are all modelled, plus Allen interval relations from the W3C ontology for interval ordering. Cross-model links are expressed as sixteen composition entries."
+      },
+      {
+        "dimension": "temporal",
+        "status": "covered",
+        "notes": "Event, announcement, effective, observation, adoption, build and expiry instants are separated by rule; RFC 3339 with seconds and explicit offset or Z is mandated; granularity is declared rather than inferred; open and unbounded endpoints are distinguished from missing values."
+      },
+      {
+        "dimension": "provenance",
+        "status": "covered",
+        "notes": "Every fact carries an evidence class and cites either a legal instrument, an authority publication, a mirrored release or a reconstruction. The provenance chain from instrument through mirrored dataset to local record is an explicit question, and upstream accuracy caveats are propagated rather than absorbed."
+      },
+      {
+        "dimension": "ownership",
+        "status": "covered",
+        "notes": "Six roles are defined with distinct responsibilities; jurisdictional facts are attributed to the declaring authority while the steward owns only the mirroring. Accountability per fact class is a required data element and an AGENTS.md field."
+      },
+      {
+        "dimension": "validation",
+        "status": "covered",
+        "notes": "A validation function checks values against the binding, timestamp and precision profiles; ordering violations in transition, leap and era series fail validation; cross-implementation recurrence test vectors and round-trip projection tests are required; orphaned recurrence overrides are detected."
+      },
+      {
+        "dimension": "access",
+        "status": "covered",
+        "notes": "Default is open read for reference content with formal grant, restricted write to stewarding roles, with five named exception classes (redistribution terms, embargoed decisions, internal overrides, published deadline calendars, community-identifying observance records) and five audit requirements. Scopes cover bundle, layer, finding and artifact."
+      },
+      {
+        "dimension": "retention and deletion",
+        "status": "covered",
+        "notes": "Supersession rather than deletion is the rule; rescinded holidays, retired zones and corrected transitions remain retrievable with end instants. Retention of superseded releases is bound to the longest retention obligation of any derived computation, which is the only disposal trigger; physical deletion requires an audited approval record."
+      },
+      {
+        "dimension": "interoperability",
+        "status": "covered",
+        "notes": "Four structurally independent projections are aligned (binary zone format, iCalendar components, JSCalendar objects, distribution-service resources) plus an ontology alignment, with a mandatory loss report and a prohibition on silently dropping binding mode, calendar key, criticality or provenance. Conformance is claimed only per interface with test evidence."
+      },
+      {
+        "dimension": "calendar systems",
+        "status": "covered",
+        "notes": "Registered calendar keys, astronomical class, determination method, intercalation and leap months, eras with proleptic boundaries and inheritance, and territory calendar preference are modelled, using the registry that recurrence and timestamp standards reference normatively."
+      },
+      {
+        "dimension": "recurrence",
+        "status": "covered",
+        "notes": "Rule structure, filter evaluation order, anchoring, bounds, week start, exceptions, per-occurrence overrides and identity, calendar-scaled expansion and skip behaviour are each separately answerable, with expansion-window and re-expansion policy made explicit."
+      },
+      {
+        "dimension": "authority and legal basis",
+        "status": "covered",
+        "notes": "A dedicated layer distinguishes the legal instrument from its database mirror, backed by a supranational directive, a national regulation with a petition process, and the maintenance procedure that explicitly disclaims policy-setting authority."
+      },
+      {
+        "dimension": "precision and uncertainty",
+        "status": "gap",
+        "notes": "Declared granularity, all-day semantics, bounded ranges and open endpoints are covered from accessible primary sources, but the richer qualified-date vocabulary of ISO 8601-2 and EDTF (uncertain and approximate qualifiers, unspecified digits, one-of sets) could not be grounded because both the ISO catalogue and the Library of Congress specification pages returned access errors during research. Treated as a gap, not presented as canonical."
+      },
+      {
+        "dimension": "measurement",
+        "status": "covered",
+        "notes": "Exact versus nominal duration arithmetic, counting basis, cut-off times, endpoint inclusivity, inter-scale offsets and elapsed-time computation across transitions and short months are modelled explicitly."
+      },
+      {
+        "dimension": "security",
+        "status": "covered",
+        "notes": "Release signing and checksum verification, integrity evidence retention, quarantine of unsigned releases and serial freshness attestation are required, matching the upstream expectation that releases should be cryptographically signed."
+      },
+      {
+        "dimension": "privacy",
+        "status": "not-applicable",
+        "notes": "The model holds public civil reference data and contains no personal data by design. The single sensitivity is that observance determination records can identify a religious community, which is handled as an access exception rather than as a privacy regime; personal temporal data belongs to the host record in the sibling model that embeds these shapes."
+      }
+    ],
+    "known_omissions": [
+      "ISO 8601-1:2019 and ISO 8601-2:2019 are the underlying international standards but could not be fetched (ISO returned 403 and the Library of Congress EDTF pages returned 403), so they are represented indirectly through the IETF profile, the W3C granularity note and the calendaring standards; the uncertain, approximate and set-valued date vocabulary is therefore recorded as a gap.",
+      "No global authoritative registry of public holidays exists. Coverage is demonstrated with one national feed and two legal instruments; jurisdictions without an identified authoritative source must be marked as gaps, and the model deliberately does not endorse aggregated secondary holiday datasets.",
+      "Sighting-based observance determination (notably Hijri months determined by local observation) cannot be predicted; the model records method, community and confirmation status but supplies no computation, and per-community authority sources were not individually verified.",
+      "Leap smearing is named as a policy option but no smear algorithm is specified, because the widely used smear windows are vendor practice rather than standardised.",
+      "The specific rule of the CIPM proposal for the new UT1-UTC maximum, due for approval at the 28th CGPM in 2026, is not yet available and is therefore modelled as a pending lifecycle event rather than as a value.",
+      "Business centre code lists were referenced by scheme rather than enumerated; the individual centre scheme file was not retrieved successfully during research.",
+      "Historical calendar reform events (for example Julian-to-Gregorian adoption dates, which differ by jurisdiction by up to several centuries) are within scope conceptually but no per-jurisdiction adoption dataset was grounded in a primary source here.",
+      "CalConnect's general recurrence representation was identified as a relevant standard but its document could not be retrieved (404), so no structure depends on it.",
+      "ISO 8601-1:2019 and ISO 8601-2:2019 full texts were not retrieved (paywalled); alignment is via RFC 3339 and RFC 9557 citations only.",
+      "ISO 19108:2002 temporal schema was cited by OWL-Time but not independently read.",
+      "RFC 9636 TZif, RFC 7808 TZDIST, RFC 8984 JSCalendar and RFC 5905 NTP were identified as related and not fully retrieved.",
+      "GNSS timescales (GPS, GLONASS, Galileo, BeiDou) and operator leap smearing lack a primary source in this pass.",
+      "No global primary holiday, weekend or financial business-day register was found; national gazettes remain masters.",
+      "Windows timezone IDs and CLDR windowsZones mapping were not fetched as a first-party artefact.",
+      "Astronomical new-moon algorithms, Hebrew postponement tables and Umm al-Qura internals are tradition-specific authorities not copied here.",
+      "Negative leap seconds are allowed by the IERS framework but have never been issued; encoding remains a rare lifecycle case."
+    ],
+    "conflicts": [
+      "The tz database and CLDR deliberately diverge on identifier stability: tz relinks and renames zones as the ground truth changes, while CLDR preserves canonical identifiers to avoid churn. Consumers must choose a persistence layer; the model requires the choice to be declared rather than resolving it.",
+      "RFC 3339 originally treated Z as implying UTC is the preferred reference point; RFC 9557 updates that reading so Z means the local offset is unknown. Systems built to either reading will disagree about the same string, so the model records the interpretation in the conformance profile.",
+      "The tz database records leap-second-aware behaviour as optional because POSIX requires leap seconds to be excluded from the time count; the same instant therefore has different representations across POSIX and leap-aware systems.",
+      "Legal instruments and their database mirror can diverge for weeks after a decree, and the mirror maintainer explicitly aims at what the average person on the street would think the time is rather than at the statute. The model tracks divergence rather than assuming agreement.",
+      "Hijri calendar variants in the calendar registry (tabular civil, tabular astronomical, Umm al-Qura, Saudi sighting) yield different dates for the same nominal day; there is no single correct value, only a declared method.",
+      "The pinned leap-second table and the CGPM decision to raise the UT1-UTC tolerance by 2035 point in different directions for long-horizon planning: current data assumes the existing regime while the governing decision has already changed it.",
+      "The FpML NEAREST convention is defined by reference to Sundays and Mondays, which does not generalise to territories whose weekend is not Saturday and Sunday; applying it outside that assumption is undefined.",
+      "RFC 3339 treats Z and +00:00 as implying UTC is the preferred reference point; RFC 9557 updates Z so that implication no longer holds. Both keep -00:00 for unknown local offset.",
+      "ISO 8601 mandates leap seconds in lexical forms; OWL-Time notes XML Schema/XSD lexical forms ignore them. RFC 5545 allows second 60 but says non-supporting implementations SHOULD treat it as 59, and durations MUST NOT consider leap seconds. POSIX/Unix time also omits leap seconds.",
+      "RFC 9557 IANA timezone names mean rules current at interpretation time; RFC 5545 VTIMEZONE is a snapshot embedded in one object. Offset timezones such as +01:00 are legal in IXDTF but strongly discouraged.",
+      "RFC 5545 CALSCALE exists but RFC 7529 states it has never been used; non-Gregorian recurrence requires RSCALE.",
+      "tzdb is complete by design only for post-1970 civil clocks of recorded locations; using it as a universal historical atlas overclaims.",
+      "CGPM Resolution 4 will change the UT1-UTC bound in or before 2035; current IERS plus-or-minus 0.9 second practice remains in force until then. Do not claim the leap second has already ended.",
+      "ILO C132 is about paid annual leave, not a holiday calendar standard; using it as a date register would be a category error."
+    ],
+    "regional_assumptions": [
+      "The worked holiday example is United Kingdom bank holidays with three divisions and a ten-year rolling horizon; other jurisdictions publish on different horizons, at different granularity and with different substitution rules.",
+      "The daylight saving rule cited as a legal instrument is the European Union arrangement (last Sunday in March to last Sunday in October at 01:00 GMT); it is in force but has been the subject of repeated repeal proposals, and it does not bind non-EU states.",
+      "The administrative zone-boundary example is United States federal regulation, where boundaries are described by county and municipal lines and changed by petition and rulemaking; many jurisdictions use entirely different mechanisms.",
+      "Territory week data assumes CLDR's territory-scoped defaults, which are defaults rather than legal facts and can be overridden by sector practice within the same territory.",
+      "Weekend definitions are assumed to be territory-scoped day sets; territories with half-day weekends or sector-specific rest days are representable but not exercised in this model.",
+      "Business day conventions are drawn from a financial-industry scheme reflecting Western settlement practice and may not match statutory deadline rules in civil-law jurisdictions.",
+      "Observance coverage is illustrative and not exhaustive for any tradition; the registry-backed calendar variants are the only observance facts grounded in a primary source here.",
+      "Internet civil timestamps default to the Gregorian calendar as profiled by RFC 3339, not as a claim that all jurisdictions use Gregorian for domestic law.",
+      "Saturday-Sunday weekends are a common but non-universal default and must not be inferred from tzid alone.",
+      "English AREA/LOCATION tzids are the interchange identifiers; localised labels come from CLDR.",
+      "Holiday and in-lieu law is sub-national in several federations; a country-level calendar can be incomplete.",
+      "DST remains politically unstable, as illustrated by tzdb 2026c (Alberta permanent -06 from 2026-06-18; Morocco permanent +00 from 2026-09-20)."
+    ],
+    "adversarial_checks": [
+      "Counterexample sought for zone identifiers as stable keys: the tz maintainers state that names, boundaries, offsets and abbreviations are not all part of the stable interface and that backward links exist, while CLDR maintains a separate stable layer. The claim that a tzid is a durable primary key is therefore rejected, and a crosswalk with a declared persistence layer is required instead.",
+      "Counterexample sought for treating the tz database as authoritative: RFC 6557 states the coordinator shall not set time zone policy and works from consensus on the ground, and 49 CFR Part 71 shows boundaries set by a different body under statute. A separate legal-authority layer was added rather than collapsing law into the mirror.",
+      "Counterexample sought for UTC as a fixed scale: BIPM Circular T is a monthly numbered publication, IERS issues serial leap decisions, the leap table carries a hard expiry, and CGPM has resolved to change the UT1-UTC tolerance by 2035. UTC is therefore modelled as versioned, perishable, governed data rather than as a constant.",
+      "Counterexample sought for a single canonical date per observance: the calendar registry itself carries four Hijri variants differing only in determination method. A single canonical observance date was rejected in favour of method, community and confirmation status.",
+      "Counterexample sought for the previous version's contract and projection constructs: no primary source supports named commercial constructs such as a subscription contract or a redistribution contract as part of a temporal meta-model. These were rejected as domain artifacts of a particular business model and replaced by evidence-backed governance concerns (release pinning, integrity, expiry, redistribution as an access exception).",
+      "Counterexample sought for treating recurrence as calendar-neutral: RFC 7529 shows that recurrence expansion is calendar-scale dependent and needs explicit skip and leap-month handling, so a scale-aware recurrence layer was made mandatory rather than optional.",
+      "Counterexample sought for JSON, YAML or a database being the model: the same semantics are shown to project into a binary zone format, an iCalendar component, a JSON calendar object and a distribution-service resource, which confirms storage-neutrality and forced the loss-report requirement.",
+      "Counterexample sought for 'floating time is just local time': iCalendar and JSCalendar both define floating values that intentionally have no fixed instant, so a three-way binding contract was required in place of a two-way local-versus-UTC split.",
+      "Falsifiability check on the coverage claim itself: the precision-and-uncertainty dimension is recorded as a gap because the relevant ISO and Library of Congress sources returned access errors, rather than being asserted from memory.",
+      "Local 02:30 on a spring-forward day may be nonexistent; local 01:30 on a fall-back day may be ambiguous. Resolution policy must be explicit or the convert function must fail closed.",
+      "A timestamp of 2016-12-31T23:59:60Z is a valid positive leap second; rejecting it or treating it as 2017-01-01T00:00:00Z without a stated policy is an interoperability defect.",
+      "2020-01-01T00:00:00+01:00[Europe/Paris] and 2020-01-01T00:00:00+01:00[+01:00] are not equivalent for 'six months later' arithmetic.",
+      "UNTIL on an RRULE in UTC combined with DTSTART in America/New_York can drop or duplicate the last occurrence if the consumer ignores RFC 5545 UTC UNTIL rules.",
+      "A yearly Islamic holiday expanded on Gregorian anniversary, or with the wrong islamic-* CLDR variant, will be the wrong civil date.",
+      "Asia/Calcutta must resolve as a link to Asia/Kolkata, not as a second zone.",
+      "A missing sub-national holiday must yield completeness=unknown, not working-day=true.",
+      "tzdb 2026c Morocco +00 from 2026-09-20 will disagree with a converter pinned to an earlier release; version skew must be detected as RFC 9557 inconsistency, not silently corrected.",
+      "Second instance of a civil day under a date-line move (America/Juneau 1867) must not collapse to a single Gregorian date without recording both labels.",
+      "Claiming conformance to ISO 8601-1:2019 without the ISO text, or claiming leap seconds have already been abolished before the CGPM implementation, is a false completeness claim."
+    ]
+  },
+  "researchAdjudication": {
+    "providerMode": "dual-provider",
+    "activeProviders": [
+      "claude",
+      "grok"
+    ],
+    "waivedProviders": [],
+    "providerPolicy": {},
+    "boundaryDecision": {
+      "entry_kind": "mixin",
+      "status": "accepted",
+      "rationale": "Both independent providers treat temporal value shapes as reusable context embedded by other models and civil-time/calendar datasets as governed reference data. Clock synchronization, event participation, jurisdiction geometry, labour entitlement and domain deadline policy remain separate models."
+    },
+    "decisions": [
+      {
+        "concept": "Seven-bundle logical structure",
+        "disposition": "accepted-from-claude-validated-by-grok",
+        "rationale": "Grok independently covers the same time-base, zone, calendar, recurrence and observance semantics in three broader bundles. The Claude hierarchy preserves the useful boundaries among civil zones, temporal value shapes, recurrence, observance and reference-data governance without duplicating Grok nodes."
+      },
+      {
+        "concept": "Time / Calendar is a mixin plus governed reference data",
+        "disposition": "accepted-from-both",
+        "rationale": "Temporal values are embedded by host models, while time scales, zone transitions, calendar rules and public-holiday proclamations have their own authorities, versions and lifecycle."
+      },
+      {
+        "concept": "Timestamp as artifact identifier",
+        "disposition": "rejected",
+        "rationale": "Artifact identity follows the authoritative master-system identifier and otherwise UUIDv7 or ULID. RFC 3339 timestamps with seconds and an explicit offset or Z are separate created/changed/event facts, never the sole identifier."
+      },
+      {
+        "concept": "IANA timezone identifier is an eternal object key",
+        "disposition": "rejected",
+        "rationale": "tzdb links, canonical names, political rule changes and CLDR stability mappings require version pinning, alias history and a declared persistence layer."
+      },
+      {
+        "concept": "The timezone database is the legal authority",
+        "disposition": "rejected",
+        "rationale": "Civil-time policy is set by competent jurisdictions; tzdb mirrors observed consensus and must preserve the legal instrument, mirror lag and conflict separately."
+      },
+      {
+        "concept": "UTC and leap-second tables are timeless constants",
+        "disposition": "rejected",
+        "rationale": "Leap decisions, tables, expirations and the planned change to the UT1-UTC regime are versioned governed facts with freshness obligations."
+      },
+      {
+        "concept": "Floating, offset and named-zone times are equivalent",
+        "disposition": "rejected",
+        "rationale": "They have different resolution semantics; gaps, overlaps and offset-versus-zone conflicts require an explicit policy or fail-closed result."
+      },
+      {
+        "concept": "Recurrence is Gregorian and timezone neutral",
+        "disposition": "rejected",
+        "rationale": "RSCALE, skip behavior, calendar variants, zone transitions, exceptions and per-occurrence overrides materially change expansion."
+      },
+      {
+        "concept": "Public holidays and weekends have one global master",
+        "disposition": "rejected",
+        "rationale": "The competent jurisdiction or recognized community is the master; aggregators are mirrors and missing sub-national coverage must remain unknown rather than inferred as a working day."
+      },
+      {
+        "concept": "Format alignment implies universal conformance",
+        "disposition": "rejected",
+        "rationale": "RFC 3339/9557, iCalendar, JSCalendar, TZif, tzdb, CLDR and OWL-Time are version-pinned projections or alignments with explicit loss reports and conflicting assumptions."
+      }
+    ],
+    "publicationHolds": [
+      "Verify live availability, editions and claim-level support for every accepted primary source, including current tzdb, BIPM/IERS, IETF and Unicode releases.",
+      "Complete jurisdictional profiles for holiday and working-day authorities and direct clause-level verification of paywalled ISO 8601-1/2 before promoting a universal completeness claim."
+    ],
+    "deferredResearch": [
+      "Qualified uncertain and approximate dates, unspecified digits and set-valued dates from ISO 8601-2 and EDTF.",
+      "GNSS time scales, clock synchronization and time-transfer traceability profiles.",
+      "Jurisdiction-by-jurisdiction calendar reform, historical timezone and public-holiday authority datasets.",
+      "Sighting-based religious calendar confirmation, community authority and post-publication correction workflows.",
+      "Vendor leap-smear algorithms, exchange-specific trading calendars and sector-specific business-day conventions."
+    ]
+  }
+}
