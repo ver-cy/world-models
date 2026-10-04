@@ -56,6 +56,7 @@ def main() -> int:
         cards.append({
             "id": contour,
             "name": name,
+            "purpose": translation.get("scope") or "Published Enterprise programme research profile.",
             "version": "0.1.0" if immutable else "research-checkpoint",
             "family": "Enterprise profiles",
             "category": f"Enterprise {unit.get('kind', 'profile')}",
