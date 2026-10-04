@@ -1,0 +1,626 @@
+# Frozen dossier: enterprise value streams
+
+As of 2026-10-04, the Enterprise programme contains 111 research contours and the unified registry contains 403 World Model rows.
+
+## Scope and decision test
+
+- named beneficiary or recipient
+- recognizable triggering need or event
+- ordered changes in beneficiary value state
+- terminal outcome distinguishable from outputs
+- identity survives redesign of processes, systems and organization
+- version changes when trigger, beneficiary, state sequence or outcome changes
+
+## Existing Enterprise contours
+
+- **EM-ORG-01 — Компания и группа компаний** (subject): PROFILE over WM-ORG-001 and WM-ORG-012; no new runtime ID.
+- **EM-ORG-02 — Юридическая идентичность и регистрация** (subject): PROFILE over WM-ORG-001, WM-ORG-010 and WM-ORG-011; no new runtime ID.
+- **EM-ORG-03 — Владение, контроль и корпоративное управление** (subject): profiles/reuse plus Share Class new-model candidate; no new ID
+- **EM-ORG-04 — Организационная единица и мандат** (subject): PROFILE over WM-ORG-002; no new runtime ID.
+- **EM-ORG-05 — Коллективы, команды и членство** (subject): PROFILE WM-ORG-003 and REUSE WM-ORG-006; no new runtime ID.
+- **EM-ORG-06 — Позиции, роли и ответственность** (subject): REUSE WM-ORG-004 and PROFILE WM-XCT-023; no new runtime ID.
+- **EM-ORG-07 — Заинтересованная сторона и вовлечение** (subject): PROFILE over WM-ORG-013, WM-ORG-001, WM-PER-001, WM-ACT-034, WM-ACT-008, WM-KNW-007, WM-KNW-010; no new model or runtime identity.
+- **EM-PEO-01 — Человек и контекстная идентичность** (subject): RESTRICTED PROFILE WM-PER-001; no new runtime ID.
+- **EM-PEO-02 — Рабочие отношения и назначения** (subject): PROFILE over WM-PER-001/WM-ORG-005/WM-ORG-016 plus identifier-unassigned EmployeeProfile candidate; no runtime ID.
+- **EM-PEO-03 — Компетенции и квалификации** (subject): COMPLETE RESERVED WM-PER-009 definition-only; identifier-unassigned Proficiency Scale and Person Capability Assertion; PROFILE WM-ACT-034; no new ID.
+- **EM-PEO-04 — Подбор и найм** (subject): Unassigned Recruitment Requisition and Candidacy; conditionally narrow reserved WM-ORG-008 to asserted Opening; reuse/profile recruitment peers; no new ID.
+- **EM-PEO-05 — Обучение, развитие и преемственность** (subject): Five identifier-unassigned roots: Learning Program, Enrollment, Learning Result, Career Path and Succession Plan; existing masters retain delivery, plan, assessment, appointment, assignment, qualification and credential semantics; no new ID.
+- **EM-PEO-06 — Результативность, свидетельства и калибровка** (subject): pending
+- **EM-PEO-07 — Доступность и учёт времени** (subject): Identifier-unassigned Absence, Worklog and Timesheet; derived Work Calendar and Availability; aggregate-owned Time Approval; WM-ACT-008 reference-only; no new ID
+- **EM-PEO-08 — Грейды и профили ожиданий** (subject): Three identifier-unassigned roots: Grade Scheme, Role Profile and Grade Assignment; levels, tracks and crosswalks remain scheme-owned; calibration profiles WM-ACT-034 and WM-REC-010; no new ID.
+- **EM-PEO-09 — Вознаграждение и льготы** (subject): four identifier-unassigned roots: Compensation Band, Compensation Assignment, Benefit Plan and Benefit Enrollment; profile review and payroll; no new ID
+- **EM-STR-01 — Стратегия, бизнес-модель и потоки ценности** (subject): four identifier-unassigned roots plus contained theme/proposition; no new ID
+- **EM-STR-02 — Цели, ключевые результаты и выгоды** (subject): Profile WM-KNW-011 and WM-ACT-034; qualified observation-host usage; reject combined Outcome+Benefit root and defer two separate candidate identities; no new ID.
+- **EM-STR-03 — Бизнес-способности** (subject): split/narrow WM-ACT-001 plus Business Capability and Capability Realization candidates; no new ID
+- **EM-STR-04 — Инициатива и обоснование инвестиций** (subject): PROFILE over WM-ACT-030, WM-ACT-005, WM-ACT-029, WM-KNW-009, WM-KNW-010, WM-KNW-015, WM-KNW-016, WM-ACT-024, WM-REC-010, WM-ECO-012; no new model or runtime identity.
+- **EM-WRK-01 — Рабочие элементы и поток поставки** (subject): Restrictive WM-ACT-006 WorkItem profile; WM-XCT-021 lifecycle authority; Backlog and Iteration deferred non-normative views; no new identifier.
+- **EM-WRK-02 — Проект и управление изменениями проекта** (subject): PROFILE over WM-ACT-005, WM-ACT-008, WM-ACT-031, WM-ACT-032; no new model or runtime identity.
+- **EM-WRK-03 — Программа и управление выгодами** (subject): Program profile over WM-ACT-029 with program-owned assertions and WM-ACT-008 Transition Plan; no new ID
+- **EM-WRK-04 — Портфель и инвестиционный отбор** (subject): Portfolio profile over WM-ACT-029 plus identifier-unassigned Selection Criteria Set; no new ID
+- **EM-WRK-05 — Мощность и распределение ресурсов** (subject): Two identifier-unassigned roots plus declarative Capacity Plan profile; no new ID
+- **EM-WRK-06 — Зависимости и анализ влияния** (subject): Two identifier-unassigned roots plus narrowed dependency-edge and assessment profiles; no new ID
+- **EM-PRD-01 — Продукт, предложение и дорожная карта** (subject): Product and Offering Catalogue candidates unassigned; Price Plan non-addressable component; Roadmap Item restrictive profile.
+- **EM-PRD-02 — Услуга и модель обслуживания** (subject): Complete reserved WM-ACT-004 as narrowed Service Definition; keep bindings and dependencies definition-scoped, derive consumption, and allocate no new identifier.
+- **EM-PRD-03 — Требования и ожидаемое поведение** (subject): Complete reserved WM-REC-006 as Requirement; keep criteria and outbound traces contained, demote revision-set comparison to a derived view, and leave authoritative Requirement Baseline unassigned.
+- **EM-PRD-04 — Исследование, гипотеза и эксперимент** (subject): Complete reserved WM-ACT-022 as Experiment Run; reusable cross-study Experiment Design requires independent identity but remains unassigned; study, hypothesis and finding reuse/profile existing masters; no new ID
+- **EM-PRD-05 — Интеллектуальная собственность и права использования** (subject): PROFILE over WM-KNW-003, WM-MED-001, WM-ECO-006, WM-XCT-029, WM-REC-001, WM-ORG-001, WM-PER-001; no new model or runtime identity.
+- **EM-COM-01 — Отношения с клиентами, поставщиками и партнёрами** (subject): pending
+- **EM-COM-02 — Продажи и маркетинговые взаимодействия** (subject): PROFILE over WM-ECO-026/021/027; all five binding records are profile-local; Attribution Claim remains an identifier-unassigned OPEN-QUESTION registry gap.
+- **EM-COM-03 — Заказ, подписка и право потребления** (subject): reuse/profile; Renewal is a version link; Consumption Entitlement is a parked identity hypothesis; no new ID
+- **EM-COM-04 — Обращение клиента и сервисный запрос** (subject): PROFILE over WM-ACT-021; no new model or runtime ID. The binding adds explicit requester-presence semantics while preserving incident, work, interaction, resolution, acceptance and closure boundaries.
+- **EM-LEG-01 — Договор, обязательство и соглашение об уровне услуги** (subject): PROFILE over WM-ECO-006, WM-XCT-029; no new model or runtime identity.
+- **EM-LEG-02 — Внешние нормы и применимость** (subject): PROFILE WM-POL-001 and WM-ACT-034; external Jurisdiction; no new identifier.
+- **EM-LEG-03 — Внутренние политики и исключения** (subject): PROFILE over WM-KNW-012; conditional WM-ORG-019 retirement; communication reuse test pending; no new ID
+- **EM-LEG-04 — Разрешения, лицензии и разрешённая деятельность** (subject): NEW MODEL candidate Regulatory Authorization / Granted Permission; WM-POL-014 rejected; identifier unassigned.
+- **EM-LEG-05 — Юридическое дело и спор** (subject): profile WM-POL-009 plus identifier-unassigned Dispute / Matter; dependent claims/events/outcomes; no new ID
+- **EM-LEG-06 — Обработка персональных данных и права субъекта** (subject): NEW MODEL candidate Processing Activity plus WM-ACT-021 DSR profile; identifier unassigned
+- **EM-FIN-01 — Бюджет, центр ответственности и финансирование** (subject): REUSE WM-ECO-012 + PROFILE Budget Responsibility + NEW MODEL Responsibility Centre (identifier unassigned)
+- **EM-FIN-02 — Счёт, проводка и финансовая операция** (subject): REUSE WM-ECO-015/016/017; NEW MODEL candidate Chart of Accounts / Accounting Policy owns Ledger Account; correspondence-only profile
+- **EM-FIN-03 — Счёт на оплату, платёж и сверка** (subject): PROFILE over WM-ECO-009, WM-ECO-008; no new model or runtime identity.
+- **EM-FIN-04 — Финансовая отчётность и консолидация** (subject): Consolidation Scope and Run remain identifier-unassigned roots; statement and elimination are profiles; no new ID
+- **EM-FIN-05 — Затраты, потребление и распределение стоимости** (subject): one identifier-unassigned Cost Allocation cluster with addressable Rule/Revision/Run/Result objects plus a source and unit-cost profile; no new ID
+- **EM-FIN-06 — Инвестиции, инструменты и оценка** (subject): unassigned Financial Instrument and Investment roots; WM-ECO-038 position, WM-ECO-002 valuation, WM-ECO-016 posting profiles; transaction unbound; no new ID
+- **EM-FIN-07 — Налоговый профиль, обязательство и декларация** (subject): reuse WM-POL-011/WM-ECO-032; WM-ACT-052 thin correlation; optional identifier-unassigned TaxRegistrationAccount candidate; no new ID
+- **EM-OPS-01 — Процесс, процедура и исполнение** (subject): COMPLETE RESERVED MODELS
+- **EM-OPS-02 — Закупка и выбор поставщика** (subject): Procurement Request and Sourcing Event require independent identity but remain unassigned; Supplier Bid, Bid Evaluation, Supplier Qualification and Award Decision are profiles; no new ID
+- **EM-OPS-03 — Актив, обслуживание и калибровка** (subject): three identifier-unassigned roots plus non-allocating custody/profile reconciliation; no new ID
+- **EM-OPS-04 — Изделие, конструкция и спецификация состава** (subject): reuse/contain all six requested candidates; five adjacent roots identifier-unassigned; no new ID
+- **EM-OPS-05 — Запасы, производство и логистика** (subject): unassigned Lot and Transformation Event; reuse WM-OBJ-020 and WM-FLW-011; split Logistics Event; thin Inventory-Genealogy profile; no new ID
+- **EM-TEC-01 — Программный продукт и инженерный контекст AISMM** (subject): Narrow WM-SFT-001; align AISMM 3.1.0; reuse/complete software child masters; identifier-unassigned Source Repository; no new ID.
+- **EM-TEC-02 — Бизнес-приложение и программная система** (subject): Reserved WM-SFT-002 proposed as operator Software System and Business Application pending owner decisions; Purchased Licence / Entitlement identifier-unassigned; no new ID.
+- **EM-TEC-03 — Интерфейс, API и интеграция** (subject): Complete reserved WM-SFT-003 and WM-SFT-018; Integration remains identifier-unassigned and ConsumptionRouting deferred.
+- **EM-TEC-04 — Среда, инфраструктура и экземпляр сервиса** (subject): Complete WM-SFT-010 as Runtime / Compute Environment; keep runtime occupants dependent, CI as a designation and topology effective-dated; no new model identity.
+- **EM-TEC-05 — Инцидент, проблема и первопричина** (subject): Reconciled legacy replacement candidate for WM-ACT-019 with one incident declaration identity and external qualification/problem/defect/task masters; no new ID.
+- **EM-TEC-06 — Надёжность, SLO и наблюдаемость** (subject): COMPLETE RESERVED WM-SFT-016 with four consistency boundaries and Service-only evaluation; User Journey specified-deferred-non-normative and unassigned; no new ID.
+- **EM-TEC-07 — Уязвимость, затронутость и устранение** (subject): reuse WM-SFT-006; independently identified WM-ACT-034 exposure profile; WM-ACT-006 remediation-work profile; VEX mastered on WM-SFT-006; identifier-unassigned Exploit Artifact candidate; no new ID
+- **EM-TEC-08 — Испытание, проверка и дефект** (subject): Reuse WM-SFT-015 and WM-SFT-014; TestResult contained as run fragments; Test Environment remains identifier-unassigned OPEN-QUESTION.
+- **EM-TEC-09 — Технологии и архитектурные стандарты** (subject): three unassigned roots plus standard/assessment/ADR profiles; Architecture Exception waiver master; no new ID
+- **EM-TEC-10 — Операционное изменение и дежурство** (subject): profiles plus Change Execution and Duty Roster candidates; no new ID
+- **EM-DAT-01 — Набор данных, схема и контракт** (subject): PROFILE over WM-DAT-001, WM-DAT-004; no new model or runtime identity.
+- **EM-DAT-02 — Продукт данных** (subject): Reconciled completion of reserved WM-DAT-008 with separately rooted DataProduct, ProductCatalogRecord and ConsumerEntitlementBinding; no new ID.
+- **EM-DAT-03 — Pipeline, запуск и происхождение данных** (subject): PROFILE over WM-DAT-005, WM-ACT-053, WM-DAT-006, WM-DAT-001, WM-DAT-004, WM-XCT-012; no new model or runtime identity.
+- **EM-DAT-04 — Качество данных и покрытие контекста** (subject): COMPLETE RESERVED MODEL WM-DAT-007; CoverageAssessment contained as assessment kind; metric formulas and versioned frame authority remain external.
+- **EM-DAT-05 — Метрика, цель и наблюдение** (subject): NEW MODEL candidate Metric Definition; identifier unassigned; no runtime ID
+- **EM-DAT-06 — Определение отчёта и экземпляр выпуска** (subject): COMPLETE RESERVED MODEL WM-REC-002; definition and issued statement aggregate; no new identifier.
+- **EM-DAT-07 — Аналитическое исследование и вывод** (subject): PROFILE WM-ACT-036; WM-KNW-007 mood-discriminated findings/recommendations; Analysis Method identifier-unassigned
+- **EM-AI-01 — AI-система, агент и выполнение** (subject): PROFILE over WM-AI-001, WM-AI-002, WM-AI-005, WM-AI-004; no new model or runtime identity.
+- **EM-AI-02 — Модель AI, артефакт и обучение** (subject): reuse-only existing AI masters; conditional unassigned Training Recipe with no present independent identity; no new ID
+- **EM-AI-03 — Оценка AI и доказательства безопасности** (subject): Profile over evaluation, benchmark, safety and decision masters; two conditional candidates remain identifier-unassigned; no new ID
+- **EM-KNW-01 — Документ, знание и терминология** (subject): PROFILE over WM-REC-001, WM-KNW-006, WM-KNW-018; no new model or runtime identity.
+- **EM-KNW-02 — Решение, утверждение и доказательство** (subject): Reconciled profile over WM-KNW-007/008/010 and WM-REC-010 plus identifier-unassigned Evidence Artifact / Source Work candidate; no new ID
+- **EM-KNW-03 — Коммуникация и совместная встреча** (subject): COMPLETE RESERVED MODEL WM-REC-012 with separate minutes/transcript works and dependent MeetingParticipation; no new ID
+- **EM-RSK-01 — Риск, контроль и оценка выполнения** (subject): Reuse WM-KNW-015; profile WM-XCT-027; one Control candidate unassigned; WM-ACT-034 conditional; treatment unowned; no new ID
+- **EM-RSK-02 — Аудит, проверка и замечание** (subject): NEW MODEL candidate Procedure Definition; exclusive WM-ECO-035 engagement and WM-ACT-033 execution composition
+- **EM-RSK-03 — Доступ, делегирование и метаданные секретов** (subject): Conditional WM-PER-002 duplicate-retirement proposal; profile account/consent/review boundaries; identifier-unassigned allocation-unresolved Authorization Domain / Access Grant cluster; no new ID.
+- **EM-RSK-04 — Непрерывность, резервирование и восстановление** (subject): reuse/complete WM-ACT-043; WM-ACT-043-owned Restore Verification specification; identifier-unassigned Backup / Data Protection Policy candidate; no new ID
+- **EM-FAC-01 — Место, офис и рабочая среда** (subject): Complete WM-BLT-002; retire duplicate WM-PLC-009 by proposal; profile office/topology; Workplace Allocation NEW MODEL unassigned.
+- **EM-FAC-02 — Воздействие, устойчивость и экологическая отчётность** (subject): reuse disclosure and activity bases plus three identifier-unassigned roots; no new ID
+- **EM-LND-01 — Организационная структура** (landscape): PROFILE over WM-ORG-002, WM-ORG-003, WM-ORG-004, WM-ORG-016; no new model or runtime identity.
+- **EM-LND-02 — Ландшафт группы компаний** (landscape): PROFILE over WM-ORG-001, WM-ORG-012, WM-ORG-010, WM-ORG-011, WM-XCT-001, WM-XCT-002, WM-XCT-003, WM-XCT-040; no new model or runtime identity.
+- **EM-LND-03 — Ландшафт персонала** (landscape): PROFILE / PROJECTION over existing workforce masters; no new model or runtime identity.
+- **EM-LND-04 — Стратегический ландшафт** (landscape): held read-only Strategy Landscape and Strategic Alignment profile over existing masters; no new ID
+- **EM-LND-05 — Ландшафт проектов, программ и портфелей** (landscape): PROFILE over WM-ACT-005 and WM-ACT-029; no new ID
+- **EM-LND-06 — Ландшафт программных продуктов** (landscape): COMPLETE RESERVED MODEL on existing vr.vercy.plmm; preserve 0.1.0-legacy; no new ID or second SoftwareProduct
+- **EM-LND-07 — Портфель продуктов и услуг** (landscape): Offering Portfolio Scope governance/filter profile plus non-authoritative Offering Landscape projection; no new ID
+- **EM-LND-08 — Коммерческий ландшафт** (landscape): PROFILE over WM-ORG-014, WM-ECO-020, WM-ORG-001, WM-ORG-012, WM-ECO-021, WM-ECO-022, WM-ECO-026, WM-ECO-027, WM-MAT-008, WM-XCT-002, WM-XCT-003; no new model or runtime identity.
+- **EM-LND-09 — Ландшафт договоров и обязательств** (landscape): PROFILE over WM-ECO-006, WM-XCT-029, WM-ORG-001, WM-XCT-009, WM-KNW-012, WM-ACT-034, WM-REC-001, WM-XCT-002, WM-XCT-003; no new model or runtime identity.
+- **EM-LND-10 — Финансовый ландшафт** (landscape): PROFILE over WM-ECO-012, WM-ECO-015, WM-ECO-016, WM-ECO-017, WM-ECO-018, WM-ECO-038, WM-MAT-008, WM-ORG-012; no new model or runtime identity.
+- **EM-LND-11 — Операционный ландшафт и цепочка поставок** (landscape): Operations Landscape declaration/projection; Supply Network graph view; no new ID
+- **EM-LND-12 — Ландшафт услуг и инфраструктуры** (landscape): PROFILE over WM-XCT-039, WM-XCT-037, WM-XCT-001, WM-XCT-003, WM-MAT-008, WM-ACT-021, WM-ACT-020, WM-SFT-002, WM-SFT-010, WM-SFT-016, WM-ACT-019, WM-ACT-004, WM-SFT-009; no new model or runtime identity.
+- **EM-LND-13 — Ландшафт данных, отчётов и аналитики** (landscape): PROFILE/projection over data and analytical masters; no new ID
+- **EM-LND-14 — Ландшафт AI и исследований** (landscape): PROFILE over WM-AI-001, WM-AI-002, WM-AI-003, WM-AI-004, WM-AI-005, WM-AI-006, WM-AI-007, WM-AI-008, WM-AI-009, WM-AI-010, WM-DAT-001, WM-MAT-008, WM-SFT-004, WM-XCT-037; no new model or runtime identity.
+- **EM-LND-15 — Ландшафт рисков и соответствия** (landscape): PROFILE/view over risk and assurance masters; no new ID
+- **EM-LND-16 — Ландшафт знаний и решений** (landscape): PROFILE declaration plus derived view; no new ID
+- **EM-LND-17 — Ландшафт площадок и активов** (landscape): Asset Place Landscape local governed-artifact identity; Occupancy View/Landscape Projection no independent ID; Asset Placement Episode and Operational Responsibility Assignment require independent identity but remain unassigned; no new ID
+- **EM-LND-18 — Корпоративный ландшафт** (landscape): identifier-unassigned EnterpriseLandscape declaration plus immutable WM-KNW-012 Enterprise View Scope profile; no new ID
+- **EM-XCT-01 — Идентичность и сопоставление внешних ID** (contract): pending
+- **EM-XCT-02 — Владение фактами и ответственность** (contract): pending
+- **EM-XCT-03 — Происхождение, доверие и утверждения** (contract): pending
+- **EM-XCT-04 — Время, состояния и версии** (contract): pending
+- **EM-XCT-05 — Раскрытие, классификация и хранение** (contract): pending
+- **EM-XCT-06 — Единицы, деньги, локаль и календари** (contract): pending
+- **EM-XCT-07 — Действие, полномочие и делегирование агенту** (contract): pending
+- **EM-XCT-08 — Источники, bindings и синхронизация** (contract): pending
+- **EM-XCT-09 — Классификации, профили и crosswalk** (contract): pending
+- **EM-XCT-10 — Регистрация, версия и приёмка модели** (contract): pending
+- **EM-KRN-01 — Основа композиции и согласование роли ELMM** (foundation): pending
+
+## Existing identifier-unassigned candidates with an identity claim
+
+- **EM-AI-02 — Reusable Training Recipe**: CONDITIONAL NEW MODEL — NOT ALLOCATED; unassigned. A recipe is independently identifiable only when a governed reusable training specification persists across multiple execution runs and resolved configurations.
+- **EM-AI-03 — Standing Deployment Authorization Instrument**: NO NEW MODEL; unassigned. A standing authorization is independently identifiable only when it persists beyond one decision occurrence with its own holder, scope, validity, renewal and revocation lifecycle.
+- **EM-AI-03 — Reusable Evaluation Protocol**: NO NEW MODEL; unassigned. A protocol is independently identifiable only when a governed evaluation specification is versioned, approved and reused across evaluation instances.
+- **EM-COM-02 — Attribution Claim**: OPEN-QUESTION; unassigned. Profile-local claims remain citable and supersedable only within observerDimensionRef; this does not establish independent world-model identity.
+- **EM-COM-03 — Consumption Entitlement**: NO DECISION — PARKED PENDING IDENTITY GATE; unassigned. A granted right to consume remains identifiable across order closure, subscription version changes, provisioning, payment changes, suspension, grace, usage and renewal.
+- **EM-DAT-05 — Metric Definition**: NEW MODEL; unassigned. A metric exists independently of any observation, target, report or quality assessment and remains identifiable across compatible definition revisions.
+- **EM-DAT-07 — Analysis Method**: NEW MODEL; unassigned. A reusable analysis method persists across studies and owns a governed procedure, assumptions, admissible inputs, permitted output claim kinds and known failure modes.
+- **EM-FAC-01 — Workplace Allocation**: NEW MODEL; unassigned. A governed relationship between exactly one engagement context and one physical, generalized, client-site, home-jurisdiction or mobile work locus remains identifiable across address, endpoint description, recurrence and booking changes.
+- **EM-FAC-02 — Emission Factor Registry**: NEW MODEL; unassigned. A governed factor registry and factor set persist independently of any calculation run or disclosure.
+- **EM-FAC-02 — Environmental Impact Calculation Run**: NEW MODEL; unassigned. Each calculation execution has immutable identity independent of its disclosure and source facts.
+- **EM-FAC-02 — Inventory Boundary**: NEW MODEL; unassigned. One governed inventory boundary persists across reporting periods, calculation runs, disclosures and recalculations.
+- **EM-FIN-01 — Responsibility Centre**: NEW MODEL; unassigned. A finance-governed accountability unit survives ERP code, manager, organizational placement and budget changes while retaining historical attribution.
+- **EM-FIN-02 — Chart of Accounts / Accounting Policy**: NEW MODEL; unassigned. A governed Chart of Accounts, its Ledger Accounts and accounting-policy basis remain identifiable across hierarchy revisions, ledger adoption, recognition changes and reporting periods.
+- **EM-FIN-04 — Consolidation Run**: NEW MODEL; unassigned. Each consolidation execution remains identifiable independently of the statement that cites it.
+- **EM-FIN-04 — Consolidation Scope**: NEW MODEL; unassigned. A governed consolidation scope persists across reporting periods, runs, statements and management views.
+- **EM-FIN-05 — Cost Allocation**: NEW MODEL CANDIDATE; unassigned. One Cost Allocation cluster governs reusable rules and immutable executions while preserving separately addressable rule, revision, run and result object identities.
+- **EM-FIN-06 — Financial Instrument**: NEW MODEL; unassigned. A financial instrument exists before any holder and survives transfers and position closure while retaining governed issuer terms.
+- **EM-FIN-06 — Investment**: NEW MODEL; unassigned. A governed participation or exposure can persist through instrument replacement, temporary zero holdings, undrawn commitments and exited-but-retained history.
+- **EM-FIN-07 — TaxRegistrationAccount**: NEW-MODEL-CANDIDATE; unassigned. An authority-created tax registration account persists across periods, returns, assessments and payments independently of legal-entity registration.
+- **EM-KNW-02 — Evidence Artifact / Source Work**: NEW MODEL; unassigned. A source work or evidence item retains identity independently of every claim, citation, decision and consulted representation and can be cited repeatedly across contexts.
+- **EM-LEG-03 — Policy Communication Event**: REUSE-TEST-PENDING; unassigned-pending-reuse-test. A communication occurrence is independently identified by intended recipient, pinned expression, pinned manifestation, channel, occurrence time and source authority.
+- **EM-LEG-04 — Regulatory Authorization / Granted Permission**: NEW MODEL; unassigned. An authority-issued permission persists independently of application cases, credentials, commercial rights, IP rights and stewardship.
+- **EM-LEG-05 — Dispute / Matter**: NEW MODEL; unassigned. A contested matter persists across transfers, severance, consolidation, first instance, appeal, recognition and enforcement proceedings.
+- **EM-LEG-06 — Processing Activity / Processing Register Entry**: NEW MODEL; unassigned. A governed processing activity persists independently of datasets, systems, consent instruments, request cases and ROPA editions.
+- **EM-LND-17 — Asset Placement Episode**: NEW MODEL; unassigned. One governed placement episode remains identifiable while the asset, locus description, evidence, confidence and disclosure rendition evolve during the same effective interval.
+- **EM-LND-17 — Operational Responsibility Assignment**: NEW MODEL; unassigned. One authorized responsibility assignment remains identifiable across changes to operational placement, custody, asset condition and evidence during its effective interval.
+- **EM-LND-18 — EnterpriseLandscape**: NEW-MODEL-CANDIDATE; unassigned. A governed selective cross-domain declaration has identity independent of its referenced domain facts and persists while questions, perimeter and selections evolve through append-only revisions.
+- **EM-OPS-02 — Procurement Request**: NEW MODEL; unassigned. An internal procurement need remains identifiable across approval, sourcing, award, contracting and ordering while its authorized scope evolves through revisions.
+- **EM-OPS-02 — Sourcing Event**: NEW MODEL; unassigned. A governed sourcing procedure remains identifiable across addenda, submission rounds, evaluations and award decisions while participants and criteria evolve through controlled releases.
+- **EM-OPS-03 — Calibration Event**: NEW MODEL; unassigned. A calibration occurrence for one instrument configuration remains identifiable independently of the instrument, method and certificate artifact.
+- **EM-OPS-03 — Maintenance Event**: NEW MODEL; unassigned. An evidenced occurrence of performed maintenance remains identifiable independently of its plan, authorization and asset.
+- **EM-OPS-03 — Maintenance Plan**: NEW MODEL; unassigned. A governed recurring maintenance definition remains identifiable independently of assets, work orders and performed events.
+- **EM-OPS-04 — As-Built Assembly**: NEW MODEL (unassigned; no identifier may be allocated by this audit); unassigned. An evidenced physical composition state remains identifiable independently of design intent, lots and serialized items.
+- **EM-OPS-04 — Lot / Batch**: NEW MODEL (unassigned; no identifier may be allocated by this audit); unassigned. A produced or received bulk cohort remains identifiable independently of serialized members, product type and production order.
+- **EM-OPS-04 — MBOM / Manufacturing Plan**: NEW MODEL (unassigned; no identifier may be allocated by this audit); unassigned. A governed production definition remains identifiable independently of engineering BOMs, work orders and actual transformations.
+- **EM-OPS-04 — Production Work Order**: NEW MODEL (unassigned; no identifier may be allocated by this audit); unassigned. A bounded authorization to manufacture a quantity under pinned definitions remains identifiable independently of plans and execution events.
+- **EM-OPS-04 — Actual Transformation Event**: NEW MODEL (unassigned; no identifier may be allocated by this audit); unassigned. An actual material or assembly transformation occurrence remains identifiable independently of plans, work orders, lots and resulting items.
+- **EM-OPS-05 — Lot**: NEW MODEL; unassigned. An issuer-qualified material lot remains identifiable across locations, stock positions, transformations, shipments and membership changes while its trace status evolves.
+- **EM-OPS-05 — Transformation Event**: NEW MODEL; unassigned. An actual material transformation occurrence remains identifiable independently of its work order, input/output lots, movements and later corrections.
+- **EM-ORG-03 — Share Class**: NEW MODEL; unassigned. An issuer-defined class remains identifiable independently of every holder, security position and ownership relation while its rights and restrictions evolve through corporate actions.
+- **EM-PEO-02 — Employee Profile**: NEW MODEL; unassigned. One employer-scoped continuity profile binds one Person to one employing party across successive Employment spells, employee-number changes, assignments, separation and rehire.
+- **EM-PEO-03 — Person Capability Assertion**: NEW MODEL; unassigned. An attributable assertion that one person holds one competency at a stated level remains identifiable independently of person, competency, scale, assessment and credential records.
+- **EM-PEO-03 — Proficiency Scale**: NEW MODEL; unassigned. A governed proficiency scale remains identifiable across competency concepts, assessments and organizations while its ordered levels and descriptors evolve through released versions.
+- **EM-PEO-04 — Candidacy**: NEW MODEL; unassigned. One person's purpose-scoped participation in one hiring effort remains identifiable across stages, assessments, offers, withdrawal and outcome, including internal mobility without a public opening.
+- **EM-PEO-04 — Recruitment Requisition**: NEW MODEL; unassigned. A standing, authorized recruitment demand remains identifiable across zero or more openings, campaigns, postings, candidacies and fills while approved scope evolves.
+- **EM-PEO-05 — Career Path**: NEW MODEL; unassigned. A reusable career-transition definition remains identifiable independently of workers, aspirations, nominations and assignments.
+- **EM-PEO-05 — Enrollment**: NEW MODEL; unassigned. A learner admission and participation record remains identifiable independently of the scheduled delivery and survives delivery cancellation, postponement or replacement.
+- **EM-PEO-05 — Learning Program**: NEW MODEL; unassigned. A reusable curriculum definition remains identifiable independently of deliveries, enrollments and learner outcomes.
+- **EM-PEO-05 — Learning Result**: NEW MODEL; unassigned. A learner outcome—achieved, not-achieved or indeterminate—for one version-scoped learning objective remains identifiable independently of attendance, completion, assessment administration, qualification award and credential.
+- **EM-PEO-05 — Succession Plan**: NEW MODEL; unassigned. A governed talent-coverage plan remains identifiable independently of positions, people, readiness assessments and appointments.
+- **EM-PEO-07 — Absence**: NEW MODEL; unassigned. A governed absence case remains identifiable across request, decision, cancellation and correction while its operational effect is projected separately.
+- **EM-PEO-07 — Timesheet**: NEW MODEL; unassigned. A period-scoped declaration of a fixed member set remains identifiable across submission, approval, rejection and later correction independently of its worklogs.
+- **EM-PEO-07 — Worklog**: NEW MODEL; unassigned. A reported observation of performed work remains identifiable independently of person, assignment, task, timesheet and approval records.
+- **EM-PEO-08 — Grade Assignment**: NEW MODEL; unassigned. A governed assertion that a subject holds a grade in a stated employment or position context remains identifiable independently of the subject and scheme.
+- **EM-PEO-08 — Grade Scheme**: NEW MODEL; unassigned. A governed grading framework remains identifiable independently of people, positions, assignments and compensation while its level semantics evolve through immutable releases.
+- **EM-PEO-08 — Role Profile**: NEW MODEL; unassigned. A reusable versioned expectation definition remains identifiable without a position or occupant.
+- **EM-PEO-09 — Benefit Enrollment**: NEW MODEL; unassigned. A benefit enrollment remains identifiable by person, plan version, election and coverage interval independently of payroll.
+- **EM-PEO-09 — Benefit Plan**: NEW MODEL; unassigned. A benefit plan remains identifiable independently of any person, enrollment, payroll deduction, claim or payment.
+- **EM-PEO-09 — Compensation Assignment**: NEW MODEL; unassigned. A compensation assignment remains identifiable per worker and concurrent Employment or Position context independently of band, payroll and payment.
+- **EM-PEO-09 — Compensation Band**: NEW MODEL; unassigned. A compensation band remains identifiable independently of a worker, position, assignment, payroll result and payment.
+- **EM-PRD-01 — Offering Catalogue**: NEW MODEL; unassigned. A governed catalogue of market- and time-scoped offerings remains identifiable across recipients, quotes and agreements while contained price-plan versions evolve.
+- **EM-PRD-01 — Product Catalogue**: NEW MODEL; unassigned. A governed catalogue of durable product identities remains identifiable across markets, offerings, price changes and roadmap revisions while its product definitions evolve through releases.
+- **EM-PRD-04 — Reusable Experiment Design**: NEW MODEL; unassigned. An independently governed experimental design remains identifiable across studies and runs while its protocol evolves through controlled releases.
+- **EM-RSK-01 — Control**: NEW MODEL; unassigned. Control identity survives revision, owner change, implementation change, re-estimation, register movement, split, merge, closure and assessment turnover.
+- **EM-RSK-02 — Procedure Definition**: NEW MODEL; unassigned. A reusable assurance procedure remains identifiable across engagements, performers and individual executions while its approved method evolves through controlled revisions.
+- **EM-RSK-03 — Authorization Domain / Access Grant**: NEW MODEL CANDIDATE CLUSTER; unassigned. 
+- **EM-RSK-04 — Backup / Data Protection Policy**: NEW MODEL; unassigned. A governed protection policy remains identifiable across continuity plans, protected subjects and backup executions while its approved controls evolve through versions.
+- **EM-STR-01 — Business Model**: NEW MODEL; unassigned. A governed value mechanism remains identifiable across strategy revisions, offers and participating legal entities.
+- **EM-STR-01 — Strategic Scenario**: NEW MODEL; unassigned. A versioned hypothesis space remains identifiable independently of strategies, forecasts and authoritative actuals.
+- **EM-STR-01 — Strategy**: NEW MODEL; unassigned. A governed strategic choice set remains identifiable across revisions and independently of initiatives, plans and portfolios.
+- **EM-STR-01 — Value Stream**: NEW MODEL; unassigned. A recipient-value progression remains identifiable across process redesign, automation and organization change.
+- **EM-STR-02 — Outcome and Benefit Boundary Register**: BOUNDARY REGISTER; NO MODEL ALLOCATION; unassigned. 
+- **EM-STR-03 — Business Capability**: NEW MODEL; unassigned. The unique governed pair (outcomeClassRef, actedUponObjectRef) identifies the enterprise ability independently of organization, process, system or owner.
+- **EM-STR-03 — Capability Realization**: NEW MODEL; unassigned. A temporal evidenced binding between one capability and one realizer remains identifiable across transfer, revision, correction and capacity change.
+- **EM-TEC-01 — Source Repository**: NEW MODEL CANDIDATE; unassigned. A governed Source Repository remains identifiable across provider migration, locator or namespace change, default-branch change, product bindings, stewardship transfer and archival.
+- **EM-TEC-02 — Purchased Licence / Entitlement**: NEW MODEL CANDIDATE; unassigned. A purchased software entitlement remains identifiable across assignment, consumption, renewal, suspension, product upgrades and installation changes.
+- **EM-TEC-06 — User Journey**: NEW MODEL; unassigned. Proposed only: a future governed journey could remain identifiable across service substitutions and channel changes after registry allocation.
+- **EM-TEC-07 — Exploit Artifact**: NEW MODEL — CANDIDATE, IDENTIFIER-UNASSIGNED; unassigned. An independently managed proof-of-concept or weaponized-code artifact remains identifiable across vulnerability links, analyses, restrictions and observed uses while its bytes and provenance remain fixed.
+- **EM-TEC-08 — Test Environment**: OPEN-QUESTION; unassigned. A governed test environment remains identifiable across test runs and subject releases while its reproducible configuration and baseline evolve through controlled revisions.
+- **EM-TEC-09 — Architecture Exception**: NEW MODEL; unassigned. A bounded authorization to derogate exact architecture rules remains identifiable independently of standards, assessments and risk decisions.
+- **EM-TEC-09 — Technology**: NEW MODEL; unassigned. An abstract technical capability class remains identifiable independently of vendor products, releases, packages and deployments.
+- **EM-TEC-09 — Technology Adoption**: NEW MODEL; unassigned. An organization-scoped standing adoption state remains identifiable independently of the technology, products and authorizing decisions.
+- **EM-TEC-10 — Change Execution**: NEW MODEL; unassigned. One actual operational-change occurrence remains identifiable independently of request, authorization, window, release, deployment, rollback and verification.
+- **EM-TEC-10 — Duty Roster**: NEW MODEL; unassigned. A governed duty roster remains identifiable across immutable schedule revisions, shift occurrences, overrides and handovers.
+- **EM-WRK-01 — Backlog**: DEFERRED NON-NORMATIVE VIEW; unassigned. Independent Backlog identity is not demonstrated; source correlation is retained as a view key only.
+- **EM-WRK-01 — Iteration**: DEFERRED NON-NORMATIVE VIEW; unassigned. Independent Iteration identity is not demonstrated; source correlation is retained as a view key only.
+- **EM-WRK-04 — Selection Criteria Set**: NEW MODEL; unassigned. A governed selection-criteria set remains identifiable across portfolios, candidate populations and review cycles while its criteria, weights and constraints evolve through released versions.
+- **EM-WRK-05 — Resource Demand**: NEW MODEL; unassigned. A resource requirement remains identifiable while unmet, planned, allocated, withdrawn or closed independently of pools, assignments and consumption.
+- **EM-WRK-05 — Resource Pool**: NEW MODEL; unassigned. A governed reusable grouping of supply remains identifiable through membership turnover and planning releases.
+- **EM-WRK-06 — Dependency Type Registry**: NEW MODEL; unassigned. A governed dependency vocabulary and its released propagation profiles remain identifiable independently of edges and scenarios.
+- **EM-WRK-06 — Impact Scenario**: NEW MODEL; unassigned. A frozen candidate-exposure projection remains identifiable across later graph, registry and licence changes.
+
+## Current World Model inventory
+
+- **WM-ACT-015 — Occurrence / Event** (described-previous-version): Generic events: what happened, when, where, who
+- **WM-ACT-008 — Plan / Schedule** (described-previous-version): Intentions bound to time
+- **WM-ACT-005 — Project** (described-previous-version): Bounded undertakings with goals and resources
+- **WM-ACT-006 — Task / Work Item** (candidate): Bounded unit of work with stable source identity workflow pin append-only transitions assignments estimates and evidence-bearing outcomes
+- **WM-DAT-001 — Dataset** (described-previous-version): Datasets as catalogued assets
+- **WM-REC-001 — Document / Record** (described-previous-version): Documents as governed records
+- **WM-REC-003 — Message** (described-previous-version): Communications between agents
+- **WM-SFT-001 — Software Product** (described-previous-version): Software described in full context
+- **WM-OBJ-001 — Physical Item Instance** (described-previous-version): Any individual physical thing
+- **WM-OBJ-002 — Product Type / Catalog Item** (candidate): Candidate governed context model for Product Type / Catalog Item; boundary questions remain required.
+- **WM-ECO-006 — Commercial Contract** (described-previous-version): Agreements between parties
+- **WM-ECO-004 — Money / Instrument** (described-previous-version): Currency, monetary unit or transferable monetary instrument used to denominate and store value.
+- **WM-ECO-009 — Payment** (described-previous-version): A transfer that discharges or changes a monetary obligation, with payer, payee, amount, method and settlement state.
+- **WM-ORG-001 — Organization** (described-previous-version): Any organization: company, NGO, community, institution
+- **WM-ORG-004 — Position** (described-previous-version): Candidate governed context model for Position; boundary questions remain required.
+- **WM-ORG-002 — Organizational Unit** (described-previous-version): Internal structure of organizations
+- **WM-PER-001 — Person** (described-previous-version): Natural person as a civil identity and life-course subject
+- **WM-XCT-002 — Access Contract / Consent** (described-previous-version): Machine-readable permission to read
+- **WM-XCT-020 — Classification Binding** (candidate): Candidate governed context model for Classification Binding; boundary questions remain required.
+- **WM-XCT-003 — Projection / Disclosure Policy** (described-previous-version): The shape data leaves in: subset, summary, aggregate
+- **WM-XCT-011 — Identifier Scheme** (described-previous-version): Identifier schemes and namespaces
+- **WM-XCT-010 — Location Referencing / Address** (described-previous-version): Addresses, geocodes, points of interest
+- **WM-XCT-001 — Ownership / Stewardship** (described-previous-version): Who controls every meta-object; transfers, delegation, guardianship
+- **WM-XCT-012 — Provenance** (candidate): Candidate governed context model for Provenance; boundary questions remain required.
+- **WM-XCT-008 — Quantity / Unit** (candidate): Candidate governed context model for Quantity / Unit; boundary questions remain required.
+- **WM-XCT-013 — Registry Pattern** (described-previous-version): The generic register: entries, evidence, registrar, legal effect
+- **WM-XCT-009 — Time / Calendar** (described-previous-version): Calendars, time zones, holidays and observances
+- **WM-ACT-034 — Assessment / Evaluation** (candidate): Subject, criteria, evidence, score and conclusion
+- **WM-ACT-032 — Change Request** (candidate): Proposed controlled change and disposition
+- **WM-ACT-027 — Communication Interaction** (candidate): Conversation/contact lifecycle across channels
+- **WM-ACT-024 — Decision / Approval Activity** (candidate): Authority, inputs, choice and outcome
+- **WM-ACT-042 — Incident Response** (candidate): Detection through containment, recovery and lessons
+- **WM-ACT-031 — Milestone / Deliverable** (candidate): Planned achievement and accepted output
+- **WM-ACT-025 — Meeting / Session** (candidate): Participants, agenda, decisions and record
+- **WM-ACT-033 — Review / Inspection / Audit** (candidate): Evidence gathering, criteria, findings and decision
+- **WM-AI-002 — AI Agent** (candidate): Autonomous actor with tools, memory, policy and authority
+- **WM-AI-003 — AI Model Evaluation** (candidate): Dataset, metric, run, finding and approval lifecycle
+- **WM-AI-008 — AI Safety / Governance Assessment** (candidate): Risk, control, evidence and decision for an AI system
+- **WM-AI-005 — Prompt / Agent Configuration** (candidate): Versioned operational instruction and tool configuration
+- **WM-AI-004 — AI Inference / Agent Run** (candidate): Auditable execution with inputs, outputs, tools and cost
+- **WM-AI-001 — AI System** (candidate): Governed AI-enabled system beyond a model artifact
+- **WM-DAT-006 — Data Lineage** (candidate): Dataset/field derivation and processing provenance
+- **WM-DAT-004 — Data Schema / Data Contract** (candidate): Semantics, constraints and producer-consumer agreement
+- **WM-KNW-007 — Claim / Proposition** (candidate): Truth-apt assertion with scope, evidence and provenance
+- **WM-KNW-006 — Concept / Term** (candidate): Stable semantic concept independent of a label
+- **WM-KNW-010 — Decision / Rationale** (candidate): Choice, alternatives, criteria and reasoning
+- **WM-KNW-008 — Evidence / Citation** (candidate): Support/challenge relation and source locator
+- **WM-KNW-011 — Goal / Objective** (candidate): Desired outcome with measure and horizon
+- **WM-KNW-014 — Issue / Problem** (candidate): Recognized discrepancy requiring resolution
+- **WM-KNW-012 — Policy / Rule** (candidate): Executable or interpretable normative statement
+- **WM-KNW-015 — Risk / Opportunity** (candidate): Uncertain event/effect with likelihood and impact
+- **WM-REC-009 — Application / Request Record** (candidate): Request entering a case or service lifecycle
+- **WM-REC-010 — Decision / Approval Record** (candidate): Authoritative decision, rationale, approver and validity
+- **WM-REC-007 — Form / Submission** (candidate): Structured response package with validation lifecycle
+- **WM-SFT-014 — Defect / Bug** (candidate): Independently identified software defect record with affected scope evidence classification triage resolution and verified closure
+- **WM-SFT-009 — Deployment** (candidate): Release installed to environment with state/history
+- **WM-SFT-007 — Software Component / Package** (candidate): Versioned distributable dependency identity
+- **WM-SFT-008 — Build / Release** (candidate): Reproducible build provenance and release lifecycle
+- **WM-SFT-012 — SBOM / Supply-chain Manifest** (candidate): Signed/versioned component inventory and relationships
+- **WM-SFT-015 — Test Case / Test Result** (candidate): Immutable test-case revisions executions observations adjudicated results and sealed evidence with external requirement release defect and environment references
+- **WM-MAT-008 — Observation / Measurement Record** (candidate): Generic observation linking feature, procedure, value and unit
+- **WM-ECO-015 — Financial Account** (candidate): Account identity, parties, currency, state and rules
+- **WM-ECO-019 — Purchase Order** (candidate): Buyer commitment and fulfilment lifecycle
+- **WM-ECO-020 — Sales Order** (candidate): Seller-side order and fulfilment lifecycle
+- **WM-ECO-016 — Financial Transaction / Journal Entry** (candidate): Atomic posting/transfer with audit and balancing
+- **WM-ORG-010 — Legal Entity Registration** (candidate): Legal identity, jurisdiction, registers and lifecycle
+- **WM-PER-010 — Contact Point / Party Profile** (candidate): Reusable contact and communication preferences
+- **WM-POL-015 — Jurisdiction** (candidate): Authority scope over territory, persons or subject matter
+- **WM-XCT-036 — Alias / Same-as Mapping** (candidate): Federated identity equivalence with authority/confidence
+- **WM-XCT-024 — Contact Point** (candidate): Addressable channel with purpose and preference
+- **WM-XCT-037 — Dependency / Impact** (candidate): Typed dependency and downstream impact
+- **WM-XCT-028 — Evidence / Rationale** (candidate): Traceable support for a claim or decision
+- **WM-XCT-033 — Geometry / Coordinate Reference** (candidate): Geometry and coordinate reference system
+- **WM-XCT-021 — Lifecycle / Status** (candidate): Common state machine and effective validity
+- **WM-XCT-031 — Localization / Language** (candidate): Locale, translation and terminology binding
+- **WM-XCT-032 — Currency / Monetary Value** (candidate): Amount, currency, valuation date and precision
+- **WM-XCT-029 — Obligation / Commitment** (candidate): Party, action, due date, condition and fulfilment
+- **WM-XCT-025 — Observable Result Fields** (candidate): Reusable observation value, unit, method and uncertainty
+- **WM-XCT-026 — Quality / Confidence** (candidate): Quality dimensions, score, method and confidence
+- **WM-XCT-023 — Party Role** (candidate): Actor role scoped to an object or activity
+- **WM-XCT-027 — Risk / Control** (candidate): Risk-control linkage and residual assessment
+- **WM-XCT-034 — Digital Signature / Proof** (candidate): Signature, signer, method and verification evidence
+- **WM-XCT-022 — Version / Change History** (candidate): Revision identity, predecessor and migration
+- **WM-ACT-021 — Service Case / Ticket** (candidate): Candidate governed context model for Service Case / Ticket; boundary questions remain required.
+- **WM-ACT-020 — Cyber Incident** (described-previous-version): Vulnerabilities, threats, incidents of N4/M8 systems
+- **WM-ACT-014 — Health Care Delivery** (described-previous-version): Providers, facilities, capacity, encounters (system side of B10)
+- **WM-ACT-023 — Public Health / Epidemiology** (described-previous-version): Population health, outbreaks, immunization
+- **WM-ACT-007 — Work Order** (described-previous-version): Upkeep of assets and infrastructure
+- **WM-DAT-002 — Official Statistics** (described-previous-version): Census, indicators, indices, statistical series
+- **WM-KNW-005 — Agent Skill / Instruction** (candidate): Candidate governed context model for Agent Skill / Instruction; boundary questions remain required.
+- **WM-SFT-004 — ML Model Artifact** (candidate): Candidate governed context model for ML Model Artifact; boundary questions remain required.
+- **WM-SFT-006 — Vulnerability Record** (described-previous-version): Vulnerabilities, threats, incidents of N4/M8 systems
+- **WM-BLT-001 — Building / Structure** (described-previous-version): Buildings and engineered structures
+- **WM-BLT-006 — Facility** (candidate): Candidate governed context model for Facility; boundary questions remain required.
+- **WM-FLW-004 — Goods Movement / Logistics** (described-previous-version): Physical movement of goods
+- **WM-LIV-001 — Taxon** (described-previous-version): Candidate governed context model for Taxon; boundary questions remain required.
+- **WM-OBJ-007 — Vehicle** (described-previous-version): Vehicles across modes (road, rail, water, air)
+- **WM-PLC-004 — Administrative Area** (described-previous-version): Cities, districts and urban morphology
+- **WM-PLC-002 — Land Parcel** (described-previous-version): Land units as registrable spatial objects
+- **WM-ECO-012 — Budget** (candidate): Candidate governed context model for Budget; boundary questions remain required.
+- **WM-ECO-008 — Invoice / Commercial Document** (described-previous-version): Documents as governed records
+- **WM-ECO-001 — Market / Exchange** (candidate): Candidate governed context model for Market / Exchange; boundary questions remain required.
+- **WM-ECO-002 — Price / Valuation** (described-previous-version): Price observations, appraisals, indices
+- **WM-ORG-005 — Employment** (described-previous-version): Relations between persons and organizations
+- **WM-ORG-006 — Membership** (described-previous-version): Relations between persons and organizations
+- **WM-ORG-003 — Team** (candidate): Candidate governed context model for Team; boundary questions remain required.
+- **WM-PER-003 — Non-human Agent** (candidate): Candidate governed context model for Non-human Agent; boundary questions remain required.
+- **WM-PER-008 — Education / Qualification** (described-previous-version): Learning paths education institutions and earned qualifications
+- **WM-PER-007 — Personal Health** (described-previous-version): Health status and care of a person
+- **WM-POL-009 — Court / Arbitration Case** (described-previous-version): Disputes deciding forums proceedings decisions and remedies
+- **WM-POL-001 — Legal Instrument / Norm** (candidate): Candidate governed context model for Legal Instrument / Norm; boundary questions remain required.
+- **WM-POL-004 — Permit / Authorization** (described-previous-version): Application-to-grant processes for regulated activity
+- **WM-POL-011 — Tax Obligation / Assessment** (candidate): Candidate governed context model for Tax Obligation / Assessment; boundary questions remain required.
+- **WM-XCT-017 — Attestation / Credential** (described-previous-version): Issued claims with validity
+- **WM-XCT-016 — Identity Register** (described-previous-version): Anchoring identity of persons, orgs, things
+- **WM-XCT-006 — Verification / ZK Attestation** (described-previous-version): Prove predicates without disclosing data
+- **WM-ACT-026 — Appointment / Reservation Event** (candidate): Scheduled allocation between parties/resources
+- **WM-ACT-028 — Campaign** (candidate): Coordinated activities toward audience/outcome
+- **WM-ACT-053 — Data Processing Job / Pipeline Run** (candidate): Auditable execution of a data pipeline or transformation
+- **WM-ACT-038 — Learning Activity / Course Delivery** (candidate): Instruction, participation and assessment lifecycle
+- **WM-ACT-046 — Clinical Observation / Diagnosis** (candidate): Clinical assertion backed by observations and practitioner
+- **WM-ACT-047 — Medical Procedure** (candidate): Procedure order, performance, outcome and complications
+- **WM-ACT-048 — Medication Order / Administration** (candidate): Prescription, dispense and administration lifecycle
+- **WM-ACT-049 — Care Plan / Episode** (candidate): Goals, problems, interventions and responsible team
+- **WM-ACT-039 — Recruitment / Hiring Process** (candidate): Candidate, stages, decisions and employment outcome
+- **WM-ACT-040 — Onboarding / Offboarding** (candidate): Access, assets, training and obligations lifecycle
+- **WM-ACT-030 — Initiative** (candidate): Change intent before or across formal projects
+- **WM-ACT-045 — Insurance Claim Handling** (candidate): Investigation, coverage decision and settlement process
+- **WM-ACT-029 — Program / Portfolio** (candidate): Governed collection of projects and benefits
+- **WM-ACT-044 — Content Publication** (candidate): Editorial approval, release, distribution and correction
+- **WM-ACT-051 — Regulatory Compliance Process** (candidate): Obligations, controls, evidence, findings and remediation
+- **WM-ACT-036 — Research Study** (candidate): Protocol, cohort/material, observations and findings
+- **WM-ACT-054 — Research Subject / Participant** (candidate): Consent, enrolment, assignment, participation and de-identification lifecycle
+- **WM-ACT-043 — Business Continuity / Recovery** (candidate): Critical service, scenario, plan, exercise and recovery
+- **WM-ACT-052 — Tax Filing / Assessment Process** (candidate): Return, validation, assessment, payment and dispute
+- **WM-ACT-035 — Test Execution** (candidate): Repeatable procedure run producing evidence
+- **WM-AI-009 — Evaluation Dataset / Benchmark** (candidate): AI-specific governed extension of Dataset
+- **WM-AI-010 — AI Incident Report** (candidate): Regulatory AI incident classification, reporting deadline and remediation lifecycle
+- **WM-AI-007 — AI Model Registry Entry** (candidate): Deployment status, approvals, lineage and discoverability
+- **WM-AI-006 — Model Training / Fine-tuning Run** (candidate): Data, code, parameters, compute and resulting artifact
+- **WM-DAT-008 — Data Product / Product Catalog Record** (candidate): Governed data product versions and product-scoped catalog records distinct from dataset bytes and external offering or agreement lifecycles
+- **WM-DAT-005 — Data Pipeline** (candidate): Executable transformation graph and operations lifecycle
+- **WM-DAT-007 — Data Quality Evaluation** (candidate): Purpose-qualified versioned evaluation of data quality and its verdict with external rule metric observation issue and remediation authorities
+- **WM-DAT-009 — Survey / Questionnaire** (candidate): Questions, instrument versions and response structure
+- **WM-DAT-010 — Time Series / Observation Collection** (candidate): Ordered observations with sampling semantics
+- **WM-KNW-016 — Assumption** (candidate): Accepted premise with owner and validation state
+- **WM-KNW-013 — Constraint / Requirement Rule** (candidate): Formal constraint independent of prose artifact
+- **WM-KNW-009 — Hypothesis** (candidate): Testable provisional claim and evaluation lifecycle
+- **WM-KNW-018 — Taxonomy / Classification Scheme** (candidate): Governed concepts, hierarchy and mappings
+- **WM-MED-002 — Media Asset / Rendition** (candidate): Technical asset and renditions distinct from creative work
+- **WM-MED-008 — Content Provenance Credential** (candidate): Signed media edit/origin chain with issuer and verification lifecycle
+- **WM-MED-003 — Publication / Edition** (candidate): Publication lifecycle and edition identity
+- **WM-REC-014 — Configuration Record** (candidate): Versioned declared configuration distinct from runtime state
+- **WM-REC-008 — Certificate / Credential Record** (candidate): Issued documentary representation of an attestation
+- **WM-REC-011 — Evidence / Supporting Record** (candidate): Evidence role, provenance and admissibility context
+- **WM-REC-013 — Operational Log / Trace** (candidate): Append-oriented technical or business event evidence
+- **WM-REC-012 — Minutes / Transcript** (candidate): Durable meeting or interaction records with independent identity approval correction passage controls and retention
+- **WM-SFT-011 — Software Configuration** (candidate): Desired settings, references and version scope
+- **WM-SFT-013 — Software Change / Pull Request** (candidate): Proposed diff, review and merge lifecycle
+- **WM-SFT-018 — Network / Endpoint** (candidate): Stable logical network endpoint identity effective-dated address bindings connectivity and bounded exposure assertions
+- **WM-SFT-010 — Runtime / Compute Environment** (candidate): Runtime environments infrastructure resources dependent runtime-occupant records temporal topology and configuration-control designations
+- **WM-SFT-016 — Service Level Objective / Reliability Commitment** (candidate): Immutable SLI and SLO policies evaluations error-budget rules and observability bindings
+- **WM-SFT-017 — Telemetry / Operational Signal** (candidate): Metrics, logs and traces tied to runtime
+- **WM-BLT-008 — Site / Campus** (candidate): Managed physical container for facilities and infrastructure
+- **WM-FLW-011 — Shipment / Consignment** (candidate): Commercial/logistics object with custody and delivery lifecycle
+- **WM-FLW-012 — Inventory Movement** (candidate): Transfer changes stock position and custody
+- **WM-FLW-013 — Supply-chain Trace / Chain of Custody** (candidate): Cross-organizational event/provenance pattern
+- **WM-FLW-009 — Journey / Trip** (candidate): Planned and actual movement of a person or vehicle
+- **WM-FLW-010 — Route / Itinerary** (candidate): Ordered path, stops and constraints
+- **WM-FLW-015 — Resource Consumption** (candidate): Consumption by actor, asset, activity and interval
+- **WM-LIV-021 — Disease / Biological Condition** (candidate): Condition is not the same object as a care encounter
+- **WM-LIV-012 — Genomic Sequence / Variant** (candidate): Independent identity, provenance and clinical/research lifecycle
+- **WM-LIV-023 — Clinical / Biological Specimen** (candidate): Patient/subject-linked custody and diagnostic lifecycle distinct from generic lab sample
+- **WM-OBJ-019 — Component Type / Engineering BOM** (candidate): Reusable type-level composition distinct from as-built assembly
+- **WM-OBJ-018 — Engineering Design / Product Definition** (candidate): Versioned design, requirements and approvals
+- **WM-OBJ-020 — Inventory Stock Position** (candidate): Quantity by owner, location, status and time
+- **WM-OBJ-017 — Product Configuration / Variant** (candidate): Sellable/configurable variant between type and instance
+- **WM-ECO-028 — Advertisement / Promotion** (candidate): Paid/promotional content, placement and disclosure
+- **WM-ECO-035 — Audit / Assurance Engagement** (candidate): Independent scope, evidence, opinion and remediation
+- **WM-ECO-026 — Sales Lead / Opportunity** (candidate): Prospect, stage, probability and outcome lifecycle
+- **WM-ECO-037 — Debt Instrument** (candidate): Debt identity, issuer, terms, cashflows, rating and lifecycle
+- **WM-ECO-034 — ESG / Sustainability Disclosure** (candidate): Organization-level disclosure distinct from product claim
+- **WM-ECO-024 — Fulfilment / Delivery** (candidate): Obligation fulfilment linked to goods/services
+- **WM-ECO-030 — Grant / Donation** (candidate): Award, restrictions, disbursement and reporting
+- **WM-ECO-036 — Insurance Claim** (candidate): Loss notification, assessment, coverage and settlement
+- **WM-ECO-027 — Marketing Campaign** (candidate): Audience, objective, channel, content and measurement
+- **WM-ECO-021 — Offer / Quote** (candidate): Commercial terms before order/contract
+- **WM-ECO-031 — Payroll / Compensation** (candidate): Earnings, deductions and pay-period lifecycle
+- **WM-ECO-017 — Financial Position / Balance** (candidate): Time-bound asset, liability, equity or exposure position
+- **WM-ECO-033 — Regulatory Filing / Disclosure** (candidate): Submission to authority with validation and amendment
+- **WM-ECO-025 — Return / Refund** (candidate): Reverse fulfilment and financial adjustment
+- **WM-ECO-023 — Reservation / Booking** (candidate): Capacity hold and confirmation lifecycle
+- **WM-ECO-038 — Equity / Security Holding** (candidate): Ownership position and corporate-action lifecycle distinct from debt
+- **WM-ECO-018 — Financial Statement** (candidate): Governed report over accounts and reporting period
+- **WM-ECO-022 — Subscription** (candidate): Recurring entitlement, billing and renewal lifecycle
+- **WM-ECO-032 — Tax Return / Filing** (candidate): Taxpayer declaration distinct from authority assessment
+- **WM-ORG-016 — Work Assignment** (candidate): Person/agent assigned to role, scope and time
+- **WM-ORG-014 — Customer / Account Relationship** (candidate): Lifecycle mastered by CRM, not party identity
+- **WM-ORG-011 — Business Establishment / Branch** (candidate): Operational location distinct from legal entity and unit
+- **WM-ORG-018 — Governance Body / Committee** (candidate): Mandate, membership and decision authority
+- **WM-ORG-019 — Organization Policy** (candidate): Approved normative rule with scope and lifecycle
+- **WM-ORG-012 — Inter-organizational Relationship** (candidate): Partnership, control, affiliation and supply relationships
+- **WM-ORG-013 — Stakeholder / Interest** (candidate): Interest, influence and impact relationship
+- **WM-ORG-015 — Supplier / Partner Relationship** (candidate): Qualification, risk and commercial status
+- **WM-PER-013 — Professional License / Credential** (candidate): Governed grant, scope, issuer and validity
+- **WM-PER-011 — Interpersonal Relationship** (candidate): Independent relationship roles, validity and privacy
+- **WM-POL-017 — Administrative Procedure / Case** (candidate): Public-law case distinct from court litigation
+- **WM-POL-016 — Public Authority / Institution** (candidate): Government institution and legal competence
+- **WM-POL-026 — Customs Declaration / Clearance** (candidate): Goods declaration, assessment and release lifecycle
+- **WM-POL-020 — Evidence Item / Exhibit** (candidate): Chain of custody, admissibility and provenance
+- **WM-POL-019 — Legal Filing / Pleading** (candidate): Procedural record with party, deadline and service
+- **WM-POL-021 — Judgment / Legal Decision** (candidate): Authoritative outcome, reasoning and remedies
+- **WM-POL-029 — Migration / Residency Status** (candidate): Governed legal status distinct from an immigration case
+- **WM-POL-027 — Property Right / Tenure** (candidate): Legal interest distinct from physical asset
+- **WM-POL-018 — Public Service / Government Service** (candidate): Entitlement, application and delivery lifecycle
+- **WM-XCT-030 — Notification / Subscription** (candidate): Event-interest and delivery preference
+- **WM-XCT-038 — Policy Evaluation** (candidate): Policy input, decision, obligations and explanation
+- **WM-XCT-035 — Retention / Disposition** (candidate): Retention trigger, hold, disposition and evidence
+- **WM-XCT-004 — Access Audit** (described-previous-version): Append-only log of every read and grant
+- **WM-XCT-007 — Access Breach / Enforcement** (described-previous-version): Access violations breaches sanctions and remedies
+- **WM-XCT-015 — Event Register** (described-previous-version): Semantic-Timeline event stores per domain
+- **WM-XCT-018 — Registry Federation** (described-previous-version): Reference-not-copy rules between registers
+- **WM-XCT-014 — Ledger / Account** (described-previous-version): Append-only accounts of quantity movements
+- **WM-XCT-005 — Privacy Aggregation Floor** (described-previous-version): Aggregated statistics at cohort grain with k-anonymity floors
+- **WM-XCT-019 — Cyber Integrity** (described-previous-version): Vulnerabilities, threats, incidents of N4/M8 systems
+- **WM-ACT-002 — Act** (described-previous-version): Atomic actions: who did what, to what, when, where
+- **WM-ACT-011 — Agriculture Operation** (described-previous-version): Farms, crops, livestock, seasons, harvest
+- **WM-ACT-001 — Function / Capability** (described-previous-version): What an agent is able to do
+- **WM-ACT-018 — Encounter** (described-previous-version): Meetings, transactions, encounters between agents
+- **WM-ACT-016 — Observed Phenomenon** (described-previous-version): Recurring natural or social patterns
+- **WM-ACT-022 — Experiment Run** (candidate): Governed experiment execution with frozen manifest attempt lineage and append-only deviations
+- **WM-ACT-012 — Extraction Operation** (described-previous-version): Mining, drilling, logging, fishing as operations
+- **WM-ACT-019 — Incident / Emergency** (described-previous-version): Authority-declared operational or emergency incident with revisioned severity impact containment restoration resolution and review
+- **WM-ACT-013 — Maintenance** (described-previous-version): Upkeep of assets and infrastructure
+- **WM-ACT-009 — Method / Procedure** (described-previous-version): Codified ways of doing things
+- **WM-ACT-003 — Process / Workflow** (described-previous-version): Repeatable multi-step activities
+- **WM-ACT-010 — Production Run** (described-previous-version): Transforming materials into goods
+- **WM-ACT-017 — Situation** (described-previous-version): States of affairs holding over time
+- **WM-ACT-004 — Service Definition** (described-previous-version): Provider-accountable service outcome definition with external offering request fulfilment service-level and observation lifecycles
+- **WM-COM-001 — Communications Service** (described-previous-version): Telecom/internet as service: spectrum, addressing, traffic
+- **WM-DAT-003 — Map Product** (candidate): Candidate governed context model for Map Product; boundary questions remain required.
+- **WM-KNW-004 — Knowledge Article** (candidate): Candidate governed context model for Knowledge Article; boundary questions remain required.
+- **WM-KNW-003 — Intellectual Property Right** (described-previous-version): Patents, trademarks, copyright, IP licensing
+- **WM-KNW-002 — Language / Terminology** (described-previous-version): Languages, scripts, translation, glossaries
+- **WM-KNW-001 — Model / Ontology** (described-previous-version): Models and ontologies as first-class objects
+- **WM-MED-001 — Creative Work** (described-previous-version): An intellectual or artistic work distinct from its files, renditions and publication events.
+- **WM-REC-004 — Scholarly Publication** (described-previous-version): A scholarly work with authorship, venue, review, citation and publication lifecycle.
+- **WM-REC-006 — Requirement** (candidate): Stable requirement identity immutable revisions acceptance criteria outbound revision-pinned trace links and derived revision-set views
+- **WM-REC-002 — Report / Statement** (described-previous-version): A governed factual or analytical statement issued for an audience and reporting period.
+- **WM-REC-005 — Standard / Spec Artifact** (described-previous-version): Models and ontologies as first-class objects
+- **WM-SFT-003 — API / Interface Contract** (candidate): Versioned logical interface contract with immutable revisions consumer pins compatibility evidence and endpoint bindings
+- **WM-SFT-005 — Source Repository** (candidate): Candidate governed context model for Source Repository; boundary questions remain required.
+- **WM-SFT-002 — Software System / Business Application** (described-previous-version): Operator-governed logical software systems business applications and effective-dated organizational usage
+- **WM-VRT-005 — Online Account** (candidate): An account within a service or virtual environment; distinct from the person's federated digital identity.
+- **WM-VRT-006 — Channel / Community** (candidate): Candidate governed context model for Channel / Community; boundary questions remain required.
+- **WM-VRT-004 — Web Resource** (candidate): Candidate governed context model for Web Resource; boundary questions remain required.
+- **WM-VRT-002 — Virtual / Game World** (candidate): Candidate governed context model for Virtual / Game World; boundary questions remain required.
+- **WM-ECO-011 — Economic Asset view** (described-previous-version): Person-side view of owned things
+- **WM-ECO-014 — Sustainability Claim / PCF** (described-previous-version): Emissions and environmental releases
+- **WM-ECO-003 — Insurance** (described-previous-version): Policies, pools, claims as value routing
+- **WM-ECO-005 — Credit / Security** (described-previous-version): Loans, bonds, equity, collateral, holdings
+- **WM-ECO-007 — Procurement** (described-previous-version): Tenders, bids, awards (incl. public procurement)
+- **WM-ECO-010 — Clearing / Settlement** (described-previous-version): Append-only accounts of quantity movements
+- **WM-ECO-013 — Crypto / Token** (candidate): Candidate governed context model for Crypto / Token; boundary questions remain required.
+- **WM-ORG-007 — Mandate / Charter** (described-previous-version): Constitutive rules of an organization
+- **WM-ORG-009 — Public Office** (described-previous-version): Offices, officeholders, appointments, accountability
+- **WM-ORG-008 — Vacancy / Matching** (described-previous-version): Vacancies, applications, matching, placement
+- **WM-PER-006 — Life Event / Civil Status** (described-previous-version): Birth, marriage, divorce, death
+- **WM-PER-002 — Digital Identity / Account** (described-previous-version): Anchoring identity of persons, orgs, things
+- **WM-PER-005 — Population Group** (described-previous-version): Groups cohorts and communities as addressable collectives
+- **WM-PER-004 — Household / Family** (described-previous-version): Households and family relations as social and administrative units
+- **WM-PER-009 — Skill / Competency Definition** (described-previous-version): Scheme-scoped skill and competency definitions composition and lossy mappings
+- **WM-POL-014 — Rights / Entitlements** (described-previous-version): Who controls every meta-object; transfers, delegation, guardianship
+- **WM-POL-006 — Border / Customs / Migration** (described-previous-version): Border crossings, customs, residency and migration status
+- **WM-POL-007 — Defense Force** (described-previous-version): Forces, assets, mandates (breadth placeholder; detail = G3)
+- **WM-POL-003 — Election** (described-previous-version): Electing officeholders: campaigns, ballots, results
+- **WM-POL-010 — Dispute Forum** (described-previous-version): Disputes deciding forums proceedings decisions and remedies
+- **WM-POL-002 — Lawmaking Process** (described-previous-version): Bills, readings, amendments, votes, enactment
+- **WM-POL-008 — Offense / Investigation** (described-previous-version): Offenses, investigations, cases, penalties, corrections
+- **WM-POL-012 — Public Benefit / Program** (described-previous-version): Delivery of floors, benefits, social care
+- **WM-POL-013 — Registry Mandate** (described-previous-version): Which registers the state must keep and how
+- **WM-POL-005 — Treaty** (described-previous-version): Foreign affairs, treaties, memberships (MUFP between polities)
+- **WM-ACT-041 — Public Consultation** (candidate): Proposal, participants, submissions and response
+- **WM-ACT-050 — Environmental Impact Assessment** (candidate): Project impacts, alternatives, mitigation and decision
+- **WM-ACT-037 — Survey Administration** (candidate): Sample, collection wave, responses and quality
+- **WM-DAT-011 — Knowledge Graph** (candidate): Graph dataset with ontology, assertions and provenance
+- **WM-DAT-012 — Synthetic Data Product** (candidate): Generated dataset with privacy and fidelity evidence
+- **WM-KNW-019 — Mathematical / Computational Model** (candidate): Equations, parameters, assumptions and validation
+- **WM-MED-006 — 3D Asset / Scene** (candidate): Geometry, materials, scene graph and rights
+- **WM-MED-004 — Audio / Video Recording** (candidate): Time-based media identity and tracks
+- **WM-MED-005 — Image / Graphic** (candidate): Still visual asset and technical/provenance metadata
+- **WM-MED-007 — Broadcast / Stream** (candidate): Scheduled/live distribution and measurement lifecycle
+- **WM-REC-015 — Archival Fonds / Collection** (candidate): Archival aggregation with accession, arrangement, description and access lifecycle
+- **WM-VRT-007 — 3D Scene / Environment** (candidate): Spatial scene and interactive object graph
+- **WM-VRT-008 — Virtual Persona / Avatar** (candidate): Representation and control distinct from natural person
+- **WM-VRT-010 — Distributed Ledger Network** (candidate): Network/governance context for tokens and smart contracts
+- **WM-VRT-009 — Virtual Economy** (candidate): Rules, assets and transactions inside a virtual world
+- **WM-VRT-011 — Smart Contract** (candidate): Executable agreement deployed on a ledger
+- **WM-VRT-013 — Digital Thread** (candidate): Lifecycle federation across design, item, operations and twin
+- **WM-BLT-005 — Civil Works** (described-previous-version): Buildings and engineered structures
+- **WM-BLT-003 — Infrastructure Network** (described-previous-version): Roads, rail, pipes, grids as physical networks
+- **WM-BLT-009 — Linear Infrastructure Asset** (candidate): Segmented roads, rails, pipelines and cables
+- **WM-BLT-010 — Utility Network Topology** (candidate): Nodes, edges, connectivity and operational state
+- **WM-BLT-002 — Premises / Spatial Unit** (described-previous-version): Persistent bounded interior-space identity temporal containment geometry area evidence use designations and split or merge lineage
+- **WM-BLT-004 — Utility Service Point** (described-previous-version): Connections for water, heat, power, sewage
+- **WM-BLT-007 — Construction Work** (described-previous-version): Construction projects and works in progress
+- **WM-EAR-011 — Land Cover / Land Use** (candidate): Observed cover versus governed use classification
+- **WM-EAR-012 — Environmental Monitoring Station** (candidate): Stable observing facility, instruments and programs
+- **WM-FLW-006 — Emission** (described-previous-version): Emissions and environmental releases
+- **WM-FLW-001 — Energy** (described-previous-version): Energy carriers, generation, consumption, balance
+- **WM-FLW-003 — Food Supply Chain** (described-previous-version): Supply chains of water and food
+- **WM-FLW-002 — Water Supply** (described-previous-version): Supply chains of water and food
+- **WM-FLW-008 — Mass-balance / Material Flow** (candidate): Candidate governed context model for Mass-balance / Material Flow; boundary questions remain required.
+- **WM-FLW-007 — Passenger Mobility** (described-previous-version): Routes, schedules, trips, fares, public transport
+- **WM-FLW-014 — Network Flow / Telemetry Stream** (candidate): Time-varying flow through logical or physical network
+- **WM-FLW-005 — Waste / Circular** (described-previous-version): Waste streams, recycling, circular loops
+- **WM-LIV-018 — Crop Variety / Cultivar** (candidate): Governed variety identity and agricultural lifecycle
+- **WM-LIV-019 — Livestock Breed** (candidate): Governed breed identity and pedigree conventions
+- **WM-LIV-017 — Pedigree / Biological Lineage** (candidate): Cross-species lineage and inheritance pattern
+- **WM-LIV-011 — Genome / Genomic Assembly** (candidate): Versioned genome-level biological reference
+- **WM-LIV-013 — Gene / Genomic Feature** (candidate): Reusable feature reference across organisms and sequences
+- **WM-LIV-014 — Protein / Biomolecule** (candidate): Independent scientific identifiers and master repositories
+- **WM-LIV-015 — Phenotype / Trait** (candidate): Observed trait links organisms, health and breeding
+- **WM-LIV-024 — Biobank / Sample Repository** (candidate): Institutional collection with consent, access and retention governance
+- **WM-MAT-001 — Chemical Substance** (described-previous-version): Materials and chemical substances
+- **WM-MAT-003 — Mixture / Formulation** (candidate): Candidate governed context model for Mixture / Formulation; boundary questions remain required.
+- **WM-MAT-002 — Engineered Material** (described-previous-version): Materials and chemical substances
+- **WM-MAT-006 — Hazardous-material profile** (candidate): Candidate governed context model for Hazardous-material profile; boundary questions remain required.
+- **WM-MAT-007 — Laboratory Test / Analysis** (candidate): Method, specimen, run and result lifecycle
+- **WM-MAT-004 — Material Batch / Lot** (candidate): Candidate governed context model for Material Batch / Lot; boundary questions remain required.
+- **WM-MAT-005 — Lab Sample / Specimen** (candidate): Candidate governed context model for Lab Sample / Specimen; boundary questions remain required.
+- **WM-OBJ-012 — Assembly Instance / As-built BOM** (candidate): Candidate governed context model for Assembly Instance / As-built BOM; boundary questions remain required.
+- **WM-OBJ-022 — Asset Lifecycle Record** (candidate): Lifecycle projection over item, events, work and ownership
+- **WM-OBJ-013 — Controlled Item** (candidate): Candidate governed context model for Controlled Item; boundary questions remain required.
+- **WM-OBJ-015 — Consumable / Supply** (candidate): Candidate governed context model for Consumable / Supply; boundary questions remain required.
+- **WM-OBJ-008 — Device / Sensor / Compute HW** (described-previous-version): Connected devices and computing equipment
+- **WM-OBJ-023 — Meter / Measuring Instrument** (candidate): Calibration, channel and reading semantics
+- **WM-OBJ-005 — Medicinal Product** (described-previous-version): Medicinal products and controlled substances
+- **WM-OBJ-006 — Equipment / Machinery** (described-previous-version): Industrial and household machinery
+- **WM-OBJ-004 — Food Product** (described-previous-version): Nutrition goods and their safety
+- **WM-OBJ-014 — Furniture / Fixture** (candidate): Candidate governed context model for Furniture / Fixture; boundary questions remain required.
+- **WM-OBJ-016 — Cultural Artifact** (described-previous-version): Artifacts of cultural and historical value
+- **WM-OBJ-009 — Packaging / Returnable Asset** (candidate): Candidate governed context model for Packaging / Returnable Asset; boundary questions remain required.
+- **WM-OBJ-021 — Handling Unit / Logistics Container** (candidate): Nested logistics identity and custody lifecycle
+- **WM-OBJ-011 — Spare Part** (candidate): Candidate governed context model for Spare Part; boundary questions remain required.
+- **WM-OBJ-010 — Textile / Apparel / PPE** (candidate): Candidate governed context model for Textile / Apparel / PPE; boundary questions remain required.
+- **WM-OBJ-003 — Tradable Offer / Commodity view** (described-previous-version): Items in their market aspect
+- **WM-PLC-008 — Airspace** (candidate): Candidate governed context model for Airspace; boundary questions remain required.
+- **WM-PLC-010 — Gazetteer Place** (candidate): Candidate governed context model for Gazetteer Place; boundary questions remain required.
+- **WM-PLC-009 — Indoor Space** (candidate): Candidate governed context model for Indoor Space; boundary questions remain required.
+- **WM-PLC-007 — Maritime Zone** (candidate): Candidate governed context model for Maritime Zone; boundary questions remain required.
+- **WM-PLC-006 — Point of Interest** (described-previous-version): Addresses, geocodes, points of interest
+- **WM-PLC-001 — Terrain / Landform** (described-previous-version): Physical relief and landforms of the territory
+- **WM-PLC-005 — Settlement / Urban Form** (described-previous-version): Cities, districts and urban morphology
+- **WM-PLC-003 — Water Body** (described-previous-version): Rivers, lakes, seas, aquifers and their regimes
+- **WM-ECO-029 — Loyalty / Reward** (candidate): Program membership, points and benefit lifecycle
+- **WM-ORG-017 — Performance Objective / Review** (candidate): Objective, evidence, assessment and outcome lifecycle
+- **WM-PER-014 — Preference / Personal Profile** (candidate): User-controlled preference context
+- **WM-PER-015 — Reputation / Trust Assessment** (candidate): Evidence-based assessment with issuer and appeal lifecycle
+- **WM-POL-028 — Border Crossing Event** (candidate): Observed crossing with persons, goods, vehicle, checks and outcome
+- **WM-POL-024 — Detention / Custody** (candidate): High-sensitivity custody lifecycle and safeguards
+- **WM-POL-023 — Enforcement Action** (candidate): Execution by competent authority
+- **WM-POL-025 — Immigration / Visa Case** (candidate): Specialized cross-border administrative lifecycle
+- **WM-POL-022 — Sanction / Sentence** (candidate): Imposed consequence with execution lifecycle
+- **WM-VRT-003 — Simulation** (candidate): Candidate governed context model for Simulation; boundary questions remain required.
+- **WM-VRT-001 — Digital Twin** (candidate): Candidate governed context model for Digital Twin; boundary questions remain required.
+- **WM-EAR-007 — Air Quality** (candidate): Candidate governed context model for Air Quality; boundary questions remain required.
+- **WM-EAR-008 — Biodiversity Occurrence** (candidate): Candidate governed context model for Biodiversity Occurrence; boundary questions remain required.
+- **WM-EAR-002 — Climate** (described-previous-version): Weather observations and climate state
+- **WM-EAR-006 — Cryosphere** (candidate): Candidate governed context model for Cryosphere; boundary questions remain required.
+- **WM-EAR-004 — Geology / Mineral Resource** (described-previous-version): Geology and deposits of natural resources
+- **WM-EAR-005 — Natural Hazard** (described-previous-version): Earthquakes, floods, droughts and hazard exposure
+- **WM-EAR-009 — EO Product** (candidate): Candidate governed context model for EO Product; boundary questions remain required.
+- **WM-EAR-003 — Soil** (described-previous-version): Soil quality and agricultural capability
+- **WM-EAR-001 — Weather** (described-previous-version): Weather observations and climate state
+- **WM-LIV-009 — Cultivated Organism** (described-previous-version): Farms, crops, livestock, seasons, harvest
+- **WM-LIV-006 — Ecosystem / Biome** (described-previous-version): Ecosystems as physical systems (D4 keeps the value view)
+- **WM-LIV-008 — Genetic Resource** (candidate): Candidate governed context model for Genetic Resource; boundary questions remain required.
+- **WM-LIV-010 — Habitat** (candidate): Candidate governed context model for Habitat; boundary questions remain required.
+- **WM-LIV-007 — Microorganism / Pathogen** (candidate): Candidate governed context model for Microorganism / Pathogen; boundary questions remain required.
+- **WM-LIV-002 — Organism Individual** (candidate): Candidate governed context model for Organism Individual; boundary questions remain required.
+- **WM-LIV-003 — Population** (described-previous-version): Candidate governed context model for Population; boundary questions remain required.
+- **WM-LIV-004 — Vegetation Cover** (described-previous-version): Plant life and vegetation cover
+- **WM-LIV-005 — Wildlife** (described-previous-version): Animal life and populations
+- **WM-SPC-002 — Celestial Body** (candidate): Candidate governed context model for Celestial Body; boundary questions remain required.
+- **WM-SPC-001 — Space Object / Orbit** (described-previous-version): Satellites, orbits, debris, space weather
+- **WM-CIV-004 — Public Discourse** (described-previous-version): Opinion, polls, discourse, information campaigns
+- **WM-CIV-005 — Social Norm** (described-previous-version): Informal rules, traditions, etiquette (non-law rules)
+- **WM-CIV-007 — News Item** (candidate): Candidate governed context model for News Item; boundary questions remain required.
+- **WM-CIV-002 — Religion Institution** (described-previous-version): Confessions, congregations, practices
+- **WM-CIV-006 — Science System** (candidate): Candidate governed context model for Science System; boundary questions remain required.
+- **WM-CIV-001 — Sport** (described-previous-version): Sports, leagues, competitions, recreation
+- **WM-CIV-003 — Tourism** (described-previous-version): Destinations, stays, hospitality services
+- **WM-EAR-010 — Ocean / Marine State** (candidate): Oceanographic state and observation lifecycle
+- **WM-LIV-022 — Conservation Status Assessment** (candidate): Versioned assessment with authority and evidence
+- **WM-LIV-020 — Microbiome / Biological Community** (candidate): Community composition has its own sampling lifecycle
+- **WM-LIV-016 — Biological Pathway / Process** (candidate): Reusable molecular and cellular process context
+- **WM-SPC-004 — Satellite Mission / Programme** (candidate): Programme container for spacecraft, payloads, observations and operations
+- **WM-SPC-003 — Astronomical Observation** (candidate): Observation products and provenance distinct from bodies
+- **WM-VRT-012 — Simulation Scenario** (candidate): Inputs, actors, environment, objectives and expected outcomes
+- **WM-OBJ-024 — Robot / Autonomous Machine** (candidate): Physical autonomous equipment; robotics penalty applies
+- **WM-XCT-039 — Managed IT Service Graph** (candidate): Tenant-isolated managed IT service graph with explicit per-fact mastership, provider responsibility and authorized projections.
+- **WM-XCT-040 — Model Composition Resolution** (published): Exact dependency closure, independent installation authority, verified assets and bounded new-Dimension bootstrap. Shared contract, not a new mandatory kernel.

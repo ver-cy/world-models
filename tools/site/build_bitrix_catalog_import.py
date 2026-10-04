@@ -118,10 +118,12 @@ def first_legacy_card(row: dict[str, str], by_alias: dict[str, list[dict]]) -> d
 
 def world_record(row: dict[str, str], legacy_card: dict | None, publication: dict | None) -> dict:
     has_previous_spec = row.get("status") == "described-previous-version" and legacy_card is not None
-    code = f"{row['model_id'].lower()}-{slugify(row['name'])}"
     has_publication = publication is not None and publication.get("spec_available") is True
-    if has_publication and publication.get("slug") != code:
-        raise SystemExit(f"publication slug mismatch for {row['model_id']}: {publication.get('slug')} != {code}")
+    # Published slugs are durable public identifiers. Registry display names may
+    # evolve, but a rename must not move an existing model page or make a full
+    # catalogue rebuild fail. New, unpublished rows still derive a deterministic
+    # candidate slug from the current registry name.
+    code = publication["slug"] if has_publication else f"{row['model_id'].lower()}-{slugify(row['name'])}"
     page_url = f"/models/{code}/" if has_publication else (legacy_card["url"] if has_previous_spec else f"/models/{code}/")
     version = publication.get("version", "") if has_publication else (legacy_card.get("version", "") if has_previous_spec else "")
     source_url = publication.get("source_url", "") if has_publication else ((legacy_card or {}).get("sourceUrl") or row.get("source_url", ""))
