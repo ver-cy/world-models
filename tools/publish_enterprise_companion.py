@@ -99,6 +99,20 @@ def main():
     shutil.copytree(parent,a.site_root/'models'/slug,dirs_exist_ok=True)
     cards=read(a.site_root/'models/catalog-index.json');cards=[x for x in cards if x['id']!=mid]
     cards.append({'id':mid,'name':meta['name'],'version':version,'family':entry['family'],'category':entry['category'],'industry':entry['industry'],'domain':entry['domain'],'tags':entry['tags'],'url':relative,'status':'published','sourceUrl':entry['source_url']});dump(a.site_root/'models/catalog-index.json',cards)
-    print(json.dumps({'publication':manifest,'statistics':st}));return 0
+    print(json.dumps({'publication':manifest,'statistics':st}));refresh_cards(a.site_root);return 0
+
+
+def refresh_cards(site_root) -> None:
+    """Rebuild the catalogue card store so every published model has its card.
+
+    Owner decision 2026-10-04: card pages render from ver.cy/models/cards/,
+    built by ver.cy/tools/build_cards.py from the sources this step writes.
+    """
+    import os, subprocess, sys
+    from pathlib import Path as _Path
+    builder = _Path(site_root) / "tools" / "build_cards.py"
+    if builder.is_file():
+        subprocess.run([sys.executable, str(builder)], check=True, env={**os.environ, "PYTHONUTF8": "1"})
+
 
 if __name__=='__main__':raise SystemExit(main())

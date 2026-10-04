@@ -48,4 +48,20 @@ def main():
     text='''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WM-XCT-040: research and verification</title><link rel="canonical" href="https://ver.cy/enterprise/research/wm-xct-040/"><meta name="description" content="Vercy Model Composition Resolution: independent Claude and Grok reviews, reconciled findings and reproducible verification."><style>body{max-width:960px;margin:40px auto;padding:24px;font:18px/1.6 system-ui;color:#203044}a{color:#125bb5}</style></head><body><main><a href="/enterprise/">Enterprise registry</a><h1>WM-XCT-040: research and verification</h1><p>Codex synthesized the model, verified primary sources and ran the tests. Grok conducted independent research and file audits through the browser. Claude reviewed files through the CLI. The unsuccessful Claude research attempt remains recorded separately and is not counted as completed research.</p><p>Reviewer roles, audit boundaries, findings and remaining limitations are recorded in adjudication.json, provider-evidence.json and audit-remediation.json. Reviewer opinions do not grant operational authority or establish standards conformance.</p><p>The technical reviews concern implementation 0.1.0. Release 0.1.1 publishes English documentation with unchanged executable code and schemas. Original review inputs and responses retain their original language and bytes as historical evidence. The 0.1.0 package remains immutable in the version archive.</p><p><a href="/models/wm-xct-040-model-composition-resolution/">Model and package</a> · <a href="/models/wm-xct-040-model-composition-resolution/README.md">Usage instructions</a> · <a href="research-reconciliation.md">Reconciled findings</a></p><ul>'''+links+'</ul></main></body></html>\n'
     (evidence/'index.html').write_text(text,encoding='utf-8')
     print(json.dumps({'model':slug,'version':release,'files':len(files),'evidence':len(names),'zipBytes':(pub/zip_name).stat().st_size}))
+    refresh_cards(site)
+
+
+def refresh_cards(site_root) -> None:
+    """Rebuild the catalogue card store so every published model has its card.
+
+    Owner decision 2026-10-04: card pages render from ver.cy/models/cards/,
+    built by ver.cy/tools/build_cards.py from the sources this step writes.
+    """
+    import os, subprocess, sys
+    from pathlib import Path as _Path
+    builder = _Path(site_root) / "tools" / "build_cards.py"
+    if builder.is_file():
+        subprocess.run([sys.executable, str(builder)], check=True, env={**os.environ, "PYTHONUTF8": "1"})
+
+
 if __name__=='__main__':main()

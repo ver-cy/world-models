@@ -95,7 +95,21 @@ def main() -> int:
         "immutableContours": sum(1 for item in cards if item["canonical"]),
         "partialResearchContours": sum(1 for item in cards if not item["canonical"]),
     }))
+    refresh_cards(args.site_root)
     return 0
+
+
+def refresh_cards(site_root) -> None:
+    """Rebuild the catalogue card store so every published model has its card.
+
+    Owner decision 2026-10-04: card pages render from ver.cy/models/cards/,
+    built by ver.cy/tools/build_cards.py from the sources this step writes.
+    """
+    import os, subprocess, sys
+    from pathlib import Path as _Path
+    builder = _Path(site_root) / "tools" / "build_cards.py"
+    if builder.is_file():
+        subprocess.run([sys.executable, str(builder)], check=True, env={**os.environ, "PYTHONUTF8": "1"})
 
 
 if __name__ == "__main__":

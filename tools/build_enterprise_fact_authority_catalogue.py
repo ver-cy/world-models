@@ -176,6 +176,21 @@ def build():
         "status": "published", "sourceUrl": entry["source_url"]})
     dump(card_path, cards)
     print(json.dumps({"page": "https://ver.cy" + PUBLIC, **view["statistics"]}))
+    refresh_cards(SITE)
+
+
+def refresh_cards(site_root) -> None:
+    """Rebuild the catalogue card store so every published model has its card.
+
+    Owner decision 2026-10-04: card pages render from ver.cy/models/cards/,
+    built by ver.cy/tools/build_cards.py from the sources this step writes.
+    """
+    import os, subprocess, sys
+    from pathlib import Path as _Path
+    builder = _Path(site_root) / "tools" / "build_cards.py"
+    if builder.is_file():
+        subprocess.run([sys.executable, str(builder)], check=True, env={**os.environ, "PYTHONUTF8": "1"})
+
 
 if __name__ == "__main__":
     build()
